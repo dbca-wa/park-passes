@@ -30,11 +30,11 @@ api_patterns = [
 urlpatterns = [
     path(r"admin/", admin.site.urls),
     url(r"", include(api_patterns)),
-    url(r"^$", views.LicensingTemplateRoutingView.as_view(), name="home"),
-    url(r"^contact/", views.LicensingTemplateContactView.as_view(), name="ds_contact"),
+    url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
+    url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
     url(
         r"^further_info/",
-        views.LicensingTemplateFurtherInformationView.as_view(),
+        views.ParkPassesFurtherInformationView.as_view(),
         name="ds_further_info",
     ),
     url(r"^internal/", views.InternalView.as_view(), name="internal"),

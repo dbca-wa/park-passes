@@ -4,7 +4,7 @@ from django.conf import settings
 from django.apps import AppConfig
 
 
-class LicensingTemplateConfig(AppConfig):
+class ParkPassesConfig(AppConfig):
     name = "parkpasses"
     verbose_name = settings.SYSTEM_NAME
 

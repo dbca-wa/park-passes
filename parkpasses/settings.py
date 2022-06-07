@@ -144,7 +144,6 @@ DEP_POSTAL = env(
 )
 DEP_NAME = env("DEP_NAME", "Department of Biodiversity, Conservation and Attractions")
 DEP_NAME_SHORT = env("DEP_NAME_SHORT", "DBCA")
-BRANCH_NAME = env("BRANCH_NAME", "Licensing Template")
 DEP_ADDRESS = env("DEP_ADDRESS", "17 Dick Perry Avenue, Kensington WA 6151")
 SITE_URL = env("SITE_URL", "https://" + SITE_PREFIX + "." + SITE_DOMAIN)
 PUBLIC_URL = env("PUBLIC_URL", SITE_URL)

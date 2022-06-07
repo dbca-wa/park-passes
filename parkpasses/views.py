@@ -72,7 +72,7 @@ class ExternalProposalView(DetailView):
     template_name = "parkpasses/dash/index.html"
 
 
-class LicensingTemplateRoutingView(TemplateView):
+class ParkPassesRoutingView(TemplateView):
     template_name = "parkpasses/index.html"
 
     def get(self, *args, **kwargs):
@@ -81,14 +81,14 @@ class LicensingTemplateRoutingView(TemplateView):
                 return redirect("internal")
             return redirect("external")
         kwargs["form"] = LoginForm
-        return super(LicensingTemplateRoutingView, self).get(*args, **kwargs)
+        return super(ParkPassesRoutingView, self).get(*args, **kwargs)
 
 
-class LicensingTemplateContactView(TemplateView):
+class ParkPassesContactView(TemplateView):
     template_name = "parkpasses/contact.html"
 
 
-class LicensingTemplateFurtherInformationView(TemplateView):
+class ParkPassesFurtherInformationView(TemplateView):
     template_name = "parkpasses/further_info.html"
 
 
@@ -104,7 +104,7 @@ class InternalProposalView(DetailView):
                 return super(InternalProposalView, self).get(*args, **kwargs)
             return redirect("external-proposal-detail")
         kwargs["form"] = LoginForm
-        return super(LicensingTemplateRoutingDetailView, self).get(*args, **kwargs)
+        return super(ParkPassesRoutingDetailView, self).get(*args, **kwargs)
 
 
 @login_required(login_url="ds_home")

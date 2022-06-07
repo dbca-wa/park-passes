@@ -10,7 +10,7 @@ import pytz
 from datetime import datetime, timedelta
 
 
-class LicensingTemplateHelpPageAdminForm(forms.ModelForm):
+class ParkPassesHelpPageAdminForm(forms.ModelForm):
     content = forms.CharField(widget=CKEditorWidget())
 
     class Meta:

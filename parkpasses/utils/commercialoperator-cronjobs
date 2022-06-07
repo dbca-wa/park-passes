@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-# Execute every minute. Polls the LicensingTemplate Admin table SystemMaintenance, and checks if the application can be taken down at the time indicated in the Admin table
+# Execute every minute. Polls the ParkPasses Admin table SystemMaintenance, and checks if the application can be taken down at the time indicated in the Admin table
 * * * * * root cd /var/www/licensing_template-prod.8088 && source venv/bin/activate && python manage_ds.py system_maintenance_check >/dev/null 2>&1
 #
 # Every day (at 02:00 hrs), run the daily licensing_template management commands batch

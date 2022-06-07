@@ -63,7 +63,7 @@ class ProposalStandardRequirementAdmin(admin.ModelAdmin):
 # @admin.register(models.HelpPage)
 class HelpPageAdmin(admin.ModelAdmin):
     list_display = ["application_type", "help_type", "description", "version"]
-    form = forms.LicensingTemplateHelpPageAdminForm
+    form = forms.ParkPassesHelpPageAdminForm
     change_list_template = "parkpasses/help_page_changelist.html"
     ordering = ("application_type", "help_type", "-version")
     list_filter = ("application_type", "help_type")
