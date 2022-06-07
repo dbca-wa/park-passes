@@ -1,0 +1,13 @@
+--- 0001_initial.py.bak	2021-12-14 10:17:03.737388501 +0800
++++ 0001_initial.py	2021-12-14 07:00:15.905091751 +0800
+@@ -6,8 +6,8 @@
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+-        ('contenttypes', '__first__'),
++        #migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        #('contenttypes', '__first__'),
+     ]
+ 
+     operations = [

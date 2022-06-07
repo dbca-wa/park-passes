@@ -1,0 +1,2 @@
+0 1 * * * root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py runcrons >> /app/logs/cronjob.log 2>&1
+

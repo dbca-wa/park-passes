@@ -1,0 +1,16 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{%  block content %}
+    The commercial filming lawful authority application {{ proposal.lodgement_number }} for {{ district_proposal.district_name }} district/region has been referred for assessment.
+
+	After assessing the application, click ‘Enter Requirement’ to add conditions then click ‘Propose to Approve’ to send to your District/Regional Manager for approval.
+
+	Please ensure your assessment is completed at least three days prior to the lawful authority proposed start date of {{ proposed_start_date }}.
+
+
+    You can access this Application using the following link:
+  
+    {{url}}
+
+
+{%  endblock %}

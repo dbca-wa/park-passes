@@ -1,0 +1,46 @@
+{% load users %}
+{% load utils %}
+{% is_internal as is_internal_login %}
+{% is_parkpasses_admin as is_parkpasses_admin_user %}
+{% can_show_tests as show_tests %}
+{% system_maintenance_due as system_maintenance_due %}
+{% system_name_short as short_name %}
+{% dept_name as department_name %}
+{% system_name as system_name %}
+{% system_name_short as system_name_short %}
+{% support_email as support_email %}
+{% is_payment_officer as is_payment_officer %}
+{% build_tag as build_tag %}
+
+
+<ul class="dropdown-menu">
+    {% if is_parkpasses_admin_user or request.user.is_superuser %}
+        <li><a href="{% url 'admin:index' %}">Admin</a></li>
+    {% endif %}
+    {% if is_parkpasses_admin_user or request.user.is_superuser or is_payment_officer %}
+        <li><a href="/internal/reports">Reports</a></li>
+    {% endif %}
+    {% if is_parkpasses_admin_user or request.user.is_superuser %}
+        <li role="separator" class="divider"></li>
+    {% endif %}
+    {% if request.user.is_superuser %}
+        <li><a href="{% url 'mgt-commands' %}">Management Commands</a></li>
+    {% endif %}
+    {% if show_tests and request.user.is_superuser %}
+        <li><a href="{% url 'test-emails' %}">Test Emails</a></li>
+    {% endif %}
+    <li><a href="{% url 'manage-account' %}">Manage Account</a></li>
+    <!-- <li><a href="{% url 'manage-profiles' %}">Manage Profiles</a></li> -->
+    {% for org in request.user.parkpasses_organisations.all %}
+        {% for org_contact in org.contacts.all%}
+            {% ifequal org_contact.email request.user.email %}
+                {% if org_contact.user_status == 'active' %}
+                    {% if org_contact.is_admin or org_contact.check_consultant %}
+                        <li><a href="/external/organisations/manage/{{org.id}}">Manage {{ org.organisation.name}} </a></li>
+                    {% endif %}
+                {% endif %}
+            {% endifequal %}
+        {% endfor %}
+    {% endfor %}
+</ul>
+

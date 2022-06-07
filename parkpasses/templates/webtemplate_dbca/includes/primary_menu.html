@@ -1,0 +1,20 @@
+{% load users %}
+{% load utils %}
+{% is_internal as is_internal_login %}
+{% is_parkpasses_admin as is_parkpasses_admin_user %}
+{% can_show_tests as show_tests %}
+{% system_maintenance_due as system_maintenance_due %}
+{% system_name_short as short_name %}
+{% dept_name as department_name %}
+{% system_name as system_name %}
+{% system_name_short as system_name_short %}
+{% support_email as support_email %}
+{% is_payment_officer as is_payment_officer %}
+{% build_tag as build_tag %}
+
+<ul class="nav navbar-expand-lg navbar-light">
+{% if is_internal_login %}
+other menu items
+{% else %}
+{% endif %}
+</ul>

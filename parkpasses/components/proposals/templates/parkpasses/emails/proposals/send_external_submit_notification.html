@@ -1,0 +1,15 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{%  block content %}
+<p>Your {{ proposal.application_type.confirmation_text }} application was successfully submitted </p>
+    <p>
+        <span>Reference Number:</span>
+        <span style="margin-left:10px">{{ proposal.lodgement_number }}</span>
+    </p>
+
+    <p>
+        <span>Date / Time:</span>
+        <span style="margin-left:55px">{{ proposal.lodgement_date }}</span>
+    </p>
+
+{%  endblock %}

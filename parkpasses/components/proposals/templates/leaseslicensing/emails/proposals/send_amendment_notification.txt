@@ -1,0 +1,26 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{%  block content %}
+    {% if proposal.is_filming_application %}
+       Your Application {{ proposal.lodgement_number }} for a commercial filming authority has been returned to you for further information.
+    {% else %}
+        Your Application {{ proposal.lodgement_number }} for a commercial operations licence has been returned to you for further information.
+    {% endif %}
+
+    {% if reason %}
+        
+            Amendment Reason: {{ reason }}
+        
+    {% endif %}
+
+    {% if amendment_request_text %}
+         Amendment details: <br> {{ amendment_request_text }}
+    {% endif %}
+
+    Please {{url}} login to your account to complete the application.
+    
+    You will receive a notification email if there is any incomplete information or documents missing from the application.
+    
+
+
+{%  endblock %}

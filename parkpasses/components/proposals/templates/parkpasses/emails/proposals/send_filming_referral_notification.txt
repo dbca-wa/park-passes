@@ -1,0 +1,23 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{%  block content %}
+    {% if reminder %}
+        This is a reminder for a referral for Application <strong>{{proposal.lodgement_number}}</strong> that has been sent to you
+    {% else %}
+        A referral for commercial filming licence application A{{proposal.id}} has been sent to you.
+
+        Please assess the application and complete the referral checklist for your district/region/unit and add applicable conditions to the requirements section that are not already covered in the {{ filming_handbook_url }} Commercial Filming and Photography Handbook.
+
+        You will need to click ‘Complete Referral Task’ to submit your referral assessment.
+
+        Please ensure your referral is completed at least three days prior to the licence proposed start date of {{ proposed_start_date }}.
+
+
+        Comments: {{comments}}
+    {% endif %}
+
+    You can access this referral using the following link:
+
+    {{url}}
+
+{%  endblock %}

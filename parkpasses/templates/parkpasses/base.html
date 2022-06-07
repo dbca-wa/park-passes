@@ -1,0 +1,51 @@
+{% extends "webtemplate_dbca/base_b5.html" %}
+{% load static %}
+
+{% load users %}
+{% load utils %}
+{% is_internal as is_internal_login %}
+{% is_parkpasses_admin as is_parkpasses_admin_user %}
+{% can_show_tests as show_tests %}
+{% system_maintenance_due as system_maintenance_due %}
+{% system_name_short as short_name %}
+{% dept_name as department_name %}
+{% system_name as system_name %}
+{% system_name_short as system_name_short %}
+{% support_email as support_email %}
+{% is_payment_officer as is_payment_officer %}
+{% build_tag as build_tag %}
+
+<!DOCTYPE html>
+<html lang="en">
+    {% block extra_hidden_inputs %}
+        <link rel="icon" href="{% static 'favicon.ico' %}">
+    {% endblock %}
+
+    <body>
+        {% block header_top_menu %}
+        {% endblock %}
+        {% block extra_css %}
+            <link rel="stylesheet" href="{% static 'parkpasses_vue/css/app.css' %}?v={{build_tag}}">
+        {% endblock %}
+        {% block custom_js %}
+            <script language="javascript">
+                    var env = {
+                        "kmi_server_url": "{{ KMI_SERVER_URL }}"
+                    }
+
+            </script>
+            <script type="text/javascript" src="{% static 'parkpasses_vue/js/chunk-vendors.js' %}?v={{build_tag}}"></script>
+            {% if app_build_url %}
+                <script type="text/javascript" src="{{ app_build_url }}"></script>
+            {% else %}
+                <script type="text/javascript" src="{% static 'parkpasses_vue/js/app.js' %}?v={{build_tag}}"></script>
+            {% endif %}
+
+        {% endblock %}
+        {% block menu_spacer %}
+            <br>
+        {% endblock %}
+    </body>
+</html>
+
+

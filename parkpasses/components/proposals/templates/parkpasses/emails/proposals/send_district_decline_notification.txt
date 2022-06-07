@@ -1,0 +1,10 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{%  block content %}
+   
+    Your application for a commercial filming authority {{proposal.lodgement_number}} for {{ district_proposal.district_name }} district/region has been declined.
+    For further information please login to your account.
+   
+   	If you have any queries regarding this decision please contact a licensing officer on {{settings.DEP_PHONE_FILMING}}, or email {{settings.SUPPORT_EMAIL_FILMING}}
+
+{%  endblock %}

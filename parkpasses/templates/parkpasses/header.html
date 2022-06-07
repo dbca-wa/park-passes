@@ -1,0 +1,32 @@
+{% extends "webtemplate_dbca/base_b5.html" %}
+{% load utils %}
+
+{% system_name as system_name %}
+
+{% load static %}
+    <div class="container">
+        <div class="masthead">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="agency-freespace">
+
+  		      <h1 id="site-title" class="site-logo" style="color: white;">
+                        <div class="col-sm-5">
+                            <a href="/">
+                                <img src="/static/parkpasses/img/logo-park-stay-trunc.gif" alt="Department of Biodiversity, Conservation and Attractions" class="img-responsive"/>
+                            </a>
+                        </div>
+                        <div class="col-sm-7">
+                            <!--div class="pull-right"-->
+                            <div>
+                                stuff
+                                {% block template_title %}{{ template_title }}{% endblock %}<a href="/">
+                            </div>
+                        </div>
+                      </h1>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

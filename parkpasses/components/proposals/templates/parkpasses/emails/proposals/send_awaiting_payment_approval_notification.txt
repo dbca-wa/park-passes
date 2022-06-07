@@ -1,0 +1,10 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{%  block content %}
+   
+      Your licence to conduct commercial filming operations on <em>Conservation and Land Management Act 1984 lands and waters</em> has been approved pending payment. A copy of your invoice is attached to this email and can be accessed in the Commercial Operator Licensing System (COLS) under your account, click {{url}} to login and make payment.
+      Your licence to conduct your commercial filming operation will not be granted until payment has been made. Please note you cannot conduct your commercial filming operation without grant of the licence.
+
+       If you have any enquiries or need assistance with the online system please contact a licensing office on {{settings.DEP_PHONE_FILMING}} or email {{settings.SUPPORT_EMAIL_FILMING}}
+
+{%  endblock %}

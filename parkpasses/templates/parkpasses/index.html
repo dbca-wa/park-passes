@@ -1,0 +1,24 @@
+{% extends 'parkpasses/base.html' %}
+
+{% load static %}
+
+{% block left_menu_items %}
+    <li><a  href="{% url 'ds_contact' %}">Contact Us</a></li>
+    <li><a  href="{% url 'ds_further_info' %}">Further Information</a></li>
+{% endblock %}
+
+{% block messages %}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>
+                    Welcome to the {{system_name}} System
+                </h2>
+                <a href="/ssologin">Login</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
