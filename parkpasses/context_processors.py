@@ -1,13 +1,8 @@
-from confy import env
-from django.conf import settings
-
-# from ledger.payments.helpers import is_payment_admin
-
 from parkpasses.settings import (
+    BUILD_TAG,
     KMI_SERVER_URL,
     template_group,
     template_title,
-    BUILD_TAG,
 )
 
 
