@@ -1,9 +1,7 @@
 from datetime import date, timedelta
 
-from django.db.models import Q
-from django.core import management
-from django_cron import CronJobBase, Schedule
 from django.conf import settings
+from django_cron import CronJobBase, Schedule
 
 from parkpasses.components.bookings.utils import oracle_integration
 
