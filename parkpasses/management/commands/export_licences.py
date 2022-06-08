@@ -1,12 +1,8 @@
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.conf import settings
-from parkpasses.components.approvals.models import Approval
-import datetime
-
-import itertools
-
 import logging
+
+from django.core.management.base import BaseCommand
+
+from parkpasses.components.approvals.models import Approval
 
 logger = logging.getLogger(__name__)
 
@@ -66,11 +62,10 @@ class Command(BaseCommand):
                         migrated,
                     ]
                 )
-                # f.write(a.status, a.lodgement_number, a.start_date, a.expiry_date, a.applicant, a.org_applicant, a.current_proposal.org_applicant.email, a.current_proposal.application_type, a.current_proposal.migrated)
                 f.write(out_str + "\n")
 
                 if lodgement_number not in approvals:
                     approvals.append(lodgement_number)
                 else:
                     repeat.append(lodgement_number)
-        print("Repeated Approvals: {}".format(repeat))
+        print(f"Repeated Approvals: {repeat}")

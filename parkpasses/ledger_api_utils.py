@@ -1,8 +1,8 @@
-from __future__ import unicode_literals
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from parkpasses.components.main.decorators import basic_exception_handler
-
 import logging
+
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+
+from parkpasses.components.main.decorators import basic_exception_handler
 
 logger = logging.getLogger("parkpasses")
 

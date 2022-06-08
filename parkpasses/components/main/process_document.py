@@ -1,10 +1,9 @@
-from django.core.files.storage import default_storage
 import os
-from django.core.files.base import ContentFile
 import traceback
-from django.conf import settings
 
-from parkpasses.components.proposals.models import Proposal
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 
 
 def process_generic_document(request, instance, document_type=None, *args, **kwargs):
@@ -235,7 +234,6 @@ def cancel_document(request, instance, comms_instance, document_type, input_name
         "aboriginal_site_document",
         "native_title_consultation_document",
         "mining_tenement_document",
-        ## additional form fields for lease_licence
         "profit_and_loss_document",
         "cash_flow_document",
         "capital_investment_document",
@@ -248,11 +246,11 @@ def cancel_document(request, instance, comms_instance, document_type, input_name
         "risk_factors_document",
         "legislative_requirements_document",
     ]:
-        document_id = request.data.get("document_id")
-    if comms_instance:
-        document_list = comms_instance.documents.all()
-    else:
-        document_list = instance.documents.all()
+
+        if comms_instance:
+            document_list = comms_instance.documents.all()
+        else:
+            document_list = instance.documents.all()
 
     for document in document_list:
         if document._file and os.path.isfile(document._file.path):

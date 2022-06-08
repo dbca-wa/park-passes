@@ -25,7 +25,7 @@ RUN apt-get install --no-install-recommends -y python3-setuptools python3-dev py
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr
 RUN apt-get install --no-install-recommends -y sqlite3 vim postgresql-client ssh htop libspatialindex-dev
-RUN ln -s /usr/bin/python3 /usr/bin/python 
+RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN pip install --upgrade pip
 
 WORKDIR /app

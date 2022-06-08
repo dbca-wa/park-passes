@@ -1,24 +1,19 @@
-import requests
-from ledger_api_client.ledger_models import EmailUserRO
 import json
+
 import pytz
+import requests
 from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.cache import cache
 from django.db import connection
 from django.db.models import Q
-from django.contrib.gis.geos import GEOSGeometry
+from ledger_api_client.ledger_models import EmailUserRO
 from rest_framework import serializers
 
 from parkpasses.components.main.serializers import EmailUserROSerializerForReferral
 
 
 def retrieve_department_users():
-    # try:
-    #     res = requests.get('{}/api/users?minimal'.format(settings.CMS_URL), auth=(settings.LEDGER_USER, settings.LEDGER_PASS), verify=False)
-    #     res.raise_for_status()
-    #     cache.set('department_users', json.loads(res.content).get('objects'), 10800)
-    # except:
-    #     raise
     dep_users = (
         EmailUserRO.objects.filter(Q(email__endswith="@dbca.wa.gov.au"))
         .exclude(Q(first_name=""), Q(last_name=""))
@@ -29,10 +24,6 @@ def retrieve_department_users():
 
 
 def handle_validation_error(e):
-    # if hasattr(e, 'error_dict'):
-    #     raise serializers.ValidationError(repr(e.error_dict))
-    # else:
-    #     raise serializers.ValidationError(repr(e[0].encode('utf-8')))
     if hasattr(e, "error_dict"):
         raise serializers.ValidationError(repr(e.error_dict))
     else:
@@ -45,7 +36,7 @@ def handle_validation_error(e):
 def get_department_user(email):
     try:
         res = requests.get(
-            "{}/api/users?email={}".format(settings.CMS_URL, email),
+            f"{settings.CMS_URL}/api/users?email={email}",
             auth=(settings.LEDGER_USER, settings.LEDGER_PASS),
             verify=False,
         )
@@ -69,7 +60,7 @@ def check_db_connection():
     try:
         if not connection.is_usable():
             connection.connect()
-    except Exception as e:
+    except Exception:
         connection.connect()
 
 
@@ -104,7 +95,7 @@ def get_dbca_lands_and_waters_geos():
     geoms = []
     for feature in geojson.get("features"):
         feature_geom = feature.get("geometry")
-        geos_geom = GEOSGeometry("{}".format(feature_geom)).prepared
+        geos_geom = GEOSGeometry(f"{feature_geom}").prepared
         geoms.append(geos_geom)
     return geoms
     # geos_obj = GeometryCollection(tuple(geoms))

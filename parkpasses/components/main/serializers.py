@@ -1,16 +1,14 @@
+from ledger_api_client.ledger_models import EmailUserRO
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
-from django.db.models import Sum, Max
-from parkpasses.components.main.models import (
-    CommunicationsLogEntry,
-    RequiredDocument,
-    Question,
-    GlobalSettings,
-    ApplicationType,
-)
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser, EmailUserRO
-from datetime import datetime, date
 
-# from parkpasses.components.proposals.serializers import ProposalTypeSerializer
+from parkpasses.components.main.models import (
+    ApplicationType,
+    CommunicationsLogEntry,
+    GlobalSettings,
+    Question,
+    RequiredDocument,
+)
 
 
 class CommunicationLogEntrySerializer(serializers.ModelSerializer):

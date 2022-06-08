@@ -1,12 +1,7 @@
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.conf import settings
-from ledger.accounts.models import Organisation
-import datetime
-
-import itertools
-
 import logging
+
+from django.core.management.base import BaseCommand
+from ledger.accounts.models import Organisation
 
 logger = logging.getLogger(__name__)
 
@@ -31,5 +26,4 @@ class Command(BaseCommand):
                     )
                     # print
             except Exception as e:
-                # print '*********************** {}'.format(e)
-                pass
+                print(f"*********************** {e}")

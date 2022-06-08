@@ -16,13 +16,13 @@
         <div v-if="show_spinner"><i class='fa fa-2x fa-spinner fa-spin'></i></div>
         <!--template v-if="!readonly" v-for="n in repeat">
             <template v-if="(isRepeatable || (!isRepeatable && numDocuments === 0)) && !show_spinner">
-                <input 
-                    :id="name + n" 
-                    :key="name + n" 
-                    :name="name" type="file" 
-                    :data-que="n" 
-                    :accept="fileTypes" 
-                    @change="handleChangeWrapper" 
+                <input
+                    :id="name + n"
+                    :key="name + n"
+                    :name="name" type="file"
+                    :data-que="n"
+                    :accept="fileTypes"
+                    @change="handleChangeWrapper"
                     :class="ffu_input_element_classname" />
                 <template v-if="replace_button_by_text">
                     <span :id="'button-' + name + n" @click="button_clicked(name + n)" class="ffu-input-text">{{ text_string }}</span>
@@ -30,12 +30,12 @@
             </template>
         </template-->
         <div v-if="(isRepeatable || (!isRepeatable && numDocuments === 0)) && !show_spinner && !readonly">
-            <input 
-                :id="name" 
-                :key="name" 
-                :name="name" type="file" 
-                :accept="fileTypes" 
-                @change="handleChangeWrapper" 
+            <input
+                :id="name"
+                :key="name"
+                :name="name" type="file"
+                :accept="fileTypes"
+                @change="handleChangeWrapper"
                 :class="ffu_input_element_classname" />
             <div v-if="replace_button_by_text">
                 <span :id="'button-' + name" @click="button_clicked(name)" class="ffu-input-text">{{ text_string }}</span>
@@ -60,13 +60,13 @@ export default {
         id:String,
         fileTypes:{
             default:function () {
-                var file_types = 
-                    "image/*," + 
+                var file_types =
+                    "image/*," +
                     "video/*," +
                     "audio/*," +
                     "application/pdf,text/csv,application/msword,application/vnd.ms-excel,application/x-msaccess," +
-                    "application/x-7z-compressed,application/x-bzip,application/x-bzip2,application/zip," + 
-                    ".dbf,.gdb,.gpx,.prj,.shp,.shx," + 
+                    "application/x-7z-compressed,application/x-bzip,application/x-bzip2,application/zip," +
+                    ".dbf,.gdb,.gpx,.prj,.shp,.shx," +
                     ".json,.kml,.gpx";
                 return file_types;
             }
@@ -198,9 +198,9 @@ export default {
                 }
                 formData.append('input_name', this.name);
                 formData.append('csrfmiddlewaretoken', this.csrf_token);
-                const res = await fetch(this.document_action_url, { 
-                    body: formData, 
-                    method: 'POST' 
+                const res = await fetch(this.document_action_url, {
+                    body: formData,
+                    method: 'POST'
                 })
                 const resData = await res.json()
                 this.documents = resData.filedata;
@@ -255,7 +255,7 @@ export default {
 
             if (e.target.files && e.target.files[0]) {
                 var reader = new FileReader();
-                reader.readAsDataURL(e.target.files[0]); 
+                reader.readAsDataURL(e.target.files[0]);
                 reader.onload = function(e) {
                     _file = e.target.result;
                 };
@@ -308,7 +308,7 @@ export default {
                     }
                 }
                 */
-                
+
                 this.documents = resData.filedata;
                 this.commsLogId = resData.comms_instance_id;
             } else {
@@ -331,8 +331,8 @@ export default {
                 this.value;
             } else {
                 let file_names = this.value.replace(/ /g,'_').split(",")
-                this.files = file_names.map(function( file_name ) { 
-                      return {name: file_name}; 
+                this.files = file_names.map(function( file_name ) {
+                      return {name: file_name};
                 });
             }
         }

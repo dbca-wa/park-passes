@@ -2,10 +2,10 @@
     <!--router-view></router-view-->
     <div class="container" id="externalDash">
         <!--div v-if="is_debug">src/components/external/dashboard.vue</div-->
-        <FormSection 
-            :formCollapse="false" 
-            label="Applications" 
-            subtitle="- View existing applications and lodge new ones" 
+        <FormSection
+            :formCollapse="false"
+            label="Applications"
+            subtitle="- View existing applications and lodge new ones"
             Index="applications"
         >
             <ApplicationsTable

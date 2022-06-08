@@ -8,7 +8,7 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
-            path: '/:pathMatch(.*)', 
+            path: '/:pathMatch(.*)',
             component: NotFoundComponent
         },
         external_routes,

@@ -1,17 +1,13 @@
+import logging
+
+from dateutil.relativedelta import relativedelta
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.conf import settings
-from parkpasses.components.approvals.models import Approval
-from ledger.accounts.models import EmailUser
-from datetime import date, timedelta
-from dateutil.relativedelta import relativedelta
+
 from parkpasses.components.approvals.email import (
     send_approval_eclass_expiry_email_notification,
 )
-
-import itertools
-
-import logging
+from parkpasses.components.approvals.models import Approval
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +17,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logger.info("Running command {}")
-        try:
-            user = EmailUser.objects.get(email=settings.CRON_EMAIL)
-        except:
-            user = EmailUser.objects.create(email=settings.CRON_EMAIL, password="")
 
         errors = []
         updates = []
@@ -38,10 +30,10 @@ class Command(BaseCommand):
             "extended": True,
             "current_proposal__application_type__name": application_type_name,
         }
-        logger.info("Running command {}".format(__name__))
+        logger.info(f"Running command {__name__}")
 
         qs = Approval.objects.filter(**expiry_conditions)
-        logger.info("{}".format(qs))
+        logger.info(f"{qs}")
         for a in qs:
             if (
                 a.status == "extended"
@@ -52,18 +44,18 @@ class Command(BaseCommand):
                     send_approval_eclass_expiry_email_notification(a)
                     a.expiry_notice_sent = True
                     a.save()
-                    logger.info("Expiry notice sent for Approval {}".format(a.id))
+                    logger.info(f"Expiry notice sent for Approval {a.id}")
                     updates.append(a.lodgement_number)
                 except Exception as e:
                     err_msg = "Error sending expiry notice for Approval {}".format(
                         a.lodgement_number
                     )
-                    logger.error("{}\n{}".format(err_msg, str(e)))
+                    logger.error(f"{err_msg}\n{str(e)}")
                     errors.append(err_msg)
 
         cmd_name = __name__.split(".")[-1].replace("_", " ").upper()
         err_str = (
-            '<strong style="color: red;">Errors: {}</strong>'.format(len(errors))
+            f'<strong style="color: red;">Errors: {len(errors)}</strong>'
             if len(errors) > 0
             else '<strong style="color: green;">Errors: 0</strong>'
         )

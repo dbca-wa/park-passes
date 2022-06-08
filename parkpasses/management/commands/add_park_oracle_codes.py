@@ -1,12 +1,9 @@
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.conf import settings
-from parkpasses.components.main.models import ApplicationType, Park
 import csv
-import datetime
-
-
 import logging
+
+from django.core.management.base import BaseCommand
+
+from parkpasses.components.main.models import ApplicationType, Park
 
 logger = logging.getLogger(__name__)
 
@@ -15,15 +12,10 @@ class Command(BaseCommand):
     help = "Upload Oracle Codes for Parks"
 
     def handle(self, *args, **options):
+        logger.info(f"Running command {__name__}")
 
-        logger.info("Running command {}".format(__name__))
-
-        # with open('parkpasses/utils/csv/park_oracle_codes_09Nov2020.csv') as csvfile:
-        with open(
-            "parkpasses/utils/csv/park_oracle_codes_03Dec2020.csv"
-        ) as csvfile:
+        with open("parkpasses/utils/csv/park_oracle_codes_03Dec2020.csv") as csvfile:
             reader = csv.reader(csvfile, delimiter=",")
-            header = next(reader)
             for row in reader:
                 park_name = row[0]
                 oracle_code_tclass = row[1]
@@ -45,4 +37,4 @@ class Command(BaseCommand):
                     print(row[0], row[1], row[2], row[3])
                     print
 
-        logger.info("Command {} completed".format(__name__))
+        logger.info(f"Command {__name__} completed")

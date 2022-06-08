@@ -75,9 +75,6 @@ class HelpView(LoginRequiredMixin, TemplateView):
                         help_type=HelpPage.HELP_TEXT_INTERNAL,
                     ).order_by("-version")
                     context["help"] = queryset.first()
-            #                else:
-            #                    return TemplateResponse(self.request, 'parkpasses/not-permitted.html', context)
-            #                    context['permitted'] = False
             else:
                 queryset = HelpPage.objects.filter(
                     application_type__name__icontains=application_type,

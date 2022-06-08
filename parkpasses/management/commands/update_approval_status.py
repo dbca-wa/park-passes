@@ -1,21 +1,18 @@
+import datetime
+import logging
+
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.conf import settings
-from parkpasses.components.approvals.models import Approval, ApprovalUserAction
-from parkpasses.components.proposals.models import Proposal, ProposalUserAction
 from ledger.accounts.models import EmailUser
-import datetime
+
 from parkpasses.components.approvals.email import (
-    send_approval_expire_email_notification,
     send_approval_cancel_email_notification,
-    send_approval_suspend_email_notification,
-    send_approval_reinstate_email_notification,
     send_approval_surrender_email_notification,
+    send_approval_suspend_email_notification,
 )
-
-import itertools
-
-import logging
+from parkpasses.components.approvals.models import Approval, ApprovalUserAction
+from parkpasses.components.proposals.models import ProposalUserAction
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +29,7 @@ class Command(BaseCommand):
         errors = []
         updates = []
         today = timezone.localtime(timezone.now()).date()
-        logger.info("Running command {}".format(__name__))
+        logger.info(f"Running command {__name__}")
         for a in Approval.objects.filter(status="current"):
             if a.suspension_details and a.set_to_suspend:
                 from_date = datetime.datetime.strptime(
@@ -58,15 +55,13 @@ class Command(BaseCommand):
                             ),
                             user,
                         )
-                        logger.info(
-                            "Updated Approval {} status to {}".format(a.id, a.status)
-                        )
+                        logger.info(f"Updated Approval {a.id} status to {a.status}")
                         updates.append(dict(suspended=a.lodgement_number))
                     except Exception as e:
                         err_msg = "Error suspending Approval {} status".format(
                             a.lodgement_number
                         )
-                        logger.error("{}\n{}".format(err_msg, str(e)))
+                        logger.error(f"{err_msg}\n{str(e)}")
                         errors.append(err_msg)
 
             if a.cancellation_date and a.set_to_cancel:
@@ -89,15 +84,13 @@ class Command(BaseCommand):
                             ),
                             user,
                         )
-                        logger.info(
-                            "Updated Approval {} status to {}".format(a.id, a.status)
-                        )
+                        logger.info(f"Updated Approval {a.id} status to {a.status}")
                         updates.append(dict(cancelled=a.lodgement_number))
                     except Exception as e:
                         err_msg = "Error cancelling Approval {} status".format(
                             a.lodgement_number
                         )
-                        logger.error("{}\n{}".format(err_msg, str(e)))
+                        logger.error(f"{err_msg}\n{str(e)}")
                         errors.append(err_msg)
 
             if a.surrender_details and a.set_to_surrender:
@@ -124,15 +117,13 @@ class Command(BaseCommand):
                             ),
                             user,
                         )
-                        logger.info(
-                            "Updated Approval {} status to {}".format(a.id, a.status)
-                        )
+                        logger.info(f"Updated Approval {a.id} status to {a.status}")
                         updates.append(dict(surrender=a.lodgement_number))
-                    except:
+                    except Exception as e:
                         err_msg = "Error surrendering Approval {} status".format(
                             a.lodgement_number
                         )
-                        logger.error("{}\n{}".format(err_msg, str(e)))
+                        logger.error(f"{err_msg}\n{str(e)}")
                         errors.append(err_msg)
 
         for a in Approval.objects.filter(status="suspended"):
@@ -158,15 +149,13 @@ class Command(BaseCommand):
                             ),
                             user,
                         )
-                        logger.info(
-                            "Updated Approval {} status to {}".format(a.id, a.status)
-                        )
+                        logger.info(f"Updated Approval {a.id} status to {a.status}")
                         updates.append(dict(current=a.lodgement_number))
                     except Exception as e:
                         err_msg = "Error suspending Approval {} status".format(
                             a.lodgement_number
                         )
-                        logger.error("{}\n{}".format(err_msg, str(e)))
+                        logger.error(f"{err_msg}\n{str(e)}")
                         errors.append(err_msg)
 
             if a.cancellation_date and a.set_to_cancel:
@@ -189,15 +178,13 @@ class Command(BaseCommand):
                             ),
                             user,
                         )
-                        logger.info(
-                            "Updated Approval {} status to {}".format(a.id, a.status)
-                        )
+                        logger.info(f"Updated Approval {a.id} status to {a.status}")
                         updates.append(dict(cancelled=a.lodgement_number))
                     except Exception as e:
                         err_msg = "Error cancelling Approval {} status".format(
                             a.lodgement_number
                         )
-                        logger.error("{}\n{}".format(err_msg, str(e)))
+                        logger.error(f"{err_msg}\n{str(e)}")
                         errors.append(err_msg)
 
             if a.surrender_details and a.set_to_surrender:
@@ -224,22 +211,20 @@ class Command(BaseCommand):
                             ),
                             user,
                         )
-                        logger.info(
-                            "Updated Approval {} status to {}".format(a.id, a.status)
-                        )
+                        logger.info(f"Updated Approval {a.id} status to {a.status}")
                         updates.append(dict(surrendered=a.lodgement_number))
-                    except:
+                    except Exception as e:
                         err_msg = "Error surrendering Approval {} status".format(
                             a.lodgement_number
                         )
-                        logger.error("{}\n{}".format(err_msg, str(e)))
+                        logger.error(f"{err_msg}\n{str(e)}")
                         errors.append(err_msg)
 
-        logger.info("Command {} completed".format(__name__))
+        logger.info(f"Command {__name__} completed")
 
         cmd_name = __name__.split(".")[-1].replace("_", " ").upper()
         err_str = (
-            '<strong style="color: red;">Errors: {}</strong>'.format(len(errors))
+            f'<strong style="color: red;">Errors: {len(errors)}</strong>'
             if len(errors) > 0
             else '<strong style="color: green;">Errors: 0</strong>'
         )

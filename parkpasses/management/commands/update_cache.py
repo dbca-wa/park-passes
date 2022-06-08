@@ -1,8 +1,8 @@
-from django.core.management.base import BaseCommand
-from django.conf import settings
-from parkpasses.components.bookings.models import BookingInvoice
-
 import logging
+
+from django.core.management.base import BaseCommand
+
+from parkpasses.components.bookings.models import BookingInvoice
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ class Command(BaseCommand):
     help = "Updates the property_cache"
 
     def handle(self, *args, **options):
-        logger.info("Running command {}".format(__name__))
+        logger.info(f"Running command {__name__}")
         # unset the cache
         BookingInvoice.objects.all().update(property_cache={})
 
@@ -21,6 +21,6 @@ class Command(BaseCommand):
 
         cmd_name = __name__.split(".")[-1].replace("_", " ").upper()
         err_str = '<strong style="color: green;">Errors: 0</strong>'
-        msg = "<p>{} completed. {}.</p>".format(cmd_name, err_str)
+        msg = f"<p>{cmd_name} completed. {err_str}.</p>"
         logger.info(msg)
         print(msg)  # will redirect to cron_tasks.log file, by the parent script

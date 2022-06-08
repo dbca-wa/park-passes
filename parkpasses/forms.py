@@ -1,9 +1,5 @@
-from __future__ import unicode_literals
-
 from django.contrib.auth import get_user_model
-from django.forms import Form, ModelForm, CharField, ValidationError, EmailField
-
-
+from django.forms import EmailField, Form
 
 User = get_user_model()
 

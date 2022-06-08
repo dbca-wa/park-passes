@@ -13,7 +13,7 @@
 
 </template>
 <script>
-    
+
     //import {$, DataTableBs} from '../../hooks'
     //import ResponsiveDatatablesHelper from "../responsive_datatable_helper.js"
 module.exports = {

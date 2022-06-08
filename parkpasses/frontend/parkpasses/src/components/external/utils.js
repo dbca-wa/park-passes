@@ -1,5 +1,5 @@
 import api from './api'
-import {helpers} from '@/utils/hooks' 
+import {helpers} from '@/utils/hooks'
 
 export default {
     fetchProfile: function (){

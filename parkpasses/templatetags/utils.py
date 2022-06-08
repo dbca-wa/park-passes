@@ -1,5 +1,5 @@
-from django.template import Library
 from django.conf import settings
+from django.template import Library
 
 register = Library()
 
@@ -36,7 +36,7 @@ def can_show_tests():
 
 @register.filter
 def total_line_price(price, qty):
-    return "{:.2f}".format(round(price * qty, 2))
+    return f"{round(price * qty, 2):.2f}"
 
 
 @register.filter
@@ -44,7 +44,7 @@ def basket_total_price(lines):
     total = 0.00
     for line in lines:
         total += line["price_incl_tax"] * line["quantity"]
-    return "{:.2f}".format(round(total, 2))
+    return f"{round(total, 2):.2f}"
 
 
 @register.simple_tag()

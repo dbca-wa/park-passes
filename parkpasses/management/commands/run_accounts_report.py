@@ -1,13 +1,8 @@
-from django.core.management.base import BaseCommand
-from django.conf import settings
-import subprocess
-import os
-from datetime import datetime
-from ledger.payments.reports import generate_items_csv_allocated
-
-import itertools
-
 import logging
+from datetime import datetime
+
+from django.core.management.base import BaseCommand
+from ledger.payments.reports import generate_items_csv_allocated
 
 logger = logging.getLogger(__name__)
 

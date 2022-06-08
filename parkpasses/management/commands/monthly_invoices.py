@@ -1,14 +1,11 @@
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.conf import settings
-from ledger.accounts.models import EmailUser
-from parkpasses.components.bookings.utils import create_monthly_invoice
-from parkpasses.components.bookings.email import (
-    send_monthly_invoices_failed_tclass,
-)
-import datetime
-
 import logging
+
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from ledger.accounts.models import EmailUser
+
+from parkpasses.components.bookings.email import send_monthly_invoices_failed_tclass
+from parkpasses.components.bookings.utils import create_monthly_invoice
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +19,7 @@ class Command(BaseCommand):
         except:
             user = EmailUser.objects.create(email=settings.CRON_EMAIL, password="")
 
-        logger.info("Running command {}".format(__name__))
+        logger.info(f"Running command {__name__}")
         failed_bookings = create_monthly_invoice(user, offset_months=-1)
 
         if failed_bookings:
@@ -42,6 +39,6 @@ class Command(BaseCommand):
             if len(failed_bookings) > 0
             else '<strong style="color: green;">Errors: 0</strong>'
         )
-        msg = "<p>{} completed. {}.</p>".format(cmd_name, err_str)
+        msg = f"<p>{cmd_name} completed. {err_str}.</p>"
         logger.info(msg)
         print(msg)  # will redirect to cron_tasks.log file, by the parent script

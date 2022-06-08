@@ -1,13 +1,10 @@
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.conf import settings
-from parkpasses.components.compliances.models import Compliance
-from ledger.accounts.models import EmailUser
-import datetime
-
-import itertools
-
 import logging
+
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from ledger.accounts.models import EmailUser
+
+from parkpasses.components.compliances.models import Compliance
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +20,7 @@ class Command(BaseCommand):
 
         errors = []
         updates = []
-        today = timezone.localtime(timezone.now()).date()
-        logger.info("Running command {}".format(__name__))
+        logger.info(f"Running command {__name__}")
         for c in Compliance.objects.filter(processing_status="due"):
             try:
                 c.send_reminder(user)
@@ -32,14 +28,14 @@ class Command(BaseCommand):
                 updates.append(c.lodgement_number)
             except Exception as e:
                 err_msg = "Error sending Reminder Compliance {}\n{}".format(
-                    c.lodgement_number
+                    c.lodgement_number, e
                 )
-                logger.error("{}\n{}".format(err_msg, str(e)))
+                logger.error(f"{err_msg}\n{str(e)}")
                 errors.append(err_msg)
 
         cmd_name = __name__.split(".")[-1].replace("_", " ").upper()
         err_str = (
-            '<strong style="color: red;">Errors: {}</strong>'.format(len(errors))
+            f'<strong style="color: red;">Errors: {len(errors)}</strong>'
             if len(errors) > 0
             else '<strong style="color: green;">Errors: 0</strong>'
         )

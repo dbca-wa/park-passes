@@ -50,14 +50,14 @@ Booking information below and refund or fees to pay in order to cancel booking. 
 	  {% endfor %}
 
       </table>
-      {% if booking_total < 0 %}  
+      {% if booking_total < 0 %}
        <h2>Refund Total : ${{ booking_total_positive }} </h2>
       {% else %}
         <h2>Total to Pay  : ${{ booking_total }} </h2>
       {% endif %}
- 
+
 </div>
- 
+
         </div>
         <div class="col-sm-12 col-md-12 col-lg-12">
 		<form method="post" action="{% url 'public_cancel_booking' booking.id %}" id="place_order_form">
@@ -66,7 +66,7 @@ Booking information below and refund or fees to pay in order to cancel booking. 
 		<button id='cancel-booking' type='button' class="btn btn-info btn-lg" target="_blank" >Proceed with Cancellation</button>
                 </div>
 
-		</form>	
+		</form>
 	</div>
 
     </div>

@@ -179,7 +179,7 @@ module.exports = {
         await swal("Error", errorText, "error");
     },
     post_and_redirect: function(url, postData) {
-        /* http.post and ajax do not allow redirect from Django View (post method), 
+        /* http.post and ajax do not allow redirect from Django View (post method),
            this function allows redirect by mimicking a form submit.
 
            usage:  vm.post_and_redirect(vm.application_fee_url, {'csrfmiddlewaretoken' : vm.csrf_token});

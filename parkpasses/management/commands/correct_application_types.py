@@ -1,6 +1,6 @@
-from django.core.management.base import BaseCommand
-
 import logging
+
+from django.core.management.base import BaseCommand
 
 from parkpasses import settings
 from parkpasses.components.main.models import ApplicationType
@@ -27,4 +27,4 @@ class Command(BaseCommand):
                 proposals.update(application_type=application_type_lease_licence)
                 app_type.delete()
             except Exception as e:
-                pass
+                print(e)

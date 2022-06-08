@@ -1,13 +1,10 @@
-from django.core.management.base import BaseCommand
-from django.conf import settings
-import subprocess
-import os
-from parkpasses.components.main.models import SystemMaintenance
-from parkpasses.templatetags.users import system_maintenance_can_start
-
-import itertools
-
 import logging
+import os
+import subprocess
+
+from django.core.management.base import BaseCommand
+
+from parkpasses.templatetags.users import system_maintenance_can_start
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +28,7 @@ class Command(BaseCommand):
             self.log_file
         )
         if system_maintenance_can_start():
-            logger.info("Running command {}".format(__name__))
-            subprocess.Popen("date 2>&1 | tee -a {}".format(self.log_file), shell=True)
+            logger.info(f"Running command {__name__}")
+            subprocess.Popen(f"date 2>&1 | tee -a {self.log_file}", shell=True)
             # subprocess.Popen(settings.SUPERVISOR_STOP_CMD + ' 2>&1 | tee -a {}'.format(self.log_file), shell=True)
             subprocess.Popen(cmd, shell=True)

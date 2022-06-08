@@ -1,13 +1,12 @@
+from datetime import timedelta
 
 import pytz
-from datetime import timedelta
+from django.conf import settings
 from django.template import Library
 from django.utils import timezone
-from django.conf import settings
 
 from parkpasses import helpers as parkpasses_helpers
 from parkpasses.components.main.models import SystemMaintenance
-
 
 register = Library()
 
@@ -35,7 +34,7 @@ def is_model_backend(context):
 
 @register.simple_tag(takes_context=True)
 def is_payment_officer(context):
-    #request = context["request"]
+    # request = context["request"]
     # TODO: fix this
     return False  # is_payment_admin(request.user)
 
@@ -52,7 +51,7 @@ def system_maintenance_due():
             hours=settings.SYSTEM_MAINTENANCE_WARNING
         ) and now <= obj.start_date + timedelta(minutes=1):
             # display time in local timezone
-            return "{0} - {1} (Duration: {2} mins)".format(
+            return "{} - {} (Duration: {} mins)".format(
                 obj.start_date.astimezone(tz=tz).ctime(),
                 obj.end_date.astimezone(tz=tz).ctime(),
                 obj.duration(),

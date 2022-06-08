@@ -3,12 +3,12 @@
         <div class="form-group">
             <!--label :id="id" for="label" class="inline" >{{ label }}</label-->
             <!--ckeditor v-model="detailsText" :config="editorConfig" :read-only="readonly" :name="name" :required="isRequired" ></ckeditor-->
-            <ckeditor 
-            :editor="editor" 
-            v-model="detailsText" 
-            :config="editorConfig" 
-            :read-only="readonly" 
-            :name="name" 
+            <ckeditor
+            :editor="editor"
+            v-model="detailsText"
+            :config="editorConfig"
+            :read-only="readonly"
+            :name="name"
             :required="isRequired"
             />
         </div>
@@ -44,12 +44,12 @@ export default {
                 // The configuration of the editor.
                 removeButtons: remove_buttons,
 
-		// below line removes toolbar 
+		// below line removes toolbar
                 //toolbar: [],
 
                 // remove bottom bar
                 removePlugins: 'elementspath',
-                resize_enabled: false, 
+                resize_enabled: false,
             },
             */
             editorConfig: {

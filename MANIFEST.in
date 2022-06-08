@@ -1,5 +1,5 @@
 include LICENSE
-recursive-include ledger/address/fixtures *.json 
+recursive-include ledger/address/fixtures *.json
 recursive-include ledger/static/ledger/css *.css *.scss
 recursive-include ledger/static/ledger/fonts *.woff2
 recursive-include ledger/static/ledger/images *.png
