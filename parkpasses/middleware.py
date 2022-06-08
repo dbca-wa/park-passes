@@ -1,21 +1,17 @@
-from django.urls import reverse
-from django.shortcuts import redirect
-from django.utils.http import urlquote_plus
-
 import re
-import datetime
 
-from django.http import HttpResponseRedirect
-from django.utils import timezone
-from parkpasses.components.bookings.models import ApplicationFee
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.utils.http import urlquote_plus
 from reversion.middleware import RevisionMiddleware
 from reversion.views import _request_creates_revision
 
+from parkpasses.components.bookings.models import ApplicationFee
 
 CHECKOUT_PATH = re.compile("^/ledger/checkout/checkout")
 
 
-class FirstTimeNagScreenMiddleware(object):
+class FirstTimeNagScreenMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -39,7 +35,7 @@ class FirstTimeNagScreenMiddleware(object):
                     )
 
 
-class BookingTimerMiddleware(object):
+class BookingTimerMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
