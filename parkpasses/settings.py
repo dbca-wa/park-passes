@@ -60,17 +60,6 @@ ADD_REVERSION_ADMIN = True
 # maximum number of days allowed for a booking
 WSGI_APPLICATION = "parkpasses.wsgi.application"
 
-"""REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'parkpasses.perms.OfficerPermission',
-    )
-}"""
-
-# REST_FRAMEWORK = {
-#    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-#    #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#        'PAGE_SIZE': 5
-# }
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
@@ -87,9 +76,6 @@ REST_FRAMEWORK = {
 
 
 MIDDLEWARE_CLASSES += [
-    #'parkpasses.middleware.BookingTimerMiddleware',
-    #'parkpasses.middleware.FirstTimeNagScreenMiddleware',
-    #'parkpasses.middleware.RevisionOverrideMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 MIDDLEWARE = MIDDLEWARE_CLASSES
