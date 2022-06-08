@@ -1,8 +1,8 @@
 {
-  "name": "parkpasses",
+  "name": "Park Passes",
   "version": "1.0.0",
-  "description": "A Vue.js project",
-  "author": "Brendan Blackford <brendan.blackford@dbca.wa.gov.au>",
+  "description": "The Vue.js front-end for the Park Passes web application.",
+  "author": "Oak McIlwain <oak.mcilwain@dbca.wa.gov.au>",
   "private": true,
   "scripts": {
     "build": "vue-cli-service build",
