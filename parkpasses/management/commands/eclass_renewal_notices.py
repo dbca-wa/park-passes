@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Send Approval renewal notice for eclass licence when approval is due to expire in 6 months and has not been extended."
+    help = "Send Approval renewal notice for eclass licence when approval is due to expire in \
+    6 months and has not been extended."
 
     def handle(self, *args, **options):
         logger.info("Running command {}")

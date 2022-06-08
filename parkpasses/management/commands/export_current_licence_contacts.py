@@ -8,11 +8,13 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Export Current Licence contacts - ./manage_co.py export_current_licence_contacts > /tmp/contacts.csv (cp to media/cols/ to access via web)"
+    help = "Export Current Licence contacts - ./manage_co.py export_current_licence_contacts > /tmp/contacts.csv (cp\
+         to media/cols/ to access via web)"
 
     def handle(self, *args, **options):
         print(
-            "Logdement Number: Expiry Date: Type: ABN: Org Name: Trading Name: Org Address: Org Contacts: Org Admin Users"
+            "Logdement Number: Expiry Date: Type: ABN: Org Name: Trading Name: Org Address: Org Contacts: \
+            Org Admin Users"
         )
         for a in Approval.objects.filter(status="current"):
             try:

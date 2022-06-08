@@ -10,12 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Send notification emails for compliances which has past due dates, and also reminder notification emails for those that are within the daterange prior to due_date (eg. within 14 days of due date)"
+    help = "Send notification emails for compliances which has past due dates, and also reminder notification\
+    emails for those that are within the daterange prior to due_date (eg. within 14 days of due date)"
 
     def handle(self, *args, **options):
         try:
             user = EmailUser.objects.get(email=settings.CRON_EMAIL)
-        except:
+        except Exception:
             user = EmailUser.objects.create(email=settings.CRON_EMAIL, password="")
 
         errors = []

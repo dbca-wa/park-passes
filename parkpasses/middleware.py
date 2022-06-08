@@ -45,7 +45,7 @@ class BookingTimerMiddleware:
                 application_fee = ApplicationFee.objects.get(
                     pk=request.session["lals_app_invoice"]
                 )
-            except:
+            except Exception:
                 del request.session["lals_app_invoice"]
                 return
             if application_fee.payment_type != ApplicationFee.PAYMENT_TYPE_TEMPORARY:
@@ -61,7 +61,8 @@ class RevisionOverrideMiddleware(RevisionMiddleware):
     override venv/lib/python2.7/site-packages/reversion/middleware.py
     """
 
-    # exclude ledger payments/checkout from revision - hack to overcome basket (lagging status) issue/conflict with reversion
+    # exclude ledger payments/checkout from revision - hack to overcome basket (lagging status)
+    # issue/conflict with reversion
     def request_creates_revision(self, request):
         return (
             _request_creates_revision(request)

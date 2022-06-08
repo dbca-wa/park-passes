@@ -4,7 +4,15 @@ import os
 import confy
 from confy import env
 from django.core.exceptions import ImproperlyConfigured
-from ledger_api_client.settings_base import *  # noqa: F403
+from ledger_api_client.settings_base import (
+    INSTALLED_APPS,
+    LOGGING,
+    MIDDLEWARE_CLASSES,
+    NOTIFICATION_EMAIL,
+    STATICFILES_DIRS,
+    TEMPLATES,
+    VALID_SYSTEMS,
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 confy.read_environment_file(BASE_DIR + "/.env")
@@ -43,8 +51,8 @@ STATIC_URL = "/static/"
 
 
 INSTALLED_APPS += [
-    #'reversion_compare',
-    #'bootstrap3',
+    # 'reversion_compare',
+    # 'bootstrap3',
     "webtemplate_dbca",
     "rest_framework",
     "rest_framework_datatables",
@@ -160,7 +168,7 @@ CKEDITOR_CONFIGS = {
     "default": {
         "toolbar": "full",
         "height": 300,
-        #'width': 300,
+        # 'width': 300,
         "width": "100%",
     },
     "awesome_ckeditor": {

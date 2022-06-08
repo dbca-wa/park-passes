@@ -16,7 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             user = EmailUser.objects.get(email=settings.CRON_EMAIL)
-        except:
+        except Exception:
             user = EmailUser.objects.create(email=settings.CRON_EMAIL, password="")
 
         logger.info(f"Running command {__name__}")
