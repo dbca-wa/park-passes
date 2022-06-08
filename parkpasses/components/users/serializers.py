@@ -103,7 +103,7 @@ class UserSerializer(serializers.ModelSerializer):
                 user_system_settings
             ).data
             return serialized_settings
-        except:
+        except Exception:
             return None
 
     def get_is_parkpasses_admin(self, obj):

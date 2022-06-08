@@ -159,4 +159,3 @@ export default {
         background: gray;
     }
 </style>
-

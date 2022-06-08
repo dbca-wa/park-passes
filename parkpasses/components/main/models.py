@@ -1,7 +1,8 @@
 import os
 
 from django.db import models
-from leaseslicensing import settings
+
+from parkpasses import settings
 
 
 class MapLayer(models.Model):
@@ -15,7 +16,7 @@ class MapLayer(models.Model):
     )  # Transparency of the layer. 0 means solid.  100 means fully transparent.
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
         verbose_name = "map layer"
 
     def __str__(self):
@@ -42,7 +43,7 @@ class MapColumn(models.Model):
     option_for_external = models.BooleanField(default=True)
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
         verbose_name = "map column"
 
     def __str__(self):
@@ -90,7 +91,7 @@ class RequiredDocument(models.Model):
     question = models.TextField(blank=False)
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
 
     def __str__(self):
         return self.question
@@ -113,13 +114,13 @@ class ApplicationType(models.Model):
 
     class Meta:
         ordering = ["order", "name"]
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
 
     @staticmethod
     def get_application_type_by_name(name):
         try:
             return ApplicationType.objects.get(name=name)
-        except:
+        except Exception:
             return None
 
     @property
@@ -161,7 +162,7 @@ class OracleCode(models.Model):
     archive_date = models.DateField(null=True, blank=True)
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
 
     def __str__(self):
         return f"{self.code_type} - {self.code}"
@@ -193,7 +194,7 @@ class Question(models.Model):
 
     class Meta:
         # ordering = ['name']
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
 
     def __str__(self):
         return self.question_text
@@ -217,7 +218,7 @@ class UserAction(models.Model):
 
     class Meta:
         abstract = True
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
 
 
 class CommunicationsLogEntry(models.Model):
@@ -255,10 +256,9 @@ class CommunicationsLogEntry(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
 
 
-# @python_2_unicode_compatible
 class Document(models.Model):
     name = models.CharField(
         max_length=255, blank=True, verbose_name="name", help_text=""
@@ -267,14 +267,11 @@ class Document(models.Model):
     uploaded_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
         abstract = True
 
     @property
     def path(self):
-        # return self.file.path
-        # return self._file.path
-        # comment above line to fix the error "The '_file' attribute has no file associated with it." when adding comms log entry.
         if self._file:
             return self._file.path
         else:
@@ -313,11 +310,10 @@ class GlobalSettings(models.Model):
     value = models.CharField(max_length=255)
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
         verbose_name_plural = "Global Settings"
 
 
-# @python_2_unicode_compatible
 class SystemMaintenance(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -331,12 +327,11 @@ class SystemMaintenance(models.Model):
             if self.end_date and self.start_date
             else ""
         )
-        # return (datetime.now(tz=tz) - self.start_date).total_seconds()/60.
 
     duration.short_description = "Duration (mins)"
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
         verbose_name_plural = "System maintenance"
 
     def __str__(self):
@@ -346,29 +341,24 @@ class SystemMaintenance(models.Model):
 
 
 class UserSystemSettings(models.Model):
-    one_row_per_park = models.BooleanField(
-        default=False
-    )  # Setting for user if they want to see Payment (Park Entry Fees Dashboard) by one row per park or one row per booking
-    # user = models.OneToOneField(EmailUser, related_name='system_settings', on_delete=models.CASCADE)
+    one_row_per_park = models.BooleanField(default=False)
+    # Setting for user if they want to see Payment (Park Entry Fees Dashboard) by one
+    # row per park or one row per booking
     user = models.IntegerField(unique=True)  # EmailUserRO
     event_training_completed = models.BooleanField(default=False)
     event_training_date = models.DateField(blank=True, null=True)
 
     class Meta:
-        app_label = "leaseslicensing"
+        app_label = "parkpasses"
         verbose_name_plural = "User System Settings"
 
 
 # import reversion
 # reversion.register(Region, follow=['districts'])
 # reversion.register(District, follow=['parks'])
-##reversion.register(AccessType)
+# reversion.register(AccessType)
 # reversion.register(AccessType, follow=['park_set', 'proposalparkaccess_set', 'vehicles'])
-# reversion.register(ActivityType)
-# reversion.register(ActivityCategory, follow=['activities'])
-##reversion.register(Activity, follow=['park_set', 'zone_set', 'trail_set', 'requireddocument_set'])
-# reversion.register(Activity, follow=['park_set', 'zone_set', 'trail_set', 'requireddocument_set', 'proposalparkactivity_set','proposalparkzoneactivity_set', 'proposaltrailsectionactivity_set'])
-##reversion.register(Park, follow=['zones', 'requireddocument_set', 'proposals', 'park_entries', 'bookings'])
+# reversion.register(Park, follow=['zones', 'requireddocument_set', 'proposals', 'park_entries', 'bookings'])
 # reversion.register(Park, follow=['zones', 'requireddocument_set', 'proposals'])
 # reversion.register(Zone, follow=['proposal_zones'])
 # reversion.register(Trail, follow=['sections', 'proposals'])
@@ -381,4 +371,5 @@ class UserSystemSettings(models.Model):
 # reversion.register(UserAction)
 # reversion.register(CommunicationsLogEntry)
 # reversion.register(Document)
+
 # reversion.register(SystemMaintenance)

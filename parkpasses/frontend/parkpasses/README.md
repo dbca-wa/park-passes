@@ -10,4 +10,3 @@ In this dir, run the following command to use a nodeenv virtual environment
 ## Build Setup
 
 see README.md at project root
-

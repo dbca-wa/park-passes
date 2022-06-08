@@ -18,4 +18,3 @@ Address: {{ settings.DEP_ADDRESS}}
 {% block reply_statement %}
 Please do not reply directly to this email. Should you need to contact the {{ settings.BRANCH_NAME}}, please send emails to {{ settings.SUPPORT_EMAIL }} or call {{ settings.DEP_PHONE_SUPPORT }}.
 {% endblock %}
-
