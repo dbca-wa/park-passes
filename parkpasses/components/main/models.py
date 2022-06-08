@@ -272,8 +272,6 @@ class SystemMaintenance(models.Model):
 
 class UserSystemSettings(models.Model):
     one_row_per_park = models.BooleanField(default=False)
-    # Setting for user if they want to see Payment (Park Entry Fees Dashboard) by one
-    # row per park or one row per booking
     user = models.IntegerField(unique=True)  # EmailUserRO
     event_training_completed = models.BooleanField(default=False)
     event_training_date = models.DateField(blank=True, null=True)
@@ -281,25 +279,3 @@ class UserSystemSettings(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name_plural = "User System Settings"
-
-
-# import reversion
-# reversion.register(Region, follow=['districts'])
-# reversion.register(District, follow=['parks'])
-# reversion.register(AccessType)
-# reversion.register(AccessType, follow=['park_set', 'proposalparkaccess_set', 'vehicles'])
-# reversion.register(Park, follow=['zones', 'requireddocument_set', 'proposals', 'park_entries', 'bookings'])
-# reversion.register(Park, follow=['zones', 'requireddocument_set', 'proposals'])
-# reversion.register(Zone, follow=['proposal_zones'])
-# reversion.register(Trail, follow=['sections', 'proposals'])
-# reversion.register(Section, follow=['proposal_trails'])
-# reversion.register(RequiredDocument)
-# reversion.register(ApplicationType, follow=['tenure_app_types', 'helppage_set'])
-# reversion.register(ActivityMatrix)
-# reversion.register(Tenure)
-# reversion.register(Question)
-# reversion.register(UserAction)
-# reversion.register(CommunicationsLogEntry)
-# reversion.register(Document)
-
-# reversion.register(SystemMaintenance)
