@@ -1,22 +1,52 @@
-from __future__ import unicode_literals
 import os
 
 from django.db import models
-from django.dispatch import receiver
-from django.db.models.signals import pre_delete
+from leaseslicensing import settings
 
-# from django.utils.encoding import python_2_unicode_compatible
-from django.core.exceptions import ValidationError
 
-# from ledger.accounts.models import EmailUser, Document, RevisionedMixin
-from ledger_api_client.ledger_models import (
-    EmailUserRO as EmailUser,
-    BaseAddress,
-)  # , RevisionedMixin
+class MapLayer(models.Model):
+    display_name = models.CharField(max_length=100, blank=True, null=True)
+    layer_name = models.CharField(max_length=200, blank=True, null=True)
+    option_for_internal = models.BooleanField(default=True)
+    option_for_external = models.BooleanField(default=True)
+    display_all_columns = models.BooleanField(default=False)
+    transparency = models.PositiveSmallIntegerField(
+        default=50
+    )  # Transparency of the layer. 0 means solid.  100 means fully transparent.
 
-# from django.contrib.postgres.fields.jsonb import JSONField
-from django.db.models import JSONField
-from parkpasses import settings
+    class Meta:
+        app_label = "leaseslicensing"
+        verbose_name = "map layer"
+
+    def __str__(self):
+        return f"{self.display_name}, {self.layer_name}"
+
+    @property
+    def column_names(self):
+        column_names = []
+        for column in self.columns.all():
+            column_names.append(column.name)
+        return ",".join(column_names)
+
+
+class MapColumn(models.Model):
+    map_layer = models.ForeignKey(
+        MapLayer,
+        null=True,
+        blank=True,
+        related_name="columns",
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=100, blank=True, null=True)
+    option_for_internal = models.BooleanField(default=True)
+    option_for_external = models.BooleanField(default=True)
+
+    class Meta:
+        app_label = "leaseslicensing"
+        verbose_name = "map column"
+
+    def __str__(self):
+        return f"{self.map_layer}, {self.name}"
 
 
 class RevisionedMixin(models.Model):
@@ -28,14 +58,14 @@ class RevisionedMixin(models.Model):
         from reversion import revisions
 
         if kwargs.pop("no_revision", False):
-            super(RevisionedMixin, self).save(**kwargs)
+            super().save(**kwargs)
         else:
             with revisions.create_revision():
                 if "version_user" in kwargs:
                     revisions.set_user(kwargs.pop("version_user", None))
                 if "version_comment" in kwargs:
                     revisions.set_comment(kwargs.pop("version_comment", ""))
-                super(RevisionedMixin, self).save(**kwargs)
+                super().save(**kwargs)
 
     @property
     def created_date(self):
@@ -60,7 +90,7 @@ class RequiredDocument(models.Model):
     question = models.TextField(blank=False)
 
     class Meta:
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
 
     def __str__(self):
         return self.question
@@ -83,7 +113,7 @@ class ApplicationType(models.Model):
 
     class Meta:
         ordering = ["order", "name"]
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
 
     @staticmethod
     def get_application_type_by_name(name):
@@ -131,10 +161,10 @@ class OracleCode(models.Model):
     archive_date = models.DateField(null=True, blank=True)
 
     class Meta:
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
 
     def __str__(self):
-        return "{} - {}".format(self.code_type, self.code)
+        return f"{self.code_type} - {self.code}"
 
 
 # @python_2_unicode_compatible
@@ -163,7 +193,7 @@ class Question(models.Model):
 
     class Meta:
         # ordering = ['name']
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
 
     def __str__(self):
         return self.question_text
@@ -187,7 +217,7 @@ class UserAction(models.Model):
 
     class Meta:
         abstract = True
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
 
 
 class CommunicationsLogEntry(models.Model):
@@ -225,7 +255,7 @@ class CommunicationsLogEntry(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
 
     class Meta:
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
 
 
 # @python_2_unicode_compatible
@@ -237,7 +267,7 @@ class Document(models.Model):
     uploaded_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
         abstract = True
 
     @property
@@ -260,6 +290,19 @@ class Document(models.Model):
 
 class GlobalSettings(models.Model):
     keys = (
+        # ('credit_facility_link', 'Credit Facility Link'),
+        # ('deed_poll', 'Deed poll'),
+        # ('deed_poll_filming', 'Deed poll Filming'),
+        # ('deed_poll_event', 'Deed poll Event'),
+        # ('online_training_document', 'Online Training Document'),
+        # ('park_finder_link', 'Park Finder Link'),
+        # ('fees_and_charges', 'Fees and charges link'),
+        # ('event_fees_and_charges', 'Event Fees and charges link'),
+        # ('commercial_filming_handbook', 'Commercial Filming Handbook link'),
+        # ('park_stay_link', 'Park Stay Link'),
+        # ('event_traffic_code_of_practice', 'Event traffic code of practice'),
+        # ('trail_section_map', 'Trail section map'),
+        # ('dwer_application_form', 'DWER Application Form'),
     )
     key = models.CharField(
         max_length=255,
@@ -270,7 +313,7 @@ class GlobalSettings(models.Model):
     value = models.CharField(max_length=255)
 
     class Meta:
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
         verbose_name_plural = "Global Settings"
 
 
@@ -293,7 +336,7 @@ class SystemMaintenance(models.Model):
     duration.short_description = "Duration (mins)"
 
     class Meta:
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
         verbose_name_plural = "System maintenance"
 
     def __str__(self):
@@ -312,7 +355,7 @@ class UserSystemSettings(models.Model):
     event_training_date = models.DateField(blank=True, null=True)
 
     class Meta:
-        app_label = "parkpasses"
+        app_label = "leaseslicensing"
         verbose_name_plural = "User System Settings"
 
 

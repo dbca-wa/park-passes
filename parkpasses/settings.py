@@ -1,13 +1,16 @@
-from django.core.exceptions import ImproperlyConfigured
+import hashlib
+import os
 
-import os, hashlib
 import confy
+from confy import env
+from django.core.exceptions import ImproperlyConfigured
+from ledger_api_client.settings_base import *  # noqa: F403
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 confy.read_environment_file(BASE_DIR + "/.env")
 os.environ.setdefault("BASE_DIR", BASE_DIR)
 
-from ledger_api_client.settings_base import *
+
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
@@ -20,24 +23,14 @@ BUILD_TAG = env(
 )  # URL of the Dev app.js served by webpack & express
 
 if SHOW_DEBUG_TOOLBAR:
-    #    def get_ip():
-    #        import subprocess
-    #        route = subprocess.Popen(('ip', 'route'), stdout=subprocess.PIPE)
-    #        network = subprocess.check_output(
-    #            ('grep', '-Po', 'src \K[\d.]+\.'), stdin=route.stdout
-    #        ).decode().rstrip()
-    #        route.wait()
-    #        network_gateway = network + '1'
-    #        return network_gateway
 
-    def show_toolbar(request):
+    def show_toolbar():
         return True
 
     MIDDLEWARE_CLASSES += [
         "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
     INSTALLED_APPS += ("debug_toolbar",)
-    # INTERNAL_IPS = ('127.0.0.1', 'localhost', get_ip())
     INTERNAL_IPS = ("127.0.0.1", "localhost")
 
     # this dict removes check to dtermine if toolbar should display --> works for rks docker container
@@ -53,14 +46,13 @@ INSTALLED_APPS += [
     #'reversion_compare',
     #'bootstrap3',
     "webtemplate_dbca",
-    "parkpasses",
-    "parkpasses.components.main",
-    "parkpasses.components.users",
-    "parkpasses.components.proposals",
     "rest_framework",
     "rest_framework_datatables",
     "rest_framework_gis",
     "ledger_api_client",
+    "parkpasses",
+    "parkpasses.components.main",
+    "parkpasses.components.users",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -86,11 +78,11 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
-    'DEFAULT_FILTER_BACKENDS': (
-        'rest_framework_datatables.filters.DatatablesFilterBackend',
+    "DEFAULT_FILTER_BACKENDS": (
+        "rest_framework_datatables.filters.DatatablesFilterBackend",
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
-    'PAGE_SIZE': 20,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
+    "PAGE_SIZE": 20,
 }
 
 
@@ -118,9 +110,11 @@ CACHES = {
     }
 }
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_DIRS.extend([
-    os.path.join(os.path.join(BASE_DIR, "parkpasses", "static")),
-    ])
+STATICFILES_DIRS.extend(
+    [
+        os.path.join(os.path.join(BASE_DIR, "parkpasses", "static")),
+    ]
+)
 DEV_STATIC = env("DEV_STATIC", False)
 DEV_STATIC_URL = env("DEV_STATIC_URL")
 if DEV_STATIC and not DEV_STATIC_URL:
@@ -224,25 +218,15 @@ DEV_APP_BUILD_URL = env(
 )  # URL of the Dev app.js served by webpack & express
 LOV_CACHE_TIMEOUT = 10800
 
-PROPOSAL_TYPE_NEW = "new"
-PROPOSAL_TYPE_RENEWAL = "renewal"
-PROPOSAL_TYPE_AMENDMENT = "amendment"
-PROPOSAL_TYPES = [
-    (PROPOSAL_TYPE_NEW, "New Application"),
-    (PROPOSAL_TYPE_AMENDMENT, "Amendment"),
-    (PROPOSAL_TYPE_RENEWAL, "Renewal"),
-]
 
-APPLICATION_TYPE_REGISTRATION_OF_INTEREST = "registration_of_interest"
-APPLICATION_TYPE_LEASE_LICENCE = "lease_licence"
+APPLICATION_TYPE_PARK_PASSES = "park_passes"
 APPLICATION_TYPES = [
-    (APPLICATION_TYPE_REGISTRATION_OF_INTEREST, "Registration of Interest"),
-    (APPLICATION_TYPE_LEASE_LICENCE, "Lease Licence"),
+    (APPLICATION_TYPE_PARK_PASSES, "Park Passes"),
 ]
 KMI_SERVER_URL = env("KMI_SERVER_URL", "https://kmi.dbca.wa.gov.au")
 
 GROUP_NAME_ASSESSOR = "ProposalAssessorGroup"
 GROUP_NAME_APPROVER = "ProposalApproverGroup"
 
-template_title = "Licensing Template"
-template_group = "parkswildlife"
+template_title = "Park Passes"
+template_group = "parkspasses"

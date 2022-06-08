@@ -1,7 +1,5 @@
-from __future__ import unicode_literals
-from django.conf import settings
-
 from django.apps import AppConfig
+from django.conf import settings
 
 
 class ParkPassesConfig(AppConfig):
@@ -12,7 +10,8 @@ class ParkPassesConfig(AppConfig):
 
     def ready(self):
         if not self.run_once:
-            #from parkpasses.components.organisations import signals
-            from parkpasses.components.proposals import signals
+            # from parkpasses.components.organisations import signals
+            # from parkpasses.components.proposals import signals
+            pass
 
         self.run_once = True
