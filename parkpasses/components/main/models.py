@@ -5,51 +5,6 @@ from django.db import models
 from parkpasses import settings
 
 
-class MapLayer(models.Model):
-    display_name = models.CharField(max_length=100, blank=True, null=True)
-    layer_name = models.CharField(max_length=200, blank=True, null=True)
-    option_for_internal = models.BooleanField(default=True)
-    option_for_external = models.BooleanField(default=True)
-    display_all_columns = models.BooleanField(default=False)
-    transparency = models.PositiveSmallIntegerField(
-        default=50
-    )  # Transparency of the layer. 0 means solid.  100 means fully transparent.
-
-    class Meta:
-        app_label = "parkpasses"
-        verbose_name = "map layer"
-
-    def __str__(self):
-        return f"{self.display_name}, {self.layer_name}"
-
-    @property
-    def column_names(self):
-        column_names = []
-        for column in self.columns.all():
-            column_names.append(column.name)
-        return ",".join(column_names)
-
-
-class MapColumn(models.Model):
-    map_layer = models.ForeignKey(
-        MapLayer,
-        null=True,
-        blank=True,
-        related_name="columns",
-        on_delete=models.CASCADE,
-    )
-    name = models.CharField(max_length=100, blank=True, null=True)
-    option_for_internal = models.BooleanField(default=True)
-    option_for_external = models.BooleanField(default=True)
-
-    class Meta:
-        app_label = "parkpasses"
-        verbose_name = "map column"
-
-    def __str__(self):
-        return f"{self.map_layer}, {self.name}"
-
-
 class RevisionedMixin(models.Model):
     """
     A model tracked by reversion through the save method.
@@ -72,32 +27,18 @@ class RevisionedMixin(models.Model):
     def created_date(self):
         from reversion.models import Version
 
-        # return revisions.get_for_object(self).last().revision.date_created
         return Version.objects.get_for_object(self).last().revision.date_created
 
     @property
     def modified_date(self):
         from reversion.models import Version
 
-        # return revisions.get_for_object(self).first().revision.date_created
         return Version.objects.get_for_object(self).first().revision.date_created
 
     class Meta:
         abstract = True
 
 
-# @python_2_unicode_compatible
-class RequiredDocument(models.Model):
-    question = models.TextField(blank=False)
-
-    class Meta:
-        app_label = "parkpasses"
-
-    def __str__(self):
-        return self.question
-
-
-# @python_2_unicode_compatible
 class ApplicationType(models.Model):
     name = models.CharField(
         max_length=64, unique=True, choices=settings.APPLICATION_TYPES
@@ -140,7 +81,6 @@ class ApplicationType(models.Model):
         return self.name
 
 
-# @python_2_unicode_compatible
 class OracleCode(models.Model):
     CODE_TYPE_CHOICES = (
         (
@@ -168,7 +108,6 @@ class OracleCode(models.Model):
         return f"{self.code_type} - {self.code}"
 
 
-# @python_2_unicode_compatible
 class Question(models.Model):
     CORRECT_ANSWER_CHOICES = (
         ("answer_one", "Answer one"),
@@ -181,7 +120,6 @@ class Question(models.Model):
     answer_two = models.CharField(max_length=200, blank=True)
     answer_three = models.CharField(max_length=200, blank=True)
     answer_four = models.CharField(max_length=200, blank=True)
-    # answer_five = models.CharField(max_length=200, blank=True)
     correct_answer = models.CharField(
         "Correct Answer",
         max_length=40,
@@ -193,7 +131,6 @@ class Question(models.Model):
     )
 
     class Meta:
-        # ordering = ['name']
         app_label = "parkpasses"
 
     def __str__(self):
@@ -204,9 +141,7 @@ class Question(models.Model):
         return getattr(self, self.correct_answer)
 
 
-# @python_2_unicode_compatible
 class UserAction(models.Model):
-    # who = models.ForeignKey(EmailUser, null=True, blank=True, on_delete=models.SET_NULL)
     who = models.IntegerField()  # EmailUserRO
     when = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     what = models.TextField(blank=False)
@@ -235,10 +170,8 @@ class CommunicationsLogEntry(models.Model):
     ]
     DEFAULT_TYPE = TYPE_CHOICES[0][0]
 
-    # to = models.CharField(max_length=200, blank=True, verbose_name="To")
     to = models.TextField(blank=True, verbose_name="To")
     fromm = models.CharField(max_length=200, blank=True, verbose_name="From")
-    # cc = models.CharField(max_length=200, blank=True, verbose_name="cc")
     cc = models.TextField(blank=True, verbose_name="cc")
 
     type = models.CharField(max_length=35, choices=TYPE_CHOICES, default=DEFAULT_TYPE)
@@ -247,10 +180,7 @@ class CommunicationsLogEntry(models.Model):
         max_length=200, blank=True, verbose_name="Subject / Description"
     )
     text = models.TextField(blank=True)
-
-    # customer = models.ForeignKey(EmailUser, null=True, related_name='+', on_delete=models.SET_NULL)
     customer = models.IntegerField()  # EmailUserRO
-    # staff = models.ForeignKey(EmailUser, null=True, related_name='+', on_delete=models.SET_NULL)
     staff = models.IntegerField()  # EmailUserRO
 
     created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
