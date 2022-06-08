@@ -1,23 +1,14 @@
 from django.conf import settings
-from ledger_api_client.ledger_models import (
-    EmailUserRO as EmailUser,
-    Address,  # Profile,
-    EmailIdentity,
-    # EmailUserAction, EmailUserLogEntry
-)
-from parkpasses.components.main.models import (
-    UserSystemSettings,
-    Document,
-    ApplicationType,
-    CommunicationsLogEntry,
-)
-from parkpasses.components.proposals.models import Proposal
-from parkpasses.helpers import is_parkpasses_admin, in_dbca_domain
+from ledger_api_client.ledger_models import Address
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
-# from ledger.payments.helpers import is_payment_admin
-from django.utils import timezone
-from datetime import date, timedelta
+from parkpasses.components.main.models import (
+    CommunicationsLogEntry,
+    Document,
+    UserSystemSettings,
+)
+from parkpasses.helpers import in_dbca_domain, is_parkpasses_admin
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -50,7 +41,6 @@ class UserFilterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # parkpasses_organisations = serializers.SerializerMethodField()
     residential_address = UserAddressSerializer()
     personal_details = serializers.SerializerMethodField()
     address_details = serializers.SerializerMethodField()
@@ -58,7 +48,6 @@ class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     is_department_user = serializers.SerializerMethodField()
     system_settings = serializers.SerializerMethodField()
-    # is_payment_admin = serializers.SerializerMethodField()
     is_parkpasses_admin = serializers.SerializerMethodField()
 
     class Meta:
@@ -68,17 +57,14 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "first_name",
             "email",
-            #'identification',
             "residential_address",
             "phone_number",
             "mobile_number",
-            #'parkpasses_organisations',
             "personal_details",
             "address_details",
             "contact_details",
             "full_name",
             "is_department_user",
-            #'is_payment_admin',
             "is_staff",
             "system_settings",
             "is_parkpasses_admin",
@@ -109,16 +95,6 @@ class UserSerializer(serializers.ModelSerializer):
             if request:
                 return in_dbca_domain(request)
         return False
-
-    # def get_is_payment_admin(self, obj):
-    #   return is_payment_admin(obj)
-
-    # def get_parkpasses_organisations(self, obj):
-    #    parkpasses_organisations = obj.parkpasses_organisations
-    #    serialized_orgs = UserOrganisationSerializer(
-    #        parkpasses_organisations, many=True, context={
-    #            'user_id': obj.id}).data
-    #    return serialized_orgs
 
     def get_system_settings(self, obj):
         try:
@@ -158,7 +134,6 @@ class ContactSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, obj):
-        # Mobile and phone number for dbca user are updated from active directory so need to skip these users from validation.
         domain = None
         if obj["email"]:
             domain = obj["email"].split("@")[1]
