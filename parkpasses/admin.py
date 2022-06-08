@@ -1,17 +1,6 @@
 from django.contrib.gis import admin
+
 from parkpasses.components.main import models
-
-from django.contrib.admin import AdminSite
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
-
-from django.db.models import Q
-
-# from ledger.accounts.models import EmailUser
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from django.http import HttpResponse
-
-from copy import deepcopy
 
 admin.site.index_template = "admin-index.html"
 admin.autodiscover()
