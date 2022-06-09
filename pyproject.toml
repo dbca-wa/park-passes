@@ -46,6 +46,7 @@ django-coverage-plugin = "^2.0.3"
 mypy = "^0.961"
 pytest-sugar = "^0.9.4"
 pytest-django = "^4.5.2"
+django-debug-toolbar = "^3.4.0"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"

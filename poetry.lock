@@ -301,6 +301,18 @@ Django = ">=1.8.0"
 django-common-helpers = ">=0.6.4"
 
 [[package]]
+name = "django-debug-toolbar"
+version = "3.4.0"
+description = "A configurable set of panels that display various debug information about the current request/response."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+Django = ">=3.2"
+sqlparse = ">=0.2.0"
+
+[[package]]
 name = "django-dirtyfields"
 version = "1.8.1"
 description = "Tracking dirty fields on a Django model instance."
@@ -1051,7 +1063,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "16bb66d38c1853636bec59a1be69b260682191217cab63280cc35f0798a0dc94"
+content-hash = "654411b8e8c3b263673314ab475116ebeec98781bd5769760a10e278857aa0e3"
 
 [metadata.files]
 appnope = [
@@ -1212,6 +1224,10 @@ django-coverage-plugin = [
 ]
 django-cron = [
     {file = "django-cron-0.5.1.tar.gz", hash = "sha256:08d22708c8b2ecab8cda989019a66c7e1e2424c59d822796fd45abf7731d261d"},
+]
+django-debug-toolbar = [
+    {file = "django-debug-toolbar-3.4.0.tar.gz", hash = "sha256:ae6bec2c1ce0e6900b0ab0443e1427eb233d8e6f57a84a0b2705eeecb8874e22"},
+    {file = "django_debug_toolbar-3.4.0-py3-none-any.whl", hash = "sha256:42c1c2e9dc05bb57b53d641e3a6d131fc031b92377b34ae32e604a1fe439bb83"},
 ]
 django-dirtyfields = [
     {file = "django-dirtyfields-1.8.1.tar.gz", hash = "sha256:b763f1baaa0979c8451493c5f0e01f31a08dfca372abd489e15ecab0c38636e9"},
