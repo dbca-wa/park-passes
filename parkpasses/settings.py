@@ -195,6 +195,26 @@ LOGGING["loggers"]["parkpasses"] = {
     "handlers": ["file_parkpasses"],
     "level": "INFO",
 }
+
+# Add a debug level logger for development
+if DEBUG:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": True,
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {
+            "disturbance": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+        },
+    }
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DEV_APP_BUILD_URL = env(
     "DEV_APP_BUILD_URL"
