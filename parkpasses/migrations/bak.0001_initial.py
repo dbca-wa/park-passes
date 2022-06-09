@@ -420,27 +420,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name="UserSystemSettings",
-            fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("one_row_per_park", models.BooleanField(default=False)),
-                ("user", models.IntegerField(unique=True)),
-                ("event_training_completed", models.BooleanField(default=False)),
-                ("event_training_date", models.DateField(blank=True, null=True)),
-            ],
-            options={
-                "verbose_name_plural": "User System Settings",
-            },
-        ),
-        migrations.CreateModel(
             name="AmendmentRequest",
             fields=[
                 (

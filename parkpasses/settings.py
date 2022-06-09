@@ -4,15 +4,7 @@ import os
 import confy
 from confy import env
 from django.core.exceptions import ImproperlyConfigured
-from ledger_api_client.settings_base import (
-    INSTALLED_APPS,
-    LOGGING,
-    MIDDLEWARE_CLASSES,
-    NOTIFICATION_EMAIL,
-    STATICFILES_DIRS,
-    TEMPLATES,
-    VALID_SYSTEMS,
-)
+from ledger_api_client.settings_base import *  # noqa: F403
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 confy.read_environment_file(BASE_DIR + "/.env")
