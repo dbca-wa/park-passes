@@ -47,6 +47,7 @@ class ApplicationType(models.Model):
         return self.name
 
 
+"""
 class OracleCode(models.Model):
     CODE_TYPE_CHOICES = (
         (
@@ -72,6 +73,7 @@ class OracleCode(models.Model):
 
     def __str__(self):
         return f"{self.code_type} - {self.code}"
+"""
 
 
 class UserAction(models.Model):

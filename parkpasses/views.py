@@ -6,7 +6,6 @@ from django.core.management import call_command
 from django.shortcuts import redirect, render
 from django.views.generic.base import TemplateView
 
-from parkpasses.components.main.models import HelpPage
 from parkpasses.forms import LoginForm
 from parkpasses.helpers import is_internal
 
@@ -58,30 +57,6 @@ class ParkPassesContactView(TemplateView):
 
 class ParkPassesFurtherInformationView(TemplateView):
     template_name = "parkpasses/further_info.html"
-
-
-class HelpView(LoginRequiredMixin, TemplateView):
-    template_name = "parkpasses/help.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.request.user.is_authenticated:
-            application_type = kwargs.get("application_type", None)
-            if kwargs.get("help_type", None) == "assessor":
-                if is_internal(self.request):
-                    queryset = HelpPage.objects.filter(
-                        application_type__name__icontains=application_type,
-                        help_type=HelpPage.HELP_TEXT_INTERNAL,
-                    ).order_by("-version")
-                    context["help"] = queryset.first()
-            else:
-                queryset = HelpPage.objects.filter(
-                    application_type__name__icontains=application_type,
-                    help_type=HelpPage.HELP_TEXT_EXTERNAL,
-                ).order_by("-version")
-                context["help"] = queryset.first()
-        return context
 
 
 class ManagementCommandsView(LoginRequiredMixin, TemplateView):
