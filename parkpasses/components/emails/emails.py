@@ -3,8 +3,6 @@ import mimetypes
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-
-# from django.core.urlresolvers import reverse
 from django.template import Template, loader
 from django.utils.html import strip_tags
 from ledger_api_client.ledger_models import Document

@@ -81,7 +81,7 @@ class ApplicationType(models.Model):
         return self.name
 
 
-class OracleCode(models.Model):
+""" class OracleCode(models.Model):
     CODE_TYPE_CHOICES = (
         (
             settings.APPLICATION_TYPE_REGISTRATION_OF_INTEREST,
@@ -105,7 +105,7 @@ class OracleCode(models.Model):
         app_label = "parkpasses"
 
     def __str__(self):
-        return f"{self.code_type} - {self.code}"
+        return f"{self.code_type} - {self.code}" """
 
 
 class Question(models.Model):

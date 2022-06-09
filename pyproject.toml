@@ -40,6 +40,11 @@ django-phonenumber-field = "6.1.0"
 phonenumbers = "8.12.48"
 babel = "2.10.1"
 django-dirtyfields = "1.8.1"
+pytest = "^7.1.2"
+coverage = "^6.4.1"
+django-coverage-plugin = "^2.0.3"
+mypy = "^0.961"
+pytest-sugar = "^0.9.4"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"
