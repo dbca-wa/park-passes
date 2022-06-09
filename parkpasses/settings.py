@@ -85,9 +85,6 @@ TEMPLATES[0]["DIRS"].append(os.path.join(BASE_DIR, "parkpasses", "templates"))
 TEMPLATES[0]["DIRS"].append(
     os.path.join(BASE_DIR, "parkpasses", "components", "emails", "templates")
 )
-TEMPLATES[0]["OPTIONS"]["context_processors"].append(
-    "parkpasses.context_processors.parkpasses_url"
-)
 
 CACHES = {
     "default": {
