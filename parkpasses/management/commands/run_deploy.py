@@ -20,7 +20,8 @@ class Command(BaseCommand):
 
         if datetime.now() < dt:
             logger.info(f"Running command {__name__}")
-            # run_deploy('parkpasses/utils/csv/Commercial-Licences-Migration-20191119.csv', 'parkpasses/utils/csv/E-Class-Licences-20191119.csv')
+            # run_deploy('parkpasses/utils/csv/Commercial-Licences-Migration-20191119.csv',\
+            # 'parkpasses/utils/csv/E-Class-Licences-20191119.csv')
             run_deploy(
                 "parkpasses/utils/csv/T-Class-Test.csv",
                 "parkpasses/utils/csv/E-Class-Test.csv",

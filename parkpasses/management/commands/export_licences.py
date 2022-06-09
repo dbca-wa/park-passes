@@ -15,9 +15,11 @@ class Command(BaseCommand):
         approvals = []
         repeat = []
         with open("/tmp/export_licences.csv", "w") as f:
-            # f.write('Status', 'Lodgement Number', 'Start Date', 'Expiry Date', 'Applicant', 'Organisation', 'Organsiation Email', 'Application Type', 'Migrated')
+            # f.write('Status', 'Lodgement Number', 'Start Date', 'Expiry Date', 'Applicant', \
+            # 'Organisation', 'Organsiation Email', 'Application Type', 'Migrated')
             f.write(
-                "Status; Lodgement Number; Application Number; Start Date; Expiry Date; Applicant; ABN; Trading Name; Organsiation Email; Contacts; Application Type; Migrated\n"
+                "Status; Lodgement Number; Application Number; Start Date; Expiry Date; Applicant; \
+                    ABN; Trading Name; Organsiation Email; Contacts; Application Type; Migrated\n"
             )
             for a in Approval.objects.all():
                 status = a.get_status_display()
