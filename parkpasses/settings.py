@@ -24,8 +24,9 @@ BUILD_TAG = env(
 
 if SHOW_DEBUG_TOOLBAR:
 
-    def show_toolbar():
-        return True
+    def show_toolbar(request):
+        if request:
+            return True
 
     MIDDLEWARE_CLASSES += [
         "debug_toolbar.middleware.DebugToolbarMiddleware",
