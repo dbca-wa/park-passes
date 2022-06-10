@@ -3,7 +3,8 @@
 """
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+
+from parkpasses.ledger_api_utils import retrieve_email_user
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
@@ -16,7 +17,7 @@ class DiscountCodeBatch(models.Model):
     defined in the batch.
     """
 
-    created_by = models.ForeignKey(EmailUser, on_delete=models.PROTECT)
+    created_by = models.IntegerField(null=False, blank=False)  # EmailUserRO
     number = models.CharField(max_length=10)
     datetime_created = models.DateTimeField()
     datetime_updated = models.DateTimeField()
@@ -34,6 +35,17 @@ class DiscountCodeBatch(models.Model):
         null=True,
         validators=PERCENTAGE_VALIDATOR,
     )
+
+    @property
+    def created_by(self):
+        return retrieve_email_user(self.purchaser)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        for i in range(self.codes_to_generate):
+            pass
+            # code = ""
+            # discount_code = DiscountCode.objects.create()
 
 
 class DiscountCode(models.Model):
@@ -62,7 +74,8 @@ class DiscountCodeBatchComment(models.Model):
         (INVALIDATE, "Invalidate"),
     ]
     datetime_created = models.DateTimeField()
-    user = models.ForeignKey(EmailUser, on_delete=models.PROTECT)
+    discount_code_batch = models.ForeignKey(DiscountCodeBatch, on_delete=models.PROTECT)
+    user = models.IntegerField(null=False, blank=False)  # EmailUserRO
     action = models.CharField(
         max_length=2,
         choices=ACTION_CHOICES,

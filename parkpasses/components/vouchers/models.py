@@ -2,15 +2,14 @@
     This module contains the models required for implimenting vouchers
 """
 from django.db import models
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+
+from parkpasses.ledger_api_utils import retrieve_email_user
 
 
 class Voucher(models.Model):
     """A class to represent a voucher"""
 
-    purchaser = models.ForeignKey(
-        EmailUser, on_delete=models.PROTECT, blank=True, null=True
-    )
+    purchaser = models.IntegerField(null=False, blank=False)  # EmailUserRO
     purchaser_name = models.CharField(max_length=50, null=False, blank=False)
     purchaser_email = models.EmailField(null=False, blank=False)
     recipient_name = models.CharField(max_length=50, null=False, blank=False)
@@ -36,6 +35,10 @@ class Voucher(models.Model):
         choices=PROCESSING_STATUS_CHOICES,
         default=NEW,
     )
+
+    @property
+    def purchaser(self):
+        return retrieve_email_user(self.purchaser)
 
 
 class VoucherTransaction(models.Model):

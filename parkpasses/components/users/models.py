@@ -2,16 +2,20 @@
     This module contains the models required for implimenting discount codes
 """
 from django.db import models
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from parkpasses.components.concessions.models import Concession
+from parkpasses.ledger_api_utils import retrieve_email_user
 
 
 class UserInformation(models.Model):
-    """A class to represent a discount code batch comment"""
+    """A class to store any additional user data that is needed specific to parks passes"""
 
-    user = models.OneToOneField(EmailUser, on_delete=models.PROTECT)
+    user = models.IntegerField(null=True, blank=True)  # EmailUserRO
     concession = models.ForeignKey(
-        Concession, on_delete=models.CASCADE, blank=True, null=True
+        Concession, on_delete=models.PROTECT, blank=True, null=True
     )
     # Any other park pass specific user data to go here
+
+    @property
+    def user(self):
+        return retrieve_email_user(self.user)

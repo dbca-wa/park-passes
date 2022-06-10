@@ -76,54 +76,6 @@ class OracleCode(models.Model):
 """
 
 
-class UserAction(models.Model):
-    who = models.IntegerField()  # EmailUserRO
-    when = models.DateTimeField(null=False, blank=False, auto_now_add=True)
-    what = models.TextField(blank=False)
-
-    def __str__(self):
-        return "{what} ({who} at {when})".format(
-            what=self.what, who=self.who, when=self.when
-        )
-
-    class Meta:
-        abstract = True
-        app_label = "parkpasses"
-
-
-class CommunicationsLogEntry(models.Model):
-    TYPE_CHOICES = [
-        ("email", "Email"),
-        ("phone", "Phone Call"),
-        ("mail", "Mail"),
-        ("person", "In Person"),
-        ("onhold", "On Hold"),
-        ("onhold_remove", "Remove On Hold"),
-        ("with_qaofficer", "With QA Officer"),
-        ("with_qaofficer_completed", "QA Officer Completed"),
-        ("referral_complete", "Referral Completed"),
-    ]
-    DEFAULT_TYPE = TYPE_CHOICES[0][0]
-
-    to = models.TextField(blank=True, verbose_name="To")
-    fromm = models.CharField(max_length=200, blank=True, verbose_name="From")
-    cc = models.TextField(blank=True, verbose_name="cc")
-
-    type = models.CharField(max_length=35, choices=TYPE_CHOICES, default=DEFAULT_TYPE)
-    reference = models.CharField(max_length=100, blank=True)
-    subject = models.CharField(
-        max_length=200, blank=True, verbose_name="Subject / Description"
-    )
-    text = models.TextField(blank=True)
-    customer = models.IntegerField()  # EmailUserRO
-    staff = models.IntegerField()  # EmailUserRO
-
-    created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
-
-    class Meta:
-        app_label = "parkpasses"
-
-
 class Document(models.Model):
     name = models.CharField(
         max_length=255, blank=True, verbose_name="name", help_text=""

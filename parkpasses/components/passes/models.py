@@ -12,6 +12,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+from parkpasses.settings import PASS_TYPES
+
 
 class PassType(models.Model):
     """A class to represent a pass type"""
@@ -50,6 +52,7 @@ class Pass(models.Model):
 
     user = models.ForeignKey(EmailUser, on_delete=models.PROTECT, blank=True, null=True)
     option = models.ForeignKey(PassTypePricingWindowOption, on_delete=models.PROTECT)
+    pass_number = models.CharField(max_length=50, null=False, blank=False)
     first_name = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
@@ -59,7 +62,8 @@ class Pass(models.Model):
     active_from = models.DateTimeField()
     expiry = models.DateTimeField(null=False, blank=False)
     encrypted_link_hash = models.CharField(max_length=150, null=True, blank=True)
-    renew_automatically = models.BooleanField(null=False)
+    renew_automatically = models.BooleanField(null=False, default=False)
+    prevent_further_vehicle_updates = models.BooleanField(null=False, default=False)
     park_pass_pdf = models.FileField(
         upload_to=park_pass_pdf_path, null=True, blank=True
     )
@@ -77,15 +81,43 @@ class Pass(models.Model):
     def imaginary_encryption_endpoint(self, json_pass_data):
         return json_pass_data + json_pass_data
 
+    def save(self, *args, **kwargs):
+        if self.pass_number == "":
+            pass_number = f"P{self.pk:06d}"
+            self.pass_number = pass_number
+        super().save(*args, **kwargs)
+
+
+class HolidayPassManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("option", "pricing_window", "pass_type")
+            .filter(option__pricing_window__pass_type__name=PASS_TYPES.HOLIDAY_PASS)
+        )
+
 
 class HolidayPass(Pass):
     """A proxy class to represent a holiday pass"""
+
+    objects = HolidayPassManager()
 
     class Meta:
         proxy = True
 
     def save(self):
         pass
+
+
+class LocalParkPassManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("option", "pricing_window", "pass_type")
+            .filter(option__pricing_window__pass_type__name=PASS_TYPES.LOCAL_PARK_PASS)
+        )
 
 
 class LocalParkPass(Pass):
@@ -98,6 +130,16 @@ class LocalParkPass(Pass):
         pass
 
 
+class GoldStarPassManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("option", "pricing_window", "pass_type")
+            .filter(option__pricing_window__pass_type__name=PASS_TYPES.GOLD_STAR_PASS)
+        )
+
+
 class GoldStarPass(Pass):
     """A proxy class to represent a gold star pass"""
 
@@ -107,9 +149,19 @@ class GoldStarPass(Pass):
     def save(self, *args, **kwargs):
         # if the user does not have a postal address
         # raise a ValidationError exception
-        if False:
+        if True:
             raise ValidationError
         super().save(*args, **kwargs)
+
+
+class DayEntryPassManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("option", "pricing_window", "pass_type")
+            .filter(option__pricing_window__pass_type__name=PASS_TYPES.DAY_ENTRY_PASS)
+        )
 
 
 class DayEntryPass(Pass):

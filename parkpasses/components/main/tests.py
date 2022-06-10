@@ -4,7 +4,7 @@ from django.test import TestCase
 # from parkpasses.components.main.models import UserAction
 
 
-class UserActionTestCase(TestCase):
+class TestTestCase(TestCase):
     def setUp(self):
         pass
 

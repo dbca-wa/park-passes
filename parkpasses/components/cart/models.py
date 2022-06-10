@@ -2,18 +2,22 @@
     This module contains the models required for implimenting the shopping cart
 """
 from django.db import models
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.vouchers.models import Voucher
+from parkpasses.ledger_api_utils import retrieve_email_user
 
 
 class Cart(models.Model):
     """A class to represent a cart"""
 
-    user = models.ForeignKey(EmailUser, on_delete=models.PROTECT, null=True, blank=True)
+    user = models.IntegerField(null=False, blank=False)  # EmailUserRO
     datetime_first_added_to = models.DateTimeField()
     datetime_last_added_to = models.DateTimeField()
+
+    @property
+    def user(self):
+        return retrieve_email_user(self.user)
 
 
 class CartItem(models.Model):
