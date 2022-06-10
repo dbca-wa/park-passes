@@ -4,12 +4,12 @@ import os
 import confy
 from confy import env
 from django.core.exceptions import ImproperlyConfigured
-from ledger_api_client.settings_base import *  # noqa: F403
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 confy.read_environment_file(BASE_DIR + "/.env")
 os.environ.setdefault("BASE_DIR", BASE_DIR)
 
+from ledger_api_client.settings_base import *  # noqa: F403
 
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
@@ -234,3 +234,29 @@ GROUP_NAME_APPROVER = "ProposalApproverGroup"
 
 template_title = "Park Passes"
 template_group = "parkspasses"
+
+HOLIDAY_PASS = "HOLIDAY_PASS"
+ANNUAL_PASS = "ANNUAL_PASS"
+ALL_PARKS_PASS = "ALL_PARKS_PASS"
+GOLD_STAR_PASS = "GOLD_STAR_PASS"
+DAY_ENTRY_PASS = "DAY_ENTRY_PASS"
+
+PASS_TYPES = [
+    (HOLIDAY_PASS, "Holiday Pass"),
+    (ANNUAL_PASS, "Annual Pass"),
+    (ALL_PARKS_PASS, "All Park Pass"),
+    (GOLD_STAR_PASS, "Gold Star Pass"),
+    (DAY_ENTRY_PASS, "Day Entry Pass"),
+]
+
+COMMUNICATIONS_LOG_ENTRY_CHOICES = [
+    ("email", "Email"),
+    ("phone", "Phone Call"),
+    ("mail", "Mail"),
+    ("person", "In Person"),
+    ("onhold", "On Hold"),
+    ("onhold_remove", "Remove On Hold"),
+    ("with_qaofficer", "With QA Officer"),
+    ("with_qaofficer_completed", "QA Officer Completed"),
+    ("referral_complete", "Referral Completed"),
+]

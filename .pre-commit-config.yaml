@@ -30,7 +30,7 @@ repos:
     rev: 4.0.1
     hooks:
       - id: flake8
-        args: ["--config=setup.cfg","--per-file-ignores=parkpasses/settings.py:F405","--ignore=W503"]
+        args: ["--config=setup.cfg","--per-file-ignores=parkpasses/settings.py:F405,E402","--ignore=W503"]
         additional_dependencies: [flake8-isort]
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
