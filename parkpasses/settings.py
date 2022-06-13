@@ -36,6 +36,7 @@ INSTALLED_APPS += [
     "parkpasses.components.concessions",
     "parkpasses.components.main",
     "parkpasses.components.vouchers",
+    "parkpasses.components.parks",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -261,4 +262,4 @@ COMMUNICATIONS_LOG_ENTRY_CHOICES = [
     ("referral_complete", "Referral Completed"),
 ]
 
-PARKPASSES_VOUCHER_EXPIRY_IN_YEARS = 2
+PARKPASSES_VOUCHER_EXPIRY_IN_DAYS = 365 * 2
