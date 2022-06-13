@@ -42,6 +42,7 @@ class DiscountCodeBatch(models.Model):
         A discount code batch must specify a discount_amount or a discount_percentage.
         """
 
+        app_label = "parkpasses"
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_discount_amount_or_discount_percentage",
@@ -81,6 +82,9 @@ class DiscountCode(models.Model):
     code = models.CharField(max_length=50)
     remaining_uses = models.SmallIntegerField(null=False, blank=False)
 
+    class Meta:
+        app_label = "parkpasses"
+
 
 class DiscountCodeBatchComment(models.Model):
     """A class to represent a discount code batch comment"""
@@ -102,3 +106,6 @@ class DiscountCodeBatchComment(models.Model):
         default=CREATE,
     )
     reason = models.TextField()
+
+    class Meta:
+        app_label = "parkpasses"
