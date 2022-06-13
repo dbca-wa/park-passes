@@ -1,0 +1,34 @@
+[
+    {
+        "model": "parkpasses.concession",
+        "pk": 1,
+        "fields": {
+            "concession_type": "Health Care Card",
+            "discount_percentage": "5"
+        }
+    },
+    {
+        "model": "parkpasses.concession",
+        "pk": 2,
+        "fields": {
+            "concession_type": "Pensioner Concession Card",
+            "discount_percentage": "10"
+        }
+    },
+    {
+        "model": "parkpasses.concession",
+        "pk": 3,
+        "fields": {
+            "concession_type": "Veteran Card",
+            "discount_percentage": "15"
+        }
+    },
+    {
+        "model": "parkpasses.concession",
+        "pk": 4,
+        "fields": {
+            "concession_type": "Commonwealth Seniors Health Card",
+            "discount_percentage": "5"
+        }
+    }
+]
