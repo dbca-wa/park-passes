@@ -1,6 +1,8 @@
 """
     This module contains the models required for implimenting discount codes
 """
+import uuid
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -63,10 +65,18 @@ class DiscountCodeBatch(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        for i in range(self.codes_to_generate):
-            pass
-            # code = ""
-            # discount_code = DiscountCode.objects.create()
+        for i in range(1, self.codes_to_generate):
+            code_unique = False
+            while not code_unique:
+                code = str(uuid.uuid4())[:8].upper()
+                code_count = DiscountCode.objects.filter(code=code).count()
+                if 0 == code_count:
+                    code_unique = True
+            DiscountCode.objects.create(
+                discount_code_batch=self,
+                code=code,
+                remaining_uses=self.times_each_code_can_be_used,
+            )
 
 
 class DiscountCode(models.Model):
@@ -79,7 +89,7 @@ class DiscountCode(models.Model):
     """
 
     discount_code_batch = models.ForeignKey(DiscountCodeBatch, on_delete=models.PROTECT)
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, unique=True)
     remaining_uses = models.SmallIntegerField(null=False, blank=False)
 
     class Meta:
