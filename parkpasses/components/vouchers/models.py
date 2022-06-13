@@ -5,8 +5,8 @@
     vouchers to retain a positive balance so they can be used to pay
     for multiple seperate transactions.
 """
+import datetime
 import uuid
-from datetime import datetime
 
 from django.db import models
 
@@ -17,7 +17,7 @@ from parkpasses.ledger_api_utils import retrieve_email_user
 class Voucher(models.Model):
     """A class to represent a voucher"""
 
-    voucher_number = models.CharField(max_length=10)
+    voucher_number = models.CharField(max_length=10, blank=True)
     purchaser = models.IntegerField(null=False, blank=False)  # EmailUserRO
     recipient_name = models.CharField(max_length=50, null=False, blank=False)
     recipient_email = models.EmailField(null=False, blank=False)
@@ -48,13 +48,16 @@ class Voucher(models.Model):
         app_label = "parkpasses"
         indexes = (models.Index(fields=["code"]),)
 
+    def __str__(self):
+        return self.voucher_number
+
     @property
     def purchaser(self):
         return retrieve_email_user(self.purchaser)
 
     @property
     def has_expired(self):
-        if datetime.now() >= self.expiry:
+        if datetime.datetime.now() >= self.expiry:
             return True
         return False
 
@@ -75,14 +78,22 @@ class Voucher(models.Model):
             )
         return remaining_balance
 
+    @classmethod
+    def get_new_voucher_code(self):
+        return str(uuid.uuid4()).upper()[:8]
+
     def save(self, *args, **kwargs):
         if not self.code:
-            self.code = f"{uuid.uuid4()[8]}"
+            self.code = self.get_new_voucher_code()
         if not self.expiry:
-            self.expiry = self.datetime_purchased + datetime.timedelta(
-                years=settings.PARKPASSES_VOUCHER_EXPIRY_IN_YEARS
+            self.expiry = datetime.datetime.now() + datetime.timedelta(
+                days=settings.PARKPASSES_VOUCHER_EXPIRY_IN_DAYS
             )
         super().save(*args, **kwargs)
+        if not self.voucher_number:
+            voucher_number = f"V{self.pk:06d}"
+            self.voucher_number = voucher_number
+            super().save(*args, **kwargs)
 
 
 class VoucherTransaction(models.Model):
@@ -98,3 +109,6 @@ class VoucherTransaction(models.Model):
 
     class Meta:
         app_label = "parkpasses"
+
+    def __str__(self):
+        return f"Credit: {self.credit} | Debit:{self.debit}"
