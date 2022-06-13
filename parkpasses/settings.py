@@ -22,38 +22,20 @@ BUILD_TAG = env(
     "BUILD_TAG", hashlib.md5(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
 
-if SHOW_DEBUG_TOOLBAR:
-
-    def show_toolbar(request):
-        if request:
-            return True
-
-    MIDDLEWARE_CLASSES += [
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
-    ]
-    INSTALLED_APPS += ("debug_toolbar",)
-    INTERNAL_IPS = ("127.0.0.1", "localhost")
-
-    # this dict removes check to dtermine if toolbar should display --> works for rks docker container
-    DEBUG_TOOLBAR_CONFIG = {
-        "SHOW_TOOLBAR_CALLBACK": show_toolbar,
-        "INTERCEPT_REDIRECTS": False,
-    }
 
 STATIC_URL = "/static/"
 
 
 INSTALLED_APPS += [
-    # 'reversion_compare',
-    # 'bootstrap3',
     "webtemplate_dbca",
     "rest_framework",
     "rest_framework_datatables",
     "rest_framework_gis",
     "ledger_api_client",
     "parkpasses",
+    "parkpasses.components.concessions",
     "parkpasses.components.main",
-    "parkpasses.components.users",
+    "parkpasses.components.vouchers",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -81,6 +63,24 @@ MIDDLEWARE_CLASSES += [
 ]
 MIDDLEWARE = MIDDLEWARE_CLASSES
 MIDDLEWARE_CLASSES = None
+
+if SHOW_DEBUG_TOOLBAR:
+
+    def show_toolbar(request):
+        if request:
+            return True
+
+    MIDDLEWARE += [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]
+    INSTALLED_APPS += ("debug_toolbar",)
+    INTERNAL_IPS = ("127.0.0.1", "localhost")
+
+    # this dict removes check to dtermine if toolbar should display --> works for rks docker container
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": show_toolbar,
+        "INTERCEPT_REDIRECTS": False,
+    }
 
 TEMPLATES[0]["DIRS"].append(os.path.join(BASE_DIR, "parkpasses", "templates"))
 TEMPLATES[0]["DIRS"].append(
@@ -260,3 +260,5 @@ COMMUNICATIONS_LOG_ENTRY_CHOICES = [
     ("with_qaofficer_completed", "QA Officer Completed"),
     ("referral_complete", "Referral Completed"),
 ]
+
+PARKPASSES_VOUCHER_EXPIRY_IN_YEARS = 2
