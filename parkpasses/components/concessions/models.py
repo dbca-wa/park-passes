@@ -18,3 +18,9 @@ class Concession(models.Model):
         null=False,
         validators=PERCENTAGE_VALIDATOR,
     )
+
+    def __str__(self):
+        return f"{self.concession_type}"
+
+    class Meta:
+        app_label = "parkpasses"

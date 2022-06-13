@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class ConcessionsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "concessions"
+    name = "parkpasses.components.concessions"
