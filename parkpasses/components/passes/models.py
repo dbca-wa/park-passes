@@ -50,6 +50,17 @@ def park_pass_pdf_path(instance, filename):
 class Pass(models.Model):
     """A class to represent a pass"""
 
+    FUTURE = "FU"
+    CURRENT = "CU"
+    EXPIRED = "EX"
+    CANCELLED = "CA"
+    PROCESSING_STATUS_CHOICES = [
+        (FUTURE, "Future"),
+        (CURRENT, "Current"),
+        (EXPIRED, "Expired"),
+        (CANCELLED, "Cancelled"),
+    ]
+
     user = models.ForeignKey(EmailUser, on_delete=models.PROTECT, blank=True, null=True)
     option = models.ForeignKey(PassTypePricingWindowOption, on_delete=models.PROTECT)
     pass_number = models.CharField(max_length=50, null=False, blank=False)
@@ -66,6 +77,10 @@ class Pass(models.Model):
     prevent_further_vehicle_updates = models.BooleanField(null=False, default=False)
     park_pass_pdf = models.FileField(
         upload_to=park_pass_pdf_path, null=True, blank=True
+    )
+    processing_status = models.CharField(
+        max_length=2,
+        choices=PROCESSING_STATUS_CHOICES,
     )
 
     def generate_qrcode(self):

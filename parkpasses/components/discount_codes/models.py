@@ -36,6 +36,26 @@ class DiscountCodeBatch(models.Model):
         validators=PERCENTAGE_VALIDATOR,
     )
 
+    class Meta:
+        """Meta for discount code batch - used here to add a custom constraint
+
+        A discount code batch must specify a discount_amount or a discount_percentage.
+        """
+
+        constraints = [
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_discount_amount_or_discount_percentage",
+                check=(
+                    models.Q(
+                        discount_amount__isnull=True, discount_percentage__isnull=False
+                    )
+                    | models.Q(
+                        discount_amount__isnull=False, discount_percentage__isnull=True
+                    )
+                ),
+            )
+        ]
+
     @property
     def created_by(self):
         return retrieve_email_user(self.purchaser)

@@ -1,5 +1,8 @@
 """
-    This module contains the models required for implimenting discount codes
+    This module contains the models required for any custom user information required
+    for park passes.
+
+    UserInformation - Allows park passes to store the specific concession type for a user
 """
 from django.db import models
 
