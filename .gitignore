@@ -109,6 +109,6 @@ uwsgi*.ini
 *.djcache
 
 # npm build files
-parkpasses/static/parkpasses_vue
+parkpasses/static/parkpasses_vue/
 
 git_history_recent
