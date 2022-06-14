@@ -37,6 +37,7 @@ INSTALLED_APPS += [
     "parkpasses.components.main",
     "parkpasses.components.vouchers",
     "parkpasses.components.parks",
+    "parkpasses.components.discount_codes",
 ]
 
 ADD_REVERSION_ADMIN = True
