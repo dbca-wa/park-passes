@@ -7,10 +7,7 @@ from django.db import models, router
 
 
 class DocumentManager(models.Manager):
-    """This manager adds convenience methods for querying User Actions
-
-    and Communication Event Logs.
-    """
+    """This manager adds convenience methods for querying documents"""
 
     def get_for_model(self, model, model_db=None):
         model_db = model_db or router.db_for_write(model)
