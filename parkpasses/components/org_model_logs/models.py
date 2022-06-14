@@ -1,6 +1,6 @@
 """
     This module allows you to easily add User Actions and Communications
-    Log Entries to any model in your project.
+    Log Entries to any model in a project.
 """
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, router
@@ -36,7 +36,7 @@ class ModelLogManager(models.Manager):
 class UserAction(models.Model):
     """A class to represent a log record of who did what and when.
 
-    User actions can be attached to any model in your project
+    User actions can be attached to any model in a project
     """
 
     objects = ModelLogManager()
@@ -62,7 +62,6 @@ class UserAction(models.Model):
         )
 
     class Meta:
-        app_label = "parkpasses"
         unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
 
@@ -108,6 +107,5 @@ class CommunicationsLogEntry(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
 
     class Meta:
-        app_label = "parkpasses"
         unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
