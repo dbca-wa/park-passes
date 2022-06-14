@@ -4,20 +4,12 @@ import os
 import confy
 from confy import env
 from django.core.exceptions import ImproperlyConfigured
-from ledger_api_client.settings_base import (
-    INSTALLED_APPS,
-    LOGGING,
-    MIDDLEWARE_CLASSES,
-    NOTIFICATION_EMAIL,
-    STATICFILES_DIRS,
-    TEMPLATES,
-    VALID_SYSTEMS,
-)
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 confy.read_environment_file(BASE_DIR + "/.env")
 os.environ.setdefault("BASE_DIR", BASE_DIR)
 
+from ledger_api_client.settings_base import *  # noqa: F403
 
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
@@ -30,37 +22,21 @@ BUILD_TAG = env(
     "BUILD_TAG", hashlib.md5(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
 
-if SHOW_DEBUG_TOOLBAR:
-
-    def show_toolbar():
-        return True
-
-    MIDDLEWARE_CLASSES += [
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
-    ]
-    INSTALLED_APPS += ("debug_toolbar",)
-    INTERNAL_IPS = ("127.0.0.1", "localhost")
-
-    # this dict removes check to dtermine if toolbar should display --> works for rks docker container
-    DEBUG_TOOLBAR_CONFIG = {
-        "SHOW_TOOLBAR_CALLBACK": show_toolbar,
-        "INTERCEPT_REDIRECTS": False,
-    }
 
 STATIC_URL = "/static/"
 
 
 INSTALLED_APPS += [
-    # 'reversion_compare',
-    # 'bootstrap3',
     "webtemplate_dbca",
     "rest_framework",
     "rest_framework_datatables",
     "rest_framework_gis",
     "ledger_api_client",
     "parkpasses",
+    "parkpasses.components.concessions",
     "parkpasses.components.main",
-    "parkpasses.components.users",
+    "parkpasses.components.vouchers",
+    "parkpasses.components.parks",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -89,12 +65,27 @@ MIDDLEWARE_CLASSES += [
 MIDDLEWARE = MIDDLEWARE_CLASSES
 MIDDLEWARE_CLASSES = None
 
+if SHOW_DEBUG_TOOLBAR:
+
+    def show_toolbar(request):
+        if request:
+            return True
+
+    MIDDLEWARE += [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]
+    INSTALLED_APPS += ("debug_toolbar",)
+    INTERNAL_IPS = ("127.0.0.1", "localhost")
+
+    # this dict removes check to dtermine if toolbar should display --> works for rks docker container
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": show_toolbar,
+        "INTERCEPT_REDIRECTS": False,
+    }
+
 TEMPLATES[0]["DIRS"].append(os.path.join(BASE_DIR, "parkpasses", "templates"))
 TEMPLATES[0]["DIRS"].append(
     os.path.join(BASE_DIR, "parkpasses", "components", "emails", "templates")
-)
-TEMPLATES[0]["OPTIONS"]["context_processors"].append(
-    "parkpasses.context_processors.parkpasses_url"
 )
 
 CACHES = {
@@ -206,6 +197,26 @@ LOGGING["loggers"]["parkpasses"] = {
     "handlers": ["file_parkpasses"],
     "level": "INFO",
 }
+
+# Add a debug level logger for development
+if DEBUG:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": True,
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {
+            "disturbance": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+        },
+    }
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DEV_APP_BUILD_URL = env(
     "DEV_APP_BUILD_URL"
@@ -224,3 +235,31 @@ GROUP_NAME_APPROVER = "ProposalApproverGroup"
 
 template_title = "Park Passes"
 template_group = "parkspasses"
+
+HOLIDAY_PASS = "HOLIDAY_PASS"
+ANNUAL_PASS = "ANNUAL_PASS"
+ALL_PARKS_PASS = "ALL_PARKS_PASS"
+GOLD_STAR_PASS = "GOLD_STAR_PASS"
+DAY_ENTRY_PASS = "DAY_ENTRY_PASS"
+
+PASS_TYPES = [
+    (HOLIDAY_PASS, "Holiday Pass"),
+    (ANNUAL_PASS, "Annual Pass"),
+    (ALL_PARKS_PASS, "All Park Pass"),
+    (GOLD_STAR_PASS, "Gold Star Pass"),
+    (DAY_ENTRY_PASS, "Day Entry Pass"),
+]
+
+COMMUNICATIONS_LOG_ENTRY_CHOICES = [
+    ("email", "Email"),
+    ("phone", "Phone Call"),
+    ("mail", "Mail"),
+    ("person", "In Person"),
+    ("onhold", "On Hold"),
+    ("onhold_remove", "Remove On Hold"),
+    ("with_qaofficer", "With QA Officer"),
+    ("with_qaofficer_completed", "QA Officer Completed"),
+    ("referral_complete", "Referral Completed"),
+]
+
+PARKPASSES_VOUCHER_EXPIRY_IN_DAYS = 365 * 2

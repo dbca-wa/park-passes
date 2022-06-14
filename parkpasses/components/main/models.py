@@ -5,40 +5,6 @@ from django.db import models
 from parkpasses import settings
 
 
-class RevisionedMixin(models.Model):
-    """
-    A model tracked by reversion through the save method.
-    """
-
-    def save(self, **kwargs):
-        from reversion import revisions
-
-        if kwargs.pop("no_revision", False):
-            super().save(**kwargs)
-        else:
-            with revisions.create_revision():
-                if "version_user" in kwargs:
-                    revisions.set_user(kwargs.pop("version_user", None))
-                if "version_comment" in kwargs:
-                    revisions.set_comment(kwargs.pop("version_comment", ""))
-                super().save(**kwargs)
-
-    @property
-    def created_date(self):
-        from reversion.models import Version
-
-        return Version.objects.get_for_object(self).last().revision.date_created
-
-    @property
-    def modified_date(self):
-        from reversion.models import Version
-
-        return Version.objects.get_for_object(self).first().revision.date_created
-
-    class Meta:
-        abstract = True
-
-
 class ApplicationType(models.Model):
     name = models.CharField(
         max_length=64, unique=True, choices=settings.APPLICATION_TYPES
@@ -81,6 +47,7 @@ class ApplicationType(models.Model):
         return self.name
 
 
+"""
 class OracleCode(models.Model):
     CODE_TYPE_CHOICES = (
         (
@@ -106,87 +73,7 @@ class OracleCode(models.Model):
 
     def __str__(self):
         return f"{self.code_type} - {self.code}"
-
-
-class Question(models.Model):
-    CORRECT_ANSWER_CHOICES = (
-        ("answer_one", "Answer one"),
-        ("answer_two", "Answer two"),
-        ("answer_three", "Answer three"),
-        ("answer_four", "Answer four"),
-    )
-    question_text = models.TextField(blank=False)
-    answer_one = models.CharField(max_length=200, blank=True)
-    answer_two = models.CharField(max_length=200, blank=True)
-    answer_three = models.CharField(max_length=200, blank=True)
-    answer_four = models.CharField(max_length=200, blank=True)
-    correct_answer = models.CharField(
-        "Correct Answer",
-        max_length=40,
-        choices=CORRECT_ANSWER_CHOICES,
-        default=CORRECT_ANSWER_CHOICES[0][0],
-    )
-    application_type = models.ForeignKey(
-        ApplicationType, null=True, blank=True, on_delete=models.SET_NULL
-    )
-
-    class Meta:
-        app_label = "parkpasses"
-
-    def __str__(self):
-        return self.question_text
-
-    @property
-    def correct_answer_value(self):
-        return getattr(self, self.correct_answer)
-
-
-class UserAction(models.Model):
-    who = models.IntegerField()  # EmailUserRO
-    when = models.DateTimeField(null=False, blank=False, auto_now_add=True)
-    what = models.TextField(blank=False)
-
-    def __str__(self):
-        return "{what} ({who} at {when})".format(
-            what=self.what, who=self.who, when=self.when
-        )
-
-    class Meta:
-        abstract = True
-        app_label = "parkpasses"
-
-
-class CommunicationsLogEntry(models.Model):
-    TYPE_CHOICES = [
-        ("email", "Email"),
-        ("phone", "Phone Call"),
-        ("mail", "Mail"),
-        ("person", "In Person"),
-        ("onhold", "On Hold"),
-        ("onhold_remove", "Remove On Hold"),
-        ("with_qaofficer", "With QA Officer"),
-        ("with_qaofficer_completed", "QA Officer Completed"),
-        ("referral_complete", "Referral Completed"),
-    ]
-    DEFAULT_TYPE = TYPE_CHOICES[0][0]
-
-    to = models.TextField(blank=True, verbose_name="To")
-    fromm = models.CharField(max_length=200, blank=True, verbose_name="From")
-    cc = models.TextField(blank=True, verbose_name="cc")
-
-    type = models.CharField(max_length=35, choices=TYPE_CHOICES, default=DEFAULT_TYPE)
-    reference = models.CharField(max_length=100, blank=True)
-    subject = models.CharField(
-        max_length=200, blank=True, verbose_name="Subject / Description"
-    )
-    text = models.TextField(blank=True)
-    customer = models.IntegerField()  # EmailUserRO
-    staff = models.IntegerField()  # EmailUserRO
-
-    created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
-
-    class Meta:
-        app_label = "parkpasses"
+"""
 
 
 class Document(models.Model):
@@ -215,35 +102,6 @@ class Document(models.Model):
         return self.name or self.filename
 
 
-class GlobalSettings(models.Model):
-    keys = (
-        # ('credit_facility_link', 'Credit Facility Link'),
-        # ('deed_poll', 'Deed poll'),
-        # ('deed_poll_filming', 'Deed poll Filming'),
-        # ('deed_poll_event', 'Deed poll Event'),
-        # ('online_training_document', 'Online Training Document'),
-        # ('park_finder_link', 'Park Finder Link'),
-        # ('fees_and_charges', 'Fees and charges link'),
-        # ('event_fees_and_charges', 'Event Fees and charges link'),
-        # ('commercial_filming_handbook', 'Commercial Filming Handbook link'),
-        # ('park_stay_link', 'Park Stay Link'),
-        # ('event_traffic_code_of_practice', 'Event traffic code of practice'),
-        # ('trail_section_map', 'Trail section map'),
-        # ('dwer_application_form', 'DWER Application Form'),
-    )
-    key = models.CharField(
-        max_length=255,
-        choices=keys,
-        blank=False,
-        null=False,
-    )
-    value = models.CharField(max_length=255)
-
-    class Meta:
-        app_label = "parkpasses"
-        verbose_name_plural = "Global Settings"
-
-
 class SystemMaintenance(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -268,14 +126,3 @@ class SystemMaintenance(models.Model):
         return "System Maintenance: {} ({}) - starting {}, ending {}".format(
             self.name, self.description, self.start_date, self.end_date
         )
-
-
-class UserSystemSettings(models.Model):
-    one_row_per_park = models.BooleanField(default=False)
-    user = models.IntegerField(unique=True)  # EmailUserRO
-    event_training_completed = models.BooleanField(default=False)
-    event_training_date = models.DateField(blank=True, null=True)
-
-    class Meta:
-        app_label = "parkpasses"
-        verbose_name_plural = "User System Settings"

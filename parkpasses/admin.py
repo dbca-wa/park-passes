@@ -1,12 +1,11 @@
 from django.contrib.gis import admin
-
-from parkpasses.components.main import models
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 admin.site.index_template = "admin-index.html"
 admin.autodiscover()
 
 
-@admin.register(models.EmailUser)
+@admin.register(EmailUser)
 class EmailUserAdmin(admin.ModelAdmin):
     list_display = (
         "email",

@@ -1,0 +1,16 @@
+[
+    {
+        "model": "parkpasses.postcode",
+        "pk": 1,
+        "fields": {
+            "postcode": "6000"
+        }
+    },
+    {
+        "model": "parkpasses.postcode",
+        "pk": 2,
+        "fields": {
+            "postcode": "6163"
+        }
+    }
+]

@@ -31,11 +31,6 @@ urlpatterns = [
     url(r"^account/$", views.ExternalView.as_view(), name="manage-account"),
     url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
     url(
-        r"^help/(?P<application_type>[^/]+)/(?P<help_type>[^/]+)/$",
-        views.HelpView.as_view(),
-        name="help",
-    ),
-    url(
         r"^mgt-commands/$", views.ManagementCommandsView.as_view(), name="mgt-commands"
     ),
 ] + ledger_patterns
@@ -43,3 +38,8 @@ urlpatterns = [
 
 if settings.DEBUG:  # Serve media locally in development.
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    urlpatterns += [
+        # ...
+        path("__debug__/", include("debug_toolbar.urls")),
+    ]

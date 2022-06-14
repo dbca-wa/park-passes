@@ -5,7 +5,6 @@ from rest_framework import serializers
 from parkpasses.components.main.models import (
     ApplicationType,
     CommunicationsLogEntry,
-    GlobalSettings,
     Question,
     RequiredDocument,
 )
@@ -56,12 +55,6 @@ class ApplicationTypeSerializer(serializers.ModelSerializer):
 
     def get_confirmation_text(self, obj):
         return obj.confirmation_text
-
-
-class GlobalSettingsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GlobalSettings
-        fields = ("key", "value")
 
 
 class RequiredDocumentSerializer(serializers.ModelSerializer):

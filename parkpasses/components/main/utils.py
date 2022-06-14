@@ -46,7 +46,7 @@ def get_department_user(email):
             return data[0]
         else:
             return None
-    except:
+    except Exception:
         raise
 
 

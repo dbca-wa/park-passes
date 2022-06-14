@@ -3,14 +3,8 @@ import logging
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from parkpasses.components.main.models import (
-    GlobalSettings,
-    MapLayer,
-    Question,
-    RequiredDocument,
-)
+from parkpasses.components.main.models import MapLayer, Question, RequiredDocument
 from parkpasses.components.main.serializers import (
-    GlobalSettingsSerializer,
     MapLayerSerializer,
     QuestionSerializer,
     RequiredDocumentSerializer,
@@ -18,11 +12,6 @@ from parkpasses.components.main.serializers import (
 from parkpasses.helpers import is_customer, is_internal
 
 logger = logging.getLogger("payment_checkout")
-
-
-class GlobalSettingsViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = GlobalSettings.objects.all().order_by("id")
-    serializer_class = GlobalSettingsSerializer
 
 
 class RequiredDocumentViewSet(viewsets.ReadOnlyModelViewSet):

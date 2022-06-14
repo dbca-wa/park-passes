@@ -1,0 +1,229 @@
+[
+    {
+        "model": "parkpasses.concession",
+        "pk": 1,
+        "fields": {
+            "concession_type": "Health Care Card",
+            "discount_percentage": "5"
+        }
+    },
+    {
+        "model": "parkpasses.concession",
+        "pk": 2,
+        "fields": {
+            "concession_type": "Pensioner Concession Card",
+            "discount_percentage": "10"
+        }
+    },
+    {
+        "model": "parkpasses.concession",
+        "pk": 3,
+        "fields": {
+            "concession_type": "Veteran Card",
+            "discount_percentage": "15"
+        }
+    },
+    {
+        "model": "parkpasses.concession",
+        "pk": 4,
+        "fields": {
+            "concession_type": "Commonwealth Seniors Health Card",
+            "discount_percentage": "5"
+        }
+    },
+    {
+        "model": "parkpasses.voucher",
+        "pk": 1,
+        "fields": {
+            "voucher_number": "V000001",
+            "recipient_name": "Atesta Persona",
+            "recipient_email": "oak.mcilwain@gmail.com",
+            "datetime_to_email": "2022-06-19T22:00:00Z",
+            "personal_message": "Thanks for all the hard work!",
+            "amount": "95.00",
+            "expiry": "2024-06-12T08:07:07.368Z",
+            "code": "69C0F489",
+            "pin": "123123",
+            "datetime_purchased": "2022-06-13T08:07:07.369Z",
+            "processing_status": "N"
+        }
+    },
+    {
+        "model": "parkpasses.vouchertransaction",
+        "pk": 1,
+        "fields": {
+            "voucher": 1,
+            "credit": "0.00",
+            "debit": "15.00"
+        }
+    },
+    {
+        "model": "parkpasses.vouchertransaction",
+        "pk": 2,
+        "fields": {
+            "voucher": 1,
+            "credit": "0.00",
+            "debit": "27.00"
+        }
+    },
+    {
+        "model": "parkpasses.postcode",
+        "pk": 1,
+        "fields": {
+            "postcode": "6000"
+        }
+    },
+    {
+        "model": "parkpasses.postcode",
+        "pk": 2,
+        "fields": {
+            "postcode": "6163"
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 1,
+        "fields": {
+            "image": "",
+            "name": "Albany Group",
+            "display_order": 1,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 2,
+        "fields": {
+            "image": "",
+            "name": "Karijini/Millstream–Chichester",
+            "display_order": 2,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 3,
+        "fields": {
+            "image": "",
+            "name": "Yanchep",
+            "display_order": 3,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 4,
+        "fields": {
+            "image": "",
+            "name": "Kalbarri",
+            "display_order": 4,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 5,
+        "fields": {
+            "image": "",
+            "name": "Warren Group",
+            "display_order": 5,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 6,
+        "fields": {
+            "image": "",
+            "name": "Francois Peron",
+            "display_order": 6,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 7,
+        "fields": {
+            "image": "",
+            "name": "Lane Poole/Serpentine",
+            "display_order": 7,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 8,
+        "fields": {
+            "image": "",
+            "name": "Esperance Group",
+            "display_order": 8,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 9,
+        "fields": {
+            "image": "",
+            "name": "Mirima/Mitchell River/Purnululu",
+            "display_order": 9,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 10,
+        "fields": {
+            "image": "",
+            "name": "Cape Range",
+            "display_order": 10,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 11,
+        "fields": {
+            "image": "",
+            "name": "Lesueur/Nambung",
+            "display_order": 11,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 12,
+        "fields": {
+            "image": "",
+            "name": "King Leopold/Tunnel Creek/Windjana Gorge",
+            "display_order": 13,
+            "display_externally": true,
+            "postcodes": []
+        }
+    },
+    {
+        "model": "parkpasses.park",
+        "pk": 13,
+        "fields": {
+            "image": "",
+            "name": "Avon Valley/John Forrest/Walyunga",
+            "display_order": 12,
+            "display_externally": true,
+            "postcodes": [
+                1,
+                2
+            ]
+        }
+    }
+]

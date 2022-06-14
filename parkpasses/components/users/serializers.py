@@ -3,11 +3,7 @@ from ledger_api_client.ledger_models import Address
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
-from parkpasses.components.main.models import (
-    CommunicationsLogEntry,
-    Document,
-    UserSystemSettings,
-)
+from parkpasses.components.main.models import CommunicationsLogEntry, Document
 from parkpasses.helpers import in_dbca_domain, is_parkpasses_admin
 
 
@@ -21,12 +17,6 @@ class UserAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = ("id", "line1", "locality", "state", "country", "postcode")
-
-
-class UserSystemSettingsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserSystemSettings
-        fields = ("one_row_per_park",)
 
 
 class UserFilterSerializer(serializers.ModelSerializer):
@@ -95,16 +85,6 @@ class UserSerializer(serializers.ModelSerializer):
             if request:
                 return in_dbca_domain(request)
         return False
-
-    def get_system_settings(self, obj):
-        try:
-            user_system_settings = obj.system_settings.first()
-            serialized_settings = UserSystemSettingsSerializer(
-                user_system_settings
-            ).data
-            return serialized_settings
-        except Exception:
-            return None
 
     def get_is_parkpasses_admin(self, obj):
         request = self.context["request"] if self.context else None
