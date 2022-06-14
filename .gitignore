@@ -109,14 +109,6 @@ uwsgi*.ini
 *.djcache
 
 # npm build files
-parkpassesparkpassparkpasses
+parkpasses/static/parkpasses_vue
 
 git_history_recent
-# front-end build static files
-park-passes/static/park-passes_vue/static/*
-
-# npm locks
-#*-lock.json
-
-park-passes/frontend/park-passes/tests_output*
-park-passes/static/park-passes_vue/static/*
