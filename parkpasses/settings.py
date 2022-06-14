@@ -32,6 +32,7 @@ INSTALLED_APPS += [
     "rest_framework_datatables",
     "rest_framework_gis",
     "ledger_api_client",
+    "org_model_documents",
     "parkpasses",
     "parkpasses.components.concessions",
     "parkpasses.components.main",
