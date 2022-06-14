@@ -210,7 +210,7 @@ if DEBUG:
             },
         },
         "loggers": {
-            "disturbance": {
+            "parkpasses": {
                 "handlers": ["console"],
                 "level": "DEBUG",
                 "propagate": False,
