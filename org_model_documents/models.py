@@ -19,9 +19,6 @@ class DocumentManager(models.Manager):
     def get_for_object(self, obj):
         return self.get_for_object_reference(obj.__class__, obj.pk)
 
-    def test(self):
-        return self.all()
-
 
 def org_model_document_path(instance, filename):
     """Stores the document in a unique folder
