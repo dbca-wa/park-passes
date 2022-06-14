@@ -32,7 +32,10 @@ class DocumentManager(models.Manager):
 
 
 def org_model_document_path(instance, filename):
-    """Stores the document in a unique folder based on the content type and object_id"""
+    """Stores the document in a unique folder
+
+    based on the content type and object_id
+    """
     return (
         f"org_model_documents/{instance.content_type}/{instance.object_id}/{filename}"
     )
