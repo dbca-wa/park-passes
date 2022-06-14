@@ -45,6 +45,7 @@ class DiscountCodeBatch(models.Model):
         """
 
         app_label = "parkpasses"
+        verbose_name_plural = "Discount Code Batches"
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_discount_amount_or_discount_percentage",
