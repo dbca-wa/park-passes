@@ -63,7 +63,7 @@ class Pass(models.Model):
 
     user = models.ForeignKey(EmailUser, on_delete=models.PROTECT, blank=True, null=True)
     option = models.ForeignKey(PassTypePricingWindowOption, on_delete=models.PROTECT)
-    pass_number = models.CharField(max_length=50, null=False, blank=False)
+    pass_number = models.CharField(max_length=50, null=True, blank=True)
     first_name = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
@@ -72,7 +72,6 @@ class Pass(models.Model):
     postcode = models.CharField(max_length=4, null=True, blank=True)
     active_from = models.DateTimeField()
     expiry = models.DateTimeField(null=False, blank=False)
-    encrypted_link_hash = models.CharField(max_length=150, null=True, blank=True)
     renew_automatically = models.BooleanField(null=False, default=False)
     prevent_further_vehicle_updates = models.BooleanField(null=False, default=False)
     park_pass_pdf = models.FileField(
@@ -82,6 +81,11 @@ class Pass(models.Model):
         max_length=2,
         choices=PROCESSING_STATUS_CHOICES,
     )
+    sold_via = models.CharField(max_length=50, null=False, blank=False)
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
     def generate_qrcode(self):
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -97,10 +101,10 @@ class Pass(models.Model):
         return json_pass_data + json_pass_data
 
     def save(self, *args, **kwargs):
-        if self.pass_number == "":
-            pass_number = f"P{self.pk:06d}"
-            self.pass_number = pass_number
         super().save(*args, **kwargs)
+        if self.pass_number == "":
+            self.pass_number = f"PP{self.pk:06d}"
+            super().save(*args, **kwargs)
 
 
 class HolidayPassManager(models.Manager):
