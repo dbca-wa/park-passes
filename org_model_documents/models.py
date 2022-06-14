@@ -3,29 +3,24 @@
     Log Entries to any model in a project.
 """
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, router
+from django.db import models
 
 
 class DocumentManager(models.Manager):
     """This manager adds convenience methods for querying documents"""
 
-    def get_for_model(self, model, model_db=None):
-        model_db = model_db or router.db_for_write(model)
-        content_type = ContentType.objects.get(model._meta.model)
-        return self.get_queryset().filter(
-            content_type=content_type,
-            db=model_db,
-        )
+    def get_for_model(self, model):
+        content_type = ContentType.objects.get_for_model(model)
+        return self.filter(content_type=content_type)
 
-    def get_for_object_reference(self, model, object_id, model_db=None):
-        return self.get_for_model(model, model_db=model_db).filter(
-            object_id=object_id,
-        )
+    def get_for_object_reference(self, model, object_id):
+        return self.get_for_model(model).filter(object_id=object_id)
 
-    def get_for_object(self, obj, model_db=None):
-        return self.get_queryset().get_for_object_reference(
-            obj.__class__, obj.pk, model_db=model_db
-        )
+    def get_for_object(self, obj):
+        return self.get_for_object_reference(obj.__class__, obj.pk)
+
+    def test(self):
+        return self.all()
 
 
 def org_model_document_path(instance, filename):
@@ -62,7 +57,7 @@ class Document(models.Model):
     datetime_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"id {self.object_id} | content_type {self.content_type} | document {self.document.url}"
+        return f"id {self.object_id} | content_type {self.content_type} | document {self._file.url}"
 
     class Meta:
         unique_together = (("content_type", "object_id"),)
