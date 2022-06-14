@@ -12,7 +12,7 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 #REPO=$(basename -s .git `git config --get remote.origin.url` | sed 's/-//g')
 REPO=$(awk '{split($0, arr, "\/"); print arr[2]}' <<< $(git config -l|grep remote|grep url|head -n 1|sed 's/-//g'|sed 's/....$//'))
 DBCA_BRANCH="dbca_"$1
-BUILD_TAG=oakdbca/$REPO:$1_v$(date +%Y.%m.%d.%H.%M%S)
+BUILD_TAG=dbcawa/$REPO:$1_v$(date +%Y.%m.%d.%H.%M%S)
 {
     git checkout $DBCA_BRANCH
 } ||
