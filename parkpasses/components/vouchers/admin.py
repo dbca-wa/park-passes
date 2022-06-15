@@ -12,6 +12,7 @@ class VoucherAdmin(admin.ModelAdmin):
     list_display = (
         "recipient_email",
         "amount",
+        "remaining_balance",
         "code",
         "datetime_purchased",
         "expiry",

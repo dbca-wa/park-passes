@@ -17,7 +17,7 @@ geojson = "2.5.0"
 python_dateutil = "2.8.2"
 pytz = "2019.3"
 reportlab = "3.5.34"
-requests = "2.22.0"
+requests = "2.24.0"
 setuptools = "45.2.0"
 six = "1.14.0"
 # git+https://github.com/xzzy/webtemplate.git#egg=webtemplate_dbca
@@ -48,6 +48,7 @@ pytest-sugar = "^0.9.4"
 pytest-django = "^4.5.2"
 django-debug-toolbar = "^3.4.0"
 qrcode = "^7.3.1"
+borb = "^2.0.27"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"

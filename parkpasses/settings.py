@@ -32,12 +32,14 @@ INSTALLED_APPS += [
     "rest_framework_datatables",
     "rest_framework_gis",
     "ledger_api_client",
+    "org_model_documents",
     "parkpasses",
     "parkpasses.components.concessions",
     "parkpasses.components.main",
     "parkpasses.components.vouchers",
     "parkpasses.components.parks",
     "parkpasses.components.discount_codes",
+    "parkpasses.components.passes",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -210,7 +212,7 @@ if DEBUG:
             },
         },
         "loggers": {
-            "disturbance": {
+            "parkpasses": {
                 "handlers": ["console"],
                 "level": "DEBUG",
                 "propagate": False,
@@ -238,14 +240,14 @@ template_title = "Park Passes"
 template_group = "parkspasses"
 
 HOLIDAY_PASS = "HOLIDAY_PASS"
-ANNUAL_PASS = "ANNUAL_PASS"
+ANNUAL_LOCAL_PASS = "ANNUAL_LOCAL_PASS"
 ALL_PARKS_PASS = "ALL_PARKS_PASS"
 GOLD_STAR_PASS = "GOLD_STAR_PASS"
 DAY_ENTRY_PASS = "DAY_ENTRY_PASS"
 
 PASS_TYPES = [
     (HOLIDAY_PASS, "Holiday Pass"),
-    (ANNUAL_PASS, "Annual Pass"),
+    (ANNUAL_LOCAL_PASS, "Annual Local Pass"),
     (ALL_PARKS_PASS, "All Park Pass"),
     (GOLD_STAR_PASS, "Gold Star Pass"),
     (DAY_ENTRY_PASS, "Day Entry Pass"),

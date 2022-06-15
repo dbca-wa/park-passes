@@ -1,3 +1,131 @@
+import logging
+
 from django.contrib import admin
 
-# Register your models here.
+from parkpasses import settings
+from parkpasses.components.passes.models import (
+    Pass,
+    PassType,
+    PassTypePricingWindow,
+    PassTypePricingWindowOption,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class PassAdmin(admin.ModelAdmin):
+    model = Pass
+    fields = [
+        "pass_number",
+        "processing_status",
+        "sold_via",
+        "first_name",
+        "last_name",
+        "email",
+        "option",
+        "park",
+        "vehicle_registration_1",
+        "vehicle_registration_2",
+        "prevent_further_vehicle_updates",
+        "datetime_start",
+        "datetime_expiry",
+        "renew_automatically",
+    ]
+    list_display = (
+        "pass_number",
+        "processing_status",
+        "pass_type",
+        "option",
+        "pricing_window",
+        "price",
+        "full_name",
+        "vehicle_registration_1",
+        "vehicle_registration_2",
+        "datetime_start",
+        "datetime_expiry",
+    )
+    readonly_fields = [
+        "pass_number",
+        "sold_via",
+        "first_name",
+        "last_name",
+        "email",
+        "datetime_expiry",
+    ]
+    ordering = [
+        "datetime_created",
+    ]
+
+    def get_fields(self, request, obj=None):
+        if not settings.ANNUAL_LOCAL_PASS == obj.option.pricing_window.pass_type.name:
+            if "park" in self.fields:
+                self.fields.remove("park")
+        else:
+            if "park" not in self.fields:
+                self.fields.insert(7, "park")
+        return self.fields
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # Editing
+            return self.readonly_fields
+        return ()
+
+
+admin.site.register(Pass, PassAdmin)
+
+
+class PassTypeAdmin(admin.ModelAdmin):
+    model = PassType
+    list_display = (
+        "name",
+        "display_name",
+        "display_order",
+        "display_externally",
+    )
+    ordering = [
+        "display_order",
+    ]
+    readonly_fields = [
+        "name",
+    ]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # Editing
+            return self.readonly_fields
+        return ()
+
+
+admin.site.register(PassType, PassTypeAdmin)
+
+
+class PassTypePricingWindowOptionInline(admin.TabularInline):
+    model = PassTypePricingWindowOption
+
+
+class PassTypePricingWindowAdmin(admin.ModelAdmin):
+    model = PassTypePricingWindow
+    list_display = (
+        "name",
+        "pass_type",
+        "datetime_start",
+        "datetime_expiry",
+    )
+    ordering = [
+        "datetime_start",
+    ]
+    inlines = [
+        PassTypePricingWindowOptionInline,
+    ]
+    readonly_fields = [
+        "datetime_expiry",
+    ]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # Editing
+            # Don't allow user to edit expiry date of default payment window
+            if not obj.datetime_expiry:
+                return self.readonly_fields
+        return ()
+
+
+admin.site.register(PassTypePricingWindow, PassTypePricingWindowAdmin)

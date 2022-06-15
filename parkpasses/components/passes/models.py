@@ -6,49 +6,141 @@
     - PassTypePricingWindowOption (The duration options for a pass i.e. 5 days, 14 days, etc.)
     - Pass (The pass itself which contains the information required to generate the QR Code)
 """
+
+import logging
+
 import qrcode
 from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.db import models
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from django.utils import timezone
 
+from parkpasses.components.parks.models import Park
+from parkpasses.components.passes.utils import PdfGenerator
+from parkpasses.ledger_api_utils import retrieve_email_user
 from parkpasses.settings import PASS_TYPES
+
+logger = logging.getLogger(__name__)
 
 
 class PassType(models.Model):
     """A class to represent a pass type"""
 
-    image = models.ImageField()
-    name = models.CharField(editable=False)  # Name reserved for system use
-    display_name = models.CharField()
-    display_order = models.SmallIntegerField()
-    display_externally = models.BooleanField()
+    image = models.ImageField(null=False, blank=False)
+    name = models.CharField(max_length=100)  # Name reserved for system use
+    display_name = models.CharField(max_length=50, null=False, blank=False)
+    display_order = models.SmallIntegerField(null=False, blank=False)
+    display_externally = models.BooleanField(null=False, blank=False, default=True)
+
+    class Meta:
+        app_label = "parkpasses"
+
+    def __str__(self):
+        return f"{self.display_name}"
+
+
+class PassTypePricingWindowManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("pass_type")
 
 
 class PassTypePricingWindow(models.Model):
-    """A class to represent a pass type pricing window"""
+    """A class to represent a pass type pricing window
 
+    The default pricing window for a pass type will have no expiry date
+    The system will not allow for each pass type to have more than one
+    default pricing window.
+    """
+
+    objects = PassTypePricingWindowManager()
+
+    name = models.CharField(max_length=50, null=False, blank=False)
     pass_type = models.ForeignKey(PassType, on_delete=models.PROTECT)
-    active_from = models.DateTimeField()
-    expiry = models.DateTimeField()
+    datetime_start = models.DateTimeField()
+    datetime_expiry = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Pricing Window"
+
+    def __str__(self):
+        return f"{self.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.datetime_expiry:
+            default_pricing_window_count = (
+                PassTypePricingWindow.objects.filter(
+                    pass_type=self.pass_type,
+                    datetime_expiry__isnull=True,
+                )
+                .exclude(pk=self.pk)
+                .count()
+            )
+            if default_pricing_window_count > 0:
+                raise ValidationError(
+                    "There can only be one default pricing window for a pass type. \
+                    Default pricing windows are those than have no expiry date."
+                )
+            else:
+                if self.datetime_start > timezone.now():
+                    raise ValidationError(
+                        "The default pricing window start date must be in the past."
+                    )
+        else:
+            if self.datetime_start >= self.datetime_expiry:
+                raise ValidationError(
+                    "The start date must occur before the expiry date."
+                )
+            if self.datetime_expiry <= timezone.now():
+                raise ValidationError("The expiry date must be in the future.")
+
+        super().save(*args, **kwargs)
+
+
+class PassTypePricingWindowOptionManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("pricing_window", "pricing_window__pass_type")
+        )
 
 
 class PassTypePricingWindowOption(models.Model):
     """A class to represent a pass type pricing window option"""
+
+    objects = PassTypePricingWindowOptionManager()
 
     pricing_window = models.ForeignKey(PassTypePricingWindow, on_delete=models.PROTECT)
     name = models.CharField(max_length=50)  # i.e. '5 days'
     duration = models.SmallIntegerField()  # in days i.e. 5, 14, 28, 365
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=False, null=False)
 
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Duration Option"
+        verbose_name = "Duration Options"
 
-def park_pass_pdf_path(instance, filename):
-    """Stores the park pass pdf in a unique folder based on the pass pk"""
-    return f"passes/{instance.pk}/{filename}"
+    def __str__(self):
+        return f"{self.pricing_window.pass_type.display_name} - {self.name} \
+            (Pricing Window: {self.pricing_window.name})"
+
+
+class PassManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "option", "option__pricing_window", "option__pricing_window__pass_type"
+            )
+        )
 
 
 class Pass(models.Model):
     """A class to represent a pass"""
+
+    objects = PassManager()
 
     FUTURE = "FU"
     CURRENT = "CU"
@@ -61,27 +153,55 @@ class Pass(models.Model):
         (CANCELLED, "Cancelled"),
     ]
 
-    user = models.ForeignKey(EmailUser, on_delete=models.PROTECT, blank=True, null=True)
+    user = models.IntegerField(null=False, blank=False)  # EmailUserRO
     option = models.ForeignKey(PassTypePricingWindowOption, on_delete=models.PROTECT)
-    pass_number = models.CharField(max_length=50, null=False, blank=False)
+    pass_number = models.CharField(max_length=50, null=True, blank=True)
     first_name = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
-    postcode = models.CharField(max_length=4, null=True, blank=True)
-    active_from = models.DateTimeField()
-    expiry = models.DateTimeField(null=False, blank=False)
-    encrypted_link_hash = models.CharField(max_length=150, null=True, blank=True)
-    renew_automatically = models.BooleanField(null=False, default=False)
-    prevent_further_vehicle_updates = models.BooleanField(null=False, default=False)
-    park_pass_pdf = models.FileField(
-        upload_to=park_pass_pdf_path, null=True, blank=True
+    park = models.ForeignKey(Park, on_delete=models.PROTECT, null=True, blank=True)
+    datetime_start = models.DateTimeField(null=False, default=False)
+    datetime_expiry = models.DateTimeField(null=False, blank=False)
+    renew_automatically = models.BooleanField(null=False, blank=False, default=False)
+    prevent_further_vehicle_updates = models.BooleanField(
+        null=False, blank=False, default=False
     )
+    park_pass_pdf = models.FileField(null=True, blank=True)
     processing_status = models.CharField(
-        max_length=2,
-        choices=PROCESSING_STATUS_CHOICES,
+        max_length=2, choices=PROCESSING_STATUS_CHOICES, null=True, blank=True
     )
+    sold_via = models.CharField(max_length=50, null=True, blank=True)
+    datetime_created = models.DateTimeField(auto_now_add=True)
+    datetime_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name_plural = "Passes"
+
+    def __str__(self):
+        return f"{self.pass_number}"
+
+    @property
+    def email_user(self):
+        return retrieve_email_user(self.user)
+
+    @property
+    def pricing_window(self):
+        return self.option.pricing_window.name
+
+    @property
+    def price(self):
+        return self.option.price
+
+    @property
+    def pass_type(self):
+        return self.option.pricing_window.pass_type.display_name
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
     def generate_qrcode(self):
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -90,16 +210,41 @@ class Pass(models.Model):
         encrypted_pass_data = self.imaginary_encryption_endpoint(pass_data_json)
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
-        qr_image = qrcode.make_image(fill="black", back_color="white")
-        qr_image.save(park_pass_pdf_path(self, "qrcode.png"))
+        return qrcode.make_image(fill="black", back_color="white")
+        # qr_image.save(park_pass_pdf_path(self, "qrcode.png"))
+
+    def generate_park_pass_pdf(self):
+        pdfGenerator = PdfGenerator()
+        self.park_pass_pdf = pdfGenerator.generate_park_pass_pdf(self)
 
     def imaginary_encryption_endpoint(self, json_pass_data):
         return json_pass_data + json_pass_data
 
+    def set_processing_status(self):
+        if not Pass.CANCELLED == self.processing_status:
+            if self.datetime_start > timezone.now():
+                self.processing_status = Pass.FUTURE
+            elif self.datetime_expiry < timezone.now():
+                self.processing_status = Pass.EXPIRED
+            else:
+                self.processing_status = Pass.CURRENT
+
     def save(self, *args, **kwargs):
-        if self.pass_number == "":
-            pass_number = f"P{self.pk:06d}"
-            self.pass_number = pass_number
+        logger.debug("self.processing_status: " + self.processing_status)
+        self.datetime_expiry = self.datetime_start + timezone.timedelta(
+            days=self.option.duration
+        )
+        self.set_processing_status()
+        email_user = self.email_user
+        self.first_name = email_user.first_name
+        self.last_name = email_user.last_name
+        self.email = email_user.email
+        if (
+            not self.pass_number
+            or "" == self.pass_number
+            or 0 == len(self.pass_number.strip())
+        ):
+            self.pass_number = f"PP{self.pk:06d}"
         super().save(*args, **kwargs)
 
 
@@ -120,6 +265,7 @@ class HolidayPass(Pass):
 
     class Meta:
         proxy = True
+        app_label = "parkpasses"
 
     def save(self):
         pass
@@ -140,6 +286,7 @@ class LocalParkPass(Pass):
 
     class Meta:
         proxy = True
+        app_label = "parkpasses"
 
     def save(self):
         pass
@@ -160,6 +307,7 @@ class GoldStarPass(Pass):
 
     class Meta:
         proxy = True
+        app_label = "parkpasses"
 
     def save(self, *args, **kwargs):
         # if the user does not have a postal address
@@ -184,6 +332,7 @@ class DayEntryPass(Pass):
 
     class Meta:
         proxy = True
+        app_label = "parkpasses"
 
     def save(self):
         pass

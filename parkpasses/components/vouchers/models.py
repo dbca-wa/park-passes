@@ -6,12 +6,15 @@
     for multiple seperate transactions.
 """
 import datetime
+import logging
 import uuid
 
 from django.db import models
 
 from parkpasses import settings
 from parkpasses.ledger_api_utils import retrieve_email_user
+
+logger = logging.getLogger(__name__)
 
 
 class Voucher(models.Model):
@@ -61,12 +64,13 @@ class Voucher(models.Model):
             return True
         return False
 
-    def get_remaining_balance(self):
+    @property
+    def remaining_balance(self):
         remaining_balance = self.amount
-        for transaction in self.transactions:
+        for transaction in self.transactions.all():
             if transaction.credit > 0.00:
                 remaining_balance += transaction.credit
-            if transaction.debit < 0.00:
+            if transaction.debit > 0.00:
                 remaining_balance -= transaction.debit
         if remaining_balance > self.amount:
             raise Exception(

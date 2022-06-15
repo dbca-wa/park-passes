@@ -20,10 +20,10 @@ class DiscountCodeBatch(models.Model):
     """
 
     created_by = models.IntegerField(null=False, blank=False)  # EmailUserRO
-    number = models.CharField(max_length=10)
-    datetime_created = models.DateTimeField()
-    datetime_updated = models.DateTimeField()
-    datetime_expiry = models.DateTimeField()
+    discount_code_batch_number = models.CharField(max_length=10, null=True, blank=True)
+    datetime_created = models.DateTimeField(auto_now_add=True)
+    datetime_updated = models.DateTimeField(auto_now=True)
+    datetime_expiry = models.DateTimeField(null=False, blank=False)
     codes_to_generate = models.SmallIntegerField()
     times_each_code_can_be_used = models.SmallIntegerField()
     invalidated = models.BooleanField(default=False)
@@ -45,6 +45,7 @@ class DiscountCodeBatch(models.Model):
         """
 
         app_label = "parkpasses"
+        verbose_name = "Discount Code Batch"
         verbose_name_plural = "Discount Code Batches"
         constraints = [
             models.CheckConstraint(
@@ -62,22 +63,33 @@ class DiscountCodeBatch(models.Model):
 
     @property
     def created_by(self):
-        return retrieve_email_user(self.purchaser)
+        return retrieve_email_user(self.created_by)
+
+    def __str__(self):
+        return f"{self.discount_code_batch_number}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        for i in range(1, self.codes_to_generate):
-            code_unique = False
-            while not code_unique:
-                code = str(uuid.uuid4())[:8].upper()
-                code_count = DiscountCode.objects.filter(code=code).count()
-                if 0 == code_count:
-                    code_unique = True
-            DiscountCode.objects.create(
-                discount_code_batch=self,
-                code=code,
-                remaining_uses=self.times_each_code_can_be_used,
-            )
+        existing_discount_codes = DiscountCode.objects.filter(
+            discount_code_batch=self
+        ).count()
+        if 0 == existing_discount_codes:
+            for i in range(self.codes_to_generate):
+                code_unique = False
+                while not code_unique:
+                    code = str(uuid.uuid4())[:8].upper()
+                    code_count = DiscountCode.objects.filter(code=code).count()
+                    if 0 == code_count:
+                        code_unique = True
+                DiscountCode.objects.create(
+                    discount_code_batch=self,
+                    code=code,
+                    remaining_uses=self.times_each_code_can_be_used,
+                )
+        if not self.discount_code_batch_number:
+            discount_code_batch_number = f"DC{self.pk:06d}"
+            self.discount_code_batch_number = discount_code_batch_number
+            super().save(*args, **kwargs)
 
 
 class DiscountCode(models.Model):
@@ -95,6 +107,9 @@ class DiscountCode(models.Model):
 
     class Meta:
         app_label = "parkpasses"
+
+    def __str__(self):
+        return f"{self.code}"
 
 
 class DiscountCodeBatchComment(models.Model):
