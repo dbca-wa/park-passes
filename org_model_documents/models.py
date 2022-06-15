@@ -2,6 +2,8 @@
     This module allows you to easily add User Actions and Communications
     Log Entries to any model in a project.
 """
+import os
+
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -53,9 +55,20 @@ class Document(models.Model):
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"id {self.object_id} | content_type {self.content_type} | document {self._file.url}"
-
     class Meta:
         unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
+
+    def __str__(self):
+        return f"id {self.object_id} | content_type {self.content_type} | document {self._file.url}"
+
+    @property
+    def path(self):
+        if self._file:
+            return self._file.path
+        else:
+            return ""
+
+    @property
+    def filename(self):
+        return os.path.basename(self.path)
