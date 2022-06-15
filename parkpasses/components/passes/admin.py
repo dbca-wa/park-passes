@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from parkpasses.components.passes.models import PassType
+from parkpasses.components.passes.models import PassType, PassTypePricingWindow
 
 
 class PassTypeAdmin(admin.ModelAdmin):
@@ -25,3 +25,19 @@ class PassTypeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PassType, PassTypeAdmin)
+
+
+class PassTypePricingWindowAdmin(admin.ModelAdmin):
+    model = PassTypePricingWindow
+    list_display = (
+        "name",
+        "pass_type",
+        "datetime_start",
+        "datetime_expiry",
+    )
+    ordering = [
+        "datetime_start",
+    ]
+
+
+admin.site.register(PassTypePricingWindow, PassTypePricingWindowAdmin)
