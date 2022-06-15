@@ -6,13 +6,18 @@
     - PassTypePricingWindowOption (The duration options for a pass i.e. 5 days, 14 days, etc.)
     - Pass (The pass itself which contains the information required to generate the QR Code)
 """
+import logging
+
 import qrcode
 from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.db import models
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+from parkpasses.components.parks.models import Park
+from parkpasses.components.passes.utils import PdfGenerator
 from parkpasses.settings import PASS_TYPES
+
+logger = logging.getLogger(__name__)
 
 
 class PassType(models.Model):
@@ -61,7 +66,7 @@ class Pass(models.Model):
         (CANCELLED, "Cancelled"),
     ]
 
-    user = models.ForeignKey(EmailUser, on_delete=models.PROTECT, blank=True, null=True)
+    user = models.IntegerField(null=False, blank=False)  # EmailUserRO
     option = models.ForeignKey(PassTypePricingWindowOption, on_delete=models.PROTECT)
     pass_number = models.CharField(max_length=50, null=True, blank=True)
     first_name = models.CharField(max_length=50, null=False, blank=False)
@@ -69,19 +74,19 @@ class Pass(models.Model):
     email = models.EmailField(null=False, blank=False)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
-    postcode = models.CharField(max_length=4, null=True, blank=True)
-    active_from = models.DateTimeField()
-    expiry = models.DateTimeField(null=False, blank=False)
-    renew_automatically = models.BooleanField(null=False, default=False)
-    prevent_further_vehicle_updates = models.BooleanField(null=False, default=False)
-    park_pass_pdf = models.FileField(
-        upload_to=park_pass_pdf_path, null=True, blank=True
+    park = models.ForeignKey(Park, on_delete=models.PROTECT, null=True, blank=True)
+    datetime_start = models.DateTimeField(null=False, default=False)
+    datetime_expiry = models.DateTimeField(null=False, blank=False)
+    renew_automatically = models.BooleanField(null=False, blank=False, default=False)
+    prevent_further_vehicle_updates = models.BooleanField(
+        null=False, blank=False, default=False
     )
+    park_pass_pdf = models.FilePathField(null=True, blank=True)
     processing_status = models.CharField(
         max_length=2,
         choices=PROCESSING_STATUS_CHOICES,
     )
-    sold_via = models.CharField(max_length=50, null=False, blank=False)
+    sold_via = models.CharField(max_length=50, null=True, blank=True)
 
     @property
     def full_name(self):
@@ -96,6 +101,10 @@ class Pass(models.Model):
         qr.make(fit=True)
         qr_image = qrcode.make_image(fill="black", back_color="white")
         qr_image.save(park_pass_pdf_path(self, "qrcode.png"))
+
+    def generate_park_pass_pdf(self):
+        pdfGenerator = PdfGenerator()
+        self.park_pass_pdf = pdfGenerator.generate_park_pass_pdf(self)
 
     def imaginary_encryption_endpoint(self, json_pass_data):
         return json_pass_data + json_pass_data
