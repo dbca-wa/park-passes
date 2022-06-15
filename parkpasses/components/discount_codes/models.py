@@ -63,7 +63,7 @@ class DiscountCodeBatch(models.Model):
 
     @property
     def created_by(self):
-        return retrieve_email_user(self.purchaser)
+        return retrieve_email_user(self.created_by)
 
     def __str__(self):
         return f"{self.discount_code_batch_number}"
