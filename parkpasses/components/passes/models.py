@@ -6,6 +6,7 @@
     - PassTypePricingWindowOption (The duration options for a pass i.e. 5 days, 14 days, etc.)
     - Pass (The pass itself which contains the information required to generate the QR Code)
 """
+import datetime
 import logging
 
 import qrcode
@@ -23,19 +24,51 @@ logger = logging.getLogger(__name__)
 class PassType(models.Model):
     """A class to represent a pass type"""
 
-    image = models.ImageField()
-    name = models.CharField(editable=False)  # Name reserved for system use
-    display_name = models.CharField()
-    display_order = models.SmallIntegerField()
-    display_externally = models.BooleanField()
+    image = models.ImageField(null=False, blank=False)
+    name = models.CharField(
+        max_length=100, editable=False
+    )  # Name reserved for system use
+    display_name = models.CharField(max_length=50, null=False, blank=False)
+    display_order = models.SmallIntegerField(null=False, blank=False)
+    display_externally = models.BooleanField(null=False, blank=False, default=True)
 
 
 class PassTypePricingWindow(models.Model):
-    """A class to represent a pass type pricing window"""
+    """A class to represent a pass type pricing window
+
+    The default pricing window for a pass type will have no expiry date
+    The system will not allow for each pass type to have more than one
+    default pricing window.
+    """
 
     pass_type = models.ForeignKey(PassType, on_delete=models.PROTECT)
-    active_from = models.DateTimeField()
-    expiry = models.DateTimeField()
+    datetime_start = models.DateTimeField()
+    datetime_expiry = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.datetime_expiry:
+            default_pricing_window_count = PassTypePricingWindow.objects.filter(
+                pass_type=self.pass_type, datetime_expiry__isnull=True
+            )
+            if default_pricing_window_count > 0:
+                raise ValidationError(
+                    "There can only be one default pricing window for a pass type. \
+                    Default pricing windows are those than have no expiry date."
+                )
+            else:
+                if self.datetime_start > datetime.datetime.now():
+                    raise ValidationError(
+                        "The default pricing window start date must be in the past."
+                    )
+        else:
+            if self.datetime_start >= self.datetime_expiry:
+                raise ValidationError(
+                    "The start date must occur before the expiry date."
+                )
+            if self.datetime_expiry <= datetime.datetime.now():
+                raise ValidationError("The expiry date must be in the future.")
+
+        super().save(*args, **kwargs)
 
 
 class PassTypePricingWindowOption(models.Model):
@@ -45,11 +78,6 @@ class PassTypePricingWindowOption(models.Model):
     name = models.CharField(max_length=50)  # i.e. '5 days'
     duration = models.SmallIntegerField()  # in days i.e. 5, 14, 28, 365
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=False, null=False)
-
-
-def park_pass_pdf_path(instance, filename):
-    """Stores the park pass pdf in a unique folder based on the pass pk"""
-    return f"passes/{instance.pk}/{filename}"
 
 
 class Pass(models.Model):
@@ -99,8 +127,8 @@ class Pass(models.Model):
         encrypted_pass_data = self.imaginary_encryption_endpoint(pass_data_json)
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
-        qr_image = qrcode.make_image(fill="black", back_color="white")
-        qr_image.save(park_pass_pdf_path(self, "qrcode.png"))
+        return qrcode.make_image(fill="black", back_color="white")
+        # qr_image.save(park_pass_pdf_path(self, "qrcode.png"))
 
     def generate_park_pass_pdf(self):
         pdfGenerator = PdfGenerator()
