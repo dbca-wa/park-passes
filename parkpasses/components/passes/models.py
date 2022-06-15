@@ -25,12 +25,16 @@ class PassType(models.Model):
     """A class to represent a pass type"""
 
     image = models.ImageField(null=False, blank=False)
-    name = models.CharField(
-        max_length=100, editable=False
-    )  # Name reserved for system use
+    name = models.CharField(max_length=100)  # Name reserved for system use
     display_name = models.CharField(max_length=50, null=False, blank=False)
     display_order = models.SmallIntegerField(null=False, blank=False)
     display_externally = models.BooleanField(null=False, blank=False, default=True)
+
+    class Meta:
+        app_label = "parkpasses"
+
+    def __str__(self):
+        return f"{self.display_name}"
 
 
 class PassTypePricingWindow(models.Model):
@@ -41,9 +45,16 @@ class PassTypePricingWindow(models.Model):
     default pricing window.
     """
 
+    name = models.CharField(max_length=50, null=False, blank=False)
     pass_type = models.ForeignKey(PassType, on_delete=models.PROTECT)
     datetime_start = models.DateTimeField()
     datetime_expiry = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        app_label = "parkpasses"
+
+    def __str__(self):
+        return f"{self.name}"
 
     def save(self, *args, **kwargs):
         if not self.datetime_expiry:
@@ -78,6 +89,13 @@ class PassTypePricingWindowOption(models.Model):
     name = models.CharField(max_length=50)  # i.e. '5 days'
     duration = models.SmallIntegerField()  # in days i.e. 5, 14, 28, 365
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=False, null=False)
+
+    class Meta:
+        app_label = "parkpasses"
+
+    def __str__(self):
+        return f"Option: {self.name} | Pricing Window: {self.pricing_window.name} \
+            | Pass Type: {self.pricing_window.pass_type.display_name}"
 
 
 class Pass(models.Model):
@@ -115,6 +133,12 @@ class Pass(models.Model):
         choices=PROCESSING_STATUS_CHOICES,
     )
     sold_via = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        app_label = "parkpasses"
+
+    def __str__(self):
+        return f"{self.pass_number}"
 
     @property
     def full_name(self):
@@ -161,6 +185,7 @@ class HolidayPass(Pass):
 
     class Meta:
         proxy = True
+        app_label = "parkpasses"
 
     def save(self):
         pass
@@ -181,6 +206,7 @@ class LocalParkPass(Pass):
 
     class Meta:
         proxy = True
+        app_label = "parkpasses"
 
     def save(self):
         pass
@@ -201,6 +227,7 @@ class GoldStarPass(Pass):
 
     class Meta:
         proxy = True
+        app_label = "parkpasses"
 
     def save(self, *args, **kwargs):
         # if the user does not have a postal address
@@ -225,6 +252,7 @@ class DayEntryPass(Pass):
 
     class Meta:
         proxy = True
+        app_label = "parkpasses"
 
     def save(self):
         pass
