@@ -6,13 +6,13 @@
     - PassTypePricingWindowOption (The duration options for a pass i.e. 5 days, 14 days, etc.)
     - Pass (The pass itself which contains the information required to generate the QR Code)
 """
-import datetime
 import logging
 
 import qrcode
 from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 from parkpasses.components.parks.models import Park
 from parkpasses.components.passes.utils import PdfGenerator
@@ -52,6 +52,8 @@ class PassTypePricingWindow(models.Model):
 
     class Meta:
         app_label = "parkpasses"
+        verbose_name = "Pricing Window"
+        verbose_name_plural = "Pricing Windows"
 
     def __str__(self):
         return f"{self.name}"
@@ -60,14 +62,14 @@ class PassTypePricingWindow(models.Model):
         if not self.datetime_expiry:
             default_pricing_window_count = PassTypePricingWindow.objects.filter(
                 pass_type=self.pass_type, datetime_expiry__isnull=True
-            )
+            ).count()
             if default_pricing_window_count > 0:
                 raise ValidationError(
                     "There can only be one default pricing window for a pass type. \
                     Default pricing windows are those than have no expiry date."
                 )
             else:
-                if self.datetime_start > datetime.datetime.now():
+                if self.datetime_start > timezone.now():
                     raise ValidationError(
                         "The default pricing window start date must be in the past."
                     )
@@ -76,7 +78,7 @@ class PassTypePricingWindow(models.Model):
                 raise ValidationError(
                     "The start date must occur before the expiry date."
                 )
-            if self.datetime_expiry <= datetime.datetime.now():
+            if self.datetime_expiry <= timezone.now():
                 raise ValidationError("The expiry date must be in the future.")
 
         super().save(*args, **kwargs)
