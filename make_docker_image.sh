@@ -10,22 +10,43 @@ fi
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 #REPO=$(basename -s .git `git config --get remote.origin.url` | sed 's/-//g')
-REPO=$(awk '{split($0, arr, "\/"); print arr[2]}' <<< $(git config -l|grep remote|grep url|head -n 1|sed 's/-//g'|sed 's/....$//'))
-DBCA_BRANCH="dbca_"$1
-BUILD_TAG=dbcawa/$REPO:$1_v$(date +%Y.%m.%d.%H.%M%S)
+REPO_NO_DASH=$(awk '{split($0, arr, "\/"); print arr[2]}' <<< $(git config -l|grep remote|grep url|head -n 1|sed 's/-//g'|sed 's/....$//'))
+REPO=$(awk '{split($0, arr, "\/"); print arr[2]}' <<< $(git config -l|grep remote|grep url|head -n 1|sed 's/....$//'))
+BUILD_TAG=oakdbca/$REPO:$1_v$(date +%Y.%m.%d.%H.%M%S)
+DBCA_ORIGIN_HASH=$(echo "$REPO" | md5sum -t | cut -c1-32)
+DBCA_BRANCH=$DBCA_ORIGIN_HASH"_"$1
+EXISTING_REMOTES=$(git remote)
+
 {
-    git checkout $DBCA_BRANCH
+    if (( ! $(grep -c "$EXISTING_REMOTES" <<< "$DBCA_ORIGIN_HASH") )); then
+        echo "Attempt to create branch"
+        echo $REPO
+        echo "git remote add $DBCA_ORIGIN_HASH git@github.com:dbca-wa/$REPO.git"
+        git remote add $DBCA_ORIGIN_HASH git@github.com:dbca-wa/$REPO.git &&
+        git fetch $DBCA_ORIGIN_HASH &&
+        git remote set-url --push $DBCA_ORIGIN_HASH no_push &&
+        git checkout -b $DBCA_ORIGIN_HASH"_"$1 $DBCA_ORIGIN_HASH"/"$1
+    fi
+    echo "DBCA branch already exists"
 } ||
 {
-    echo "ERROR: You must have your local code checked in and the DBCA branch set up on local with the 'dbca_' prefix.  Example Instructions:"
-    echo "git remote add dbca git@github.com:dbca-wa/wildlifecompliance.git"
-    echo "git checkout -b dbca_compliance_mgt_dev dbca/compliance_mgt_dev"
+    echo "ERROR: Failed to create dbca branch"
+    echo "$0 1"
+    exit 1
+}
+
+{
+    git checkout $DBCA_BRANCH
+    echo $(git status)
+} ||
+{
+    echo "ERROR: Failed to checkout dbca branch"
     echo "$0 1"
     exit 1
 }
 {
     git pull &&
-    cd $REPO/frontend/$REPO/ &&
+    cd $REPO_NO_DASH/frontend/$REPO_NO_DASH/ &&
     npm run build &&
     cd ../../../ &&
     poetry run python manage.py collectstatic --no-input &&
