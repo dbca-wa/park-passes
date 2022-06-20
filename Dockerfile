@@ -1,6 +1,7 @@
 # Prepare the base environment.
 FROM ubuntu:20.04 as builder_base_oim_licensing
-MAINTAINER asi@dbca.wa.gov.au
+
+LABEL maintainer="asi@dbca.wa.gov.au"
 
 ENV DEBIAN_FRONTEND=noninteractive
 #ENV DEBUG=True
@@ -28,8 +29,8 @@ RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils libproj-dev gdal-bin
 RUN apt-get -y install ca-certificates
-RUN apt-get install --no-install-recommends -y sqlite3 vim postgresql-client ssh htop libspatialindex-dev
-RUN apt-get install --no-install-recommends -y python3-setuptools python3-dev python3-pip tzdata libreoffice cron rsyslog python3.8-venv gunicorn
+RUN apt-get install --no-install-recommends -y vim postgresql-client htop libspatialindex-dev
+RUN apt-get install --no-install-recommends -y python3-setuptools python3-dev python3-pip tzdata cron rsyslog python3.8-venv gunicorn
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr
 RUN apt-get install --no-install-recommends -y python-pil
@@ -53,6 +54,8 @@ RUN poetry config virtualenvs.create false \
 WORKDIR $REPO_NO_DASH/frontend/$REPO_NO_DASH/
 RUN npm install
 RUN npm run build
+RUN rm -rf node_modules/
+
 WORKDIR /app
 RUN touch /app/.env
 RUN python manage.py collectstatic --no-input
