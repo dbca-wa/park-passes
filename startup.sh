@@ -13,7 +13,7 @@ if [ $status -ne 0  ]; then
     fi
 
     # Start the second process
-    gunicorn parkpasses --bind :8080 --config /app/gunicorn.ini
+    gunicorn parkpasses.wsgi --bind :8080 --config /app/gunicorn.ini
     status=$?
     if [ $status -ne 0  ]; then
           echo "Failed to start gunicorn: $status"
