@@ -5,12 +5,17 @@ from django.contrib import admin
 from parkpasses import settings
 from parkpasses.components.passes.models import (
     Pass,
+    PassCancellation,
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
 )
 
 logger = logging.getLogger(__name__)
+
+
+class PassCancellationInline(admin.TabularInline):
+    model = PassCancellation
 
 
 class PassAdmin(admin.ModelAdmin):
@@ -54,6 +59,9 @@ class PassAdmin(admin.ModelAdmin):
     ]
     ordering = [
         "datetime_created",
+    ]
+    inlines = [
+        PassCancellationInline,
     ]
 
     def get_fields(self, request, obj=None):

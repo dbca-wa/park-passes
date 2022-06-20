@@ -221,15 +221,19 @@ class Pass(models.Model):
         return json_pass_data + json_pass_data
 
     def set_processing_status(self):
-        if not Pass.CANCELLED == self.processing_status:
-            if self.datetime_start > timezone.now():
-                self.processing_status = Pass.FUTURE
-            elif self.datetime_expiry < timezone.now():
-                self.processing_status = Pass.EXPIRED
-            else:
-                self.processing_status = Pass.CURRENT
+        if self.datetime_start > timezone.now():
+            self.processing_status = Pass.FUTURE
+        elif self.datetime_expiry < timezone.now():
+            self.processing_status = Pass.EXPIRED
+        else:
+            self.processing_status = Pass.CURRENT
 
     def save(self, *args, **kwargs):
+        if Pass.CANCELLED == self.processing_status:
+            raise ValidationError(
+                "You can't updated a park pass that has been cancelled."
+            )
+
         logger.debug("self.processing_status: " + self.processing_status)
         self.datetime_expiry = self.datetime_start + timezone.timedelta(
             days=self.option.duration
@@ -243,9 +247,46 @@ class Pass(models.Model):
             not self.pass_number
             or "" == self.pass_number
             or 0 == len(self.pass_number.strip())
-        ):
+        ) and self.pk:
             self.pass_number = f"PP{self.pk:06d}"
         super().save(*args, **kwargs)
+
+
+class PassCancellationManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("park_pass")
+
+
+class PassCancellation(models.Model):
+    """A class to represent a pass cancellation
+
+    A one to one related model to store the cancellation reason
+
+    Also, will be able to have a list of files attached to it to justify/explain
+    the cancellation"""
+
+    objects = PassCancellationManager()
+
+    park_pass = models.OneToOneField(Pass, on_delete=models.PROTECT)
+    cancellation_reason = models.TextField(null=False, blank=False)
+    datetime_cancelled = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name_plural = "Pass Cancellations"
+
+    def __str__(self):
+        return f"Cancellation for Pass: {self.park_pass.pass_number}(Date Cancelled: {self.datetime_cancelled})"
+
+    def save(self, *args, **kwargs):
+        self.park_pass.processing_status = Pass.CANCELLED
+        self.park_pass.save()
+        super().save(*args, **kwargs)
+
+    def delete(self):
+        self.park_pass.set_processing_status()
+        self.park_pass.save()
+        super().delete()
 
 
 class HolidayPassManager(models.Manager):
