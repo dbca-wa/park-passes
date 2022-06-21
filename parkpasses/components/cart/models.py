@@ -18,6 +18,9 @@ class Cart(models.Model):
     datetime_first_added_to = models.DateTimeField()
     datetime_last_added_to = models.DateTimeField()
 
+    class Meta:
+        app_label = "parkpasses"
+
     @property
     def user(self):
         return retrieve_email_user(self.user)
@@ -45,6 +48,7 @@ class CartItem(models.Model):
         be valid.
         """
 
+        app_label = "parkpasses"
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_park_pass_or_voucher",
@@ -57,12 +61,12 @@ class CartItem(models.Model):
 
     def get_total_price(self):
         model_type = self.content_type.model
-        if "voucher" == model_type:
+        if "Voucher" == model_type:
             return Voucher.objects.get(pk=self.object_id).amount
-        elif "pass" == model_type:
+        elif "Pass" == model_type:
             return self.get_total_price_pass()
         else:
-            raise ValueError("A cart can only contain a voucher or a pass")
+            raise ValueError("A Cart Item can only contain a Voucher or a Pass")
 
     def get_total_price_pass(self):
         park_pass = Pass.objects.get(pk=self.object_id)
