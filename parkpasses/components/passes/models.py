@@ -23,10 +23,18 @@ from parkpasses.settings import PASS_TYPES
 logger = logging.getLogger(__name__)
 
 
+def pass_type_image_path(instance, filename):
+    """Stores the pass type images in a unique folder
+
+    based on the content type and object_id
+    """
+    return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.id}/{filename}"
+
+
 class PassType(models.Model):
     """A class to represent a pass type"""
 
-    image = models.ImageField(null=False, blank=False)
+    image = models.ImageField(upload_to=pass_type_image_path, null=False, blank=False)
     name = models.CharField(max_length=100)  # Name reserved for system use
     display_name = models.CharField(max_length=50, null=False, blank=False)
     display_order = models.SmallIntegerField(null=False, blank=False)
