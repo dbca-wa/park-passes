@@ -3,7 +3,7 @@ from django.contrib import admin
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 
 
-class VoucherTransactionAdmin(admin.TabularInline):
+class VoucherTransactionInline(admin.TabularInline):
     model = VoucherTransaction
 
 
@@ -20,7 +20,7 @@ class VoucherAdmin(admin.ModelAdmin):
     )
     readonly_fields = ["voucher_number", "code", "expiry"]
     ordering = ("-datetime_purchased",)
-    inlines = [VoucherTransactionAdmin]
+    inlines = [VoucherTransactionInline]
 
 
 admin.site.register(Voucher, VoucherAdmin)
