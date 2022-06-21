@@ -6,6 +6,7 @@ from parkpasses import settings
 from parkpasses.components.passes.models import (
     Pass,
     PassCancellation,
+    PassTemplate,
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
@@ -137,3 +138,17 @@ class PassTypePricingWindowAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PassTypePricingWindow, PassTypePricingWindowAdmin)
+
+
+class PassTemplateAdmin(admin.ModelAdmin):
+    model = PassTemplate
+    list_display = (
+        "template",
+        "version",
+    )
+    ordering = [
+        "-version",
+    ]
+
+
+admin.site.register(PassTemplate, PassTemplateAdmin)
