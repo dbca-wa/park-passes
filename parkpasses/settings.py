@@ -2,6 +2,7 @@ import hashlib
 import os
 
 import confy
+import dj_database_url
 from confy import env
 from django.core.exceptions import ImproperlyConfigured
 
@@ -266,3 +267,5 @@ COMMUNICATIONS_LOG_ENTRY_CHOICES = [
 ]
 
 PARKPASSES_VOUCHER_EXPIRY_IN_DAYS = 365 * 2
+
+DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")
