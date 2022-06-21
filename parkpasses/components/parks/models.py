@@ -32,7 +32,7 @@ class Postcode(models.Model):
 class Park(models.Model):
     """A class to represent a park"""
 
-    postcodes = models.ManyToManyField(Postcode, null=True, blank=True)
+    postcodes = models.ManyToManyField(Postcode, blank=True)
     image = models.ImageField(null=True, blank=True)
     name = models.CharField(unique=True, max_length=100, null=False, blank=False)
     display_order = models.SmallIntegerField(unique=True, null=False, blank=False)
