@@ -8,6 +8,7 @@
 """
 
 import logging
+import math
 
 import qrcode
 from django.core import serializers
@@ -295,6 +296,46 @@ class PassCancellation(models.Model):
         self.park_pass.set_processing_status()
         self.park_pass.save()
         super().delete()
+
+
+def pass_template_image_path(instance, filename):
+    """Stores the pass template documents in a unique folder
+
+    based on the content type and object_id
+    """
+    return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.id}/{filename}"
+
+
+class PassTemplate(models.Model):
+    """A class to represent a pass template
+
+    The template file field will be the word document that is used as a template to generate a park pass.
+
+    The highest version number will be the template that is used to generate passes.
+    """
+
+    template = models.FileField(
+        upload_to=pass_template_image_path, null=False, blank=False
+    )
+    version = models.SmallIntegerField(null=False, blank=False)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Pass Template"
+        verbose_name_plural = "Pass Templates"
+
+    def __str__(self):
+        return f"{self.template.name} (Version: {self.version}) (Size: {self.pretty_size()})"
+
+    def pretty_size(self):
+        size_bytes = self.template.size
+        if size_bytes == 0:
+            return "0B"
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return f"{s} {size_name[i]}"
 
 
 class HolidayPassManager(models.Manager):
