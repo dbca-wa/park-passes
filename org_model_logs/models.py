@@ -101,3 +101,5 @@ class CommunicationsLogEntry(models.Model):
     class Meta:
         unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
+        verbose_name = "Communications Log Entry"
+        verbose_name_plural = "Communications Log Entries"
