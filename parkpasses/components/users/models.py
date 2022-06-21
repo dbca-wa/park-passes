@@ -19,6 +19,9 @@ class UserInformation(models.Model):
     )
     # Any other park pass specific user data to go here
 
+    class Meta:
+        app_label = "parkpasses"
+
     @property
     def user(self):
         return retrieve_email_user(self.user)
