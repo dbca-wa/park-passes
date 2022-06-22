@@ -3,7 +3,7 @@
     Log Entries to any model in a project.
 """
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, router
+from django.db import models
 
 from parkpasses import settings
 
@@ -14,23 +14,15 @@ class ModelLogManager(models.Manager):
     and Communication Event Logs.
     """
 
-    def get_for_model(self, model, model_db=None):
-        model_db = model_db or router.db_for_write(model)
+    def get_for_model(self, model):
         content_type = ContentType.objects.get(model._meta.model)
-        return self.get_queryset().filter(
-            content_type=content_type,
-            db=model_db,
-        )
+        return self.filter(content_type=content_type)
 
-    def get_for_object_reference(self, model, object_id, model_db=None):
-        return self.get_for_model(model, model_db=model_db).filter(
-            object_id=object_id,
-        )
+    def get_for_object_reference(self, model, object_id):
+        return self.get_for_model(model).filter(object_id=object_id)
 
     def get_for_object(self, obj, model_db=None):
-        return self.get_queryset().get_for_object_reference(
-            obj.__class__, obj.pk, model_db=model_db
-        )
+        return self.get_for_object_reference(obj.__class__, obj.pk)
 
 
 class UserAction(models.Model):
@@ -109,3 +101,5 @@ class CommunicationsLogEntry(models.Model):
     class Meta:
         unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
+        verbose_name = "Communications Log Entry"
+        verbose_name_plural = "Communications Log Entries"

@@ -34,6 +34,7 @@ RUN apt-get install --no-install-recommends -y python3-setuptools python3-dev py
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr
 RUN apt-get install --no-install-recommends -y python-pil
+RUN apt-get install --no-install-recommends -y libreoffice
 RUN update-ca-certificates
 # install node 16
 RUN touch install_node.sh

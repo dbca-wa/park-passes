@@ -6,14 +6,13 @@ venv2/
 node_modules/
 #cronjobs
 .ropeproject/
-mooring/cache/*
+parkpasses/cache/*
 .ropeproject/
 *.swo
 venv/
 venv*/
 node_modules/
 cronjobs
-mooring/cache/*
 tmp/
 csv*/
 

@@ -2,6 +2,7 @@ import hashlib
 import os
 
 import confy
+import dj_database_url
 from confy import env
 from django.core.exceptions import ImproperlyConfigured
 
@@ -33,6 +34,7 @@ INSTALLED_APPS += [
     "rest_framework_gis",
     "ledger_api_client",
     "org_model_documents",
+    "org_model_logs",
     "parkpasses",
     "parkpasses.components.concessions",
     "parkpasses.components.main",
@@ -40,6 +42,8 @@ INSTALLED_APPS += [
     "parkpasses.components.parks",
     "parkpasses.components.discount_codes",
     "parkpasses.components.passes",
+    "parkpasses.components.cart",
+    "parkpasses.components.users",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -266,3 +270,10 @@ COMMUNICATIONS_LOG_ENTRY_CHOICES = [
 ]
 
 PARKPASSES_VOUCHER_EXPIRY_IN_DAYS = 365 * 2
+
+PARKPASSES_VALID_CART_CONTENT_TYPES = [
+    "parkpasses | voucher",
+    "parkpasses | pass",
+]
+
+DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")

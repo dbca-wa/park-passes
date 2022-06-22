@@ -49,6 +49,7 @@ pytest-django = "^4.5.2"
 django-debug-toolbar = "^3.4.0"
 qrcode = "^7.3.1"
 borb = "^2.0.27"
+docxtpl = "^0.16.0"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"

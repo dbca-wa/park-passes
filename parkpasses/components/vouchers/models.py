@@ -52,7 +52,7 @@ class Voucher(models.Model):
         indexes = (models.Index(fields=["code"]),)
 
     def __str__(self):
-        return self.voucher_number
+        return f"{self.voucher_number} (${self.amount})"
 
     @property
     def purchaser(self):

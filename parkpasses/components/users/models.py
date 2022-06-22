@@ -13,12 +13,16 @@ from parkpasses.ledger_api_utils import retrieve_email_user
 class UserInformation(models.Model):
     """A class to store any additional user data that is needed specific to parks passes"""
 
-    user = models.IntegerField(null=True, blank=True)  # EmailUserRO
+    user = models.IntegerField(null=False, blank=False)  # EmailUserRO
     concession = models.ForeignKey(
         Concession, on_delete=models.PROTECT, blank=True, null=True
     )
     # Any other park pass specific user data to go here
 
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name_plural = "user Information"
+
     @property
-    def user(self):
+    def email_user(self):
         return retrieve_email_user(self.user)

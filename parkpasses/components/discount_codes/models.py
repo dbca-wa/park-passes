@@ -109,7 +109,11 @@ class DiscountCode(models.Model):
         app_label = "parkpasses"
 
     def __str__(self):
-        return f"{self.code}"
+        if self.discount_code_batch.discount_percentage:
+            discount = f"{self.discount_code_batch.discount_percentage}% Off"
+        else:
+            discount = f"${self.discount_code_batch.discount_amount} Off"
+        return f"{self.code} ({discount})"
 
 
 class DiscountCodeBatchComment(models.Model):

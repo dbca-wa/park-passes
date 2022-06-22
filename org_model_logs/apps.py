@@ -3,4 +3,5 @@ from django.apps import AppConfig
 
 class DbcaModelLogsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "parkpasses.components.org_model_logs"
+    name = "org_model_logs"
+    verbose_name = "Park Pass Model Logs"
