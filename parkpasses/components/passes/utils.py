@@ -1,83 +1,79 @@
 """
-    This module provides utilities
+    This module provides utilities for the passes component
 """
 
 import logging
-from decimal import Decimal
+import os
+import subprocess
+from pathlib import Path
 
-from borb.pdf import PDF, Document, Page
-from borb.pdf.canvas.color.color import HexColor
-from borb.pdf.canvas.layout.forms.text_field import TextField
-from borb.pdf.canvas.layout.layout_element import Alignment
-from borb.pdf.canvas.layout.page_layout.multi_column_layout import SingleColumnLayout
-from borb.pdf.canvas.layout.page_layout.page_layout import PageLayout
-from borb.pdf.canvas.layout.table.fixed_column_width_table import FixedColumnWidthTable
-from borb.pdf.canvas.layout.text.paragraph import Paragraph
-
-from parkpasses import settings
+from django.conf import settings
+from django.utils.dateformat import DateFormat
+from docx.shared import Mm
+from docxtpl import DocxTemplate, InlineImage
 
 logger = logging.getLogger(__name__)
 
 
-class PdfGenerator:
-    """Used to generate a park pass pdf"""
+class PassUtils:
+    def generate_pass_pdf_from_docx_template(
+        self, park_pass, pass_template, qr_code_path
+    ):
 
-    def generate_park_pass_pdf(self, park_pass):
-        # Create empty Document
-        pdf = Document()
-
-        # Create empty Page
-        page = Page()
-
-        # Add Page to Document
-        pdf.append_page(page)
-
-        # Create PageLayout
-        layout: PageLayout = SingleColumnLayout(page)
-
-        # Let's start by adding a heading
-        layout.add(Paragraph("Patient Information:", font="Helvetica-Bold"))
-
-        # Use a table to lay out the form
-        table: FixedColumnWidthTable = FixedColumnWidthTable(
-            number_of_rows=1, number_of_columns=2
+        park_park_docx = DocxTemplate(
+            f"{settings.MEDIA_ROOT}/{pass_template.template.name}"
         )
 
-        # Name
-        table.add(
-            Paragraph(
-                "Name : ",
-                horizontal_alignment=Alignment.RIGHT,
-                font_color=HexColor("56cbf9"),
-            )
-        )
-        table.add(
-            TextField(value="Doe", font_color=HexColor("56cbf9"), font_size=Decimal(20))
+        qr_image = InlineImage(
+            park_park_docx, image_descriptor=qr_code_path, width=Mm(60)
         )
 
-        # Surname
-        table.add(
-            Paragraph(
-                "Surname : ",
-                horizontal_alignment=Alignment.RIGHT,
-                font_color=HexColor("56cbf9"),
-            )
+        date_format = DateFormat(park_pass.datetime_start)
+        datetime_start = date_format.format("jS F Y")
+
+        date_format = DateFormat(park_pass.datetime_created)
+        datetime_created = date_format.format("jS F Y")
+
+        context = {
+            "pass_qr_code": qr_image,
+            "pass_type": park_pass.option.pricing_window.pass_type.display_name,
+            "pass_start": datetime_start,
+            "pass_vehicle_registration_1": park_pass.vehicle_registration_1,
+            "pass_vehicle_registration_2": park_pass.vehicle_registration_2,
+            "pass_purchase_date": datetime_created,
+        }
+
+        park_park_docx.render(context)
+        park_pass_file_path = f"{settings.MEDIA_ROOT}/{park_pass._meta.app_label}/"
+        park_pass_file_path += (
+            f"{park_pass._meta.model.__name__}/passes/{park_pass.user}/{park_pass.pk}/"
         )
-        table.add(
-            TextField(
-                value="John", font_color=HexColor("56cbf9"), font_size=Decimal(20)
-            )
+        Path(park_pass_file_path).mkdir(parents=True, exist_ok=True)
+
+        park_pass_docx_file_name = "ParkPass.docx"
+        park_pass_docx_full_file_path = park_pass_file_path + park_pass_docx_file_name
+        park_park_docx.save(f"{park_pass_docx_full_file_path}")
+        output = subprocess.check_output(
+            [
+                "libreoffice",
+                "--convert-to",
+                "pdf",
+                f"{park_pass_docx_full_file_path}",
+                "--outdir",
+                park_pass_file_path,
+            ]
         )
 
-        # Adding Table to PageLayout
-        layout.add(table)
+        logger.debug("output = " + str(output))
 
-        path = f"{settings.MEDIA_ROOT}/passes/{park_pass.pk}/ParkPass.pdf"
+        # convert(f"{park_pass_file_path}/{park_pass_docx_file_name}")
 
-        logger.debug("path: " + path)
+        park_pass_pdf_file_name = "ParkPass.pdf"
+        park_pass_pdf_full_file_path = (
+            f"{park_pass_file_path}/{park_pass_pdf_file_name}"
+        )
+        park_pass.park_pass_pdf.name = park_pass_pdf_full_file_path
 
-        # Store
-        with open(path, "wb") as out_file_handle:
-            PDF.dumps(out_file_handle, pdf)
-
-        return path
+        # Clean up unused files
+        os.remove(park_pass_docx_full_file_path)
+        os.remove(qr_code_path)
