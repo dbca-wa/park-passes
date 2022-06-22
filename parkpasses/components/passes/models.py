@@ -11,13 +11,15 @@ import logging
 import math
 
 import qrcode
+from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
 from parkpasses.components.parks.models import Park
-from parkpasses.components.passes.utils import PdfGenerator
+from parkpasses.components.passes.exceptions import PassTemplateDoesNotExist
+from parkpasses.components.passes.utils import PassUtils
 from parkpasses.ledger_api_utils import retrieve_email_user
 from parkpasses.settings import PASS_TYPES
 
@@ -29,7 +31,7 @@ def pass_type_image_path(instance, filename):
 
     based on the content type and object_id
     """
-    return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.id}/{filename}"
+    return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.name}/{filename}"
 
 
 class PassType(models.Model):
@@ -135,6 +137,46 @@ class PassTypePricingWindowOption(models.Model):
             (Pricing Window: {self.pricing_window.name})"
 
 
+def pass_template_file_path(instance, filename):
+    """Stores the pass template documents in a unique folder
+
+    based on the content type and object_id
+    """
+    return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.version}/{filename}"
+
+
+class PassTemplate(models.Model):
+    """A class to represent a pass template
+
+    The template file field will be the word document that is used as a template to generate a park pass.
+
+    The highest version number will be the template that is used to generate passes.
+    """
+
+    template = models.FileField(
+        upload_to=pass_template_file_path, null=False, blank=False
+    )
+    version = models.SmallIntegerField(unique=True, null=False, blank=False)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Pass Template"
+        verbose_name_plural = "Pass Templates"
+
+    def __str__(self):
+        return f"{self.template.name} (Version: {self.version}) (Size: {self.pretty_size()})"
+
+    def pretty_size(self):
+        size_bytes = self.template.size
+        if size_bytes == 0:
+            return "0B"
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return f"{s} {size_name[i]}"
+
+
 class PassManager(models.Manager):
     def get_queryset(self):
         return (
@@ -213,21 +255,30 @@ class Pass(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def generate_qrcode(self):
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        pass_data_json = serializers.serialize("json", self)
+        qr = qrcode.QRCode()
+        pass_data_json = serializers.serialize("json", [self])
         # replace this line with the real encryption server at a later date
         encrypted_pass_data = self.imaginary_encryption_endpoint(pass_data_json)
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
-        return qrcode.make_image(fill="black", back_color="white")
-        # qr_image.save(park_pass_pdf_path(self, "qrcode.png"))
+        qr_image = qr.make_image(fill="black", back_color="white")
+        qr_image_path = f"{settings.MEDIA_ROOT}/{self._meta.app_label}/"
+        qr_image_path += f"{self._meta.model.__name__}/passes/{self.user}/{self.pk}"
+        qr_image.save(f"{qr_image_path}/qr_image.png")
+        return f"{qr_image_path}/qr_image.png"
 
     def generate_park_pass_pdf(self):
-        pdfGenerator = PdfGenerator()
-        self.park_pass_pdf = pdfGenerator.generate_park_pass_pdf(self)
+        if not PassTemplate.objects.count():
+            raise PassTemplateDoesNotExist()
+        qr_code_path = self.generate_qrcode()
+        pass_template = PassTemplate.objects.order_by("-version").first()
+        pass_utils = PassUtils()
+        pass_utils.generate_pass_pdf_from_docx_template(
+            self, pass_template, qr_code_path
+        )
 
     def imaginary_encryption_endpoint(self, json_pass_data):
-        return json_pass_data + json_pass_data
+        return json_pass_data
 
     def set_processing_status(self):
         if self.datetime_start > timezone.now():
@@ -296,46 +347,6 @@ class PassCancellation(models.Model):
         self.park_pass.set_processing_status()
         self.park_pass.save()
         super().delete()
-
-
-def pass_template_image_path(instance, filename):
-    """Stores the pass template documents in a unique folder
-
-    based on the content type and object_id
-    """
-    return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.id}/{filename}"
-
-
-class PassTemplate(models.Model):
-    """A class to represent a pass template
-
-    The template file field will be the word document that is used as a template to generate a park pass.
-
-    The highest version number will be the template that is used to generate passes.
-    """
-
-    template = models.FileField(
-        upload_to=pass_template_image_path, null=False, blank=False
-    )
-    version = models.SmallIntegerField(null=False, blank=False)
-
-    class Meta:
-        app_label = "parkpasses"
-        verbose_name = "Pass Template"
-        verbose_name_plural = "Pass Templates"
-
-    def __str__(self):
-        return f"{self.template.name} (Version: {self.version}) (Size: {self.pretty_size()})"
-
-    def pretty_size(self):
-        size_bytes = self.template.size
-        if size_bytes == 0:
-            return "0B"
-        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-        i = int(math.floor(math.log(size_bytes, 1024)))
-        p = math.pow(1024, i)
-        s = round(size_bytes / p, 2)
-        return f"{s} {size_name[i]}"
 
 
 class HolidayPassManager(models.Manager):
