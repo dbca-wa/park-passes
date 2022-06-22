@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name='PassTemplate',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('template', models.FileField(upload_to=parkpasses.components.passes.models.pass_template_image_path)),
+                ('template', models.FileField(upload_to=parkpasses.components.passes.models.pass_template_file_path)),
                 ('version', models.SmallIntegerField()),
             ],
         ),
