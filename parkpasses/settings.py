@@ -33,6 +33,7 @@ INSTALLED_APPS += [
     "rest_framework_datatables",
     "rest_framework_gis",
     "ledger_api_client",
+    "ckeditor",
     "org_model_documents",
     "org_model_logs",
     "parkpasses",
@@ -44,6 +45,7 @@ INSTALLED_APPS += [
     "parkpasses.components.passes",
     "parkpasses.components.cart",
     "parkpasses.components.users",
+    "parkpasses.components.help",
 ]
 
 ADD_REVERSION_ADMIN = True
