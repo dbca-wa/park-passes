@@ -30,12 +30,18 @@ class OrderManager(models.Manager):
 class Order(models.Model):
     """A class to represent an order"""
 
+    order_number = models.CharField(unique=True, max_length=50, null=True, blank=True)
     user = models.IntegerField(null=False, blank=False)  # EmailUserRO
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
-    total = models.DecimalField(max_digits=7, decimal_places=2, blank=False, null=False)
 
     class Meta:
         app_label = "parkpasses"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.discount_code_batch_number:
+            self.discount_code_batch_number = f"O{self.pk:06d}"
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Order for user: {self.user} (Created: {self.datetime_created})"
