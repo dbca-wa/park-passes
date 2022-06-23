@@ -45,6 +45,8 @@ class PassType(models.Model):
 
     class Meta:
         app_label = "parkpasses"
+        verbose_name = "Pass Type"
+        verbose_name_plural = "Pass Types"
 
     def __str__(self):
         return f"{self.display_name}"
