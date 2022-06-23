@@ -14,7 +14,10 @@
 
 <ul class="nav navbar-expand-lg navbar-light">
 {% if is_internal_login %}
-other menu items
+<li class="nav-item"><a class="nav-link" href="/internal/parkpasses">Park Passes</a></li>
+<li class="nav-item"><a class="nav-link" href="/internal/compliances">Vouchers</a></li>
+<li class="nav-item"><a class="nav-link" href="/internal/discount-codes">Discount Codes</a></li>
+<li class="nav-item"><a class="nav-link" href="/internal/reports">Invoices &amp; Monthly Reports</a></li>
 {% else %}
 {% endif %}
 </ul>
