@@ -241,7 +241,7 @@ GROUP_NAME_ASSESSOR = "ProposalAssessorGroup"
 GROUP_NAME_APPROVER = "ProposalApproverGroup"
 
 template_title = "Park Passes"
-template_group = "parkspasses"
+template_group = "parkswildlife"
 
 HOLIDAY_PASS = "HOLIDAY_PASS"
 ANNUAL_LOCAL_PASS = "ANNUAL_LOCAL_PASS"
