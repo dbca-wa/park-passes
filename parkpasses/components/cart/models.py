@@ -34,7 +34,7 @@ class Cart(models.Model):
         app_label = "parkpasses"
 
     def __str__(self):
-        return f"Cart for user: {self.user} (datetime_created {self.datetime_created})"
+        return f"Cart for user: {self.user} (Created: {self.datetime_created})"
 
     @property
     def email_user(self):
@@ -85,6 +85,10 @@ class CartItem(models.Model):
         )
         logger.debug("self.content_type = " + str(self.content_type))
         if str(self.content_type) not in settings.PARKPASSES_VALID_CART_CONTENT_TYPES:
+            logger.error(
+                f"Attempting to add invalid content type {self.content_type} \
+                    to cart {self.cart.pk} for user {self.cart.user}"
+            )
             raise ValueError("A Cart Item can only contain a Voucher or a Pass")
         datetime_item_added = timezone.now()
         logger.debug("self.cart.items = " + str(self.cart.items))
