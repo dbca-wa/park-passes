@@ -9,6 +9,7 @@ from django.db import models
 from django.utils import timezone
 
 from parkpasses.components.discount_codes.models import DiscountCode
+from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.users.models import UserInformation
 from parkpasses.components.vouchers.models import Voucher
@@ -47,6 +48,15 @@ class Cart(models.Model):
             grand_total += item.get_total_price()
         return grand_total
 
+    def create_order(self):
+        order = Order(user=self.user)
+        order.save()
+        for item in self.items:
+            order_item = OrderItem(**item)
+            order_item.order = order
+            order_item.save()
+        self.delete()
+
 
 class CartItemManager(models.Manager):
     def get_queryset(self):
@@ -59,7 +69,7 @@ class CartItem(models.Model):
     objects = CartItemManager()
 
     cart = models.ForeignKey(
-        Cart, related_name="items", on_delete=models.PROTECT, null=False, blank=False
+        Cart, related_name="items", on_delete=models.CASCADE, null=False, blank=False
     )
     object_id = models.CharField(max_length=191)  # voucher or pass id
     content_type = models.ForeignKey(
