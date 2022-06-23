@@ -269,6 +269,9 @@ class Pass(models.Model):
 
     def generate_park_pass_pdf(self):
         if not PassTemplate.objects.count():
+            logger.critical(
+                "CRITICAL: The system can not find a Pass Template to use for generating park passes."
+            )
             raise PassTemplateDoesNotExist()
         qr_code_path = self.generate_qrcode()
         pass_template = PassTemplate.objects.order_by("-version").first()
@@ -279,6 +282,25 @@ class Pass(models.Model):
 
     def imaginary_encryption_endpoint(self, json_pass_data):
         return json_pass_data
+
+    def can_cancel_automatic_renewal(self):
+        return self.datetime_expiry > timezone.now() + timezone.timedelta(days=1)
+
+    def cancel_automatic_renewal(self):
+        if not self.renew_automatically:
+            raise ValidationError("This pass does not have automatic renewal enabled.")
+        elif not self.can_cancel_automatic_renewal():
+            raise ValidationError(
+                "You must cancel automatic renewal of a pass at least 24 hours before the pass is due to renew."
+            )
+        else:
+            self.renew_automatically = False
+            self.save(update_fields=["renew_automatically"])
+            logger.info(
+                "Automatic renewal of pass {} has been cancelled.".format(
+                    self.pass_number
+                )
+            )
 
     def set_processing_status(self):
         if self.datetime_start > timezone.now():
