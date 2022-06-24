@@ -136,7 +136,7 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
     """
 
     model = PassTemplate
-    serializer_class = PassSerializer
+    serializer_class = PassTemplateSerializer
 
     def get_queryset(self):
         return PassTemplate.objects.all()
@@ -166,7 +166,7 @@ class PassViewSet(viewsets.ModelViewSet):
     """
 
     model = Pass
-    serializer_class = PassTemplateSerializer
+    serializer_class = PassSerializer
 
     def get_queryset(self):
         return Pass.objects.all()

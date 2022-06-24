@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from parkpasses.components.passes.models import (
     Pass,
+    PassTemplate,
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
@@ -62,7 +63,7 @@ class PassTypePricingWindowOptionSerializer(serializers.ModelSerializer):
 
 class PassTemplateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PassTypePricingWindowOption
+        model = PassTemplate
         fields = "__all__"
 
 
