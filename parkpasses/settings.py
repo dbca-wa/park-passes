@@ -115,6 +115,10 @@ if DEV_STATIC and not DEV_STATIC_URL:
     raise ImproperlyConfigured("If running in DEV_STATIC, DEV_STATIC_URL has to be set")
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
+TEMPLATES[0]["OPTIONS"]["context_processors"].append(
+    "parkpasses.context_processors.parkpasses_template_url"
+)
+
 # Department details
 SYSTEM_NAME = env("SYSTEM_NAME", "Park Passes")
 SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "LALS")
