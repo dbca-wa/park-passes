@@ -239,8 +239,7 @@ APPLICATION_TYPES = [
 ]
 KMI_SERVER_URL = env("KMI_SERVER_URL", "https://kmi.dbca.wa.gov.au")
 
-GROUP_NAME_ASSESSOR = "ProposalAssessorGroup"
-GROUP_NAME_APPROVER = "ProposalApproverGroup"
+GROUP_NAME_RETAILER = "RetailerGroup"
 
 template_title = "Park Passes"
 template_group = "parkswildlife"

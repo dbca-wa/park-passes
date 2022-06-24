@@ -21,12 +21,7 @@ class DefaultDataManager:
             except Exception as e:
                 logger.error(f"{e}, ApplicationType: {item[1]}")
 
-        # ProposalAssessorGroup
+        # RetailerGroup
         group, created = SystemGroup.objects.get_or_create(
-            name=settings.GROUP_NAME_ASSESSOR
-        )
-
-        # ProposalApproverGroup
-        group, created = SystemGroup.objects.get_or_create(
-            name=settings.GROUP_NAME_APPROVER
+            name=settings.GROUP_NAME_RETAILER
         )

@@ -6,7 +6,7 @@ from ledger_api_client.ledger_models import EmailUserRO
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroup
 
-from parkpasses.settings import GROUP_NAME_APPROVER, GROUP_NAME_ASSESSOR
+from parkpasses.settings import GROUP_NAME_RETAILER
 
 logger = logging.getLogger(__name__)
 
@@ -43,18 +43,11 @@ def is_parkpasses_admin(request):
     )
 
 
-def is_assessor(user_id):
+def is_retailer(user_id):
     if isinstance(user_id, EmailUser) or isinstance(user_id, EmailUserRO):
         user_id = user_id.id
-    assessor_group = SystemGroup.objects.get(name=GROUP_NAME_ASSESSOR)
-    return True if user_id in assessor_group.get_system_group_member_ids() else False
-
-
-def is_approver(user_id):
-    if isinstance(user_id, EmailUser) or isinstance(user_id, EmailUserRO):
-        user_id = user_id.id
-    assessor_group = SystemGroup.objects.get(name=GROUP_NAME_APPROVER)
-    return True if user_id in assessor_group.get_system_group_member_ids() else False
+    retailer_group = SystemGroup.objects.get(name=GROUP_NAME_RETAILER)
+    return True if user_id in retailer_group.get_system_group_member_ids() else False
 
 
 def in_dbca_domain(request):
