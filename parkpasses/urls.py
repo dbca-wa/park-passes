@@ -18,7 +18,8 @@ api_patterns = [
 # URL Patterns
 urlpatterns = [
     path(r"admin/", admin.site.urls),
-    url(r"", include(api_patterns)),
+    url(r"passes/", include("parkpasses.components.passes.urls")),
+    url(r"api/", include(api_patterns)),
     url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
     url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
     url(
