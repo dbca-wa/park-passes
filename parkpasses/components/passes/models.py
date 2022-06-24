@@ -41,6 +41,7 @@ class PassType(models.Model):
     name = models.CharField(max_length=100)  # Name reserved for system use
     display_name = models.CharField(max_length=50, null=False, blank=False)
     display_order = models.SmallIntegerField(null=False, blank=False)
+    display_retailer = models.BooleanField(null=False, blank=False, default=True)
     display_externally = models.BooleanField(null=False, blank=False, default=True)
 
     class Meta:

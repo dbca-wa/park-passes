@@ -89,6 +89,7 @@ class PassTypeAdmin(admin.ModelAdmin):
         "name",
         "display_name",
         "display_order",
+        "display_retailer",
         "display_externally",
     )
     ordering = [
