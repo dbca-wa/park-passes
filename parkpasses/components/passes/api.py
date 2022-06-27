@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from rest_framework import viewsets
+from rest_framework_datatables.filters import DatatablesFilterBackend
 
 from parkpasses.components.passes.models import (
     Pass,
@@ -149,6 +150,8 @@ class PassViewSet(viewsets.ModelViewSet):
 
     model = Pass
     serializer_class = PassSerializer
+    filter_backends = (DatatablesFilterBackend,)
+    filterset_fields = ["pass_type", "processing_status"]
 
     def get_queryset(self):
         return Pass.objects.all()
