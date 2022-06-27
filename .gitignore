@@ -15,6 +15,9 @@ node_modules/
 cronjobs
 tmp/
 csv*/
+*.csv
+*.xls*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
