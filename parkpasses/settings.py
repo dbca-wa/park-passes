@@ -44,6 +44,7 @@ INSTALLED_APPS += [
     "parkpasses.components.discount_codes",
     "parkpasses.components.passes",
     "parkpasses.components.cart",
+    "parkpasses.components.orders",
     "parkpasses.components.users",
     "parkpasses.components.help",
 ]
