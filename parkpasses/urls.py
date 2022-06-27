@@ -20,6 +20,7 @@ urlpatterns = [
     path(r"admin/", admin.site.urls),
     url(r"passes/", include("parkpasses.components.passes.urls")),
     url(r"parks/", include("parkpasses.components.parks.urls")),
+    url(r"concessions/", include("parkpasses.components.concessions.urls")),
     url(r"api/", include(api_patterns)),
     url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
     url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
