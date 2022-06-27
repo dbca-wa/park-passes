@@ -53,7 +53,7 @@ class Order(models.Model):
 
 class OrderItemManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related("cart")
+        return super().get_queryset().select_related("order")
 
 
 class OrderItem(models.Model):
