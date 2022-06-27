@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
@@ -143,6 +144,21 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
         return False
 
 
+class PassFilter(filters.FilterSet):
+    start_date_from = filters.DateFilter(
+        field_name="datetime_start", fieldlookup_expr="gte"
+    )
+    start_date_to = filters.DateFilter(field_name="datetime_start", lookup_expr="lte")
+
+    class Meta:
+        model = Pass
+        fields = [
+            "datetime_start",
+            "option__pricing_window__pass_type__display_name",
+            "processing_status",
+        ]
+
+
 class PassViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for performing actions on passes.
@@ -151,7 +167,7 @@ class PassViewSet(viewsets.ModelViewSet):
     model = Pass
     serializer_class = PassSerializer
     filter_backends = (DatatablesFilterBackend,)
-    filterset_fields = ["pass_type", "processing_status"]
+    filterset_class = PassFilter
 
     def get_queryset(self):
         return Pass.objects.all()
