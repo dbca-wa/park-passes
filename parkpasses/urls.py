@@ -25,6 +25,7 @@ urlpatterns = [
     url(r"vouchers/", include("parkpasses.components.vouchers.urls")),
     url(r"cart/", include("parkpasses.components.cart.urls")),
     url(r"help/", include("parkpasses.components.help.urls")),
+    url(r"orders/", include("parkpasses.components.orders.urls")),
     url(r"api/", include(api_patterns)),
     url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
     url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
