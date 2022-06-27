@@ -32,23 +32,6 @@ class InternalPassTypeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PassTypePricingWindowSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PassType
-        fields = [
-            "id",
-            "image",
-            "display_name",
-            "display_order",
-        ]
-        read_only_fields = [
-            "id",
-            "image",
-            "display_name",
-            "display_order",
-        ]
-
-
 class PricingWindowSerializer(serializers.ModelSerializer):
     class Meta:
         model = PassTypePricingWindow
@@ -68,6 +51,45 @@ class PassTemplateSerializer(serializers.ModelSerializer):
 
 
 class PassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pass
+        fields = [
+            "id",
+            "pass_number",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "park",
+            "datetime_start",
+            "datetime_expiry",
+            "renew_automatically",
+            "processing_status",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+        read_only_fields = [
+            "id",
+            "park",
+            "datetime_start",
+            "datetime_expiry",
+            "park_pass_pdf",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+    # def __init__(self, *args, **kwargs):
+    #    super(PassSerializer, self).__init__(*args, **kwargs)
+    #    if settings.ANNUAL_LOCAL_PASS ==
+    #    if "park" in self.fields.keys():
+    #        self.fields.pop("park")
+
+
+class InternalPassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pass
         fields = "__all__"
