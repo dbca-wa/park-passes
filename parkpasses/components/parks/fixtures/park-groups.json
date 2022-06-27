@@ -1,0 +1,119 @@
+[
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 1,
+        "fields": {
+            "name": "Albany Group",
+            "display_order": 1,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 2,
+        "fields": {
+            "name": "Karijini/Millstream–Chichester",
+            "display_order": 2,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 3,
+        "fields": {
+            "name": "Yanchep",
+            "display_order": 3,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 4,
+        "fields": {
+            "name": "Kalbarri",
+            "display_order": 4,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 5,
+        "fields": {
+            "name": "Warren Group",
+            "display_order": 5,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 6,
+        "fields": {
+            "name": "Francois Peron",
+            "display_order": 6,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 7,
+        "fields": {
+            "name": "Lane Poole/Serpentine",
+            "display_order": 7,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 8,
+        "fields": {
+            "name": "Esperance Group",
+            "display_order": 8,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 9,
+        "fields": {
+            "name": "Mirima/Mitchell River/Purnululu",
+            "display_order": 9,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 10,
+        "fields": {
+            "name": "Cape Range",
+            "display_order": 10,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 11,
+        "fields": {
+            "name": "Lesueur/Nambung",
+            "display_order": 11,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 12,
+        "fields": {
+            "name": "King Leopold/Tunnel Creek/Windjana Gorge",
+            "display_order": 13,
+            "display_externally": true
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 13,
+        "fields": {
+            "name": "Avon Valley/John Forrest/Walyunga",
+            "display_order": 12,
+            "display_externally": true
+        }
+    }
+]
