@@ -1,14 +1,17 @@
 from django.contrib import admin
 
-from parkpasses.components.parks.models import LGA, Park, Postcode
+from parkpasses.components.parks.models import LGA, Member, Park, ParkGroup, Postcode
 
 
-class ParkAdmin(admin.ModelAdmin):
-    model = Park
+class ParkGroupAdmin(admin.ModelAdmin):
+    model = ParkGroup
     fields = [
         "name",
         "display_order",
         "display_externally",
+    ]
+    search_fields = [
+        "name",
     ]
     list_display = (
         "name",
@@ -18,7 +21,52 @@ class ParkAdmin(admin.ModelAdmin):
     ordering = ("display_order",)
 
 
+admin.site.register(ParkGroup, ParkGroupAdmin)
+
+
+class ParkAdmin(admin.ModelAdmin):
+    model = Park
+    fields = [
+        "name",
+        "image",
+        "display_externally",
+    ]
+    search_fields = [
+        "name",
+    ]
+    list_display = (
+        "name",
+        "display_externally",
+    )
+    ordering = ("name",)
+
+
 admin.site.register(Park, ParkAdmin)
+
+
+class MemberAdmin(admin.ModelAdmin):
+    model = Member
+    fields = [
+        "park_group",
+        "park",
+        "display_order",
+    ]
+    autocomplete_fields = (
+        "park_group",
+        "park",
+    )
+    list_display = (
+        "park_group",
+        "park",
+        "display_order",
+    )
+    ordering = (
+        "park_group",
+        "display_order",
+    )
+
+
+admin.site.register(Member, MemberAdmin)
 
 
 class PostcodeAdmin(admin.ModelAdmin):
@@ -44,14 +92,20 @@ class LGAAdmin(admin.ModelAdmin):
     autocomplete_fields = ("postcodes",)
     fields = [
         "name",
-        "park",
+        "park_group",
         "postcodes",
     ]
-    list_display = (
+    search_fields = [
         "name",
-        "park",
+    ]
+    list_display = (
+        "park_group",
+        "name",
     )
-    ordering = ("park__name",)
+    ordering = (
+        "park_group__name",
+        "name",
+    )
 
     def postcodes(self, obj):
         return obj.postcodes
