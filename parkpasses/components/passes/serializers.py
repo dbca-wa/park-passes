@@ -90,6 +90,10 @@ class PassSerializer(serializers.ModelSerializer):
 
 
 class InternalPassSerializer(serializers.ModelSerializer):
+    pass_type = serializers.CharField(source="option.pricing_window.pass_type")
+    pricing_window = serializers.CharField(source="option.pricing_window")
+
     class Meta:
         model = Pass
         fields = "__all__"
+        read_only_fields = ["pass_type", "pricing_window"]
