@@ -2,7 +2,6 @@ import logging
 
 from django.conf import settings
 from rest_framework import viewsets
-from rest_framework.permissions import BasePermission
 
 from parkpasses.components.passes.models import (
     Pass,
@@ -12,6 +11,7 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.passes.serializers import (
+    InternalPassSerializer,
     InternalPassTypeSerializer,
     PassSerializer,
     PassTemplateSerializer,
@@ -22,11 +22,6 @@ from parkpasses.components.passes.serializers import (
 from parkpasses.helpers import belongs_to, is_customer, is_internal
 
 logger = logging.getLogger(__name__)
-
-
-class IsInternal(BasePermission):
-    def has_permission(self, request, view):
-        return is_internal(self.request)
 
 
 class PassTypeViewSet(viewsets.ModelViewSet):
@@ -102,7 +97,7 @@ class PricingWindowViewSet(viewsets.ModelViewSet):
 
 class PassTypePricingWindowOptionViewSet(viewsets.ModelViewSet):
     """
-    A ViewSet for performing actions on pricing windows.
+    A ViewSet for performing actions on pricing windows options.
     """
 
     model = PassTypePricingWindowOption
@@ -132,7 +127,7 @@ class PassTypePricingWindowOptionViewSet(viewsets.ModelViewSet):
 
 class PassTemplateViewSet(viewsets.ModelViewSet):
     """
-    A ViewSet for performing actions on pricing windows.
+    A ViewSet for performing actions on pass templates.
     """
 
     model = PassTemplate
@@ -144,25 +139,12 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
     def has_permission(self, request, view):
         if is_internal(request):
             return True
-        if belongs_to(self.request.user, settings.GROUP_NAME_RETAILER):
-            if view.action in [
-                "list",
-                "retrieve",
-            ]:
-                return True
-            return False
-        if is_customer(request):
-            if view.action in [
-                "list",
-                "retrieve",
-            ]:
-                return True
         return False
 
 
 class PassViewSet(viewsets.ModelViewSet):
     """
-    A ViewSet for performing actions on pricing windows.
+    A ViewSet for performing actions on passes.
     """
 
     model = Pass
@@ -171,6 +153,14 @@ class PassViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Pass.objects.all()
 
+    def get_serializer_class(self):
+        if is_internal(self.request):
+            return InternalPassSerializer
+        elif belongs_to(self.request.user, settings.GROUP_NAME_RETAILER):
+            return PassTypeSerializer
+        else:
+            return PassTypeSerializer
+
     def has_permission(self, request, view):
         if is_internal(request):
             return True
@@ -178,13 +168,29 @@ class PassViewSet(viewsets.ModelViewSet):
             if view.action in [
                 "list",
                 "retrieve",
+                "create",
+                "update",
+                "partial_update",
             ]:
                 return True
             return False
         if is_customer(request):
             if view.action in [
                 "list",
-                "retrieve",
+                "create",
+                "update",
+                "partial_update",
             ]:
                 return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        if is_internal(request):
+            return True
+        if is_customer(request):
+            if view.action in [
+                "partial_update",
+            ]:
+                if obj.user == request.user.id:
+                    return True
         return False
