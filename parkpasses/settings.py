@@ -31,6 +31,7 @@ INSTALLED_APPS += [
     "webtemplate_dbca",
     "rest_framework",
     "rest_framework_datatables",
+    "django_filters",
     "rest_framework_gis",
     "ledger_api_client",
     "ckeditor",
@@ -61,9 +62,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
-    "DEFAULT_FILTER_BACKENDS": (
-        "rest_framework_datatables.filters.DatatablesFilterBackend",
-    ),
+    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 20,
 }
@@ -122,7 +121,7 @@ TEMPLATES[0]["OPTIONS"]["context_processors"].append(
 
 # Department details
 SYSTEM_NAME = env("SYSTEM_NAME", "Park Passes")
-SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "LALS")
+SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "PP")
 SITE_PREFIX = env("SITE_PREFIX")
 SITE_DOMAIN = env("SITE_DOMAIN")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", "licensing@" + SITE_DOMAIN).lower()
