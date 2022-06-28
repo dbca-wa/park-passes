@@ -186,7 +186,10 @@ class PassManager(models.Manager):
             super()
             .get_queryset()
             .select_related(
-                "option", "option__pricing_window", "option__pricing_window__pass_type"
+                "option",
+                "option__pricing_window",
+                "option__pricing_window__pass_type",
+                "cancellation",
             )
         )
 
@@ -306,7 +309,9 @@ class Pass(models.Model):
             )
 
     def set_processing_status(self):
-        if self.datetime_start > timezone.now():
+        if PassCancellation.objects.filter(park_pass=self).count():
+            self.processing_status = Pass.CANCELLED
+        elif self.datetime_start > timezone.now():
             self.processing_status = Pass.FUTURE
         elif self.datetime_expiry < timezone.now():
             self.processing_status = Pass.EXPIRED
@@ -314,12 +319,6 @@ class Pass(models.Model):
             self.processing_status = Pass.CURRENT
 
     def save(self, *args, **kwargs):
-        if Pass.CANCELLED == self.processing_status:
-            raise ValidationError(
-                "You can't updated a park pass that has been cancelled."
-            )
-
-        logger.debug("self.processing_status: " + self.processing_status)
         self.datetime_expiry = self.datetime_start + timezone.timedelta(
             days=self.option.duration
         )
@@ -352,7 +351,9 @@ class PassCancellation(models.Model):
 
     objects = PassCancellationManager()
 
-    park_pass = models.OneToOneField(Pass, on_delete=models.PROTECT)
+    park_pass = models.OneToOneField(
+        Pass, on_delete=models.PROTECT, related_name="cancellation"
+    )
     cancellation_reason = models.TextField(null=False, blank=False)
     datetime_cancelled = models.DateTimeField(auto_now_add=True)
 
@@ -364,14 +365,9 @@ class PassCancellation(models.Model):
         return f"Cancellation for Pass: {self.park_pass.pass_number}(Date Cancelled: {self.datetime_cancelled})"
 
     def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         self.park_pass.processing_status = Pass.CANCELLED
         self.park_pass.save()
-        super().save(*args, **kwargs)
-
-    def delete(self):
-        self.park_pass.set_processing_status()
-        self.park_pass.save()
-        super().delete()
 
 
 class HolidayPassManager(models.Manager):
