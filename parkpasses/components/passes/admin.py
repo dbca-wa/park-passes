@@ -23,6 +23,7 @@ class PassAdmin(admin.ModelAdmin):
     model = Pass
     fields = [
         "pass_number",
+        "park_pass_pdf",
         "processing_status",
         "sold_via",
         "first_name",
