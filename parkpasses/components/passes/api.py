@@ -2,8 +2,14 @@ import logging
 
 from django.conf import settings
 from django_filters import rest_framework as filters
-from rest_framework import viewsets
-from rest_framework_datatables.filters import DatatablesFilterBackend
+from rest_framework import status, viewsets
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_datatables.django_filters.backends import DatatablesFilterBackend
+from rest_framework_datatables.django_filters.filterset import DatatablesFilterSet
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
 from parkpasses.components.passes.models import (
     Pass,
@@ -13,6 +19,7 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.passes.serializers import (
+    InternalPassCancellationSerializer,
     InternalPassSerializer,
     InternalPassTypeSerializer,
     PassSerializer,
@@ -22,8 +29,46 @@ from parkpasses.components.passes.serializers import (
     PricingWindowSerializer,
 )
 from parkpasses.helpers import belongs_to, is_customer, is_internal
+from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
+
+
+class PassTypesDistinct(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        if request.query_params.get("for_filter", ""):
+            pass_types = [
+                {"id": pass_type.name, "text": pass_type.display_name}
+                for pass_type in PassType.objects.all().distinct()
+            ]
+        else:
+            pass_types = [
+                {"code": pass_type.name, "description": pass_type.display_name}
+                for pass_type in PassType.objects.all().distinct()
+            ]
+        return Response(pass_types)
+
+
+class PassProcessingStatusesDistinct(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        if request.query_params.get("for_filter", ""):
+            processing_status_choices = [
+                {"id": processing_status_choice[0], "text": processing_status_choice[1]}
+                for processing_status_choice in Pass.PROCESSING_STATUS_CHOICES
+            ]
+        else:
+            processing_status_choices = [
+                {
+                    "code": processing_status_choice[0],
+                    "description": processing_status_choice[1],
+                }
+                for processing_status_choice in Pass.PROCESSING_STATUS_CHOICES
+            ]
+        return Response(processing_status_choices)
 
 
 class PassTypeViewSet(viewsets.ModelViewSet):
@@ -144,17 +189,14 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
         return False
 
 
-class PassFilter(filters.FilterSet):
-    start_date_from = filters.DateFilter(
-        field_name="datetime_start", fieldlookup_expr="gte"
-    )
+class PassFilter(DatatablesFilterSet):
+    start_date_from = filters.DateFilter(field_name="datetime_start", lookup_expr="gte")
     start_date_to = filters.DateFilter(field_name="datetime_start", lookup_expr="lte")
 
     class Meta:
         model = Pass
         fields = [
-            "datetime_start",
-            "option__pricing_window__pass_type__display_name",
+            # "option__pricing_window__pass_type__name",
             "processing_status",
         ]
 
@@ -164,12 +206,20 @@ class PassViewSet(viewsets.ModelViewSet):
     A ViewSet for performing actions on passes.
     """
 
+    search_fields = ["last_name"]
+    queryset = Pass.objects.all()
     model = Pass
     serializer_class = PassSerializer
-    filter_backends = (DatatablesFilterBackend,)
-    filterset_class = PassFilter
+    filter_backends = [SearchFilter, DatatablesFilterBackend]
+    pagination_class = DatatablesPageNumberPagination
+    # filterset_class = PassFilter
+    filterset_fields = ["processing_status"]
+    page_size = 10
 
     def get_queryset(self):
+        qs = Pass.objects.all()
+        qs = self.filter_queryset(qs)
+        logger.debug("qs = " + qs)
         return Pass.objects.all()
 
     def get_serializer_class(self):
@@ -213,3 +263,14 @@ class PassViewSet(viewsets.ModelViewSet):
                 if obj.user == request.user.id:
                     return True
         return False
+
+
+class CancelPass(APIView):
+    permission_classes = [IsInternal]
+
+    def post(self, request, format=None):
+        serializer = InternalPassCancellationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
