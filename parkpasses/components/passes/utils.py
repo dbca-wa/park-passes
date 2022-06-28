@@ -48,14 +48,16 @@ class PassUtils:
         }
 
         park_park_docx.render(context)
-        park_pass_file_path = f"{settings.MEDIA_ROOT}/{park_pass._meta.app_label}/"
+        park_pass_file_path = f"{park_pass._meta.app_label}/"
         park_pass_file_path += (
             f"{park_pass._meta.model.__name__}/passes/{park_pass.user}/{park_pass.pk}/"
         )
         Path(park_pass_file_path).mkdir(parents=True, exist_ok=True)
 
         park_pass_docx_file_name = "ParkPass.docx"
-        park_pass_docx_full_file_path = park_pass_file_path + park_pass_docx_file_name
+        park_pass_docx_full_file_path = (
+            settings.MEDIA_ROOT + "/" + park_pass_file_path + park_pass_docx_file_name
+        )
         park_park_docx.save(f"{park_pass_docx_full_file_path}")
         output = subprocess.check_output(
             [
@@ -73,11 +75,9 @@ class PassUtils:
         # convert(f"{park_pass_file_path}/{park_pass_docx_file_name}")
 
         park_pass_pdf_file_name = "ParkPass.pdf"
-        park_pass_pdf_full_file_path = (
-            f"{park_pass_file_path}/{park_pass_pdf_file_name}"
-        )
-        park_pass.park_pass_pdf.name = park_pass_pdf_full_file_path
-
+        park_pass_pdf_path = park_pass_file_path + park_pass_pdf_file_name
+        park_pass.park_pass_pdf.name = park_pass_pdf_path
+        park_pass.save(update_fields=["park_pass_pdf"])
         # Clean up unused files
         os.remove(park_pass_docx_full_file_path)
         os.remove(qr_code_path)
