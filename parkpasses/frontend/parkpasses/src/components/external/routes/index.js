@@ -1,5 +1,5 @@
 import { RouterView } from 'vue-router'
-import ExternalDashboard from '@/components/external/dashboard.vue'
+import ExternalDashboard from '@/components/external/Dashboard.vue'
 export default
 {
     path: '/external',

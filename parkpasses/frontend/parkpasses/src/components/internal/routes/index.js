@@ -1,6 +1,6 @@
 
 import { RouterView } from 'vue-router'
-import InternalDashboard from '@/components/internal/dashboard.vue'
+import InternalDashboard from '@/components/internal/Dashboard.vue'
 
 export default
 {
