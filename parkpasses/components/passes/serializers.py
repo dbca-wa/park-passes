@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from parkpasses.components.passes.models import (
     Pass,
+    PassCancellation,
     PassTemplate,
     PassType,
     PassTypePricingWindow,
@@ -97,3 +98,27 @@ class InternalPassSerializer(serializers.ModelSerializer):
         model = Pass
         fields = "__all__"
         read_only_fields = ["pass_type", "pricing_window"]
+        datatables_always_serialize = [
+            "id",
+            "pass_number",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "park",
+            "datetime_start",
+            "datetime_expiry",
+            "renew_automatically",
+            "processing_status",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+
+class InternalPassCancellationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PassCancellation
+        fields = "__all__"
