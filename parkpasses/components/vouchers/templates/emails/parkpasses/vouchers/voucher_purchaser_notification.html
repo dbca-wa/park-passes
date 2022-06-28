@@ -1,0 +1,9 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{%  block content %}
+
+    {{purchaser.first_name}} {{purchaser.last_name}},
+
+    Your voucher for a Western Australian park pass has been emailed to {{recipient_name}}.
+
+{%  endblock %}

@@ -1,0 +1,18 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{%  block content %}
+
+    {{first_name}} {{last_name}},
+
+    You have received a voucher for a Western Australian park pass from  {{purchaser.first_name}} {{purchaser.last_name}}.
+
+    {{personal_message}}
+
+    You can buy a Western Australian park pass with your voucher at {{url}}
+
+    Voucher Value: {{amount}}
+    Voucher Code: {{code}}
+    Voucher Pin: {{pin}}
+    Expiry Date: {{expiry}}
+
+{%  endblock %}
