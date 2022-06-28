@@ -216,12 +216,6 @@ class PassViewSet(viewsets.ModelViewSet):
     filterset_fields = ["processing_status"]
     page_size = 10
 
-    def get_queryset(self):
-        qs = Pass.objects.all()
-        qs = self.filter_queryset(qs)
-        logger.debug("qs = " + qs)
-        return Pass.objects.all()
-
     def get_serializer_class(self):
         if is_internal(self.request):
             return InternalPassSerializer
