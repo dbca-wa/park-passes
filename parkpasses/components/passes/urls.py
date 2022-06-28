@@ -1,8 +1,11 @@
+from django.conf.urls import url
 from rest_framework import routers
 
 from parkpasses.components.passes.api import (
+    PassProcessingStatusesDistinct,
     PassTemplateViewSet,
     PassTypePricingWindowOptionViewSet,
+    PassTypesDistinct,
     PassTypeViewSet,
     PassViewSet,
     PricingWindowViewSet,
@@ -18,4 +21,10 @@ router.register(
 )
 router.register(r"pass-templates", PassTemplateViewSet, basename="pass-templates")
 router.register(r"passes", PassViewSet, basename="passes")
-urlpatterns = router.urls
+
+urlpatterns = [
+    url(r"pass-types-distinct", PassTypesDistinct.as_view()),
+    url(r"pass-processing-statuses-distinct", PassProcessingStatusesDistinct.as_view()),
+]
+
+urlpatterns += router.urls
