@@ -6,4 +6,5 @@ module.exports = {
     },
     passTypesDistinct:"/api/passes/pass-types-distinct?format=json",
     passProcessingStatusesDistinct:"/api/passes/pass-processing-statuses-distinct?format=json",
+    passTypes:"/api/passes/pass-types?format=json",
 }
