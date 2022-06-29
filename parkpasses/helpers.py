@@ -11,13 +11,17 @@ from parkpasses.settings import GROUP_NAME_RETAILER
 logger = logging.getLogger(__name__)
 
 
-def belongs_to(user, group_name):
+def belongs_to(request, group_name):
     """
     Check if the user belongs to the given group.
     :param user:
     :param group_name:
     :return:
     """
+    if not request.user.is_authenticated:
+        return False
+
+    user = request.user
     # import ipdb; ipdb.set_trace()
     belongs_to_value = cache.get(
         "User-belongs_to" + str(user.id) + "group_name:" + group_name
