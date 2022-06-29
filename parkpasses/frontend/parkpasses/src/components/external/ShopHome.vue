@@ -3,29 +3,16 @@
     <div class="row">
       <div class="col-4">
         <div class="list-item voucher">
-          <img src="https://picsum.photos/id/1/300/150" />
+          <img src="/media/gift-voucher.jpg" width="300" />
           <div class="more-information">More Information</div>
-          <div class="display-name">Gift Voucher</div>
         </div>
-        <div class="list-item pass-type">
-          <img src="https://picsum.photos/id/1016/300/150" />
-          <div class="more-information">More Information</div>
-          <div class="display-name">Pass Type Display Name</div>
+        <div v-if="errorMessage" class="alert alert-danger" role="alert">
+          {{errorMessage}}
         </div>
-        <div class="list-item pass-type">
-          <img src="https://picsum.photos/id/1043/300/150" />
+        <div v-for="passType in passTypes" class="list-item pass-type">
+          <img :src="passType.image" />
           <div class="more-information">More Information</div>
-          <div class="display-name">Pass Type Display Name</div>
-        </div>
-        <div class="list-item pass-type">
-          <img src="https://picsum.photos/id/1039/300/150" />
-          <div class="more-information">More Information</div>
-          <div class="display-name">Pass Type Display Name</div>
-        </div>
-        <div class="list-item pass-type">
-          <img src="https://picsum.photos/id/1050/300/150" />
-          <div class="more-information">More Information</div>
-          <div class="display-name">Pass Type Display Name</div>
+          <div class="display-name">{{passType.display_name}}</div>
         </div>
       </div>
       <div class="col">
@@ -49,7 +36,6 @@
                 <div class="card-body">
                   <h5 class="card-title">FAQ</h5>
                   <p class="card-text">Click here for answers to common questions.</p>
-                  <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
                 </div>
               </div>
             </div>
@@ -64,7 +50,6 @@
                 <div class="card-body">
                   <h5 class="card-title">Help</h5>
                   <p class="card-text">Click here for help if you want to update your vehicle details or if you did not receive your park pass.</p>
-                  <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
                 </div>
               </div>
             </div>
@@ -98,13 +83,39 @@
 </template>
 
 <script>
+import { api_endpoints } from '@/utils/hooks'
+
 export default {
-  name: "ShopHome",
-  data: function () {
-    return {
-      something: null,
-    };
-  },
+    name: "ShopHome",
+    data: function () {
+        return {
+            passTypes: [],
+            errorMessage: null
+        };
+    },
+    methods: {
+        fetchPassTypes: function () {
+            let vm = this;
+            fetch(api_endpoints.passTypes)
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    console.log(error)
+                    return Promise.reject(error);
+                }
+                vm.passTypes = data.results
+                console.log(vm.passTypes)
+            })
+            .catch(error => {
+                this.errorMessage = "ERROR: Please try again in an hour.";
+                console.error("There was an error!", error);
+            });
+        }
+    },
+    created: function () {
+      this.fetchPassTypes()
+    }
 };
 </script>
 
