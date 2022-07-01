@@ -23,5 +23,5 @@ class DefaultDataManager:
 
         # RetailerGroup
         group, created = SystemGroup.objects.get_or_create(
-            name=settings.GROUP_NAME_RETAILER
+            name=settings.GROUP_NAME_PARK_PASSES_RETAILER
         )
