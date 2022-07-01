@@ -1,8 +1,11 @@
 {% extends 'parkpasses/base.html' %}
 
-{% load bootstrap3 %}
+{% load utils %}
 
 {% load static %}
+
+{% system_name as system_name %}
+{% support_email as support_email %}
 
 {% block extra_css %}
     <link type="text/css" href="{% static 'wl/css/index.css' %}" rel="stylesheet">
@@ -21,9 +24,9 @@
         <div class="row">
             <div class="col-md-8">
                 <h2>
-                    Contact {{system_name}} section
+                    Contact {% system_name %} Section
                 </h2>
-                <p>To contact a member of the {{ system_name }} section, please email <b>{{ support_email }}</b>.</p>
+                <p class="m-4">To contact a member of the {% system_name %} section, please email: <a href="mailto:{% support_email %}" target="blank">{% support_email %}</b>.</p>
             </div>
         </div>
     </div>
