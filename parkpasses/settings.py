@@ -48,6 +48,7 @@ INSTALLED_APPS += [
     "parkpasses.components.orders",
     "parkpasses.components.users",
     "parkpasses.components.help",
+    "parkpasses.components.retailers",
 ]
 
 ADD_REVERSION_ADMIN = True
