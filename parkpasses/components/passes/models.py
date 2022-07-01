@@ -20,6 +20,7 @@ from django.utils import timezone
 from parkpasses.components.parks.models import Park
 from parkpasses.components.passes.exceptions import PassTemplateDoesNotExist
 from parkpasses.components.passes.utils import PassUtils
+from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.ledger_api_utils import retrieve_email_user
 from parkpasses.settings import PASS_TYPES
 
@@ -189,6 +190,7 @@ class PassManager(models.Manager):
                 "option",
                 "option__pricing_window",
                 "option__pricing_window__pass_type",
+                "sold_via",
                 "cancellation",
             )
         )
@@ -229,7 +231,9 @@ class Pass(models.Model):
     processing_status = models.CharField(
         max_length=2, choices=PROCESSING_STATUS_CHOICES, null=True, blank=True
     )
-    sold_via = models.CharField(max_length=50, null=True, blank=True)
+    sold_via = models.ForeignKey(
+        RetailerGroup, on_delete=models.PROTECT, null=True, blank=True
+    )
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
 
