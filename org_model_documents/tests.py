@@ -1,7 +1,9 @@
+import shutil
 import tempfile
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.files import File
 from django.test import TestCase, override_settings
 
 from org_model_documents.models import Document
@@ -10,9 +12,8 @@ from org_model_documents.models import Document
 class DocumentTestCase(TestCase):
     @override_settings(MEDIA_ROOT=tempfile.TemporaryDirectory(prefix="mediatest").name)
     def setUp(self):
-        file_field = tempfile.NamedTemporaryFile()
-        file_field.name = "/tmp/imagine_being_the_best_file_eva.txt"
-        file_field.write(b"Some things are supposed to remain as dreams!")
+        file_field = File(open("media/testfiles/test.txt"))
+
         self.content_type = ContentType.objects.get(
             app_label="parkpasses", model="park"
         )
@@ -44,3 +45,6 @@ class DocumentTestCase(TestCase):
         )
         document.path = None
         self.assertEqual(document.path, "")
+
+    def tearDown(self):
+        shutil.rmtree("/tmp/mediatest*")

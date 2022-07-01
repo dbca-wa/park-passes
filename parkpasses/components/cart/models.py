@@ -51,10 +51,58 @@ class Cart(models.Model):
     def create_order(self):
         order = Order(user=self.user)
         order.save()
-        for item in self.items:
-            order_item = OrderItem(**item)
+        for cart_item in self.items.all():
+            order_item = OrderItem()
             order_item.order = order
-            order_item.save()
+            if cart_item.is_voucher_purchase():
+                voucher = Voucher.objects.get(pk=cart_item.object_id)
+                order_item.description = f"Voucher Puchase: {voucher.voucher_number}"
+                order_item.amount = voucher.amount
+                order_item.save()
+            else:
+                park_pass = Pass.objects.get(pk=cart_item.object_id)
+                order_item.description = f"Park Pass Puchase: {park_pass.pass_number}"
+                order_item.amount = park_pass.option.price
+                order_item.save()
+
+                user_information = UserInformation.objects.get(user=self.user)
+                if user_information.concession:
+                    concession = user_information.concession
+                    concession_discount = cart_item.get_concession_discount_as_amount()
+                    if concession_discount > 0.00:
+                        order_item = OrderItem()
+                        order_item.order = order
+                        order_item.description = "Concession Discount: "
+                        order_item.description += concession.concession_type + " "
+                        order_item.description += (
+                            user_information.concession_card_number
+                        )
+                        order_item.amount = -abs(concession_discount)
+                        order_item.save()
+
+                if cart_item.discount_code:
+                    discount_code_discount = (
+                        cart_item.get_discount_code_discount_as_amount()
+                    )
+                    if discount_code_discount > 0.00:
+                        order_item = OrderItem()
+                        order_item.order = order
+                        order_item.description = (
+                            f"Discount Code Applied: {cart_item.discount_code.code}"
+                        )
+                        order_item.amount = -abs(discount_code_discount)
+                        order_item.save()
+
+                if cart_item.voucher:
+                    voucher_discount = cart_item.get_voucher_discount_as_amount()
+                    if voucher_discount > 0.00:
+                        order_item = OrderItem()
+                        order_item.order = order
+                        order_item.description = (
+                            f"Voucher Code Redeemed: {cart_item.voucher.code}"
+                        )
+                        order_item.amount = -abs(voucher_discount)
+                        order_item.save()
         self.delete()
 
 
@@ -84,6 +132,8 @@ class CartItem(models.Model):
 
     class Meta:
         app_label = "parkpasses"
+        unique_together = (("content_type", "object_id"),)
+        indexes = (models.Index(fields=["content_type", "object_id"]),)
 
     def __str__(self):
         return f"Content Type: {self.content_type} | Object ID: {self.object_id} Total Price: {self.get_total_price()}"
@@ -108,13 +158,76 @@ class CartItem(models.Model):
         self.cart.save()
         super().save(*args, **kwargs)
 
+    def is_voucher_purchase(self):
+        return str(self.content_type) == "parkpasses | voucher"
+
+    def is_pass_purchase(self):
+        return str(self.content_type) == "parkpasses | pass"
+
+    def get_price_before_discounts(self):
+        """Does not take concession, discount code and voucher into consideration"""
+        model_type = str(self.content_type)
+        logger.debug("model_type = " + str(model_type))
+        if "parkpasses | voucher" == model_type:
+            return Voucher.objects.get(pk=self.object_id).amount
+        elif "parkpasses | pass" == model_type:
+            return Pass.objects.get(pk=self.object_id).option.price
+
     def get_total_price(self):
+        """Takes concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
         logger.debug("model_type = " + str(model_type))
         if "parkpasses | voucher" == model_type:
             return Voucher.objects.get(pk=self.object_id).amount
         elif "parkpasses | pass" == model_type:
             return float(self.get_total_price_pass())
+
+    def get_concession_discount_as_amount(self):
+        park_pass = Pass.objects.get(pk=self.object_id)
+        total_price = park_pass.option.price
+        if UserInformation.objects.filter(user=self.cart.user).count():
+            user_information = UserInformation.objects.get(user=self.cart.user)
+            concession = user_information.concession
+            if concession:
+                concession_percentage = concession.discount_percentage
+                concession_discount = total_price * (concession_percentage / 100)
+                return concession_discount
+            return 0.00
+        else:
+            logger.error(
+                f"ERROR: The user with id {self.user.id} that is assigned to cart {self.id} does not exist."
+            )
+        return 0.00
+
+    def get_discount_code_discount_as_amount(self):
+        if not self.discount_code:
+            return 0.00
+        price_before_discounts = self.get_price_before_discounts()
+        discount_code_batch = self.discount_code.discount_code_batch
+        if discount_code_batch.discount_amount:
+            return self.discount_code.discount_code_batch.discount_amount
+        else:
+            return price_before_discounts * (
+                discount_code_batch.discount_percentage / 100
+            )
+
+    def get_voucher_discount_as_amount(self):
+        if not self.voucher:
+            return 0.00
+        if 0.00 == self.voucher.amount:
+            return 0.00
+        price_before_discounts = self.get_price_before_discounts()
+        concession_discount_amount = self.get_concession_discount_as_amount()
+        discount_code_discount_amount = self.get_discount_code_discount_as_amount()
+        remaining_price = (
+            price_before_discounts
+            - concession_discount_amount
+            - discount_code_discount_amount
+        )
+        if self.voucher.amount >= remaining_price:
+            return remaining_price
+        else:
+            return self.voucher.amount
 
     def get_total_price_pass(self):
         park_pass = Pass.objects.get(pk=self.object_id)
