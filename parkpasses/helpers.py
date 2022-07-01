@@ -2,11 +2,11 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
-from ledger_api_client.ledger_models import EmailUserRO
+from django.core.exceptions import ObjectDoesNotExist
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroup
 
-from parkpasses.settings import GROUP_NAME_RETAILER
+from parkpasses.settings import GROUP_NAME_PARK_PASSES_RETAILER
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +47,19 @@ def is_parkpasses_admin(request):
     )
 
 
-def is_retailer(user_id):
-    if isinstance(user_id, EmailUser) or isinstance(user_id, EmailUserRO):
-        user_id = user_id.id
-    retailer_group = SystemGroup.objects.get(name=GROUP_NAME_RETAILER)
-    return True if user_id in retailer_group.get_system_group_member_ids() else False
+def is_retailer(request):
+    user_id = request.user.id
+    try:
+        retailer_group = SystemGroup.objects.get(name=GROUP_NAME_PARK_PASSES_RETAILER)
+        return (
+            True if user_id in retailer_group.get_system_group_member_ids() else False
+        )
+    except ObjectDoesNotExist:
+        logger.critical(
+            f"The group {GROUP_NAME_PARK_PASSES_RETAILER} named in setting\
+                 GROUP_NAME_PARK_PASSES_RETAILER does not exist."
+        )
+        return False
 
 
 def in_dbca_domain(request):
@@ -70,6 +78,10 @@ def is_departmentUser(request):
 
 def is_customer(request):
     return request.user.is_authenticated and not request.user.is_staff
+
+
+def is_authenticated(request):
+    return request.user.is_authenticated
 
 
 def is_internal(request):
