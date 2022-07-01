@@ -1,6 +1,10 @@
 {% load users %}
 {% load utils %}
+
 {% is_internal as is_internal_login %}
+{% is_retailer as is_retailer %}
+{% is_authenticated as is_authenticated %}
+
 {% is_parkpasses_admin as is_parkpasses_admin_user %}
 {% can_show_tests as show_tests %}
 {% system_maintenance_due as system_maintenance_due %}
@@ -9,15 +13,27 @@
 {% system_name as system_name %}
 {% system_name_short as system_name_short %}
 {% support_email as support_email %}
-{% is_payment_officer as is_payment_officer %}
+
 {% build_tag as build_tag %}
 
 <ul class="nav navbar-expand-lg navbar-light">
 {% if is_internal_login %}
-<li class="nav-item"><a class="nav-link" href="/internal/parkpasses">Park Passes</a></li>
-<li class="nav-item"><a class="nav-link" href="/internal/compliances">Vouchers</a></li>
+<li class="nav-item"><a class="nav-link" href="/internal">Park Passes</a></li>
+<li class="nav-item"><a class="nav-link" href="/internal/vouchers">Vouchers</a></li>
 <li class="nav-item"><a class="nav-link" href="/internal/discount-codes">Discount Codes</a></li>
 <li class="nav-item"><a class="nav-link" href="/internal/reports">Invoices &amp; Monthly Reports</a></li>
+{% elif is_retailer %}
+<li class="nav-item"><a class="nav-link" href="/retailer/parkpasses">Park Passes</a></li>
+<li class="nav-item"><a class="nav-link" href="/internal/reports">Invoices &amp; Monthly Reports</a></li>
+{% elif is_authenticated %}
+<li class="nav-item"><a class="nav-link" href="/external">Your Park Passes</a></li>
+<li class="nav-item"><a class="nav-link" href="/external/vouchers">Your Vouchers</a></li>
+<li class="nav-item"><a class="nav-link" href="/faq/">FAQ</a></li>
+<li class="nav-item"><a class="nav-link" href="/help/">Help</a></li>
+<li class="nav-item"><a class="nav-link" href="/contact/">Contact us</a></li>
 {% else %}
+<li class="nav-item"><a class="nav-link" href="/faq/">FAQ</a></li>
+<li class="nav-item"><a class="nav-link" href="/help/">Help</a></li>
+<li class="nav-item"><a class="nav-link" href="/contact/">Contact us</a></li>
 {% endif %}
 </ul>
