@@ -34,6 +34,18 @@ def is_model_backend(context):
 
 
 @register.simple_tag(takes_context=True)
+def is_retailer(context):
+    request = context["request"]
+    return parkpasses_helpers.is_retailer(request)
+
+
+@register.simple_tag(takes_context=True)
+def is_authenticated(context):
+    request = context["request"]
+    return parkpasses_helpers.is_authenticated(request)
+
+
+@register.simple_tag(takes_context=True)
 def is_payment_officer(context):
     # request = context["request"]
     # TODO: fix this
