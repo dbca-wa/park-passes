@@ -2,9 +2,9 @@ import logging
 
 from django.conf import settings
 from django_filters import rest_framework as filters
-from rest_framework import status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_datatables.django_filters.backends import DatatablesFilterBackend
@@ -19,12 +19,13 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.passes.serializers import (
+    InternalOptionSerializer,
     InternalPassCancellationSerializer,
     InternalPassSerializer,
     InternalPassTypeSerializer,
+    OptionSerializer,
     PassSerializer,
     PassTemplateSerializer,
-    PassTypePricingWindowOptionSerializer,
     PassTypeSerializer,
     PricingWindowSerializer,
 )
@@ -142,16 +143,39 @@ class PricingWindowViewSet(viewsets.ModelViewSet):
         return False
 
 
+class CurrentOptionsForPassType(generics.ListAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = OptionSerializer
+
+    def get_queryset(self):
+        pass_type_id = self.request.query_params.get("pass_type_id")
+        logger.debug("pass_type_id = " + pass_type_id)
+        options = PassTypePricingWindowOption.get_current_options_by_pass_type_id(
+            int(pass_type_id)
+        )
+        if options:
+            return options
+        return PassTypePricingWindowOption.objects.none()
+
+
 class PassTypePricingWindowOptionViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for performing actions on pricing windows options.
     """
 
     model = PassTypePricingWindowOption
-    serializer_class = PassTypePricingWindowOptionSerializer
+    serializer_class = OptionSerializer
 
     def get_queryset(self):
         return PassTypePricingWindowOption.objects.all()
+
+    def get_serializer_class(self):
+        if is_internal(self.request):
+            return InternalOptionSerializer
+        elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
+            return OptionSerializer
+        else:
+            return OptionSerializer
 
     def has_permission(self, request, view):
         if is_internal(request):
