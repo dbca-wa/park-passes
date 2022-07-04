@@ -15,12 +15,14 @@ class PassTypeSerializer(serializers.ModelSerializer):
         model = PassType
         fields = [
             "id",
+            "name",
             "image",
             "display_name",
             "display_order",
         ]
         read_only_fields = [
             "id",
+            "name",
             "image",
             "display_name",
             "display_order",
@@ -39,7 +41,13 @@ class PricingWindowSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PassTypePricingWindowOptionSerializer(serializers.ModelSerializer):
+class OptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PassTypePricingWindowOption
+        fields = ["id", "name", "duration", "price"]
+
+
+class InternalOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PassTypePricingWindowOption
         fields = "__all__"
