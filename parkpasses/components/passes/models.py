@@ -13,7 +13,7 @@ import math
 import qrcode
 from django.conf import settings
 from django.core import serializers
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -70,7 +70,9 @@ class PassTypePricingWindow(models.Model):
     objects = PassTypePricingWindowManager()
 
     name = models.CharField(max_length=50, null=False, blank=False)
-    pass_type = models.ForeignKey(PassType, on_delete=models.PROTECT)
+    pass_type = models.ForeignKey(
+        PassType, on_delete=models.PROTECT, related_name="pricing_window"
+    )
     datetime_start = models.DateTimeField()
     datetime_expiry = models.DateTimeField(null=True, blank=True)
 
@@ -126,7 +128,9 @@ class PassTypePricingWindowOption(models.Model):
 
     objects = PassTypePricingWindowOptionManager()
 
-    pricing_window = models.ForeignKey(PassTypePricingWindow, on_delete=models.PROTECT)
+    pricing_window = models.ForeignKey(
+        PassTypePricingWindow, on_delete=models.PROTECT, related_name="option"
+    )
     name = models.CharField(max_length=50)  # i.e. '5 days'
     duration = models.SmallIntegerField()  # in days i.e. 5, 14, 28, 365
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=False, null=False)
@@ -139,6 +143,79 @@ class PassTypePricingWindowOption(models.Model):
     def __str__(self):
         return f"{self.pricing_window.pass_type.display_name} - {self.name} \
             (Pricing Window: {self.pricing_window.name})"
+
+    @classmethod
+    def get_current_options_by_pass_type_id(self, pass_type_id):
+        logger.debug("pass_type_id = " + str(pass_type_id))
+
+        try:
+            pass_type = PassType.objects.get(id=pass_type_id)
+        except ObjectDoesNotExist:
+            logger.info(f"No Pass Type Exists with ID: {pass_type_id}.")
+            return []
+
+        pricing_windows_for_pass_count = PassTypePricingWindow.objects.filter(
+            pass_type=pass_type
+        ).count()
+
+        logger.debug(
+            "pricing_windows_for_pass_count = " + str(pricing_windows_for_pass_count)
+        )
+
+        if 0 == pricing_windows_for_pass_count:
+            logger.critical(
+                "CRITICAL: There is no default pricing window for Pass Type: {}.".fomat(
+                    pass_type
+                )
+            )
+            return []
+        # If there is only one pricing window for the pass type it must be the default
+        if 1 == PassTypePricingWindow.objects.filter(pass_type=pass_type).count():
+            pricing_window = PassTypePricingWindow.objects.get(pass_type=pass_type)
+        else:
+            # Get any pricing windows that are currently valid excluding the default pricing window
+            current_pricing_window_count = (
+                PassTypePricingWindow.objects.exclude(datetime_expiry__isnull=False)
+                .filter(
+                    pass_type=pass_type,
+                    datetime_start__lte=timezone.now(),
+                    datetime_expiry__gte=timezone.now(),
+                )
+                .count()
+            )
+            # If there are none just get the default pricing window
+            if 0 == current_pricing_window_count:
+                pricing_window = PassTypePricingWindow.objects.get(
+                    pass_type=pass_type, datetime_expiry__isnull=True
+                )
+
+            elif 1 == current_pricing_window_count:
+                pricing_window = PassTypePricingWindow.objects.exclude(
+                    datetime_expiry__isnull=False
+                ).get(
+                    pass_type=pass_type,
+                    datetime_start__lte=timezone.now(),
+                    datetime_expiry__gte=timezone.now(),
+                )
+            else:
+                # When there are two or more currently valid pricing windows we return the window that
+                # started the most recently And log a warning so that admins can be alerted to this.
+                # Validation shouldn't allow this sitation to occur but ... just in case.
+                logger.warning(
+                    f"There are more than one currently valid pricing windows for Pass Type: {pass_type}"
+                )
+                pricing_window = (
+                    PassTypePricingWindow.objects.exclude(datetime_expiry__isnull=False)
+                    .filter(
+                        pass_type=pass_type,
+                        datetime_start__lte=timezone.now(),
+                        datetime_expiry__gte=timezone.now(),
+                    )
+                    .order_by("datetime_start")
+                    .last()
+                )
+
+        return PassTypePricingWindowOption.objects.filter(pricing_window=pricing_window)
 
 
 def pass_template_file_path(instance, filename):
