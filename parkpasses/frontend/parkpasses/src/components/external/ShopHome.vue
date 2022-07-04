@@ -9,11 +9,13 @@
         <div v-if="errorMessage" class="alert alert-danger" role="alert">
           {{errorMessage}}
         </div>
-        <div v-for="passType in passTypes" class="list-item pass-type">
+
+        <div @click="purchasePass(passType.id)" v-for="passType in passTypes" class="list-item pass-type" :key="passType.id">
           <img :src="passType.image" />
           <div class="more-information">More Information</div>
           <div class="display-name">{{passType.display_name}}</div>
         </div>
+
       </div>
       <div class="col">
 
@@ -60,7 +62,7 @@
             </div>
           </div>
 
-          <div class="card faq-card mb-3">
+          <div @click="redirectToFAQ()" class="card faq-card mb-3">
             <div class="row g-0">
               <div class="col-md-4">
                 <img src="https://picsum.photos/id/8/300/170" class="img-fluid rounded-start" alt="Frequently Asked Questions">
@@ -74,7 +76,7 @@
             </div>
           </div>
 
-          <div class="card faq-card mb-3">
+          <div @click="redirectToHelp()" class="card faq-card mb-3">
             <div class="row g-0">
               <div class="col-md-4">
                 <img src="https://picsum.photos/id/7/300/170" class="img-fluid rounded-start" alt="Help">
@@ -118,15 +120,20 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.passTypes = data.results
-                console.log(vm.passTypes)
             })
             .catch(error => {
                 this.errorMessage = "ERROR: Please try again in an hour.";
                 console.error("There was an error!", error);
             });
         },
-        redirectToLoginPage: function() {
-            window.location.href = 'external/'
+        purchasePass: function(passTypeId) {
+            this.$router.push(`/purchase-pass/${passTypeId}`)
+        },
+        redirectToFAQ: function() {
+            window.location.href = 'faq/'
+        },
+        redirectToHelp: function() {
+            window.location.href = 'help/'
         }
     },
     created: function () {
