@@ -1,7 +1,7 @@
 import logging
 
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from parkpasses.components.concessions.models import Concession
 from parkpasses.components.concessions.serializers import (
@@ -19,7 +19,7 @@ class ConcessionViewSet(viewsets.ModelViewSet):
     """
 
     model = Concession
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         return Concession.objects.all()
