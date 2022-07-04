@@ -6,7 +6,7 @@ from parkpasses.components.concessions.models import Concession
 class ConcessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Concession
-        fields = ["id", "concession_type"]
+        fields = ["id", "concession_type", "discount_percentage"]
 
 
 class InternalConcessionSerializer(serializers.ModelSerializer):
