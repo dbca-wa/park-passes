@@ -14,11 +14,18 @@ class VoucherAdmin(admin.ModelAdmin):
         "amount",
         "remaining_balance",
         "code",
-        "datetime_purchased",
         "expiry",
         "processing_status",
+        "datetime_purchased",
+        "datetime_updated",
     )
-    readonly_fields = ["voucher_number", "code", "expiry"]
+    readonly_fields = [
+        "voucher_number",
+        "code",
+        "expiry",
+        "datetime_purchased",
+        "datetime_updated",
+    ]
     ordering = ("-datetime_purchased",)
     inlines = [VoucherTransactionInline]
 
