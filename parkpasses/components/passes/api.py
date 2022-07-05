@@ -19,12 +19,12 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.passes.serializers import (
+    ExternalPassSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
     InternalPassSerializer,
     InternalPassTypeSerializer,
     OptionSerializer,
-    PassSerializer,
     PassTemplateSerializer,
     PassTypeSerializer,
     PricingWindowSerializer,
@@ -239,7 +239,6 @@ class PassViewSet(viewsets.ModelViewSet):
     search_fields = ["last_name"]
     queryset = Pass.objects.all()
     model = Pass
-    serializer_class = PassSerializer
     filter_backends = [SearchFilter, DatatablesFilterBackend]
     pagination_class = DatatablesPageNumberPagination
     # filterset_class = PassFilter
@@ -253,15 +252,15 @@ class PassViewSet(viewsets.ModelViewSet):
             retailer_groups_for_user = get_retailer_groups_for_user(self.request)
             return Pass.objects.filter(sold_via__in=retailer_groups_for_user)
         else:
-            return Pass.objects.filter(user=self.request.user)
+            return Pass.objects.filter(user=self.request.user.id)
 
     def get_serializer_class(self):
         if is_internal(self.request):
             return InternalPassSerializer
         elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
-            return PassSerializer
+            return ExternalPassSerializer
         else:
-            return PassSerializer
+            return ExternalPassSerializer
 
     def has_permission(self, request, view):
         if is_internal(request):

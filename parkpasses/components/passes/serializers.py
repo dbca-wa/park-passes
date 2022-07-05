@@ -59,7 +59,7 @@ class PassTemplateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PassSerializer(serializers.ModelSerializer):
+class ExternalPassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pass
         fields = [
@@ -91,11 +91,14 @@ class PassSerializer(serializers.ModelSerializer):
             "datetime_updated",
         ]
 
-    # def __init__(self, *args, **kwargs):
-    #    super(PassSerializer, self).__init__(*args, **kwargs)
-    #    if settings.ANNUAL_LOCAL_PASS ==
-    #    if "park" in self.fields.keys():
-    #        self.fields.pop("park")
+
+class ExternalUpdatePassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pass
+        fields = [
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+        ]
 
 
 class InternalPassSerializer(serializers.ModelSerializer):
