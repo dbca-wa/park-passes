@@ -29,7 +29,13 @@ from parkpasses.components.passes.serializers import (
     PassTypeSerializer,
     PricingWindowSerializer,
 )
-from parkpasses.helpers import belongs_to, is_customer, is_internal
+from parkpasses.helpers import (
+    belongs_to,
+    get_retailer_groups_for_user,
+    is_customer,
+    is_internal,
+    is_retailer,
+)
 from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
@@ -240,13 +246,22 @@ class PassViewSet(viewsets.ModelViewSet):
     filterset_fields = ["processing_status"]
     page_size = 10
 
+    def get_queryset(self):
+        if is_internal(self.request):
+            return Pass.objects.all()
+        elif is_retailer(self.request):
+            retailer_groups_for_user = get_retailer_groups_for_user(self.request)
+            return Pass.objects.filter(sold_via__in=retailer_groups_for_user)
+        else:
+            return Pass.objects.filter(user=self.request.user)
+
     def get_serializer_class(self):
         if is_internal(self.request):
             return InternalPassSerializer
         elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
-            return PassTypeSerializer
+            return PassSerializer
         else:
-            return PassTypeSerializer
+            return PassSerializer
 
     def has_permission(self, request, view):
         if is_internal(request):
@@ -277,6 +292,7 @@ class PassViewSet(viewsets.ModelViewSet):
         if is_customer(request):
             if view.action in [
                 "partial_update",
+                "update",
             ]:
                 if obj.user == request.user.id:
                     return True
