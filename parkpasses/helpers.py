@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.managed_models import SystemGroup
+from ledger_api_client.managed_models import SystemGroup, SystemGroupPermission
 
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.settings import GROUP_NAME_PARK_PASSES_RETAILER
@@ -23,16 +23,24 @@ def belongs_to(request, group_name):
         return False
 
     user = request.user
-    # import ipdb; ipdb.set_trace()
+
     belongs_to_value = cache.get(
         "User-belongs_to" + str(user.id) + "group_name:" + group_name
     )
+    # belongs_to_value = None
     if belongs_to_value:
         print(
             "From Cache - User-belongs_to" + str(user.id) + "group_name:" + group_name
         )
     if belongs_to_value is None:
-        belongs_to_value = user.groups().filter(name=group_name).exists()
+        sg = SystemGroup.objects.filter(name=group_name)
+        if sg.count() > 0:
+            sgp = SystemGroupPermission.objects.filter(
+                system_group=sg[0], emailuser=user
+            )
+            if sgp.count() > 0:
+                belongs_to_value = True
+            # belongs_to_value = SystemGroup.object.filter(name=group_name).exists()
         cache.set(
             "User-belongs_to" + str(user.id) + "group_name:" + group_name,
             belongs_to_value,
@@ -44,11 +52,14 @@ def belongs_to(request, group_name):
 def is_parkpasses_admin(request):
     # logger.info('settings.ADMIN_GROUP: {}'.format(settings.ADMIN_GROUP))
     return request.user.is_authenticated and (
-        request.user.is_superuser or belongs_to(request.user, settings.ADMIN_GROUP)
+        request.user.is_superuser or belongs_to(request, settings.ADMIN_GROUP)
     )
 
 
 def is_retailer(request):
+    if not request.user.is_authenticated:
+        return False
+
     user = request.user
     try:
         system_group = SystemGroup.objects.get(name=GROUP_NAME_PARK_PASSES_RETAILER)
