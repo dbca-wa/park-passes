@@ -45,8 +45,15 @@ class RetailerGroup(models.Model):
         return user_ids
 
 
+class RetailerGroupUserManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("retailer_group", "emailuser")
+
+
 class RetailerGroupUser(models.Model):
     """A class to represent the many to many relationship between retailers and email users"""
+
+    objects = RetailerGroupUserManager()
 
     retailer_group = models.ForeignKey(RetailerGroup, on_delete=models.PROTECT)
     emailuser = models.ForeignKey(
