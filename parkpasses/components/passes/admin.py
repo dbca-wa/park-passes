@@ -53,7 +53,6 @@ class PassAdmin(admin.ModelAdmin):
     )
     readonly_fields = [
         "pass_number",
-        "sold_via",
         "first_name",
         "last_name",
         "email",
