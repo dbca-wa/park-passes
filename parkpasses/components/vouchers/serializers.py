@@ -3,10 +3,37 @@ from rest_framework import serializers
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 
 
-class VoucherSerializer(serializers.ModelSerializer):
+class ExternalVoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voucher
-        fields = ["id", "voucher_number"]
+        exclude = ["purchaser"]
+        read_only_fields = [
+            "id",
+            "voucher_number",
+            "expiry",
+            "code",
+            "datetime_purchased",
+            "datetime_updated",
+            "processing_status",
+        ]
+
+
+class ExternalUpdateVoucherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Voucher
+        exclude = ["purchaser"]
+        read_only_fields = [
+            "id",
+            "voucher_number",
+            "voucher_number",
+            "amount",
+            "expiry",
+            "code",
+            "pin",
+            "datetime_purchased",
+            "datetime_updated",
+            "processing_status",
+        ]
 
 
 class InternalVoucherSerializer(serializers.ModelSerializer):
