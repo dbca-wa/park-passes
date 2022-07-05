@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroup
 
+from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.settings import GROUP_NAME_PARK_PASSES_RETAILER
 
 logger = logging.getLogger(__name__)
@@ -48,18 +49,36 @@ def is_parkpasses_admin(request):
 
 
 def is_retailer(request):
-    user_id = request.user.id
+    user = request.user
     try:
-        retailer_group = SystemGroup.objects.get(name=GROUP_NAME_PARK_PASSES_RETAILER)
-        return (
-            True if user_id in retailer_group.get_system_group_member_ids() else False
-        )
+        system_group = SystemGroup.objects.get(name=GROUP_NAME_PARK_PASSES_RETAILER)
+        in_retailer_group = RetailerGroupUser.objects.filter(email_user=user).count()
+        if user.id not in system_group.get_system_group_member_ids():
+            return False
+        if in_retailer_group:
+            return True
+
     except ObjectDoesNotExist:
         logger.critical(
             f"The group {GROUP_NAME_PARK_PASSES_RETAILER} named in setting\
                  GROUP_NAME_PARK_PASSES_RETAILER does not exist."
         )
         return False
+
+
+def get_retailer_groups_for_user(request):
+    if not request.user.is_authenticated:
+        return False
+    if not is_retailer(request):
+        return False
+
+    retailer_group_ids = list(
+        RetailerGroupUser.objects.filter(email_user=request.user)
+        .values_list("retailer_group__id", flat=True)
+        .order_by("id")
+    )
+
+    return RetailerGroup.objects.filter(id__in=retailer_group_ids)
 
 
 def in_dbca_domain(request):
