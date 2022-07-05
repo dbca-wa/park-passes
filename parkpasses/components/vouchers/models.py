@@ -10,6 +10,8 @@ import logging
 import uuid
 
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from parkpasses import settings
 from parkpasses.ledger_api_utils import retrieve_email_user
@@ -17,8 +19,15 @@ from parkpasses.ledger_api_utils import retrieve_email_user
 logger = logging.getLogger(__name__)
 
 
+class VoucherManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("transactions")
+
+
 class Voucher(models.Model):
     """A class to represent a voucher"""
+
+    objects = VoucherManager()
 
     voucher_number = models.CharField(max_length=10, blank=True)
     purchaser = models.IntegerField(null=False, blank=False)  # EmailUserRO
@@ -33,6 +42,7 @@ class Voucher(models.Model):
     code = models.CharField(max_length=10)
     pin = models.DecimalField(max_digits=6, decimal_places=0, blank=False, null=False)
     datetime_purchased = models.DateTimeField(auto_now_add=True)
+    datetime_updated = models.DateTimeField(auto_now=True)
     NEW = "N"
     DELIVERED = "D"
     NOT_DELIVERED = "ND"
@@ -55,7 +65,7 @@ class Voucher(models.Model):
         return f"{self.voucher_number} (${self.amount})"
 
     @property
-    def purchaser(self):
+    def get_purchaser(self):
         return retrieve_email_user(self.purchaser)
 
     @property
@@ -94,14 +104,26 @@ class Voucher(models.Model):
                 days=settings.PARKPASSES_VOUCHER_EXPIRY_IN_DAYS
             )
         super().save(*args, **kwargs)
-        if not self.voucher_number:
-            voucher_number = f"V{self.pk:06d}"
-            self.voucher_number = voucher_number
-            super().save(*args, **kwargs)
+
+
+# Update the voucher_number field after saving
+@receiver(post_save, sender=Voucher, dispatch_uid="update_voucher_number")
+def update_voucher_number(sender, instance, **kwargs):
+    if not instance.voucher_number:
+        voucher_number = f"V{instance.pk:06d}"
+        instance.voucher_number = voucher_number
+        instance.save()
+
+
+class VoucherTransactionManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("voucher")
 
 
 class VoucherTransaction(models.Model):
     """A class to represent a voucher transaction"""
+
+    objects = VoucherTransactionManager()
 
     voucher = models.ForeignKey(
         Voucher, related_name="transactions", on_delete=models.PROTECT
@@ -110,6 +132,8 @@ class VoucherTransaction(models.Model):
         max_digits=7, decimal_places=2, blank=False, null=False
     )
     debit = models.DecimalField(max_digits=7, decimal_places=2, blank=False, null=False)
+    datetime_created = models.DateTimeField(auto_now_add=True)
+    datetime_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         app_label = "parkpasses"
