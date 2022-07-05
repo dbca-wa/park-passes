@@ -7,6 +7,7 @@ from rest_framework import routers
 
 from parkpasses import views
 from parkpasses.admin import admin
+from parkpasses.components.help.views import ParkPassesHelpView
 
 # API patterns
 router = routers.DefaultRouter()
@@ -18,16 +19,17 @@ api_patterns = [
 # URL Patterns
 urlpatterns = [
     path(r"admin/", admin.site.urls),
-    url(r"passes/", include("parkpasses.components.passes.urls")),
-    url(r"parks/", include("parkpasses.components.parks.urls")),
-    url(r"concessions/", include("parkpasses.components.concessions.urls")),
-    url(r"discount-codes/", include("parkpasses.components.discount_codes.urls")),
-    url(r"vouchers/", include("parkpasses.components.vouchers.urls")),
-    url(r"cart/", include("parkpasses.components.cart.urls")),
-    url(r"help/", include("parkpasses.components.help.urls")),
-    url(r"orders/", include("parkpasses.components.orders.urls")),
-    url(r"api/", include(api_patterns)),
+    url(r"api/passes/", include("parkpasses.components.passes.urls")),
+    url(r"api/parks/", include("parkpasses.components.parks.urls")),
+    url(r"api/concessions/", include("parkpasses.components.concessions.urls")),
+    url(r"api/discount-codes/", include("parkpasses.components.discount_codes.urls")),
+    url(r"api/vouchers/", include("parkpasses.components.vouchers.urls")),
+    url(r"api/cart/", include("parkpasses.components.cart.urls")),
+    url(r"api/help/", include("parkpasses.components.help.urls")),
+    url(r"api/orders/", include("parkpasses.components.orders.urls")),
+    # url(r"api/", include(api_patterns)),
     url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
+    url(r"^help/", ParkPassesHelpView.as_view(), name="help"),
     url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
     url(r"^faq/", views.ParkPassesFAQView.as_view(), name="ds_contact"),
     url(
