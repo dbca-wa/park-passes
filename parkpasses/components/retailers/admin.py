@@ -15,6 +15,7 @@ class RetailerGroupAdmin(admin.ModelAdmin):
         "id",
         "name",
     )
+    search_fields = ("name",)
     inlines = [RetailerGroupUserInline]
     ordering = ["name"]
 
