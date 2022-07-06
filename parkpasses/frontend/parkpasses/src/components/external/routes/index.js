@@ -1,5 +1,6 @@
 import { RouterView } from 'vue-router'
 import ShopHome from '@/components/external/ShopHome.vue'
+import PurchaseVoucher from '@/components/external/PurchaseVoucher.vue'
 import PurchasePass from '@/components/external/PurchasePass.vue'
 import ExternalDashboard from '@/components/external/Dashboard.vue'
 export default
@@ -24,6 +25,11 @@ export default
             path: '/',
             component: ShopHome,
             name: 'external'
+        },
+        {
+            path: '/purchase-voucher',
+            component: PurchaseVoucher,
+            name: 'purchase-voucher'
         },
         {
             path: '/purchase-pass/:passTypeId',
