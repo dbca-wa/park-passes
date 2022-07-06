@@ -1,74 +1,88 @@
 <template>
-    <div id="item_0" @click="purchaseVoucher()" :class="['list-item voucher', {'opacity-25': activeItem && 0!=activeItem}]">
-        <img src="/media/gift-voucher.jpg" width="300" />
-        <div class="more-information">More Information</div>
+  <div>
+    <div
+      @click="purchaseVoucher()"
+      :class="[
+        'list-item voucher',
+        { 'opacity-25': activeItem && 0 != activeItem },
+      ]"
+    >
+      <img src="/media/gift-voucher.jpg" width="300" />
+      <div class="more-information">More Information</div>
     </div>
 
     <div v-if="errorMessage" class="alert alert-danger" role="alert">
-        {{errorMessage}}
+      {{ errorMessage }}
     </div>
 
-    <div @click="purchasePass(passType.id)" v-for="passType in passTypes" :class="['list-item pass-type', {'opacity-25': activeItem && passType.id!=activeItem}]">
+    <div
+        @click="purchasePass(passType.id)"
+        v-for="passType in passTypes"
+        :class="[
+            'list-item pass-type',
+            { 'opacity-25': activeItem && passType.id != activeItem },
+        ]"
+        :key="passType.id"
+        >
         <img :src="passType.image" width="300" />
         <div class="more-information">More Information</div>
-        <div class="display-name">{{passType.display_name}}</div>
+        <div class="display-name">{{ passType.display_name }}</div>
+        </div>
     </div>
+
 </template>
 
 <script>
-import { api_endpoints } from '@/utils/hooks'
+import { api_endpoints } from "@/utils/hooks";
 
 export default {
-    name: "ShopSideMenu",
-    props: {
-        activeItem: {
-            type: Number,
-            default: null
-        }
+  name: "ShopSideMenu",
+  data: function () {
+    return {
+      activeItem: null,
+      passTypes: [],
+      errorMessage: null,
+    };
+  },
+  methods: {
+    fetchPassTypes: function () {
+      let vm = this;
+      fetch(api_endpoints.passTypes)
+        .then(async (response) => {
+          const data = await response.json();
+          if (!response.ok) {
+            const error = (data && data.message) || response.statusText;
+            console.log(error);
+            return Promise.reject(error);
+          }
+          vm.passTypes = data.results;
+        })
+        .catch((error) => {
+          this.errorMessage = "ERROR: Please try again in an hour.";
+          console.error("There was an error!", error);
+        });
     },
-    data: function () {
-        return {
-            passTypes: [],
-            errorMessage: null
-        };
+    purchasePass: function (passTypeId) {
+        this.$emit('purchasePass', passTypeId);
+        this.activeItem = passTypeId;
+        console.log('this.activeItem = ' + this.activeItem)
     },
-    methods: {
-        fetchPassTypes: function () {
-            let vm = this;
-            fetch(api_endpoints.passTypes)
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    console.log(error)
-                    return Promise.reject(error);
-                }
-                vm.passTypes = data.results
-            })
-            .catch(error => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
-                console.error("There was an error!", error);
-            });
-        },
-        purchasePass: function(passTypeId) {
-            this.$router.push({ name: 'purchase-pass', params: {passTypeId: passTypeId} })
-        },
-        purchaseVoucher: function() {
-            this.$router.push(`/purchase-voucher`)
-        },
+    purchaseVoucher: function () {
+        this.$emit('purchaseVoucher');
+        this.activeItem = 0;
+        console.log('this.activeItem = ' + this.activeItem)
     },
-    created: function () {
-      this.fetchPassTypes();
-    },
-    mounted: function () {
-
-    }
+  },
+  created: function () {
+    this.fetchPassTypes();
+  },
+  mounted: function () {},
 };
 </script>
 
 <style scoped>
-.opacity-25{
-    opacity: .25;
+.opacity-25 {
+  opacity: 0.25;
 }
 
 .list-item {
