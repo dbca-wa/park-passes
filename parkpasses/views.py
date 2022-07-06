@@ -46,7 +46,7 @@ class ParkPassesRoutingView(TemplateView):
         if self.request.user.is_authenticated:
             if is_internal(self.request):
                 return redirect("internal")
-            return redirect("external")
+            # return redirect("/")
         kwargs["form"] = LoginForm
         return super().get(*args, **kwargs)
 
