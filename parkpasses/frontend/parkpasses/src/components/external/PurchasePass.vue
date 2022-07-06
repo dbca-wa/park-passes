@@ -3,9 +3,11 @@
         <div class="row">
             <div class="col-4">
 
+                <ShopSideMenu :activeItem="passType.id" />
+
             </div>
             <div class="col">
-                <h1 v-if="passType">Buy a {{passType.display_name}}</h1>
+                <h1 v-if="passType">Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
                 <p>
                     Add a description field to the db so we can display this info dynamically:
                 </p>
@@ -202,6 +204,7 @@
 
 <script>
 import { api_endpoints } from '@/utils/hooks'
+import ShopSideMenu from '@/components/external/ShopSideMenu.vue'
 
 export default {
     name: "PurchasePass",
@@ -228,6 +231,9 @@ export default {
             errorMessage: null
         };
     },
+    components: {
+        ShopSideMenu
+    },
     computed: {
         totalPrice() {
             let totalPrice = 0.00;
@@ -243,6 +249,9 @@ export default {
             }
             return ('HOLIDAY_PASS'==this.passType.name ? false : true)
         },
+        indefiniteArticle() {
+            return ('A'==this.passType.display_name.substring(0,1) ? 'an' : 'a' )
+        }
     },
     methods: {
         fetchConcessions: function () {
