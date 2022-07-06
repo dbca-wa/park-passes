@@ -1,13 +1,20 @@
 <template>
-    <div class="container" id="shopHome">
-        <div class="row">
-            <div class="col-4">
-
-                <ShopSideMenu :activeItem="passType.id" />
-
+        <div>
+            <div v-if="!passType" class="d-flex justify-content-center mt-5">
+                <div v-show="!passType" class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
-            <div class="col">
-                <h1 v-if="passType">Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
+
+            <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
+                {{ systemErrorMessage }}
+            </div>
+
+            <div v-show="passType && !systemErrorMessage">
+                <div v-if="passType">
+                    <h1>Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
+                </div>
+
                 <p>
                     Add a description field to the db so we can display this info dynamically:
                 </p>
@@ -23,7 +30,7 @@
                             <label for="firstName" class="col-form-label">First Name</label>
                         </div>
                         <div class="col-auto">
-                            <input type="text" id="firstName" name="firstName" class="form-control" ref="firstName" required="required">
+                            <input type="text" id="firstName" name="firstName" class="form-control" ref="firstName" required="required" autofocus>
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-2">
@@ -199,15 +206,18 @@
                 </div>
             </div>
         </div>
-    </div>
 </template>
 
 <script>
 import { api_endpoints } from '@/utils/hooks'
-import ShopSideMenu from '@/components/external/ShopSideMenu.vue'
 
 export default {
     name: "PurchasePass",
+    props: {
+        passTypeId: {
+            type: Number
+        }
+    },
     data: function () {
         return {
             passType: null,
@@ -228,11 +238,11 @@ export default {
             voucherPin: '',
             voucherCodeError: '',
             voucherPinError: '',
-            errorMessage: null
+            systemErrorMessage: null
         };
     },
     components: {
-        ShopSideMenu
+        api_endpoints
     },
     computed: {
         totalPrice() {
@@ -267,13 +277,13 @@ export default {
                 vm.concessions = data.results
             })
             .catch(error => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = "ERROR: Please try again in an hour.";
                 console.error("There was an error!", error);
             });
         },
         fetchPassType: function () {
             let vm = this;
-            fetch(api_endpoints.passType(vm.$route.params.passTypeId))
+            fetch(api_endpoints.passType(vm.passTypeId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -282,15 +292,18 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.passType = data
+                vm.$nextTick(() => {
+                    vm.$refs.firstName.focus();
+                });
             })
             .catch(error => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = "ERROR: Please try again in an hour.";
                 console.error("There was an error!", error);
             });
         },
         fetchPassOptions: function () {
             let vm = this;
-            fetch(api_endpoints.passOptions(vm.$route.params.passTypeId))
+            fetch(api_endpoints.passOptions(vm.passTypeId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -298,12 +311,17 @@ export default {
                     console.log(error)
                     return Promise.reject(error);
                 }
-                vm.passOptions = data.results
-                vm.passOption = vm.passOptions[0].id
-                vm.passPrice = vm.passOptions[0].price
+                if(data.results.length > 0) {
+                    vm.passOptions = data.results
+                    vm.passOption = vm.passOptions[0].id
+                    vm.passPrice = vm.passOptions[0].price
+                } else {
+                    this.systemErrorMessage = "SYSTEM ERROR: Our System Administrators have been notified. Please try again in an hour.";
+                    console.error(`SYSTEM ERROR: Unable to load options for pass type id: ${vm.passTypeId}`);
+                }
             })
             .catch(error => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = "ERROR: Please try again in an hour.";
                 console.error("There was an error!", error);
             });
         },
@@ -374,7 +392,7 @@ export default {
         },
         validateVoucher: function () {
             let vm = this;
-            fetch(api_endpoints.passOptions(vm.$route.params.passTypeId))
+            fetch(api_endpoints.passOptions(vm.passTypeId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -387,7 +405,7 @@ export default {
                 vm.passPrice = vm.passOptions[0].price
             })
             .catch(error => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = "ERROR: Please try again in an hour.";
                 console.error("There was an error!", error);
             });
         }
