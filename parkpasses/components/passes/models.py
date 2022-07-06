@@ -164,7 +164,7 @@ class PassTypePricingWindowOption(models.Model):
 
         if 0 == pricing_windows_for_pass_count:
             logger.critical(
-                "CRITICAL: There is no default pricing window for Pass Type: {}.".fomat(
+                "CRITICAL: There is no default pricing window for Pass Type: {}.".format(
                     pass_type
                 )
             )
