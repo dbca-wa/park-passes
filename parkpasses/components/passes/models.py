@@ -9,12 +9,15 @@
 
 import logging
 import math
+import os
 
 import qrcode
 from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 
 from parkpasses.components.parks.models import Park
@@ -351,6 +354,8 @@ class Pass(models.Model):
         qr_image = qr.make_image(fill="black", back_color="white")
         qr_image_path = f"{settings.MEDIA_ROOT}/{self._meta.app_label}/"
         qr_image_path += f"{self._meta.model.__name__}/passes/{self.user}/{self.pk}"
+        if not os.path.exists(qr_image_path):
+            os.makedirs(qr_image_path)
         qr_image.save(f"{qr_image_path}/qr_image.png")
         return f"{qr_image_path}/qr_image.png"
 
@@ -408,13 +413,16 @@ class Pass(models.Model):
         self.first_name = email_user.first_name
         self.last_name = email_user.last_name
         self.email = email_user.email
-        if (
-            not self.pass_number
-            or "" == self.pass_number
-            or 0 == len(self.pass_number.strip())
-        ) and self.pk:
-            self.pass_number = f"PP{self.pk:06d}"
         super().save(*args, **kwargs)
+
+
+# Update the pass_number field after saving
+@receiver(post_save, sender=Pass, dispatch_uid="update_pass_number")
+def update_pass_number(sender, instance, **kwargs):
+    if not instance.pass_number:
+        pass_number = f"PP{instance.pk:06d}"
+        instance.pass_number = pass_number
+        instance.save()
 
 
 class PassCancellationManager(models.Manager):
