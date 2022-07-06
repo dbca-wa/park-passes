@@ -1,22 +1,13 @@
 <template>
   <div class="container" id="shopHome">
     <div class="row">
-      <div class="col-4">
-        <div class="list-item voucher">
-          <img src="/media/gift-voucher.jpg" width="300" />
-          <div class="more-information">More Information</div>
-        </div>
-        <div v-if="errorMessage" class="alert alert-danger" role="alert">
-          {{errorMessage}}
-        </div>
 
-        <div @click="purchasePass(passType.id)" v-for="passType in passTypes" class="list-item pass-type" :key="passType.id">
-          <img :src="passType.image" />
-          <div class="more-information">More Information</div>
-          <div class="display-name">{{passType.display_name}}</div>
-        </div>
+      <div class="col-4">
+
+        <ShopSideMenu />
 
       </div>
+
       <div class="col">
 
         <h1>Park Passes</h1>
@@ -99,6 +90,7 @@
 
 <script>
 import { api_endpoints } from '@/utils/hooks'
+import ShopSideMenu from '@/components/external/ShopSideMenu.vue'
 
 export default {
     name: "ShopHome",
@@ -108,27 +100,11 @@ export default {
             errorMessage: null
         };
     },
+    components: {
+        api_endpoints,
+        ShopSideMenu,
+    },
     methods: {
-        fetchPassTypes: function () {
-            let vm = this;
-            fetch(api_endpoints.passTypes)
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    console.log(error)
-                    return Promise.reject(error);
-                }
-                vm.passTypes = data.results
-            })
-            .catch(error => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
-                console.error("There was an error!", error);
-            });
-        },
-        purchasePass: function(passTypeId) {
-            this.$router.push(`/purchase-pass/${passTypeId}`)
-        },
         redirectToFAQ: function() {
             window.location.href = 'faq/'
         },
@@ -136,9 +112,6 @@ export default {
             window.location.href = 'help/'
         }
     },
-    created: function () {
-      this.fetchPassTypes()
-    }
 };
 </script>
 
@@ -155,61 +128,5 @@ export default {
 .card:hover {
   cursor: pointer;
   opacity: 0.8;
-}
-
-.list-item {
-  position: relative;
-  display: inline-block;
-}
-
-.list-item img {
-  opacity: 1;
-}
-
-.list-item img:hover {
-  opacity: 0.8;
-  cursor: pointer;
-}
-
-.display-name {
-  position: absolute;
-  bottom: 6px;
-  left: 6px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.list-item,
-.voucher {
-  margin: 0 0 8px 0;
-}
-
-.more-information {
-  display: inline-block;
-  position: relative;
-  margin-left: -57px;
-  font-size: 1.1em;
-  color: #9f9f9f;
-
-  transform: rotate(-90deg);
-
-  /* Legacy vendor prefixes that you probably don't need... */
-
-  /* Safari */
-  -webkit-transform: rotate(-90deg);
-
-  /* Firefox */
-  -moz-transform: rotate(-90deg);
-
-  /* IE */
-  -ms-transform: rotate(-90deg);
-
-  /* Opera */
-  -o-transform: rotate(-90deg);
-
-  /* Internet Explorer */
-  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 }
 </style>
