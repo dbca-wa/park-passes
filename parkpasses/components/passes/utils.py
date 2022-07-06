@@ -64,9 +64,9 @@ class PassUtils:
                 "libreoffice",
                 "--convert-to",
                 "pdf",
-                f"{park_pass_docx_full_file_path}",
+                park_pass_docx_full_file_path,
                 "--outdir",
-                park_pass_file_path,
+                settings.MEDIA_ROOT + "/" + park_pass_file_path,
             ]
         )
 
