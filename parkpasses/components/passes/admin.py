@@ -23,7 +23,7 @@ class PassAdmin(admin.ModelAdmin):
     model = Pass
     fields = [
         "pass_number",
-        "park_pass_pdf",
+        "user",
         "processing_status",
         "sold_via",
         "first_name",
@@ -40,6 +40,7 @@ class PassAdmin(admin.ModelAdmin):
     ]
     list_display = (
         "pass_number",
+        "park_pass_pdf",
         "processing_status",
         "pass_type",
         "option",
@@ -49,8 +50,8 @@ class PassAdmin(admin.ModelAdmin):
         "vehicle_registration_1",
         "vehicle_registration_2",
         "datetime_start",
-        "datetime_expiry",
     )
+    autocomplete_fields = ("sold_via",)
     readonly_fields = [
         "pass_number",
         "first_name",
@@ -66,12 +67,16 @@ class PassAdmin(admin.ModelAdmin):
     ]
 
     def get_fields(self, request, obj=None):
-        if not settings.ANNUAL_LOCAL_PASS == obj.option.pricing_window.pass_type.name:
-            if "park" in self.fields:
-                self.fields.remove("park")
-        else:
-            if "park" not in self.fields:
-                self.fields.insert(7, "park")
+        if obj:
+            if (
+                not settings.ANNUAL_LOCAL_PASS
+                == obj.option.pricing_window.pass_type.name
+            ):
+                if "park" in self.fields:
+                    self.fields.remove("park")
+            else:
+                if "park" not in self.fields:
+                    self.fields.insert(7, "park")
         return self.fields
 
     def get_readonly_fields(self, request, obj=None):
