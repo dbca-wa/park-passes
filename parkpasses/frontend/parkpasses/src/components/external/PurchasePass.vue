@@ -210,6 +210,7 @@
 
 <script>
 import { api_endpoints } from '@/utils/hooks'
+import { constants } from '@/utils/hooks'
 
 export default {
     name: "PurchasePass",
@@ -242,7 +243,8 @@ export default {
         };
     },
     components: {
-        api_endpoints
+        api_endpoints,
+        constants,
     },
     computed: {
         totalPrice() {
@@ -316,7 +318,7 @@ export default {
                     vm.passOption = vm.passOptions[0].id
                     vm.passPrice = vm.passOptions[0].price
                 } else {
-                    this.systemErrorMessage = "SYSTEM ERROR: Our System Administrators have been notified. Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.CRITICAL;
                     console.error(`SYSTEM ERROR: Unable to load options for pass type id: ${vm.passTypeId}`);
                 }
             })
