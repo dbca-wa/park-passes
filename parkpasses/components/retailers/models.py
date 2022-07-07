@@ -2,10 +2,18 @@
     This module contains the models for implimenting retailers.
 """
 import json
+import logging
 
 from django.core.cache import cache
 from django.db import models
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+
+from parkpasses.components.retailers.exceptions import (
+    MultipleDBCARetailerGroupsExist,
+    NoDBCARetailerGroupExists,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class RetailerGroup(models.Model):
@@ -43,6 +51,28 @@ class RetailerGroup(models.Model):
         else:
             user_ids = json.loads(user_ids_cache)
         return user_ids
+
+    @classmethod
+    def get_dbca_retailer_group(self):
+        dbca_retailer_count = RetailerGroup.objects.filter(
+            name____icontains="DBCA"
+        ).count()
+        if 1 == dbca_retailer_count:
+            return RetailerGroup.objects.get(name____contains="DBCA")
+        if 1 < dbca_retailer_count:
+            logger.critical(
+                "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
+            )
+            raise MultipleDBCARetailerGroupsExist(
+                "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
+            )
+        if 0 == dbca_retailer_count:
+            logger.critical(
+                "CRITICAL: There is no retailer group whose name contains 'DBCA'"
+            )
+            raise NoDBCARetailerGroupExists(
+                "CRITICAL: There is no retailer group whose name contains 'DBCA'"
+            )
 
 
 class RetailerGroupUserManager(models.Manager):
