@@ -1,3 +1,5 @@
+from django.conf import settings
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
 from parkpasses.components.passes.models import (
@@ -59,6 +61,47 @@ class PassTemplateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ExternalCreatePassSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    sold_via = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        try:
+            email_user = EmailUser.objects.get(email=obj.email)
+        except EmailUser.DoesNotExist:
+            email_user = EmailUser(
+                email=obj.email, first_name=obj.first_name, last_name=obj.last_name
+            )
+            email_user.save()
+            email_user = EmailUser.objects.get(email=obj.email)
+
+        return email_user.id
+
+    def get_sold_via(self, obj):
+        return getattr(obj, "sold_via", settings.PARKPASSES_DEFAULT_SOLD_VIA)
+
+    class Meta:
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "park",
+            "datetime_start",
+            "datetime_expiry",
+            "renew_automatically",
+            "processing_status",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+
 class ExternalPassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pass
@@ -82,6 +125,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "pass_number",
             "park",
             "datetime_start",
             "datetime_expiry",
@@ -89,6 +133,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "processing_status",
             "datetime_created",
             "datetime_updated",
+            "sold_via",
         ]
 
 
