@@ -289,4 +289,6 @@ PARKPASSES_VALID_CART_CONTENT_TYPES = [
     "parkpasses | pass",
 ]
 
+PARKPASSES_DEFAULT_SOLD_VIA = "DBCA"
+
 DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")
