@@ -1,6 +1,8 @@
 import logging
 
 from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django_filters import rest_framework as filters
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import SearchFilter
@@ -19,6 +21,7 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.passes.serializers import (
+    ExternalCreatePassSerializer,
     ExternalPassSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
@@ -29,6 +32,7 @@ from parkpasses.components.passes.serializers import (
     PassTypeSerializer,
     PricingWindowSerializer,
 )
+from parkpasses.components.retailers.models import RetailerGroupUser
 from parkpasses.helpers import (
     belongs_to,
     get_retailer_groups_for_user,
@@ -118,6 +122,16 @@ class PassTypeViewSet(viewsets.ModelViewSet):
             return False
         return False
 
+    @method_decorator(cache_page(60 * 60 * 2, cache="redis"))
+    def retrieve(self, request, pk=None):
+        response = super().retrieve(request, pk=pk)
+        return response
+
+    @method_decorator(cache_page(60 * 60 * 2, cache="redis"))
+    def list(self, request, pk=None):
+        response = super().list(request, pk=pk)
+        return response
+
 
 class PricingWindowViewSet(viewsets.ModelViewSet):
     """
@@ -162,6 +176,10 @@ class CurrentOptionsForPassType(generics.ListAPIView):
         if options:
             return options
         return PassTypePricingWindowOption.objects.none()
+
+    @method_decorator(cache_page(60 * 60 * 2, cache="redis"))
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
 
 
 class PassTypePricingWindowOptionViewSet(viewsets.ModelViewSet):
@@ -260,7 +278,10 @@ class PassViewSet(viewsets.ModelViewSet):
         elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
             return ExternalPassSerializer
         else:
-            return ExternalPassSerializer
+            if "create" == self.action:
+                return ExternalCreatePassSerializer
+            else:
+                return ExternalPassSerializer
 
     def has_permission(self, request, view):
         if is_internal(request):
@@ -296,6 +317,18 @@ class PassViewSet(viewsets.ModelViewSet):
                 if obj.user == request.user.id:
                     return True
         return False
+
+    def perform_create(self, serializer):
+        if is_internal(self.request):
+            serializer.save()
+        if is_retailer(self.request):
+            if RetailerGroupUser.objects.filter(emailuser=self.request.user).count():
+                retailer_group_user = RetailerGroupUser.objects.filter(
+                    emailuser=self.request.user
+                ).last()
+            serializer.save(sold_via=retailer_group_user.retailer_group)
+        if is_customer(self.request):
+            serializer.save(user=self.request.user.id)
 
 
 class CancelPass(APIView):
