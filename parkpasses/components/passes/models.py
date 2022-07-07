@@ -364,7 +364,9 @@ class Pass(models.Model):
             logger.critical(
                 "CRITICAL: The system can not find a Pass Template to use for generating park passes."
             )
-            raise PassTemplateDoesNotExist()
+            raise PassTemplateDoesNotExist(
+                "CRITICAL: The system can not find a Pass Template to use for generating park passes."
+            )
         qr_code_path = self.generate_qrcode()
         pass_template = PassTemplate.objects.order_by("-version").first()
         pass_utils = PassUtils()
