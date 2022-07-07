@@ -1,17 +1,18 @@
 import logging
 
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.components.vouchers.serializers import (
+    ExternalCreateVoucherSerializer,
     ExternalUpdateVoucherSerializer,
     ExternalVoucherSerializer,
     InternalVoucherSerializer,
     InternalVoucherTransactionSerializer,
     VoucherTransactionSerializer,
 )
-from parkpasses.helpers import is_internal
+from parkpasses.helpers import is_customer, is_internal
 from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
@@ -23,18 +24,23 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
     """
 
     model = Voucher
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
-        if self.action == "update" or self.action == "parial_update":
+        if "update" == self.action or "partial_update" == self.action:
             return ExternalUpdateVoucherSerializer
+        elif "create" == self.action:
+            return ExternalCreateVoucherSerializer
         return ExternalVoucherSerializer
 
     def get_queryset(self):
         return Voucher.objects.filter(purchaser=self.request.user.id)
 
     def perform_create(self, serializer):
-        serializer.save(purchaser=self.request.user.id)
+        if is_customer(self.request):
+            serializer.save(purchaser=self.request.user.id)
+        else:
+            serializer.save()
 
     def has_object_permission(self, request, view, obj):
         if obj.purchaser == request.user.id:
