@@ -36,5 +36,5 @@ module.exports = {
     isVoucherValid: function (id) {
         return                          `to be implimented`;
     },
-
+    createVoucher:                      "/api/vouchers/external/vouchers/?format=json",
 }
