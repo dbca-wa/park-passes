@@ -3,7 +3,7 @@ module.exports = {
 
     /* ========================= Concessions ============================================*/
 
-    concessions:                        "/api/concessions/concessions?format=json",
+    concessions:                        "/api/concessions/concessions/?format=json",
     concession: function (id) {
         return                          `/api/concessions/concessions/${id}/?format=json`;
     },
