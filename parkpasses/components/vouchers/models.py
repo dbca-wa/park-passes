@@ -7,6 +7,7 @@
 """
 import datetime
 import logging
+import random
 import uuid
 
 from django.db import models
@@ -39,7 +40,7 @@ class Voucher(models.Model):
         max_digits=7, decimal_places=2, blank=False, null=False
     )
     expiry = models.DateTimeField(null=False)
-    code = models.CharField(max_length=10)
+    code = models.CharField(unique=True, max_length=10)
     pin = models.DecimalField(max_digits=6, decimal_places=0, blank=False, null=False)
     datetime_purchased = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
@@ -94,11 +95,22 @@ class Voucher(models.Model):
 
     @classmethod
     def get_new_voucher_code(self):
-        return str(uuid.uuid4()).upper()[:8]
+        is_voucher_code_unique = False
+        while not is_voucher_code_unique:
+            voucher_code = str(uuid.uuid4()).upper()[:8]
+            if not Voucher.objects.filter(code=voucher_code).exists():
+                is_voucher_code_unique = True
+        return voucher_code
+
+    @classmethod
+    def get_new_pin(self):
+        return f"{random.randint(0,999999):06d}"
 
     def save(self, *args, **kwargs):
         if not self.code:
             self.code = self.get_new_voucher_code()
+        if not self.pin:
+            self.pin = self.get_new_pin()
         if not self.expiry:
             self.expiry = datetime.datetime.now() + datetime.timedelta(
                 days=settings.PARKPASSES_VOUCHER_EXPIRY_IN_DAYS
