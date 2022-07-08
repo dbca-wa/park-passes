@@ -15,20 +15,10 @@ module.exports = {
     configureWebpack: {
         plugins:[
             new webpack.ProvidePlugin({
-               // use fetch api instead
-               //axios: "axios",
-               //
-                /*
-               jQuery: "jquery",
-               "select2": "../node_modules/select2/dist/js/select2.full.min.js",
-               */
                $: "jquery",
                moment: "moment",
                swal: "sweetalert2",
                _: 'lodash',
-               //swal: Swal,
-               //_: 'lodash',
-               //datetimepicker:"../node_modules/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"
            })
         ],
         devServer: {
