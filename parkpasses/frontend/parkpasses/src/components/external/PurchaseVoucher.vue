@@ -192,7 +192,5 @@ export default {
 </script>
 
 <style scoped>
-.icon-help{
-    color:blue;
-}
+
 </style>
