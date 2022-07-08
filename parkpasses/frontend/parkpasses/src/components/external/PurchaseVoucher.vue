@@ -18,8 +18,8 @@
                     <input type="number" id="amount" name="amount" v-model="voucher.amount" class="form-control" ref="amount" min="5" step="5" required="required" autofocus>
                 </div>
             </div>
-            <div class="row g-3 align-items-center mb-2">
-                <div class="col-md-4">
+            <div class="row g-3 mb-2">
+                <div class="col-md-4 mt-auto align-top">
                     <label for="recipientName" class="col-form-label">Recipient Name</label>
                 </div>
                 <div class="col-auto">
@@ -43,12 +43,12 @@
                     <div v-if="errors.validateConfirmRecipientEmailError" class="col-auto alert alert-danger ml-2"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> {{errors.validateConfirmRecipientEmailError}}</div>
                 </div>
             </div>
-            <div class="row g-3 align-items-center mb-2">
+            <div class="row g-3 align-top mb-2">
                 <div class="col-md-4">
                     <label for="personalMessage" class="col-form-label">Message to Recipient</label>
                 </div>
                 <div class="col-auto">
-                    <textarea id="personalMessage" name="personalMessage" v-model="voucher.personal_message" class="form-control" required="required"></textarea>
+                    <textarea id="personalMessage" name="personalMessage" v-model="voucher.personal_message" class="form-control personalMessage" required="required"></textarea>
                 </div>
             </div>
             <div class="row g-3 align-items-center mb-2">
@@ -64,7 +64,7 @@
             </div>
             <div class="row g-3 align-items-center mb-2">
                 <div class="col-md-4">
-                    <label for="firstName" class="col-form-label">First Name</label>
+                    <label for="firstName" class="col-form-label">Your First Name</label>
                 </div>
                 <div class="col-auto">
                     <input type="text" id="firstName" name="firstName" v-model="voucher.purchaser_first_name" class="form-control" ref="firstName" required="required">
@@ -72,7 +72,7 @@
             </div>
             <div class="row g-3 align-items-center mb-2">
                 <div class="col-md-4">
-                    <label for="lastName" class="col-form-label">Last Name</label>
+                    <label for="lastName" class="col-form-label">Your Last Name</label>
                 </div>
                 <div class="col-auto">
                     <input type="text" id="lastName" name="lastName" v-model="voucher.purchaser_last_name" class="form-control" required="required">
@@ -192,5 +192,8 @@ export default {
 </script>
 
 <style scoped>
-
+    .personalMessage{
+        width:275px;
+        height:200px;
+    }
 </style>
