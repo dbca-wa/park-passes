@@ -53,7 +53,7 @@ RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
 WORKDIR $REPO_NO_DASH/frontend/$REPO_NO_DASH/
-RUN npm install
+RUN npm install --omit=dev
 RUN npm run build
 RUN rm -rf node_modules/
 
