@@ -10,7 +10,7 @@
 
         <div class="home-options">
 
-          <div class="card faq-card mb-3">
+          <div @click="redirectToSSoLogin()" class="card login-card mb-3">
             <div class="row g-0">
               <div class="col-md-4">
                 <img src="https://picsum.photos/id/101/300/210" class="img-fluid rounded-start" alt="Log In">
@@ -18,18 +18,6 @@
               <div class="col-md-8">
                 <div class="card-body">
                   <h5 class="card-title">Log In</h5>
-
-                  <div class="row g-3 align-items-center">
-                    <div class="col-auto">
-                      <label for="inputPassword6" class="col-form-label">Email</label>
-                    </div>
-                    <div class="col-auto">
-                      <input type="email" id="inputPassword6" class="form-control" autofocus>
-                    </div>
-                    <div class="col-auto">
-                      <button type="submit" class="btn btn-primary">Log In</button>
-                    </div>
-                  </div>
 
                   <p class="card-text">
                       <ul>
@@ -57,7 +45,7 @@
             </div>
           </div>
 
-          <div @click="redirectToHelp()" class="card faq-card mb-3">
+          <div @click="redirectToHelp()" class="card help-card mb-3">
             <div class="row g-0">
               <div class="col-md-4">
                 <img src="https://picsum.photos/id/7/300/170" class="img-fluid rounded-start" alt="Help">
@@ -85,10 +73,13 @@ export default {
     },
     methods: {
         redirectToFAQ: function() {
-            window.location.href = 'faq/'
+            window.location.href = 'faq/';
         },
         redirectToHelp: function() {
-            window.location.href = 'help/'
+            window.location.href = 'help/';
+        },
+        redirectToSSoLogin: function() {
+            window.location.href = 'ssologin/';
         }
     },
 };
