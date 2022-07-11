@@ -56,12 +56,13 @@
                     <label for="datetimeToEmail" class="col-form-label">Date to Send the Voucher</label>
                 </div>
                 <div class="col-auto">
-                    <input type="date" id="datetimeToEmail" name="datetimeToEmail" v-model="voucher.datetime_to_email" class="form-control" required="required" :min="startDate()" :max="endDate()">
+                    <input type="date" id="datetimeToEmail" name="datetimeToEmail" v-model="voucher.datetimeToEmail" class="form-control" required="required" :min="startDate()" :max="endDate()">
                 </div>
                 <div class="col-auto">
-                    <i class="fa-solid fa-circle-question icon-help" data-bs-toggle="tooltip" data-bs-placement="right" title="Leave as today to have the voucher sent immediately"></i>
+                    <i class="fa-solid fa-circle-question org-icon-help-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="Leave as today to have the voucher sent immediately"></i>
                 </div>
             </div>
+            <!--
             <div class="row g-3 align-items-center mb-2">
                 <div class="col-md-4">
                     <label for="firstName" class="col-form-label">Your First Name</label>
@@ -78,6 +79,7 @@
                     <input type="text" id="lastName" name="lastName" v-model="voucher.purchaser_last_name" class="form-control" required="required">
                 </div>
             </div>
+
             <div class="row g-3 align-items-center mb-2">
                 <div class="col-md-4">
                     <label for="email" class="col-form-label">Your Email Address</label>
@@ -102,12 +104,13 @@
                     <input type="text" id="postcode" name="postcode" class="form-control" pattern="[0-9]{4}">
                 </div>
             </div>
+            -->
             <div class="row g-3mb-2">
                 <div class="col-md-4">
                     &nbsp;
                 </div>
                 <div class="col-auto">
-                    <button @click="submitForm" class="btn btn-primary px-5" type="button">Pay</button>
+                    <button @click="submitForm" class="btn licensing-btn-primary px-5" type="button">Next</button>
                 </div>
             </div>
             </form>
@@ -116,7 +119,7 @@
 </template>
 
 <script>
-import { api_endpoints } from '@/utils/hooks'
+import { api_endpoints, helpers } from '@/utils/hooks'
 
 export default {
     name: "PurchaseVoucher",
@@ -124,7 +127,7 @@ export default {
         return {
             voucher: {
                 amount: 5,
-                datetime_to_email: this.startDate()
+                datetimeToEmail: this.startDate()
             },
             confirm_recipient_email: '',
             confirm_purchaser_email: '',
@@ -134,7 +137,8 @@ export default {
         };
     },
     components: {
-        api_endpoints
+        api_endpoints,
+        helpers
     },
     computed: {
 
@@ -159,6 +163,8 @@ export default {
         },
         submitForm: function () {
             let vm = this;
+            vm.voucher.datetime_to_email = new Date(vm.voucher.datetimeToEmail);
+            vm.voucher.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -169,10 +175,11 @@ export default {
                 const data = await response.json();
                 if (!response.ok) {
                     const error = (data && data.message) || response.statusText;
-                    console.log(error)
+                    console.log(error);
                     return Promise.reject(error);
                 }
-                vm.concessions = data.results
+                // Do something after adding the voucher to the database and the users cart
+                window.location.href = 'checkout/';
             })
             .catch(error => {
                 this.systemErrorMessage = "ERROR: Please try again in an hour.";
@@ -186,7 +193,7 @@ export default {
 
     },
     mounted: function () {
-        this.$refs.amount.focus();
+
     }
 };
 </script>
