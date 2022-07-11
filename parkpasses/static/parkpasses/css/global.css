@@ -1,0 +1,17 @@
+.licensing-btn-primary {
+    color:#fff;
+    background-color:#337ab7;
+}
+
+.licensing-btn-primary:hover {
+    color:#fff;
+    background-color:#286090;
+}
+
+.org-icon-help-primary {
+    color:#337ab7;
+}
+
+.org-icon-help-primary:hover {
+    color:#286090;
+}
