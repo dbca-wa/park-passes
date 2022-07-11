@@ -31,7 +31,7 @@ class Voucher(models.Model):
     objects = VoucherManager()
 
     voucher_number = models.CharField(max_length=10, blank=True)
-    purchaser = models.IntegerField(null=False, blank=False)  # EmailUserRO
+    purchaser = models.IntegerField(null=True, blank=True)  # EmailUserRO
     recipient_name = models.CharField(max_length=50, null=False, blank=False)
     recipient_email = models.EmailField(null=False, blank=False)
     datetime_to_email = models.DateTimeField(null=False)
