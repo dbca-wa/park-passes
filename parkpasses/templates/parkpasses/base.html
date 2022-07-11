@@ -42,8 +42,22 @@
             {% endif %}
 
         {% endblock %}
+
+        {% block menu_items2_right %}
+        {% if not user.is_authenticated %}
+        <ul class="navbar-nav navbar-right">
+            <li class="nav-item">
+                <a href="/ssologin" class="btn btn-primary btn-sm">Login</a>
+            </li>
+        </ul>
+        {% endif %}
+        {% endblock %}
+
         {% block menu_spacer %}
             <br>
         {% endblock %}
+
+
+
     </body>
 </html>
