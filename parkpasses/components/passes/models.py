@@ -292,7 +292,7 @@ class Pass(models.Model):
         (CANCELLED, "Cancelled"),
     ]
 
-    user = models.IntegerField(null=False, blank=False)  # EmailUserRO
+    user = models.IntegerField(null=True, blank=True)  # EmailUserRO
     option = models.ForeignKey(PassTypePricingWindowOption, on_delete=models.PROTECT)
     pass_number = models.CharField(max_length=50, null=True, blank=True)
     first_name = models.CharField(max_length=50, null=False, blank=False)
