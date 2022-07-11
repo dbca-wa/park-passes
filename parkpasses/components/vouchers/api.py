@@ -1,8 +1,11 @@
 import logging
 
+from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.components.vouchers.serializers import (
     ExternalCreateVoucherSerializer,
@@ -38,13 +41,33 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         if is_customer(self.request):
-            serializer.save(purchaser=self.request.user.id)
+            voucher = serializer.save(purchaser=self.request.user.id)
         else:
-            serializer.save()
+            voucher = serializer.save()
+        if self.request.session.get("cart_id", None):
+            cart_id = self.request.session["cart_id"]
+            cart = Cart.objects.get(id=cart_id)
+        else:
+            cart = Cart()
+            cart.save()
+            self.request.session["cart_id"] = cart.id
+        content_type = ContentType.objects.get_for_model(voucher)
+        cart_item = CartItem(cart=cart, object_id=voucher.id, content_type=content_type)
+        cart_item.save()
+        if not cart.datetime_first_added_to:
+            cart.datetime_first_added_to = timezone.now()
+        cart.datetime_last_added_to = timezone.now()
+        cart.save()
+        logger.debug(str(self.request.session))
 
     def has_object_permission(self, request, view, obj):
-        if obj.purchaser == request.user.id:
+        if "create" == view.action:
             return True
+        if "update" == view.action:
+            if is_customer(self.request):
+                if obj.purchaser:
+                    if obj.purchaser == request.user.id:
+                        return True
         return False
 
 
