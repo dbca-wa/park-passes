@@ -26,7 +26,7 @@ class CartManager(models.Manager):
 class Cart(models.Model):
     """A class to represent a cart"""
 
-    user = models.IntegerField(null=False, blank=False)  # EmailUserRO
+    user = models.IntegerField(null=True, blank=True)  # EmailUserRO
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
     datetime_first_added_to = models.DateTimeField(null=True, blank=True)
     datetime_last_added_to = models.DateTimeField(null=True, blank=True)
@@ -45,7 +45,7 @@ class Cart(models.Model):
     def grand_total(self):
         grand_total = 0.00
         for item in self.items.all():
-            grand_total += item.get_total_price()
+            grand_total += float(item.get_total_price())
         return grand_total
 
     def create_order(self):
@@ -159,10 +159,10 @@ class CartItem(models.Model):
         super().save(*args, **kwargs)
 
     def is_voucher_purchase(self):
-        return str(self.content_type) == "parkpasses | voucher"
+        return "parkpasses | voucher" == str(self.content_type)
 
     def is_pass_purchase(self):
-        return str(self.content_type) == "parkpasses | pass"
+        return "parkpasses | pass" == str(self.content_type)
 
     def get_price_before_discounts(self):
         """Does not take concession, discount code and voucher into consideration"""
