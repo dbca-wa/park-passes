@@ -7,6 +7,7 @@ from rest_framework import routers
 
 from parkpasses import views
 from parkpasses.admin import admin
+from parkpasses.components.cart.views import CheckoutView
 from parkpasses.components.help.views import ParkPassesHelpView
 
 # API patterns
@@ -29,6 +30,7 @@ urlpatterns = [
     url(r"api/orders/", include("parkpasses.components.orders.urls")),
     # url(r"api/", include(api_patterns)),
     url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
+    url(r"^checkout/", CheckoutView.as_view(), name="checkout"),
     url(r"^help/", ParkPassesHelpView.as_view(), name="help"),
     url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
     url(r"^faq/", views.ParkPassesFAQView.as_view(), name="ds_contact"),
