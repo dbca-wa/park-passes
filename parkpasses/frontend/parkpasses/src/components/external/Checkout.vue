@@ -14,7 +14,21 @@
 
         <div v-if="cartItems" class="accordion" id="accordionExample">
             <CartItem v-for="cartItem in cartItems" :cartItem="cartItem" :key="cartItem.id" />
-
+            <div v-if="cartItems">
+                <div class="row my-3 mx-1 g-0">
+                    <div class="col">
+                        Total
+                    </div>
+                    <div class="col-md-auto">
+                        ${{totalPrice}}
+                    </div>
+                </div>
+                <div class="d-flex flex-row-reverse">
+                    <div class="col-auto align-right">
+                        <button @click="submitForm" class="btn licensing-btn-primary px-5" type="button">Pay</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <div v-else>
             There are no items in your cart.
