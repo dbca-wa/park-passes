@@ -1,7 +1,12 @@
 from django.conf.urls import url
 from rest_framework import routers
 
-from parkpasses.components.cart.api import CartItemViewSet, CartViewSet, CheckoutView
+from parkpasses.components.cart.api import (
+    CartItemViewSet,
+    CartViewSet,
+    CheckoutView,
+    SuccessView,
+)
 
 router = routers.SimpleRouter()
 
@@ -10,6 +15,7 @@ router.register(r"cart-items", CartItemViewSet, basename="cart-items")
 
 urlpatterns = [
     url(r"checkout", CheckoutView.as_view()),
+    url(r"success", SuccessView.as_view()),
 ]
 
 urlpatterns = router.urls + urlpatterns
