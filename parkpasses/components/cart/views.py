@@ -14,6 +14,7 @@ class CheckoutView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.session.get("cart_id", None):
             cart = Cart.objects.get(id=self.request.session["cart_id"])
+            cart.set_user_for_cart_and_items(self.request.user.id)
             return CartItem.objects.filter(cart=cart)
         else:
             return CartItem.objects.none()
