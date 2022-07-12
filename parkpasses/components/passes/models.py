@@ -311,6 +311,7 @@ class Pass(models.Model):
     processing_status = models.CharField(
         max_length=2, choices=PROCESSING_STATUS_CHOICES, null=True, blank=True
     )
+    in_cart = models.BooleanField(null=False, blank=False, default=True)
     sold_via = models.ForeignKey(
         RetailerGroup, on_delete=models.PROTECT, null=True, blank=True
     )
