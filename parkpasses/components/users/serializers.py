@@ -3,7 +3,8 @@ from ledger_api_client.ledger_models import Address
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
-from parkpasses.components.main.models import CommunicationsLogEntry, Document
+from org_model_logs.models import CommunicationsLogEntry
+from parkpasses.components.main.models import Document
 from parkpasses.helpers import in_dbca_domain, is_parkpasses_admin
 
 
@@ -28,6 +29,17 @@ class UserFilterSerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.get_full_name()
+
+
+class BasicEmailUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailUser
+        fields = (
+            "id",
+            "last_name",
+            "first_name",
+            "email",
+        )
 
 
 class UserSerializer(serializers.ModelSerializer):
