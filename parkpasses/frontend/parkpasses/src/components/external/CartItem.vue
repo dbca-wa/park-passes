@@ -7,14 +7,16 @@
         </h2>
         <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
             <div class="accordion-body">
-                <table class="table table-sm">
-                    <tr><th>Voucher Number</th><td>{{cartItem.voucher_number}}</td></tr>
+                <table class="table">
+                    <tr><th>Voucher Code</th><td>{{cartItem.code}}</td></tr>
                     <tr><th>Recipient Name</th><td>{{cartItem.recipient_name}}</td></tr>
-                    <tr><th>Recipient Email</th><td>{{cartItem.voucher_number}}</td></tr>
-                    <tr><th>Date to Email</th><td>{{cartItem.datetime_to_email.toLocaleString()}}</td></tr>
-                    <tr><th>Your First Name</th><td>{{cartItem.first_name}}</td></tr>
-                    <tr><th>Your Last Name</th><td>{{cartItem.last_name}}</td></tr>
-                    <tr><th>Your Email</th><td>{{cartItem.purchaser_email}}</td></tr>
+                    <tr><th>Recipient Email</th><td>{{cartItem.recipient_email}}</td></tr>
+                    <tr><th>Date to Email</th><td>{{formatDate(cartItem.datetime_to_email)}}</td></tr>
+                    <tr><th>Personal Message</th><td>{{cartItem.personal_message}}</td></tr>
+                    <tr><th>Your First Name</th><td>{{cartItem.purchaser.first_name}}</td></tr>
+                    <tr><th>Your Last Name</th><td>{{cartItem.purchaser.last_name}}</td></tr>
+                    <tr><th>Your Email</th><td>{{cartItem.purchaser.email}}</td></tr>
+                    <tr><th>Amount</th><td>${{cartItem.amount}}</td></tr>
                 </table>
             </div>
         </div>
@@ -42,8 +44,12 @@ export default {
 
     },
     methods: {
-        functionName: function () {
-
+        formatDate(dateString) {
+            console.log(dateString)
+            const date = new Date(dateString);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                // Then specify how you want your dates to be formatted
+            return date.toLocaleDateString('en-AU', options);
         },
     },
     created: function () {
