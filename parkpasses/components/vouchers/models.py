@@ -57,6 +57,7 @@ class Voucher(models.Model):
         choices=PROCESSING_STATUS_CHOICES,
         default=NEW,
     )
+    in_cart = models.BooleanField(null=False, blank=False, default=True)
 
     class Meta:
         app_label = "parkpasses"
