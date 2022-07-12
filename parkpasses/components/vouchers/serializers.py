@@ -1,7 +1,9 @@
 import logging
 
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
+from parkpasses.components.users.serializers import BasicEmailUserSerializer
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 
 logger = logging.getLogger(__name__)
@@ -20,6 +22,31 @@ class ExternalVoucherSerializer(serializers.ModelSerializer):
             "datetime_updated",
             "processing_status",
         ]
+
+
+class ExternalListVoucherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Voucher
+        fields = [
+            "id",
+            "amount",
+            "voucher_number",
+            "recipient_name",
+            "recipient_email",
+            "personal_message",
+            "expiry",
+            "code",
+            "datetime_to_email",
+            "datetime_purchased",
+            "datetime_updated",
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        email_user = EmailUser.objects.get(id=instance.purchaser)
+        logger.debug("email_user = " + str(email_user))
+        data.update({"purchaser": BasicEmailUserSerializer(email_user).data})
+        return data
 
 
 class ExternalCreateVoucherSerializer(serializers.ModelSerializer):
