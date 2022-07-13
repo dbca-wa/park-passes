@@ -1,9 +1,11 @@
+from django.conf.urls import url
 from rest_framework import routers
 
 from parkpasses.components.discount_codes.api import (
     DiscountCodeBatchCommentViewSet,
     DiscountCodeBatchViewSet,
     DiscountCodeViewSet,
+    ValidateDiscountCodeView,
 )
 
 router = routers.SimpleRouter()
@@ -18,4 +20,8 @@ router.register(
     basename="discount-code-batch-comment",
 )
 
-urlpatterns = router.urls
+urlpatterns = [
+    url(r"validate-discount-code", ValidateDiscountCodeView.as_view()),
+]
+
+urlpatterns = router.urls + urlpatterns
