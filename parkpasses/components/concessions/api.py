@@ -32,12 +32,12 @@ class ConcessionViewSet(viewsets.ModelViewSet):
         else:
             return ConcessionSerializer
 
-    @method_decorator(cache_page(60 * 60 * 2, cache="redis"))
+    @method_decorator(cache_page(60 * 60 * 2))
     def retrieve(self, request, pk=None):
         response = super().retrieve(request, pk=pk)
         return response
 
-    @method_decorator(cache_page(60 * 60 * 2, cache="redis"))
+    @method_decorator(cache_page(60 * 60 * 2))
     def list(self, request, pk=None):
         response = super().list(request, pk=pk)
         return response

@@ -122,12 +122,12 @@ class PassTypeViewSet(viewsets.ModelViewSet):
             return False
         return False
 
-    @method_decorator(cache_page(60 * 60 * 2, cache="redis"))
+    @method_decorator(cache_page(60 * 60 * 2))
     def retrieve(self, request, pk=None):
         response = super().retrieve(request, pk=pk)
         return response
 
-    @method_decorator(cache_page(60 * 60 * 2, cache="redis"))
+    @method_decorator(cache_page(60 * 60 * 2))
     def list(self, request, pk=None):
         response = super().list(request, pk=pk)
         return response
@@ -177,7 +177,7 @@ class CurrentOptionsForPassType(generics.ListAPIView):
             return options
         return PassTypePricingWindowOption.objects.none()
 
-    @method_decorator(cache_page(60 * 60 * 2, cache="redis"))
+    @method_decorator(cache_page(60 * 60 * 2))
     def get(self, *args, **kwargs):
         return super().get(*args, **kwargs)
 

@@ -35,6 +35,7 @@ RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr
 RUN apt-get install --no-install-recommends -y python-pil
 RUN apt-get install --no-install-recommends -y libreoffice
+RUN apt-get install --no-install-recommends -y redis-server
 RUN update-ca-certificates
 # install node 16
 RUN touch install_node.sh
