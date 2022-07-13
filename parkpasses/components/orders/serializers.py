@@ -3,13 +3,21 @@ from rest_framework import serializers
 from parkpasses.components.orders.models import Order, OrderItem
 
 
-class OrderSerializer(serializers.ModelSerializer):
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = "__all__"
+
+
+class OrderListItemSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+
     class Meta:
         model = Order
         fields = "__all__"
 
 
-class OrderItemSerializer(serializers.ModelSerializer):
+class OrderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OrderItem
+        model = Order
         fields = "__all__"
