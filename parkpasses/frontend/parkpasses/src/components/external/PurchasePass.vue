@@ -30,7 +30,7 @@
                             <label for="firstName" class="col-form-label">First Name</label>
                         </div>
                         <div class="col-auto">
-                            <input type="text" id="firstName" name="firstName" class="form-control" ref="firstName" required="required" autofocus>
+                            <input type="text" id="firstName" name="firstName" v-model="pass.first_name" class="form-control" ref="firstName" required="required" autofocus>
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-2">
@@ -38,7 +38,7 @@
                             <label for="lastName" class="col-form-label">Last Name</label>
                         </div>
                         <div class="col-auto">
-                            <input type="text" id="lastName" name="lastName" class="form-control" required="required">
+                            <input type="text" id="lastName" name="lastName" v-model="pass.last_name" class="form-control" required="required">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-2">
@@ -46,7 +46,7 @@
                             <label for="email" class="col-form-label">Your Email Address</label>
                         </div>
                         <div class="col-auto">
-                            <input type="email" id="email" name="email" class="form-control" required="required">
+                            <input type="email" id="email" name="email" v-model="pass.email" class="form-control" required="required">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-2">
@@ -62,7 +62,7 @@
                             <label for="mobile" class="col-form-label">Mobile Number</label>
                         </div>
                         <div class="col-auto">
-                            <input type="tel" id="mobile" name="mobile" class="form-control" pattern="[0-9]{4} [0-9]{3} [0-9]{3}" required="required">
+                            <input type="tel" id="mobile" name="mobile" v-model="pass.mobile" class="form-control" pattern="[0-9]{4} [0-9]{3} [0-9]{3}" required="required">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-2">
@@ -70,7 +70,7 @@
                             <label for="postcode" class="col-form-label">Your Postcode</label>
                         </div>
                         <div class="col-auto">
-                            <input type="text" id="postcode" name="postcode" class="form-control" pattern="[0-9]{4}" required="required">
+                            <input type="text" id="postcode" name="postcode" v-model="pass.postcode" class="form-control" pattern="[0-9]{4}" required="required">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-2">
@@ -88,9 +88,9 @@
                             <label for="postcode" class="col-form-label">Concession Type</label>
                         </div>
                         <div class="col-auto">
-                            <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" class="form-select" aria-label="Concession Type" required="required">
+                            <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" v-model="pass.concession_type" class="form-select" aria-label="Concession Type" required="required">
                                 <option selected>Select Your Concession Type</option>
-                                <option v-for="concession in concessions" value="concession.id">{{concession.concession_type}} ({{concession.discount_percentage}}% Discount)</option>
+                                <option v-for="concession in concessions" value="concession.id" :key="concession.id">{{concession.concession_type}} ({{concession.discount_percentage}}% Discount)</option>
                             </select>
                         </div>
                     </div>
@@ -107,10 +107,10 @@
                             Duration
                         </div>
                         <div class="col-auto">
-                            <select v-if="passOptions.length>1" @change="updatePrice" v-model="passOption" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
-                                <option v-for="passOption in passOptions" :value="passOption.id">{{passOption.name}}</option>
+                            <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option.id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
+                                <option v-for="passOption in passOptions" :value="passOption.id" :key="passOption.id">{{passOption.name}}</option>
                             </select>
-                            <span v-else>{{passOption.name}}</span>
+                            <span v-else>{{pass.option.name}}</span>
                         </div>
                     </div>
                     <div v-if="totalPrice" class="row g-3 align-items-center mb-2">
@@ -126,7 +126,7 @@
                             <label for="startDate" class="col-form-label">Start Date for Pass</label>
                         </div>
                         <div class="col-auto">
-                            <input type="date" id="startDate" name="startDate" class="form-control" required="required">
+                            <input type="date" id="startDate" name="startDate" v-model="pass.datetime_start" class="form-control" required="required" :min="startDate()">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-2">
@@ -135,7 +135,7 @@
                         </div>
                         <div class="col-auto">
                             <div class="form-switch">
-                                <input class="form-check-input pl-2" type="checkbox" id="renewAutomatically" name="renewAutomatically">
+                                <input class="form-check-input pl-2" type="checkbox" id="renewAutomatically" name="renewAutomatically" v-model="pass.renew_automatically">
                             </div>
                         </div>
                     </div>
@@ -151,10 +151,10 @@
                     </div>
                     <div v-if="vehicleRegistrationNumbersKnown" class="row g-3 align-items-center mb-2">
                         <div class="col-md-4">
-                            <label for="vehicleRegistration" class="col-form-label">Vehicle Registration<span v-if="vehicleInputs>1"> 1</span></label>
+                            <label for="vehicleRegistration1" class="col-form-label">Vehicle Registration<span v-if="vehicleInputs>1"> 1</span></label>
                         </div>
                         <div class="col-auto">
-                            <input type="text" id="vehicleRegistration" name="vehicleRegistration" class="form-control short-control" required="required" maxlength="8">
+                            <input type="text" id="vehicleRegistration1" name="vehicleRegistration1" v-model="pass.vehicle_registration_1" class="form-control short-control" required="required" maxlength="8">
                         </div>
                         <div v-if="canAddAnotherVehicle" class="col-auto">
                             <button @click="toggleExtraVehicle" class="btn btn-primary">{{extraVehicleText}}</button>
@@ -162,10 +162,10 @@
                     </div>
                     <div v-if="vehicleRegistrationNumbersKnown && vehicleInputs>1" class="row g-3 align-items-center mb-2">
                         <div class="col-md-4">
-                            <label for="vehicleRegistration" class="col-form-label">Vehicle Registration 2</label>
+                            <label for="vehicleRegistration2" class="col-form-label">Vehicle Registration 2</label>
                         </div>
                         <div class="col-auto">
-                            <input type="text" id="vehicleRegistration" name="vehicleRegistration" class="form-control short-control" required="required">
+                            <input type="text" id="vehicleRegistration2" name="vehicleRegistration2" v-model="pass.vehicle_registration_2" class="form-control short-control" required="required">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-2">
@@ -173,7 +173,7 @@
                             <label for="discountCode" class="col-form-label">Discount Code</label>
                         </div>
                         <div class="col-auto">
-                            <input @change="validateDiscountCode" v-model="discountCode" type="text" id="discountCode" name="discountCode" class="form-control short-control" maxlength="8">
+                            <input @change="validateDiscountCode" v-model="pass.discount_code" type="text" id="discountCode" name="discountCode" class="form-control short-control" maxlength="8">
                             <span class="text-danger">{{discountCodeError}}</span>
                         </div>
                     </div>
@@ -182,7 +182,7 @@
                             <label for="voucherCode" class="col-form-label">Voucher Code</label>
                         </div>
                         <div class="col-auto">
-                            <input @change="validateVoucherCode" v-model="voucherCode" type="text" id="voucherCode" name="voucherCode" class="form-control short-control" maxlength="8">
+                            <input @change="validateVoucherCode" v-model="pass.voucher_code" type="text" id="voucherCode" name="voucherCode" class="form-control short-control" maxlength="8">
                             <span class="text-danger">{{voucherCodeError}}</span>
                         </div>
                     </div>
@@ -191,7 +191,7 @@
                             <label for="voucherPin" class="col-form-label">Voucher Pin</label>
                         </div>
                         <div class="col-auto">
-                            <input @change="validateVoucherPin" v-model="voucherPin" type="text" id="voucherPin" name="voucherPin" class="form-control pin-control" maxlength="6">
+                            <input @change="validateVoucherPin" v-model="pass.voucher_pin" type="text" id="voucherPin" name="voucherPin" class="form-control pin-control" maxlength="6">
                             <span class="text-danger">{{voucherPinError}}</span>
                         </div>
                     </div>
@@ -200,7 +200,7 @@
                             &nbsp;
                         </div>
                         <div class="col-auto">
-                            <button @click="submitForm" class="btn btn-primary px-5" type="submit">Pay</button>
+                            <button @click="submitForm" class="btn btn-primary px-5" type="button">Next</button>
                         </div>
                     </div>
                 </div>
@@ -221,9 +221,11 @@ export default {
     },
     data: function () {
         return {
+            pass: {
+                datetime_start: this.startDate(),
+            },
             passType: null,
             passOptions: null,
-            passOption: null,
             passOptionsLength: null,
             passPrice: '',
             concessionDiscountPercentage: 0,
@@ -233,10 +235,7 @@ export default {
             extraVehicle: false,
             vehicleInputs: 1,
             extraVehicleText: 'Add a second vehicle',
-            discountCode: '',
             discountCodeError: '',
-            voucherCode: '',
-            voucherPin: '',
             voucherCodeError: '',
             voucherPinError: '',
             systemErrorMessage: null
@@ -261,11 +260,18 @@ export default {
             }
             return ('HOLIDAY_PASS'==this.passType.name ? false : true)
         },
+        mustAddFullAddress() {
+            return ('GOLD_STAR'==this.passType.name ? false : true)
+        },
         indefiniteArticle() {
             return ('A'==this.passType.display_name.substring(0,1) ? 'an' : 'a' )
         }
     },
     methods: {
+        startDate: function () {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        },
         fetchConcessions: function () {
             let vm = this;
             fetch(api_endpoints.concessions)
@@ -315,7 +321,8 @@ export default {
                 }
                 if(data.results.length > 0) {
                     vm.passOptions = data.results
-                    vm.passOption = vm.passOptions[0].id
+                    vm.pass.option = vm.passOptions[0]
+                    vm.pass.option.id = vm.passOptions[0].id
                     vm.passPrice = vm.passOptions[0].price
                 } else {
                     this.systemErrorMessage = constants.ERRORS.CRITICAL;
@@ -402,14 +409,16 @@ export default {
                     console.log(error)
                     return Promise.reject(error);
                 }
-                vm.passOptions = data.results
-                vm.passOption = vm.passOptions[0].id
-                vm.passPrice = vm.passOptions[0].price
+                vm.passOptions = data
             })
             .catch(error => {
                 this.systemErrorMessage = "ERROR: Please try again in an hour.";
                 console.error("There was an error!", error);
             });
+        },
+        submitForm: function () {
+            console.log(this.pass);
+            return false;
         }
     },
     created: function () {
@@ -418,7 +427,7 @@ export default {
         this.fetchPassOptions();
     },
     mounted: function () {
-        this.$refs.firstName.focus();
+
     }
 };
 </script>
