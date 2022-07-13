@@ -2,12 +2,14 @@
     This module contains the models required for implimenting the shopping cart
 """
 import logging
+import uuid
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 
+from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.discount_codes.models import DiscountCode
 from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.models import Pass
@@ -28,6 +30,7 @@ class Cart(models.Model):
 
     user = models.IntegerField(null=True, blank=True)  # EmailUserRO
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
+    uuid = models.CharField(max_length=36, blank=True, null=True)
     datetime_first_added_to = models.DateTimeField(null=True, blank=True)
     datetime_last_added_to = models.DateTimeField(null=True, blank=True)
 
@@ -36,6 +39,23 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"Cart for user: {self.user} (Created: {self.datetime_created})"
+
+    def set_user_for_cart_and_items(self, user_id):
+        self.user = user_id
+        self.save()
+        logger.debug("Selecting vouchers")
+
+        voucher_ids = list(CartItem.vouchers.filter(cart=self))
+        vouchers = Voucher.objects.filter(id__in=voucher_ids)
+        for voucher in vouchers:
+            voucher.purchaser = user_id
+            voucher.save()
+
+        park_pass_ids = list(CartItem.passes.filter(cart=self))
+        park_passes = Pass.objects.filter(id__in=park_pass_ids)
+        for park_pass in park_passes:
+            park_pass.purchaser = user_id
+            park_pass.save()
 
     @property
     def email_user(self):
@@ -48,37 +68,57 @@ class Cart(models.Model):
             grand_total += float(item.get_total_price())
         return grand_total
 
-    def create_order(self):
+    def create_order(self, save_order_to_db_and_delete_cart=False):
+        """This method can create an order and order items from a cart (and cart items)
+        By default it doesn't add this order to the database. This is so we can use the
+        order to submit to leger and wait until that order is confirmed before we add
+        the order to the park passes database.
+        """
         order = Order(user=self.user)
-        order.save()
+        order_items = []
+        if save_order_to_db_and_delete_cart:
+            order.save()
         for cart_item in self.items.all():
             order_item = OrderItem()
             order_item.order = order
             if cart_item.is_voucher_purchase():
                 voucher = Voucher.objects.get(pk=cart_item.object_id)
-                order_item.description = f"Voucher Puchase: {voucher.voucher_number}"
+                order_item.description = CartUtils.get_voucher_purchase_description(
+                    voucher.voucher_number
+                )
                 order_item.amount = voucher.amount
-                order_item.save()
+                order_items.append(order_item)
+                if save_order_to_db_and_delete_cart:
+                    voucher.in_cart = False
+                    voucher.save()
+                    order_item.save()
             else:
                 park_pass = Pass.objects.get(pk=cart_item.object_id)
-                order_item.description = f"Park Pass Puchase: {park_pass.pass_number}"
+                order_item.description = CartUtils.get_pass_purchase_description(
+                    park_pass.pass_number
+                )
                 order_item.amount = park_pass.option.price
-                order_item.save()
+                order_items.append(order_item)
+                if save_order_to_db_and_delete_cart:
+                    park_pass.in_cart = False
+                    park_pass.save()
+                    order_item.save()
 
                 user_information = UserInformation.objects.get(user=self.user)
                 if user_information.concession:
-                    concession = user_information.concession
                     concession_discount = cart_item.get_concession_discount_as_amount()
                     if concession_discount > 0.00:
                         order_item = OrderItem()
                         order_item.order = order
-                        order_item.description = "Concession Discount: "
-                        order_item.description += concession.concession_type + " "
-                        order_item.description += (
-                            user_information.concession_card_number
+                        order_item.description = (
+                            CartUtils.get_concession_discount_description(
+                                user_information
+                            )
                         )
                         order_item.amount = -abs(concession_discount)
-                        order_item.save()
+                        order_items.append(order_item)
+                        if save_order_to_db_and_delete_cart:
+                            order_item.save()
 
                 if cart_item.discount_code:
                     discount_code_discount = (
@@ -88,22 +128,59 @@ class Cart(models.Model):
                         order_item = OrderItem()
                         order_item.order = order
                         order_item.description = (
-                            f"Discount Code Applied: {cart_item.discount_code.code}"
+                            CartUtils.get_discount_code_description(
+                                cart_item.discount_code.code
+                            )
                         )
                         order_item.amount = -abs(discount_code_discount)
-                        order_item.save()
+                        order_items.append(order_item)
+                        if save_order_to_db_and_delete_cart:
+                            order_item.save()
 
                 if cart_item.voucher:
                     voucher_discount = cart_item.get_voucher_discount_as_amount()
                     if voucher_discount > 0.00:
                         order_item = OrderItem()
                         order_item.order = order
-                        order_item.description = (
-                            f"Voucher Code Redeemed: {cart_item.voucher.code}"
+                        order_item.description = CartUtils.get_voucher_code_description(
+                            cart_item.voucher.code
                         )
                         order_item.amount = -abs(voucher_discount)
-                        order_item.save()
-        self.delete()
+                        order_items.append(order_item)
+                        if save_order_to_db_and_delete_cart:
+                            order_item.save()
+
+            if save_order_to_db_and_delete_cart:
+                self.delete()
+
+        return order, order_items
+
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = uuid.uuid4()
+        super().save(*args, **kwargs)
+
+
+class CartItemVoucherManager(models.Manager):
+    def get_queryset(self):
+        content_type = ContentType.objects.get_for_model(Voucher)
+        return (
+            super()
+            .get_queryset()
+            .filter(content_type=content_type)
+            .values_list("object_id", flat=True)
+        )
+
+
+class CartItemPassManager(models.Manager):
+    def get_queryset(self):
+        content_type = ContentType.objects.get_for_model(Pass)
+        return (
+            super()
+            .get_queryset()
+            .filter(content_type=content_type)
+            .values_list("object_id", flat=True)
+        )
 
 
 class CartItemManager(models.Manager):
@@ -115,6 +192,10 @@ class CartItem(models.Model):
     """A class to represent a cart item"""
 
     objects = CartItemManager()
+
+    vouchers = CartItemVoucherManager()
+
+    passes = CartItemPassManager()
 
     cart = models.ForeignKey(
         Cart, related_name="items", on_delete=models.CASCADE, null=False, blank=False
