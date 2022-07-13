@@ -1,8 +1,10 @@
+from django.conf.urls import url
 from rest_framework import routers
 
 from parkpasses.components.vouchers.api import (
     ExternalVoucherViewSet,
     InternalVoucherViewSet,
+    ValidateVoucherView,
     VoucherTransactionViewSet,
 )
 
@@ -18,4 +20,8 @@ router.register(
     r"voucher-transactions", VoucherTransactionViewSet, basename="voucher-transactions"
 )
 
-urlpatterns = router.urls
+urlpatterns = [
+    url(r"validate-voucher", ValidateVoucherView.as_view()),
+]
+
+urlpatterns = router.urls + urlpatterns
