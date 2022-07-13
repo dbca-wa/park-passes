@@ -99,11 +99,11 @@ TEMPLATES[0]["DIRS"].append(
 )
 
 CACHES = {
+    # "default": {
+    #    "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+    #    "LOCATION": os.path.join(BASE_DIR, "parkpasses", "cache"),
+    # },
     "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": os.path.join(BASE_DIR, "parkpasses", "cache"),
-    },
-    "redis": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
@@ -291,7 +291,7 @@ DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")
 
 LOGIN_URL = "/ssologin/"
 
-PARKPASSES_PAYMENT_SYSTEM_ID = env("PAYMENT_SYSTEM_ID", "S???")
+PARKPASSES_PAYMENT_SYSTEM_ID = env("PAYMENT_SYSTEM_ID", "S385")
 
 PAYMENT_SYSTEM_PREFIX = env(
     "PAYMENT_SYSTEM_PREFIX", PARKPASSES_PAYMENT_SYSTEM_ID.replace("S", "0")
