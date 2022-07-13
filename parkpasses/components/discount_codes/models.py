@@ -92,6 +92,11 @@ class DiscountCodeBatch(models.Model):
             super().save(*args, **kwargs)
 
 
+class DiscountCodeManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("discount_code_batch")
+
+
 class DiscountCode(models.Model):
     """A class to represent a discount code
 
@@ -101,7 +106,11 @@ class DiscountCode(models.Model):
     any number of times.
     """
 
-    discount_code_batch = models.ForeignKey(DiscountCodeBatch, on_delete=models.PROTECT)
+    objects = DiscountCodeManager()
+
+    discount_code_batch = models.ForeignKey(
+        DiscountCodeBatch, related_name="codes", on_delete=models.PROTECT
+    )
     code = models.CharField(max_length=50, unique=True)
     remaining_uses = models.SmallIntegerField(null=False, blank=False)
 
