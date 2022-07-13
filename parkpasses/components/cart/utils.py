@@ -8,6 +8,7 @@ from parkpasses.components.passes.models import Pass
 from parkpasses.components.passes.serializers import ExternalPassSerializer
 from parkpasses.components.vouchers.models import Voucher
 from parkpasses.components.vouchers.serializers import ExternalListVoucherSerializer
+from parkpasses.helpers import is_retailer
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,25 @@ class CartUtils:
         if "parkpasses | pass" == str(content_type):
             park_pass = Pass.objects.get(id=object_id)
             return ExternalPassSerializer(park_pass).data
+
+    @classmethod
+    def get_basket_parameters(self, lines, vouchers=[], is_no_payment=False):
+        return {
+            "products": lines,
+            "vouchers": vouchers,
+            "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
+            "custom_basket": True,
+            "no_payment": is_no_payment,
+        }
+
+    @classmethod
+    def is_no_payment_checkout(self, request):
+        user = request.user
+        if user.is_authenticated and user.is_staff and is_retailer(request):
+            no_payment = request.POST.get("no_payment", "false")
+            if no_payment == "true":
+                return True
+        return False
 
     @classmethod
     def get_checkout_parameters(
@@ -45,19 +65,6 @@ class CartUtils:
             "session_type": "ledger_api",
             "basket_owner": cart.user.id,
         }
-
-    @classmethod
-    def get_basket_parameters(self, lines, vouchers=[]):
-        return {
-            "products": lines,
-            "vouchers": lines,
-            "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
-            "custom_basket": True,
-            "products": lines,
-            "products": lines,
-            "products": lines,
-        }
-        return
 
     @classmethod
     def get_oracle_code(self):
