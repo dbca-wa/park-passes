@@ -33,10 +33,11 @@ module.exports = {
     },
 
     /* ========================= Vouchers ===============================================*/
-    isVoucherValid: function (id) {
-        return                          `to be implimented`;
+    isVoucherValid: function (recipient_email, code, pin) {
+        return                          `/api/vouchers/validate-voucher?recipient_email=${recipient_email}&code=${code}&pin=${pin}`;
     },
     createVoucher:                      "/api/vouchers/external/vouchers/",
+
 
     /* ========================= Cart Items =============================================*/
 
