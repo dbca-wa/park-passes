@@ -4,6 +4,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.views import APIView
 
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
@@ -98,3 +101,20 @@ class VoucherTransactionViewSet(viewsets.ModelViewSet):
             return InternalVoucherTransactionSerializer
         else:
             return VoucherTransactionSerializer
+
+
+class ValidateVoucherView(APIView):
+    throttle_classes = [AnonRateThrottle]
+
+    def get(self, request, format=None):
+        recipient_email = request.query_params.get("recipient_email", None)
+        code = request.query_params.get("code", None)
+        pin = request.query_params.get("pin", None)
+        if code and pin:
+            if (
+                Voucher.objects.exclude(in_cart=True)
+                .filter(recipient_email=recipient_email, code=code, pin=pin)
+                .exists()
+            ):
+                return Response({"is_voucher_code_valid_for_user": True})
+        return Response({"is_voucher_code_valid_for_user": False})
