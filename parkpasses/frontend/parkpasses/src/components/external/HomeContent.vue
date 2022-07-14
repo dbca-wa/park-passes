@@ -6,14 +6,14 @@
 
         <p>Exploring Western Australia's stunning parks and reserves? Park passes offer both value for money and convenience.</p>
 
-        <p>And why not purchase a Gift Voucher? The perfect gift for that nature lover you want to surprise!</p>
+        <p class="mb-4">And why not purchase a Gift Voucher? The perfect gift for that nature lover you want to surprise!</p>
 
         <div class="home-options">
 
-          <div @click="redirectToSSoLogin()" class="card login-card mb-3">
+          <div @click="redirectToSSoLogin()" class="card login-card mb-5">
             <div class="row g-0">
-              <div class="col-md-4">
-                <img src="https://picsum.photos/id/101/300/210" class="img-fluid rounded-start" alt="Log In">
+              <div class="col-md-3 offset-md-1">
+                <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Help"></i>
               </div>
               <div class="col-md-8">
                 <div class="card-body">
@@ -31,10 +31,10 @@
             </div>
           </div>
 
-          <div @click="redirectToFAQ()" class="card faq-card mb-3">
+          <div @click="redirectToFAQ()" class="card faq-card mb-4">
             <div class="row g-0">
-              <div class="col-md-4">
-                <img src="https://picsum.photos/id/8/300/170" class="img-fluid rounded-start" alt="Frequently Asked Questions">
+              <div class="col-md-3 offset-md-1">
+                <i class="fa-solid fa-circle-info org-icon-primary fa-10x" title="Help"></i>
               </div>
               <div class="col-md-8">
                 <div class="card-body">
@@ -45,10 +45,10 @@
             </div>
           </div>
 
-          <div @click="redirectToHelp()" class="card help-card mb-3">
+          <div @click="redirectToHelp()" class="card help-card mb-4">
             <div class="row g-0">
-              <div class="col-md-4">
-                <img src="https://picsum.photos/id/7/300/170" class="img-fluid rounded-start" alt="Help">
+              <div class="col-md-3 offset-md-1">
+                <i class="fa-solid fa-circle-question org-icon-primary fa-10x" title="Help"></i>
               </div>
               <div class="col-md-8">
                 <div class="card-body">
@@ -93,10 +93,15 @@ export default {
 
 .card {
   opacity: 1;
+  border:0;
 }
 
 .card:hover {
   cursor: pointer;
   opacity: 0.8;
+}
+
+.help-card i.fa-solid-question {
+
 }
 </style>
