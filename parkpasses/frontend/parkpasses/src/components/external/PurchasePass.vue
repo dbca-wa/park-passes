@@ -188,6 +188,9 @@
                             </div>
                             <div class="col-auto">
                                 <input type="text" id="vehicleRegistration2" name="vehicleRegistration2" v-model="pass.vehicle_registration_2" class="form-control short-control" required="required">
+                                <div class="invalid-feedback">
+                                    Please enter a valid vehicle registration .
+                                </div>
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
