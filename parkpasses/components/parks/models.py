@@ -47,6 +47,28 @@ class Park(models.Model):
         return self.name
 
 
+class LGAManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("postcodes")
+
+
+class LGA(models.Model):
+    """A class to represent a local goverment area (LGA)"""
+
+    objects = LGAManager()
+
+    name = models.CharField(unique=True, max_length=50, null=False, blank=False)
+    postcodes = models.ManyToManyField(Postcode, related_name="lgas", blank=True)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "LGA"
+        verbose_name_plural = "LGAs"
+
+    def __str__(self):
+        return self.name
+
+
 class ParkGroupManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related("parks")
@@ -57,8 +79,9 @@ class ParkGroup(models.Model):
 
     name = models.CharField(unique=True, max_length=100, null=False, blank=False)
     parks = models.ManyToManyField(
-        Park, related_name="park_groups", through="Member", blank=True
+        Park, related_name="park_group", through="Member", blank=True
     )
+    lgas = models.ManyToManyField(LGA, related_name="park_group", blank=True)
     display_order = models.SmallIntegerField(unique=True, null=False, blank=False)
     display_externally = models.BooleanField(null=False, blank=False)
 
@@ -91,33 +114,3 @@ class Member(models.Model):
         verbose_name = "Parks ParkGroups"
         verbose_name_plural = "Parks ParkGroups"
         unique_together = (("park_group", "display_order"),)
-
-
-class LGAManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related("park_group")
-            .prefetch_related("postcodes")
-        )
-
-
-class LGA(models.Model):
-    """A class to represent a local goverment area (LGA)"""
-
-    objects = LGAManager()
-
-    park_group = models.ForeignKey(
-        ParkGroup, on_delete=models.PROTECT, null=True, blank=True
-    )
-    name = models.CharField(unique=True, max_length=50, null=False, blank=False)
-    postcodes = models.ManyToManyField(Postcode, related_name="lgas", blank=True)
-
-    class Meta:
-        app_label = "parkpasses"
-        verbose_name = "LGA"
-        verbose_name_plural = "LGAs"
-
-    def __str__(self):
-        return self.name
