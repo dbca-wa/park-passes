@@ -13,7 +13,7 @@
           <div @click="redirectToSSoLogin()" class="card login-card mb-5">
             <div class="row g-0">
               <div class="col-md-3 offset-md-1">
-                <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Help"></i>
+                <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Login"></i>
               </div>
               <div class="col-md-8">
                 <div class="card-body">
@@ -34,7 +34,7 @@
           <div @click="redirectToFAQ()" class="card faq-card mb-4">
             <div class="row g-0">
               <div class="col-md-3 offset-md-1">
-                <i class="fa-solid fa-circle-info org-icon-primary fa-10x" title="Help"></i>
+                <i class="fa-solid fa-circle-info org-icon-primary fa-10x" title="Frequently Asked Questions"></i>
               </div>
               <div class="col-md-8">
                 <div class="card-body">
