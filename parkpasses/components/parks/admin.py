@@ -5,8 +5,10 @@ from parkpasses.components.parks.models import LGA, Member, Park, ParkGroup, Pos
 
 class ParkGroupAdmin(admin.ModelAdmin):
     model = ParkGroup
+    autocomplete_fields = ("lgas",)
     fields = [
         "name",
+        "lgas",
         "display_order",
         "display_externally",
     ]
@@ -92,20 +94,13 @@ class LGAAdmin(admin.ModelAdmin):
     autocomplete_fields = ("postcodes",)
     fields = [
         "name",
-        "park_group",
         "postcodes",
     ]
     search_fields = [
         "name",
     ]
-    list_display = (
-        "park_group",
-        "name",
-    )
-    ordering = (
-        "park_group__name",
-        "name",
-    )
+    list_display = ("name",)
+    ordering = ("name",)
 
     def postcodes(self, obj):
         return obj.postcodes
