@@ -24,7 +24,7 @@ class ConcessionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Concession.objects.all()
+        return Concession.objects.all().order_by("display_order")
 
     def get_serializer_class(self):
         if is_internal(self.request):
