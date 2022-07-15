@@ -15,9 +15,8 @@
                     <h1>Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
                 </div>
 
-                <p>
-                    Add a description field to the db so we can display this info dynamically:
-                </p>
+
+                <div v-if="passType" v-html="passType.description"></div>
 
                 <p>
                     An annual all parks pass gives you unlimited access to all national parks
