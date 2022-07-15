@@ -54,6 +54,9 @@ class RetailerGroup(models.Model):
 
     @classmethod
     def get_dbca_retailer_group(self):
+        """Passes have a sold_via field which is always populated. The passes sold from the dbca website
+        use the retailer group that is returned by this function.
+        """
         dbca_retailer_count = RetailerGroup.objects.filter(
             name____icontains="DBCA"
         ).count()
@@ -75,15 +78,8 @@ class RetailerGroup(models.Model):
             )
 
 
-class RetailerGroupUserManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().select_related("retailer_group", "emailuser")
-
-
 class RetailerGroupUser(models.Model):
     """A class to represent the many to many relationship between retailers and email users"""
-
-    objects = RetailerGroupUserManager()
 
     retailer_group = models.ForeignKey(RetailerGroup, on_delete=models.PROTECT)
     emailuser = models.ForeignKey(
