@@ -48,7 +48,7 @@
                     <label for="confirmRecipientEmail" class="col-form-label">Confirm Recipient Email Address</label>
                 </div>
                 <div class="col-auto">
-                    <input @change="validateConfirmRecipientEmail" type="email" id="confirmRecipientEmail" name="confirmRecipientEmail" v-model="confirmRecipientEmail" ref="confirmRecipientEmail" class="form-control" required="required">
+                    <input @change="validateConfirmEmail" type="email" id="confirmRecipientEmail" name="confirmRecipientEmail" v-model="confirmRecipientEmail" ref="confirmRecipientEmail" class="form-control" required="required">
                     <div class="invalid-feedback">
                         Please make sure this email matches the recipient's email.
                     </div>
@@ -134,6 +134,7 @@
 
 <script>
 import { api_endpoints, helpers } from '@/utils/hooks'
+import { useStore } from '@/stores/state'
 
 export default {
     name: "PurchaseVoucher",
@@ -141,12 +142,11 @@ export default {
         return {
             voucher: {
                 amount: 5,
-                datetimeToEmail: this.startDate()
+                datetimeToEmail: this.startDate(),
+                recipient_email: ''
             },
             confirmRecipientEmail: '',
-            errors: {
-                validateConfirmRecipientEmailError: ""
-            },
+            store: useStore(),
         };
     },
     components: {
@@ -167,11 +167,14 @@ export default {
             return today.toISOString().split('T')[0];
         },
         validateConfirmEmail: function () {
-            if(this.confirmRecipientEmail!=this.voucher.recipient_email){
-                this.$refs.confirmRecipientEmail.setCustomValidity("Invalid field.");
-                return false;
-            } else {
-                this.$refs.confirmRecipientEmail.setCustomValidity("");
+            console.log(this.voucher.recipient_email.length)
+            if(this.voucher.recipient_email.length && this.confirmRecipientEmail.length){
+                if(this.confirmRecipientEmail!=this.voucher.recipient_email){
+                    this.$refs.confirmRecipientEmail.setCustomValidity("Invalid field.");
+                    return false;
+                } else {
+                    this.$refs.confirmRecipientEmail.setCustomValidity("");
+                }
             }
         },
         submitForm: function () {
@@ -205,6 +208,8 @@ export default {
             let vm = this;
             var forms = document.querySelectorAll('.needs-validation');
 
+            this.validateConfirmEmail();
+
             Array.prototype.slice.call(forms)
             .forEach(function (form) {
                 if(form.checkValidity()){
@@ -224,7 +229,7 @@ export default {
 
     },
     mounted: function () {
-
+        console.log(this.store.userData);
     }
 };
 </script>
