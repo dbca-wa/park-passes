@@ -79,7 +79,7 @@ class PostcodeAdmin(admin.ModelAdmin):
     list_display = ("postcode",)
     readonly_fields = [
         "postcode",
-        "local_park",
+        # "local_park",
     ]
 
     def has_delete_permission(self, request, obj=None):
