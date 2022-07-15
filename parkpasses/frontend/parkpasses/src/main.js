@@ -1,10 +1,10 @@
 
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import router from './router'
 import App from './App'
 import helpers from '@/utils/helpers'
-import hooks from './packages'
-import api_endpoints from './api'
+import { useStore } from '@/stores/state'
 import CKEditor from '@ckeditor/ckeditor5-vue';
 require('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css')
 require('@/../node_modules/select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.css')
@@ -32,8 +32,13 @@ fetch = (originalFetch => {
     };
 })(fetch);
 
-const app = createApp(App)
+const pinia = createPinia();
 
-app.use(CKEditor)
-app.use(router)
-router.isReady().then(() => app.mount('#app'))
+const app = createApp(App)
+    .use(CKEditor)
+    .use(router)
+    .use(pinia)
+    .mount('#app');
+
+const store = useStore();
+store.fetchUserData();
