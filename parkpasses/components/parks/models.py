@@ -5,8 +5,12 @@
     A postcode can have mutiple local parks associated with it.
     A local park can have mulitple postcodes it is relevant to.
 """
+import logging
+
 from django.core.validators import MinLengthValidator
 from django.db import models
+
+logger = logging.getLogger(__name__)
 
 
 class Postcode(models.Model):
@@ -28,9 +32,16 @@ class Postcode(models.Model):
     def __str__(self):
         return str(self.postcode)
 
-    @property
-    def local_park(self):
-        return self.lgas.first().park
+    def local_parks(self):
+        return ParkGroup.objects.filter(
+            lgas__in=self.lgas.values_list("id", flat=True)
+        ).distinct()
+
+    def local_parks_name_list(self):
+        return self.local_parks().values_list("name", flat=True)
+
+    def local_parks_as_string(self):
+        return ", ".join(self.local_parks_name_list())
 
 
 class Park(models.Model):
@@ -94,9 +105,22 @@ class ParkGroup(models.Model):
         return self.name
 
     @classmethod
-    def get_park_group_by_postcode(self, postcode):
-        lga = LGA.objects.filter(postcodes__in=postcode).first()
-        return lga.park_group
+    def get_park_groups_by_postcode(self, postcode):
+        lga_ids = list(
+            LGA.objects.filter(postcodes__postcode=postcode)
+            .values_list("id", flat=True)
+            .distinct()
+        )
+        logger.debug(lga_ids)
+        return ParkGroup.objects.filter(lgas__id__in=lga_ids).distinct()
+
+    @classmethod
+    def get_park_groups_name_list_by_postcode(self, postcode):
+        return self.get_park_group_by_postcode(postcode).values_list("name", flat=True)
+
+    @classmethod
+    def get_park_groups_name_list_by_postcode_as_string(self, postcode):
+        return ", ".join(self.get_park_group_name_list_by_postcode(postcode))
 
 
 class MemberManager(models.Manager):
