@@ -23,6 +23,7 @@
 
 <script>
 import { api_endpoints } from '@/utils/hooks'
+import { useStore } from '@/stores/state'
 import ShopSideMenu from '@/components/external/ShopSideMenu.vue'
 import HomeContent from '@/components/external/HomeContent.vue'
 import PurchaseVoucher from '@/components/external/PurchaseVoucher.vue'
@@ -36,7 +37,8 @@ export default {
             showHomeContent: true,
             showPurchaseVoucher: false,
             showPurchasePass: false,
-            errorMessage: null
+            errorMessage: null,
+            store: useStore()
         };
     },
     components: {
@@ -67,6 +69,9 @@ export default {
             window.location.href = 'help/'
         }
     },
+    mounted: function () {
+
+    }
 };
 </script>
 
