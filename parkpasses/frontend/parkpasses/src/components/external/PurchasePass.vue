@@ -242,6 +242,7 @@
 <script>
 import { api_endpoints } from '@/utils/hooks'
 import { constants } from '@/utils/hooks'
+import { useStore } from '@/stores/state'
 
 export default {
     name: "PurchasePass",
@@ -252,7 +253,9 @@ export default {
     },
     data: function () {
         return {
+            store: useStore(),
             pass: {
+                first_name: '',
                 concession_type: 0,
                 datetime_start: this.startDate(),
                 discount_code: '',
@@ -337,7 +340,11 @@ export default {
                 }
                 vm.passType = data
                 vm.$nextTick(() => {
-                    vm.$refs.firstName.focus();
+                    if(!vm.pass.first_name.length){
+                        vm.$refs.firstName.focus();
+                    } else {
+                        vm.$refs.confirmEmail.focus();
+                    }
                 });
             })
             .catch(error => {
@@ -515,7 +522,12 @@ export default {
         this.fetchPassOptions();
     },
     mounted: function () {
-
+        if(this.store.userData.user){
+            this.pass.email = this.store.userData.user.email
+            this.pass.first_name = this.store.userData.user.first_name
+            this.pass.last_name = this.store.userData.user.last_name
+            this.$refs.confirmEmail.focus();
+        }
     }
 };
 </script>
