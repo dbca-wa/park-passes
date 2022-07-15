@@ -18,6 +18,7 @@ class PassTypeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "description",
             "image",
             "display_name",
             "display_order",
@@ -25,6 +26,7 @@ class PassTypeSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "name",
+            "description",
             "image",
             "display_name",
             "display_order",

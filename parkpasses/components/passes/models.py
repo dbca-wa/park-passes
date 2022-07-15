@@ -12,6 +12,7 @@ import math
 import os
 
 import qrcode
+from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -44,6 +45,7 @@ class PassType(models.Model):
     image = models.ImageField(upload_to=pass_type_image_path, null=False, blank=False)
     name = models.CharField(max_length=100)  # Name reserved for system use
     display_name = models.CharField(max_length=50, null=False, blank=False)
+    description = RichTextField(null=True)
     display_order = models.SmallIntegerField(null=False, blank=False)
     display_retailer = models.BooleanField(null=False, blank=False, default=True)
     display_externally = models.BooleanField(null=False, blank=False, default=True)
