@@ -1,6 +1,10 @@
 
 module.exports = {
 
+    /* ========================= User Data =============================================*/
+
+    userData:                           "/api/users/user-data/?format=json",
+
     /* ========================= Concessions ============================================*/
 
     concessions:                        "/api/concessions/concessions/?format=json",
