@@ -28,6 +28,7 @@ urlpatterns = [
     url(r"api/cart/", include("parkpasses.components.cart.urls")),
     url(r"api/help/", include("parkpasses.components.help.urls")),
     url(r"api/orders/", include("parkpasses.components.orders.urls")),
+    url(r"api/users/", include("parkpasses.components.users.urls")),
     # url(r"api/", include(api_patterns)),
     url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
     url(r"^checkout/", CheckoutView.as_view(), name="checkout"),
