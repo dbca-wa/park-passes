@@ -20,6 +20,7 @@ class Concession(models.Model):
         null=False,
         validators=PERCENTAGE_VALIDATOR,
     )
+    display_order = models.SmallIntegerField(unique=True, null=True, blank=False)
 
     def __str__(self):
         return f"{self.concession_type}"
