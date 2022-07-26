@@ -80,24 +80,91 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-1 align-top mb-2">
+                        <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                <label for="company" class="col-form-label">Company</label>
+                            </div>
+                            <div class="col-auto">
+                                <input type="text" id="company" name="company" v-model="pass.company" class="form-control">
+                            </div>
+                        </div>
+                        <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                <label for="address" class="col-form-label">Address</label>
+                            </div>
+                            <div class="col-auto">
+                                <input type="text" id="address" name="address" v-model="pass.address" class="form-control" required="required">
+                            </div>
+                        </div>
+                        <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                <label for="suburb" class="col-form-label">Town / Suburb</label>
+                            </div>
+                            <div class="col-auto">
+                                <input type="text" id="suburb" name="suburb" v-model="pass.suburb" class="form-control" required="required">
+                            </div>
+                        </div>
+                        <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                <label for="state" class="col-form-label">State</label>
+                            </div>
+                            <div class="col-auto">
+                                <select id="state" name="state" v-model="pass.state" class="form-select" required="required">
+                                    <option value="WA" selected="selected">Western Australia</option>
+                                    <option value="NSW">New South Wales</option>
+                                    <option value="VIC">Victoria</option>
+                                    <option value="QLD">Queensland</option>
+                                    <option value="SA">South Australia</option>
+                                    <option value="ACT">Australian Capital Territory</option>
+                                    <option value="TAS">Tasmania</option>
+                                    <option value="NT">Northern Territory</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div v-if="isAnnualLocalPass || isGoldStarPass" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="postcode" class="col-form-label">Your Postcode</label>
                             </div>
                             <div class="col-auto">
-                                <input type="text" id="postcode" name="postcode" v-model="pass.postcode" class="form-control" pattern="[0-9]{4}" required="required">
+                                <input v-if="isAnnualLocalPass" @keyup="validatePostcode" @change="validatePostcode" type="text" id="postcode" name="postcode" ref="postcode" v-model="pass.postcode" class="form-control" pattern="6[0-9]{3}" required="required" minlength="4" maxlength="4">
+                                <input v-else type="text" id="postcode" name="postcode" ref="postcode" v-model="pass.postcode" class="form-control" pattern="6[0-9]{3}" required="required" minlength="4" maxlength="4">
                                 <div class="invalid-feedback">
                                     Please enter a valid postcode.
                                 </div>
+                                <span v-if="loadingParkGroups" class="spinner-border-sm org-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </span>
                             </div>
                         </div>
+                        <div v-if="parkGroups && parkGroups.length && pass.park_group" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                <label for="parkGroup" class="col-form-label">Park Group</label>
+                            </div>
+                            <div class="col-auto">
+                                <select v-if="parkGroups.length>1" @change="updateParkGroup" v-model="pass.park_group.id" ref="parkGroup" id="parkGroup" name="parkGroup" class="form-select" aria-label="Park Group" required="required">
+                                    <option v-for="parkGroup in parkGroups" :value="parkGroup.id" :key="parkGroup.id">{{parkGroup.name}}</option>
+                                </select>
+                                <span v-else>{{pass.park_group.name}}</span>
+                            </div>
+                        </div>
+                        <div v-if="showParksList" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                <label for="parkGroup" class="col-form-label">Parks Included</label>
+                            </div>
+                            <div class="col-auto">
+                                <ul class="parks-list">
+                                    <li v-for="park in pass.park_group.parks" class="park"><span class="badge">{{ park.name }}</span></li>
+                                </ul>
+                            </div>
+                        </div>
+
                         <div class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="concession" class="col-form-label">Elibible for Concession</label>
                             </div>
                             <div class="col-auto">
                                 <div class="form-switch">
-                                    <input @change="resetPrice" class="form-check-input pl-2" type="checkbox" id="concession" name="concession" v-model="eligibleForConcession">
+                                    <input @change="resetPrice" class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="concession" name="concession" v-model="eligibleForConcession">
                                 </div>
                             </div>
                         </div>
@@ -118,6 +185,9 @@
                             </div>
                             <div class="col-auto">
                                 <input type="text" id="concessionCardNumber" name="concessionCardNumber" class="form-control" required="required">
+                                <div class="invalid-feedback">
+                                    Please enter a concession card number.
+                                </div>
                             </div>
                         </div>
                         <div v-if="passOptions" class="row g-1 align-top mb-2">
@@ -153,17 +223,17 @@
                             </div>
                             <div class="col-auto">
                                 <div class="form-switch">
-                                    <input class="form-check-input pl-2" type="checkbox" id="renewAutomatically" name="renewAutomatically" v-model="pass.renew_automatically">
+                                    <input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="renewAutomatically" name="renewAutomatically" v-model="pass.renew_automatically">
                                 </div>
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
                             <div class="col-md-4">
-                                <label for="vehicleRegistrationNumbersKnown" class="col-form-label">Vehicle Registration Number<span v-if="canAddAnotherVehicle">s</span> Known</label>
+                                <label for="vehicleRegistrationNumbersKnown" class="col-form-label">Vehicle Registration Number<span v-if="isHolidayPass">s</span> Known</label>
                             </div>
                             <div class="col-auto">
                                 <div class="form-switch">
-                                    <input class="form-check-input pl-2" type="checkbox" id="vehicleRegistrationNumbersKnown" name="vehicleRegistrationNumbersKnown" v-model="vehicleRegistrationNumbersKnown">
+                                    <input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="vehicleRegistrationNumbersKnown" name="vehicleRegistrationNumbersKnown" v-model="vehicleRegistrationNumbersKnown">
                                 </div>
                             </div>
                         </div>
@@ -177,8 +247,8 @@
                                     Please enter a valid vehicle registration .
                                 </div>
                             </div>
-                            <div v-if="canAddAnotherVehicle" class="col-auto">
-                                <button @click="toggleExtraVehicle" class="btn btn-primary">{{extraVehicleText}}</button>
+                            <div v-if="isHolidayPass" class="col-auto">
+                                <button @click="toggleExtraVehicle" class="btn licensing-btn-primary">{{extraVehicleText}}</button>
                             </div>
                         </div>
                         <div v-if="vehicleRegistrationNumbersKnown && vehicleInputs>1" class="row g-1 align-top mb-2">
@@ -230,7 +300,7 @@
                                 &nbsp;
                             </div>
                             <div class="col-auto">
-                                <button class="btn btn-primary px-5" type="submit">Next</button>
+                                <button class="btn licensing-btn-primary px-5" type="submit">Next</button>
                             </div>
                         </div>
                     </form>
@@ -261,11 +331,15 @@ export default {
                 discount_code: '',
                 voucher_code: '',
                 voucher_pin: '',
+                state: 'WA',
+                park_group: null
             },
             passType: null,
             passOptions: null,
             passOptionsLength: null,
             passPrice: '',
+            parkGroups: [],
+            loadingParkGroups: false,
             concessionDiscountPercentage: 0,
             concessions: [],
             confirmEmail: '',
@@ -293,17 +367,35 @@ export default {
             totalPrice = this.passPrice - ((this.concessionDiscountPercentage / 100) * this.passPrice);
             return totalPrice.toFixed(2);
         },
-        canAddAnotherVehicle() {
+        isHolidayPass() {
             if(!this.passType){
                 return false;
             }
-            return ('HOLIDAY_PASS'==this.passType.name ? false : true)
+            return ('HOLIDAY_PASS'==this.passType.name ? true : false)
         },
-        mustAddFullAddress() {
-            return ('GOLD_STAR'==this.passType.name ? false : true)
+        isAnnualLocalPass() {
+            if(!this.passType){
+                return false;
+            }
+            return ('ANNUAL_LOCAL_PASS'==this.passType.name ? true : false)
+        },
+        isGoldStarPass() {
+            if(!this.passType){
+                return false;
+            }
+            return ('GOLD_STAR'==this.passType.name ? true : false)
         },
         indefiniteArticle() {
             return ('A'==this.passType.display_name.substring(0,1) ? 'an' : 'a' )
+        },
+        showParksList() {
+            if(this.pass.park_group){
+                const parksInParkGroupName = this.pass.park_group.name.split('/').length;
+                if(this.pass.park_group.parks.length > parksInParkGroupName){
+                    return true;
+                }
+            }
+            return false;
         }
     },
     methods: {
@@ -376,13 +468,52 @@ export default {
                 console.error("There was an error!", error);
             });
         },
+        fetchParkGroups: function () {
+            let vm = this;
+            vm.loadingParkGroups = true;
+            fetch(api_endpoints.parkGroupsForPostcode(vm.pass.postcode))
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    console.log(error)
+                    return Promise.reject(error);
+                }
+
+                if (data.results.length >= 1) {
+                    vm.parkGroups = data.results
+                    console.log(vm.parkGroups);
+                    vm.pass.park_group = Object.assign({}, vm.parkGroups[0]);
+                    vm.$nextTick( function() {
+                        if(vm.parkGroups.length>1){
+                            vm.$refs.parkGroup.focus();
+                        }
+                    });
+                } else {
+                    vm.systemErrorMessage = constants.ERRORS.CRITICAL;
+                    console.error(`SYSTEM ERROR: No park groups found for postcode: ${vm.pass.postcode}`);
+                }
+            })
+            .catch(error => {
+                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                console.error("There was an error!", error);
+            }).finally(() => (this.loadingParkGroups = false));
+        },
         updatePrice: function (event) {
             this.passPrice = this.passOptions[event.target.selectedIndex].price
+        },
+        updateParkGroup: function (event) {
+            this.pass.park_group = {...this.parkGroups[event.target.selectedIndex]};
         },
         resetPrice: function () {
             if(!this.eligibleForConcession){
                 this.concessionDiscountPercentage = 0.00
-                this.passPrice = this.passOptions[this.$refs.passOption.selectedIndex].price
+                if(this.passOptions.length>1){
+                    this.passPrice = this.passOptions[this.$refs.passOption.selectedIndex].price
+                } else {
+                    this.passPrice = this.passOptions[0].price
+                }
+
             } else {
                 console.log('happening');
                 this.pass.concession_type = 0;
@@ -434,7 +565,51 @@ export default {
             } else {
                 console.log('voucher code is not invalid')
                 this.$refs.voucherCode.setCustomValidity("");
+                return true;
+            }
+        },
+        validatePostcode: function () {
+            let vm = this;
+            if(vm.pass.postcode.length==4){
+                const firstNumber = vm.pass.postcode.substring(0,1);
+                if('6'==firstNumber){
 
+                } else {
+                    vm.$refs.postcode.setCustomValidity("Invalid field.");
+                    vm.parkGroups = []
+                    vm.pass.park_group = null
+                    return false;
+                }
+                fetch(api_endpoints.isPostcodeValid(vm.pass.postcode))
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        const error = (data && data.message) || response.statusText;
+                        console.log(error);
+                        return Promise.reject(error);
+                    }
+                    const is_postcode_valid = data.is_postcode_valid
+                    console.log('is_postcode_valid = ' + is_postcode_valid)
+                    if(!is_postcode_valid){
+                        vm.$refs.postcode.setCustomValidity("Invalid field.");
+                        vm.parkGroups = []
+                        vm.pass.park_group = null
+                        return false;
+                    } else {
+                        vm.$refs.postcode.setCustomValidity("");
+                        vm.fetchParkGroups();
+                        return true;
+                    }
+                })
+                .catch(error => {
+                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    console.error("There was an error!", error);
+                });
+            } else {
+                vm.$refs.postcode.setCustomValidity("Invalid field.");
+                vm.parkGroups = []
+                vm.pass.park_group = null
+                return false;
             }
         },
         focusVoucherPin: function() {
@@ -471,7 +646,7 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                is_voucher_code_valid_for_user = data
+                const is_voucher_code_valid_for_user = data
                 console.log('is_voucher_code_valid_for_user = ' + is_voucher_code_valid_for_user)
                 if(!is_voucher_code_valid_for_user){
                     this.$refs.voucherCode.setCustomValidity("Invalid field.");
@@ -543,5 +718,20 @@ export default {
     }
     .pin-control{
         width:120px;
+    }
+    .parks-list{
+        max-width:400px;
+        margin:0;
+        padding:0;
+    }
+    .parks-list li {
+        list-style-type: none;
+        display:inline-flex;
+        margin-right:3px;
+    }
+
+    .parks-list li span.badge {
+        color: #fff;
+        background-color: #337ab7;
     }
 </style>
