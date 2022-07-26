@@ -1,9 +1,13 @@
 import logging
 
 from rest_framework import viewsets
+from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from parkpasses.components.parks.models import LGA, Park, Postcode
+from parkpasses.components.parks.models import LGA, Park, ParkGroup, Postcode
 from parkpasses.components.parks.serializers import (
+    ExternalParkGroupSerializer,
     LGASerializer,
     ParkSerializer,
     PostcodeSerializer,
@@ -62,3 +66,23 @@ class LGAViewSet(viewsets.ModelViewSet):
         if is_internal(request):
             return True
         return False
+
+
+class ValidatePostcodeView(APIView):
+    def get(self, request, format=None):
+        postcode = request.query_params.get("postcode", None)
+        if postcode:
+            if Postcode.objects.filter(postcode=postcode).exists():
+                return Response({"is_postcode_valid": True})
+        return Response({"is_postcode_valid": False})
+
+
+class ParkGroupsForPostcodeView(ListAPIView):
+    serializer_class = ExternalParkGroupSerializer
+
+    def get_queryset(self):
+        queryset = ParkGroup.objects.none()
+        postcode = self.request.query_params.get("postcode")
+        if Postcode.objects.filter(postcode=postcode).exists():
+            queryset = ParkGroup.get_park_groups_by_postcode(postcode=postcode)
+        return queryset
