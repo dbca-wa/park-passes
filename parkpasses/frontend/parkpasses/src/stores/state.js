@@ -3,11 +3,17 @@ import { api_endpoints } from '@/utils/hooks'
 
 export const useStore = defineStore('main', {
     state: () => ({
-        userData: {
+        userData: null, /*{
+            user: {
+                id: '',
+                firstName: '',
+                lastName: '',
+                email: ''
+            },
             isAuthenticated: false,
             authorisationLevel: 'external',
-            retailerGroup: ''
-        }
+            retailerGroups: []
+        }*/
     }),
     actions: {
         async fetchUserData() {
@@ -19,7 +25,6 @@ export const useStore = defineStore('main', {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                console.log(data);
                 this.userData = data
             })
             .catch(error => {
