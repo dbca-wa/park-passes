@@ -42,6 +42,13 @@ module.exports = {
     },
     createVoucher:                      "/api/vouchers/external/vouchers/",
 
+    /* ========================= Postcodes ===============================================*/
+    isPostcodeValid: function (postcode) {
+        return                          `/api/parks/validate-postcode?postcode=${postcode}`;
+    },
+    parkGroupsForPostcode: function (postcode) {
+        return                          `/api/parks/park-groups-for-postcode?postcode=${postcode}`;
+    },
 
     /* ========================= Cart Items =============================================*/
 
