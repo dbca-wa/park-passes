@@ -2,8 +2,8 @@
     This module contains the models required to impliment parks
     which are relevant for [local park passes].
 
-    A postcode can have mutiple local parks associated with it.
-    A local park can have mulitple postcodes it is relevant to.
+    These models were created so that the appropriate park groups for a user
+    can be presented to them when they enter their postcode.
 """
 import logging
 
