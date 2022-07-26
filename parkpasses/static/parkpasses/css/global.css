@@ -17,10 +17,19 @@
     background-color:#286090;
 }
 
+.org-primary{
+    color:#337ab7;
+}
+
 .org-icon-primary {
     color:#337ab7;
 }
 
 .org-icon-primary:hover {
     color:#286090;
+}
+
+.org-form-switch-primary:checked {
+    background-color: #337ab7;
+    border-color: #337ab7;
 }
