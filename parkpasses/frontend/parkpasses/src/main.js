@@ -6,9 +6,9 @@ import App from './App'
 import helpers from '@/utils/helpers'
 import { useStore } from '@/stores/state'
 import CKEditor from '@ckeditor/ckeditor5-vue';
-require('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css')
-require('@/../node_modules/select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.css')
-require('@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css')
+import('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css')
+import('@/../node_modules/select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.css')
+import('@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css')
 
 // Add CSRF Token to every request
 const customHeaders = new Headers({
@@ -34,11 +34,13 @@ fetch = (originalFetch => {
 
 const pinia = createPinia();
 
-const app = createApp(App)
-    .use(CKEditor)
-    .use(router)
-    .use(pinia)
-    .mount('#app');
+const app = createApp(App);
+
+app.use(CKEditor);
+app.use(router);
+app.use(pinia);
+
+router.isReady().then(() => app.mount('#app'));
 
 const store = useStore();
 store.fetchUserData();
