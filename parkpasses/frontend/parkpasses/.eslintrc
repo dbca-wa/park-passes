@@ -1,1 +1,1 @@
-{"parser": "babel-eslint"}
+{"parser": "@babel/babel-eslint"}
