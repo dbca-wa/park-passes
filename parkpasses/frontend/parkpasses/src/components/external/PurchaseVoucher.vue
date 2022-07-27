@@ -218,7 +218,6 @@ export default {
                     form.classList.add('was-validated');
                     $(".invalid-feedback:visible:first").siblings('input').focus();
                 }
-
             });
 
             console.log(this.voucher);
