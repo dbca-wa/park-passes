@@ -659,6 +659,32 @@ export default {
                 console.error("There was an error!", error);
             });
         },
+        submitForm: function() {
+            let vm = this;
+            vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
+            const requestOptions = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(vm.pass)
+            };
+            fetch(api_endpoints.createPass, requestOptions)
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    console.log(error);
+                    return Promise.reject(error);
+                }
+                // Do something after adding the voucher to the database and the users cart
+                window.location.href = 'checkout/';
+            })
+            .catch(error => {
+                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                console.error("There was an error!", error);
+            });
+            console.log(this.voucher);
+            return false;
+        },
         validateForm: function () {
             var forms = document.querySelectorAll('.needs-validation')
 
@@ -678,6 +704,7 @@ export default {
             .forEach(function (form) {
                 if(form.checkValidity()){
                     //Call some api with the valid data.
+                    vm.submitForm();
                 } else {
                     form.classList.add('was-validated');
                     //app.getElement('.invalid-feedback:first').focus();
