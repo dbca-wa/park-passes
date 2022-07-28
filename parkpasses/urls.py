@@ -41,6 +41,8 @@ urlpatterns = [
         name="ds_further_info",
     ),
     url(r"^internal/", views.InternalView.as_view(), name="internal"),
+    url(r"^internal/vouchers/", views.InternalView.as_view(), name="internal"),
+    # url(r'^internal/proposal/(?P<pk>\d+)/$', views.ExternalProposalView.as_view(), name='external-proposal-detail'),
     url(r"^external/", views.ExternalView.as_view(), name="external"),
     url(r"^account/$", views.ExternalView.as_view(), name="manage-account"),
     url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
