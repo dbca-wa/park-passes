@@ -21,8 +21,7 @@ class DiscountCodeBatch(models.Model):
 
     created_by = models.IntegerField(null=False, blank=False)  # EmailUserRO
     discount_code_batch_number = models.CharField(max_length=10, null=True, blank=True)
-    datetime_created = models.DateTimeField(auto_now_add=True)
-    datetime_updated = models.DateTimeField(auto_now=True)
+    datetime_start = models.DateTimeField(null=False, blank=False)
     datetime_expiry = models.DateTimeField(null=False, blank=False)
     codes_to_generate = models.SmallIntegerField()
     times_each_code_can_be_used = models.SmallIntegerField()
@@ -37,6 +36,8 @@ class DiscountCodeBatch(models.Model):
         null=True,
         validators=PERCENTAGE_VALIDATOR,
     )
+    datetime_created = models.DateTimeField(auto_now_add=True)
+    datetime_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         """Meta for discount code batch - used here to add a custom constraint
@@ -62,8 +63,13 @@ class DiscountCodeBatch(models.Model):
         ]
 
     @property
-    def created_by(self):
+    def get_created_by(self):
         return retrieve_email_user(self.created_by)
+
+    @property
+    def created_by_name(self):
+        email_user = retrieve_email_user(self.created_by)
+        return f"{email_user.first_name} {email_user.last_name}"
 
     def __str__(self):
         return f"{self.discount_code_batch_number}"
