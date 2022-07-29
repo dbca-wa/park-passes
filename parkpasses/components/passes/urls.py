@@ -3,6 +3,7 @@ from rest_framework import routers
 
 from parkpasses.components.passes.api import (
     CurrentOptionsForPassType,
+    ExternalPassViewSet,
     PassProcessingStatusesDistinct,
     PassTemplateViewSet,
     PassTypePricingWindowOptionViewSet,
@@ -21,6 +22,7 @@ router.register(
     r"pass-options", PassTypePricingWindowOptionViewSet, basename="pass-options"
 )
 router.register(r"pass-templates", PassTemplateViewSet, basename="pass-templates")
+router.register(r"external/passes", ExternalPassViewSet, basename="passes-external")
 router.register(r"passes", PassViewSet, basename="passes")
 
 urlpatterns = [
