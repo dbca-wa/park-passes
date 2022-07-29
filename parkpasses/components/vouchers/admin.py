@@ -10,6 +10,8 @@ class VoucherTransactionInline(admin.TabularInline):
 class VoucherAdmin(admin.ModelAdmin):
     model = Voucher
     list_display = (
+        "voucher_number",
+        "recipient_name",
         "recipient_email",
         "amount",
         "remaining_balance",
