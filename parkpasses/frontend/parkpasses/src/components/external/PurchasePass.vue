@@ -312,6 +312,7 @@
 <script>
 import { api_endpoints } from '@/utils/hooks'
 import { constants } from '@/utils/hooks'
+import { helpers } from '@/utils/hooks'
 import { useStore } from '@/stores/state'
 
 export default {
@@ -662,6 +663,10 @@ export default {
         submitForm: function() {
             let vm = this;
             vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
+            let start_date = new Date(vm.pass.datetime_start)
+            vm.pass.datetime_start = start_date.toISOString();
+            console.log('vm.pass.datetime_start = ' + vm.pass.datetime_start);
+            vm.pass.option = vm.pass.option.id;
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -686,6 +691,7 @@ export default {
             return false;
         },
         validateForm: function () {
+            let vm = this;
             var forms = document.querySelectorAll('.needs-validation')
 
             this.validateDiscountCode();
