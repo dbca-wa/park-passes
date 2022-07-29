@@ -1,0 +1,42 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Django Dev Server",
+            "type": "shell",
+            "command": "./manage.sh runserver 8010",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "Vue Dev Server",
+            "type": "shell",
+            "command": "cd parkpasses/frontend/parkpasses && source venv/bin/activate && npm run serve",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "Shell Plus",
+            "type": "shell",
+            "command": "${command:workbench.action.terminal.new}",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "nodeenv",
+            "type": "shell",
+            "command": "source parkpasses/frontend/parkpasses/venv/bin/activate",
+          }
+    ]
+}
