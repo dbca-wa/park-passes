@@ -3,16 +3,23 @@ from rest_framework import routers
 
 from parkpasses.components.discount_codes.api import (
     DiscountCodeBatchCommentViewSet,
-    DiscountCodeBatchViewSet,
     DiscountCodeViewSet,
+    InternalDiscountCodeBatchViewSet,
     ValidateDiscountCodeView,
 )
 
 router = routers.SimpleRouter()
 
-router.register(r"discount-codes", DiscountCodeViewSet, basename="discount-codes")
 router.register(
-    r"discount-code-batches", DiscountCodeBatchViewSet, basename="discount-code-batches"
+    r"external/discount-codes", DiscountCodeViewSet, basename="discount-codes"
+)
+router.register(
+    r"internal/discount-codes", DiscountCodeViewSet, basename="discount-codes"
+)
+router.register(
+    r"internal/discount-code-batches",
+    InternalDiscountCodeBatchViewSet,
+    basename="discount-code-batches",
 )
 router.register(
     r"discount-code-batch-comments",
