@@ -92,7 +92,7 @@ class Voucher(models.Model):
             raise Exception(
                 "The balance of transactions for this voucher are below 0.00."
             )
-        return remaining_balance
+        return f"{remaining_balance:.2f}"
 
     @classmethod
     def get_new_voucher_code(self):
