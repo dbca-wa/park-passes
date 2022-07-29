@@ -58,7 +58,7 @@ export default {
     computed: {
         totalPrice() {
             if(0==this.cartItems.length){
-                return '$0.00'
+                return '0.00'
             } else if(1==this.cartItems.length) {
                 return this.cartItems[0].amount
             } else {
