@@ -1,5 +1,4 @@
 from django.conf import settings
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
 from parkpasses.components.passes.models import (
@@ -64,20 +63,7 @@ class PassTemplateSerializer(serializers.ModelSerializer):
 
 
 class ExternalCreatePassSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
     sold_via = serializers.SerializerMethodField()
-
-    def get_user(self, obj):
-        try:
-            email_user = EmailUser.objects.get(email=obj.email)
-        except EmailUser.DoesNotExist:
-            email_user = EmailUser(
-                email=obj.email, first_name=obj.first_name, last_name=obj.last_name
-            )
-            email_user.save()
-            email_user = EmailUser.objects.get(email=obj.email)
-
-        return email_user.id
 
     def get_sold_via(self, obj):
         return getattr(obj, "sold_via", settings.PARKPASSES_DEFAULT_SOLD_VIA)
@@ -93,11 +79,10 @@ class ExternalCreatePassSerializer(serializers.ModelSerializer):
             "email",
             "vehicle_registration_1",
             "vehicle_registration_2",
-            "park",
-            "datetime_start",
-            "datetime_expiry",
+            "park_group",
             "renew_automatically",
-            "processing_status",
+            "sold_via",
+            "datetime_start",
             "processing_status",
             "datetime_created",
             "datetime_updated",
@@ -116,7 +101,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "email",
             "vehicle_registration_1",
             "vehicle_registration_2",
-            "park",
+            "park_group",
             "datetime_start",
             "datetime_expiry",
             "renew_automatically",
@@ -128,8 +113,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "pass_number",
-            "park",
-            "datetime_start",
+            "park_group",
             "datetime_expiry",
             "park_pass_pdf",
             "processing_status",
@@ -151,11 +135,12 @@ class ExternalUpdatePassSerializer(serializers.ModelSerializer):
 class InternalPassSerializer(serializers.ModelSerializer):
     pass_type = serializers.CharField(source="option.pricing_window.pass_type")
     pricing_window = serializers.CharField(source="option.pricing_window")
+    sold_via = serializers.CharField(source="sold_via.name")
 
     class Meta:
         model = Pass
         fields = "__all__"
-        read_only_fields = ["pass_type", "pricing_window"]
+        read_only_fields = ["pass_type", "pricing_window", "sold_via"]
         datatables_always_serialize = [
             "id",
             "pass_number",
@@ -165,7 +150,7 @@ class InternalPassSerializer(serializers.ModelSerializer):
             "email",
             "vehicle_registration_1",
             "vehicle_registration_2",
-            "park",
+            "park_group",
             "datetime_start",
             "datetime_expiry",
             "renew_automatically",
