@@ -2,11 +2,15 @@ import logging
 
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from django_filters import rest_framework as filters
 from rest_framework import viewsets
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
+from rest_framework_datatables.django_filters.backends import DatatablesFilterBackend
+from rest_framework_datatables.django_filters.filterset import DatatablesFilterSet
 
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
@@ -74,15 +78,31 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
         return False
 
 
+class VoucherFilter(DatatablesFilterSet):
+    datetime_to_email_from = filters.DateFilter(
+        field_name="datetime_to_email", lookup_expr="gte"
+    )
+    datetime_to_email_to = filters.DateFilter(
+        field_name="datetime_to_email", lookup_expr="lte"
+    )
+
+    class Meta:
+        model = Voucher
+        fields = "__all__"
+
+
 class InternalVoucherViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for internal users to perform actions on vouchers.
     """
 
+    search_fields = ["recipient_name", "recipient_email"]
     queryset = Voucher.objects.all()
     model = Voucher
     permission_classes = [IsInternal]
     serializer_class = InternalVoucherSerializer
+    filter_backends = [SearchFilter, DatatablesFilterBackend]
+    filterset_class = VoucherFilter
 
 
 class VoucherTransactionViewSet(viewsets.ModelViewSet):
