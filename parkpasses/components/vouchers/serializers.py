@@ -80,9 +80,15 @@ class ExternalUpdateVoucherSerializer(serializers.ModelSerializer):
 
 
 class InternalVoucherSerializer(serializers.ModelSerializer):
+    remaining_balance = serializers.ReadOnlyField()
+    processing_status = serializers.SerializerMethodField()
+
     class Meta:
         model = Voucher
         fields = "__all__"
+
+    def get_processing_status(self, obj):
+        return obj.get_processing_status_display()
 
 
 class VoucherTransactionSerializer(serializers.ModelSerializer):
