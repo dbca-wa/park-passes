@@ -14,8 +14,8 @@
           label="Park Passes"
           Index="passes"
         >
-          <ApplicationsTable
-            ref="passes_table"
+          <PassesDatatable
+            ref="passesDatatable"
             level="internal"
           />
         </FormSection>
@@ -25,8 +25,8 @@
 </template>
 
 <script>
-import FormSection from "@/components/forms/section_toggle.vue";
-import ApplicationsTable from "@/components/common/TablePasses";
+import FormSection from "@/components/forms/SectionToggle.vue";
+import PassesDatatable from "@/components/internal/datatables/PassesDatatable.vue";
 
 export default {
   name: "InternalDashboard",
@@ -38,7 +38,7 @@ export default {
   },
   components: {
     FormSection,
-    ApplicationsTable,
+    PassesDatatable,
   },
   watch: {},
   computed: {
@@ -58,10 +58,7 @@ export default {
   methods: {
     tabClicked: function (param) {
       if (param == "passes") {
-        this.$refs.passes_table.adjust_table_width();
-        this.$refs.passes_referred_to_me_table.adjust_table_width();
-      } else if (param === "competitive-processes") {
-        this.$refs.competitive_processes_table.adjust_table_width();
+        this.$refs.passesDatatable.adjustTableWidth();
       }
     },
     mapTabClicked: function () {
