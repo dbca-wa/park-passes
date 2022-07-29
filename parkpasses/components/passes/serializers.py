@@ -90,12 +90,19 @@ class ExternalCreatePassSerializer(serializers.ModelSerializer):
 
 
 class ExternalPassSerializer(serializers.ModelSerializer):
+    price = serializers.SerializerMethodField()
+    duration = serializers.SerializerMethodField()
+    pass_type = serializers.SerializerMethodField()
+
     class Meta:
         model = Pass
         fields = [
             "id",
             "pass_number",
             "option",
+            "pass_type",
+            "price",
+            "duration",
             "first_name",
             "last_name",
             "email",
@@ -113,6 +120,8 @@ class ExternalPassSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "pass_number",
+            "pass_type",
+            "price",
             "park_group",
             "datetime_expiry",
             "park_pass_pdf",
@@ -121,6 +130,15 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "datetime_updated",
             "sold_via",
         ]
+
+    def get_price(self, obj):
+        return f"{obj.option.price:.2f}"
+
+    def get_pass_type(self, obj):
+        return obj.option.pricing_window.pass_type.display_name
+
+    def get_duration(self, obj):
+        return f"{obj.option.duration} days"
 
 
 class ExternalUpdatePassSerializer(serializers.ModelSerializer):
