@@ -85,7 +85,9 @@ if SHOW_DEBUG_TOOLBAR:
 
     MIDDLEWARE += [
         "debug_toolbar.middleware.DebugToolbarMiddleware",
+        "kolo.middleware.KoloMiddleware",
     ]
+    KOLO_PATH = "./manage.sh runserver 8010"
     INSTALLED_APPS += ("debug_toolbar",)
     INTERNAL_IPS = ("127.0.0.1", "localhost")
 
