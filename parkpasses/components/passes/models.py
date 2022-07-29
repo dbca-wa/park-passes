@@ -21,12 +21,11 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from parkpasses.components.parks.models import Park
+from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.exceptions import PassTemplateDoesNotExist
 from parkpasses.components.passes.utils import PassUtils
 from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.ledger_api_utils import retrieve_email_user
-from parkpasses.settings import PASS_TYPES
 
 logger = logging.getLogger(__name__)
 
@@ -302,7 +301,9 @@ class Pass(models.Model):
     email = models.EmailField(null=False, blank=False)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
-    park = models.ForeignKey(Park, on_delete=models.PROTECT, null=True, blank=True)
+    park_group = models.ForeignKey(
+        ParkGroup, on_delete=models.PROTECT, null=True, blank=True
+    )
     datetime_start = models.DateTimeField(null=False, default=False)
     datetime_expiry = models.DateTimeField(null=False, blank=False)
     renew_automatically = models.BooleanField(null=False, blank=False, default=False)
@@ -414,10 +415,10 @@ class Pass(models.Model):
             days=self.option.duration
         )
         self.set_processing_status()
-        email_user = self.email_user
-        self.first_name = email_user.first_name
-        self.last_name = email_user.last_name
-        self.email = email_user.email
+        # email_user = self.email_user
+        # self.first_name = email_user.first_name
+        # self.last_name = email_user.last_name
+        # self.email = email_user.email
         super().save(*args, **kwargs)
 
 
@@ -426,6 +427,7 @@ class Pass(models.Model):
 def update_pass_number(sender, instance, **kwargs):
     if not instance.pass_number:
         pass_number = f"PP{instance.pk:06d}"
+        logger.debug("pass_number = " + pass_number)
         instance.pass_number = pass_number
         instance.save()
 
@@ -462,93 +464,3 @@ class PassCancellation(models.Model):
         super().save(*args, **kwargs)
         self.park_pass.processing_status = Pass.CANCELLED
         self.park_pass.save()
-
-
-class HolidayPassManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related("option", "pricing_window", "pass_type")
-            .filter(option__pricing_window__pass_type__name=PASS_TYPES.HOLIDAY_PASS)
-        )
-
-
-class HolidayPass(Pass):
-    """A proxy class to represent a holiday pass"""
-
-    objects = HolidayPassManager()
-
-    class Meta:
-        proxy = True
-        app_label = "parkpasses"
-
-    def save(self):
-        pass
-
-
-class LocalParkPassManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related("option", "pricing_window", "pass_type")
-            .filter(option__pricing_window__pass_type__name=PASS_TYPES.LOCAL_PARK_PASS)
-        )
-
-
-class LocalParkPass(Pass):
-    """A proxy class to represent a local park pass"""
-
-    class Meta:
-        proxy = True
-        app_label = "parkpasses"
-
-    def save(self):
-        pass
-
-
-class GoldStarPassManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related("option", "pricing_window", "pass_type")
-            .filter(option__pricing_window__pass_type__name=PASS_TYPES.GOLD_STAR_PASS)
-        )
-
-
-class GoldStarPass(Pass):
-    """A proxy class to represent a gold star pass"""
-
-    class Meta:
-        proxy = True
-        app_label = "parkpasses"
-
-    def save(self, *args, **kwargs):
-        # if the user does not have a postal address
-        # raise a ValidationError exception
-        if True:
-            raise ValidationError
-        super().save(*args, **kwargs)
-
-
-class DayEntryPassManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related("option", "pricing_window", "pass_type")
-            .filter(option__pricing_window__pass_type__name=PASS_TYPES.DAY_ENTRY_PASS)
-        )
-
-
-class DayEntryPass(Pass):
-    """A proxy class to represent a day entry pass"""
-
-    class Meta:
-        proxy = True
-        app_label = "parkpasses"
-
-    def save(self):
-        pass
