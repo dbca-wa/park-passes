@@ -1,18 +1,20 @@
 import logging
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django_filters import rest_framework as filters
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, mixins, status, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_datatables.django_filters.backends import DatatablesFilterBackend
 from rest_framework_datatables.django_filters.filterset import DatatablesFilterSet
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.passes.models import (
     Pass,
     PassTemplate,
@@ -237,6 +239,56 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
         return False
 
 
+class ExternalPassViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    model = Pass
+    pagination_class = DatatablesPageNumberPagination
+    page_size = 10
+
+    def get_queryset(self):
+        return Pass.objects.filter(user=self.request.user.id)
+
+    def get_serializer_class(self):
+        if "create" == self.action:
+            return ExternalCreatePassSerializer
+        else:
+            return ExternalPassSerializer
+
+    def perform_create(self, serializer):
+        if is_customer(self.request):
+            park_pass = serializer.save(user=self.request.user.id)
+        else:
+            park_pass = serializer.save()
+        if self.request.session.get("cart_id", None):
+            cart_id = self.request.session["cart_id"]
+            cart = Cart.objects.get(id=cart_id)
+        else:
+            cart = Cart()
+            cart.save()
+            self.request.session["cart_id"] = cart.id
+        content_type = ContentType.objects.get_for_model(park_pass)
+        cart_item = CartItem(
+            cart=cart, object_id=park_pass.id, content_type=content_type
+        )
+        cart_item.save()
+        if not cart.datetime_first_added_to:
+            cart.datetime_first_added_to = timezone.now()
+        cart.datetime_last_added_to = timezone.now()
+        cart.save()
+        logger.debug(str(self.request.session))
+
+    def has_object_permission(self, request, view, obj):
+        if is_customer(request):
+            if obj.user == request.user.id:
+                return True
+        return False
+
+
 class PassFilter(DatatablesFilterSet):
     start_date_from = filters.DateFilter(field_name="datetime_start", lookup_expr="gte")
     start_date_to = filters.DateFilter(field_name="datetime_start", lookup_expr="lte")
@@ -257,10 +309,12 @@ class PassViewSet(viewsets.ModelViewSet):
     search_fields = ["last_name"]
     queryset = Pass.objects.all()
     model = Pass
-    filter_backends = [SearchFilter, DatatablesFilterBackend]
+    filter_backends = [SearchFilter]
     pagination_class = DatatablesPageNumberPagination
     # filterset_class = PassFilter
-    filterset_fields = ["processing_status"]
+    filterset_fields = [
+        "processing_status",
+    ]
     page_size = 10
 
     def get_queryset(self):
@@ -317,6 +371,14 @@ class PassViewSet(viewsets.ModelViewSet):
                 if obj.user == request.user.id:
                     return True
         return False
+
+    def list(self, request):
+        queryset = self.get_queryset()
+        filter_backends = self.filter_queryset(queryset)
+        logger.debug(filter_backends.query)
+        serializer = InternalPassSerializer(filter_backends, many=True)
+        logger.debug(serializer.data)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         if is_internal(self.request):
