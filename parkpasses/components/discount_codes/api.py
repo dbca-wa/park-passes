@@ -1,6 +1,7 @@
 import logging
 
 from rest_framework import viewsets
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
@@ -18,6 +19,7 @@ from parkpasses.components.discount_codes.serializers import (
     InternalDiscountCodeBatchSerializer,
     InternalDiscountCodeSerializer,
 )
+from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
 
@@ -33,27 +35,22 @@ class DiscountCodeViewSet(viewsets.ModelViewSet):
     serializer_class = InternalDiscountCodeSerializer
 
 
-class DiscountCodeBatchViewSet(viewsets.ModelViewSet):
-    """
-    A ViewSet for performing actions on discount code batches.
-    """
-
+class InternalDiscountCodeBatchViewSet(viewsets.ModelViewSet):
     model = DiscountCodeBatch
     pagination_class = DatatablesPageNumberPagination
     queryset = DiscountCodeBatch.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsInternal]
     serializer_class = InternalDiscountCodeBatchSerializer
-    filter_backends = (DatatablesFilterBackend,)
+    filter_backends = (
+        SearchFilter,
+        DatatablesFilterBackend,
+    )
     filterset_fields = [
         "times_each_code_can_be_used",
     ]
 
 
 class DiscountCodeBatchCommentViewSet(viewsets.ModelViewSet):
-    """
-    A ViewSet for performing actions on discount code batches.
-    """
-
     model = DiscountCodeBatchComment
     queryset = DiscountCodeBatchComment.objects.all()
     permission_classes = [IsAuthenticated]
