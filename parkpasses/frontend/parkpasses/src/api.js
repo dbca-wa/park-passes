@@ -16,7 +16,7 @@ module.exports = {
 
     passesPaginatedList:                '/api/passes/passes/',
     passProcessingStatusesDistinct:     "/api/passes/pass-processing-statuses-distinct?format=json",
-    createPass:                         '/api/passes/external/passes',
+    createPass:                         '/api/passes/external/passes/',
 
     /* ========================= Pass Types =============================================*/
 
@@ -33,11 +33,13 @@ module.exports = {
     },
 
     /* ========================= Discount Codes =========================================*/
+    discountCodeBatchPaginatedList:     '/api/discount-codes/internal/discount-code-batches/',
     isDiscountCodeValid: function (id) {
         return                          `to be implimented`;
     },
 
     /* ========================= Vouchers ===============================================*/
+    vouchersInternalPaginatedList:      '/api/vouchers/internal/vouchers/',
     isVoucherValid: function (recipient_email, code, pin) {
         return                          `/api/vouchers/validate-voucher?recipient_email=${recipient_email}&code=${code}&pin=${pin}`;
     },
