@@ -8,9 +8,7 @@
             subtitle="- View existing applications and lodge new ones"
             Index="applications"
         >
-            <ApplicationsTable
-                level="external"
-            />
+
         </FormSection>
 
 
@@ -18,8 +16,8 @@
 </template>
 
 <script>
-import FormSection from "@/components/forms/section_toggle.vue"
-import ApplicationsTable from "@/components/common/TablePasses"
+import FormSection from "@/components/forms/SectionToggle.vue"
+//import ApplicationsTable from "@/components/common/TablePasses"
 
 export default {
     name: 'ExternalDashboard',
@@ -30,7 +28,7 @@ export default {
     },
     components:{
         FormSection,
-        ApplicationsTable,
+        //ApplicationsTable,
     },
     watch: {
 
