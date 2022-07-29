@@ -12,28 +12,35 @@
 
         <h1>Checkout</h1>
 
-        <div v-if="cartItems" class="accordion" id="accordionExample">
-            <CartItem v-for="cartItem in cartItems" :cartItem="cartItem" :key="cartItem.id" />
-            <div v-if="cartItems">
-                <div class="row my-3 mx-1 g-0">
-                    <div class="col">
-                        Total
+        <div v-if="loading" class="d-flex justify-content-center mt-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div v-else>
+            <div v-if="cartItems" class="accordion" id="accordionExample">
+                <CartItem v-for="cartItem in cartItems" :cartItem="cartItem" :key="cartItem.id" />
+                <div v-if="cartItems">
+                    <div class="row my-3 mx-1 g-0">
+                        <div class="col">
+                            Total
+                        </div>
+                        <div class="col-md-auto">
+                            ${{totalPrice}}
+                        </div>
                     </div>
-                    <div class="col-md-auto">
-                        ${{totalPrice}}
-                    </div>
-                </div>
-                <div class="d-flex flex-row-reverse">
-                    <div class="col-auto align-right">
-                        <button @click="submitForm" class="btn licensing-btn-primary px-5" type="button">Pay</button>
+                    <div class="d-flex flex-row-reverse">
+                        <div class="col-auto align-right">
+                            <button @click="checkoutCart" class="btn licensing-btn-primary px-5" type="button">Pay</button>
+                        </div>
                     </div>
                 </div>
             </div>
+            <div v-if="0==cartItems.length">
+                There are no items in your cart.
+            </div>
         </div>
-        <div v-else>
-            There are no items in your cart.
-        </div>
-
       </div>
     </div>
   </div>
@@ -48,6 +55,7 @@ export default {
     data: function () {
         return {
             cartItems: [],
+            loading: false,
         };
     },
     components: {
@@ -60,20 +68,31 @@ export default {
             if(0==this.cartItems.length){
                 return '0.00'
             } else if(1==this.cartItems.length) {
-                return this.cartItems[0].amount
+                if(this.cartItems[0].hasOwnProperty('voucher_number')){
+                    return this.cartItems[0].amount;
+                } else {
+                    return this.cartItems[0].price;
+                }
             } else {
-                const total = this.cartItems.reduce((accumulator, object) => {
-                    return accumulator + object.amount;
-                }, 0);
+                let total = 0.00;
+                this.cartItems.forEach(function(cartItem, index) {
+                    if(cartItem.hasOwnProperty('voucher_number')){
+                        return total += parseFloat(cartItem.amount);
+                    } else {
+                        return total += parseFloat(cartItem.price);
+                    }
+                });
+                return total.toFixed(2);
             }
         }
     },
     methods: {
-        functionName: function () {
+        checkoutCart: function () {
 
         },
         fetchCartItems: function () {
             let vm = this;
+            vm.loading = true;
             fetch(api_endpoints.checkout)
             .then(async response => {
                 const data = await response.json();
@@ -88,8 +107,9 @@ export default {
             .catch(error => {
                 vm.systemErrorMessage = "ERROR: Please try again in an hour.";
                 console.error("There was an error!", error);
+            }).finally(() => {
+                vm.loading = false;
             });
-            console.log(this.cartItems);
         }
     },
     created: function () {
