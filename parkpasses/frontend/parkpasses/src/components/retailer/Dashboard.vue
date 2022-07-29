@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import FormSection from "@/components/forms/section_toggle.vue"
+import FormSection from "@/components/forms/SectionToggle.vue"
 import ApplicationsTable from "@/components/common/TablePasses"
 
 export default {
