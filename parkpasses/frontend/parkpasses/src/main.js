@@ -6,6 +6,7 @@ import App from './App'
 import helpers from '@/utils/helpers'
 import { useStore } from '@/stores/state'
 import CKEditor from '@ckeditor/ckeditor5-vue';
+require('./packages.js')
 require('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css')
 require('@/../node_modules/select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.css')
 require('@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css')
