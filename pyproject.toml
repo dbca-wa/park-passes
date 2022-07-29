@@ -51,6 +51,7 @@ qrcode = "^7.3.1"
 docxtpl = "^0.16.0"
 django-filter = "^22.1"
 django-redis = "^5.2.0"
+kolo = "^1.8.0"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"
