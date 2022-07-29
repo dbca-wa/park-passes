@@ -9,14 +9,7 @@ class DiscountCodeAdmin(admin.TabularInline):
 
 class DiscountCodeBatchAdmin(admin.ModelAdmin):
     model = DiscountCodeBatch
-    fields = (
-        "codes_to_generate",
-        "times_each_code_can_be_used",
-        "invalidated",
-        "discount_amount",
-        "discount_percentage",
-        "datetime_expiry",
-    )
+
     list_display = (
         "discount_code_batch_number",
         "codes_to_generate",
