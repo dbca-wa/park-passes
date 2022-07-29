@@ -22,15 +22,15 @@ class PassCancellationInline(admin.TabularInline):
 class PassAdmin(admin.ModelAdmin):
     model = Pass
     fields = [
-        "pass_number",
         "user",
+        "in_cart",
         "processing_status",
         "sold_via",
         "first_name",
         "last_name",
         "email",
         "option",
-        "park",
+        "park_group",
         "vehicle_registration_1",
         "vehicle_registration_2",
         "prevent_further_vehicle_updates",
@@ -43,7 +43,6 @@ class PassAdmin(admin.ModelAdmin):
         "park_pass_pdf",
         "processing_status",
         "pass_type",
-        "option",
         "pricing_window",
         "price",
         "full_name",
@@ -72,11 +71,11 @@ class PassAdmin(admin.ModelAdmin):
                 not settings.ANNUAL_LOCAL_PASS
                 == obj.option.pricing_window.pass_type.name
             ):
-                if "park" in self.fields:
-                    self.fields.remove("park")
+                if "park_group" in self.fields:
+                    self.fields.remove("park_group")
             else:
-                if "park" not in self.fields:
-                    self.fields.insert(7, "park")
+                if "park_group" not in self.fields:
+                    self.fields.insert(7, "park_group")
         return self.fields
 
     def get_readonly_fields(self, request, obj=None):
