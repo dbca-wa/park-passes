@@ -40,6 +40,7 @@ class PassAdmin(admin.ModelAdmin):
     ]
     list_display = (
         "pass_number",
+        "sold_via",
         "park_pass_pdf",
         "processing_status",
         "pass_type",
