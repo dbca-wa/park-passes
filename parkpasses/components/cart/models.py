@@ -104,21 +104,24 @@ class Cart(models.Model):
                     park_pass.save()
                     order_item.save()
 
-                user_information = UserInformation.objects.get(user=self.user)
-                if user_information.concession:
-                    concession_discount = cart_item.get_concession_discount_as_amount()
-                    if concession_discount > 0.00:
-                        order_item = OrderItem()
-                        order_item.order = order
-                        order_item.description = (
-                            CartUtils.get_concession_discount_description(
-                                user_information
-                            )
+                if UserInformation.objects.filter(user=self.user).exists():
+                    user_information = UserInformation.objects.get(user=self.user)
+                    if user_information.concession:
+                        concession_discount = (
+                            cart_item.get_concession_discount_as_amount()
                         )
-                        order_item.amount = -abs(concession_discount)
-                        order_items.append(order_item)
-                        if save_order_to_db_and_delete_cart:
-                            order_item.save()
+                        if concession_discount > 0.00:
+                            order_item = OrderItem()
+                            order_item.order = order
+                            order_item.description = (
+                                CartUtils.get_concession_discount_description(
+                                    user_information
+                                )
+                            )
+                            order_item.amount = -abs(concession_discount)
+                            order_items.append(order_item)
+                            if save_order_to_db_and_delete_cart:
+                                order_item.save()
 
                 if cart_item.discount_code:
                     discount_code_discount = (
