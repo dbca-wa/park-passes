@@ -11,6 +11,8 @@ from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_datatables.django_filters.backends import DatatablesFilterBackend
+from rest_framework_datatables.django_filters.filters import GlobalFilter
 from rest_framework_datatables.django_filters.filterset import DatatablesFilterSet
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
@@ -34,15 +36,12 @@ from parkpasses.components.passes.serializers import (
     PassTypeSerializer,
     PricingWindowSerializer,
 )
-from parkpasses.components.retailers.models import RetailerGroupUser
-from parkpasses.helpers import (
-    belongs_to,
-    get_retailer_groups_for_user,
-    is_customer,
-    is_internal,
-    is_retailer,
-)
+from parkpasses.components.retailers.models import RetailerGroup
+from parkpasses.helpers import belongs_to, is_customer, is_internal
 from parkpasses.permissions import IsInternal
+
+# from rest_framework_datatables.filters import DatatablesFilterBackend
+
 
 logger = logging.getLogger(__name__)
 
@@ -264,6 +263,11 @@ class ExternalPassViewSet(
             park_pass = serializer.save(user=self.request.user.id)
         else:
             park_pass = serializer.save()
+
+        dbca_retailer_group = RetailerGroup.get_dbca_retailer_group()
+        park_pass.sold_via = dbca_retailer_group
+        park_pass.save()
+
         if self.request.session.get("cart_id", None):
             cart_id = self.request.session["cart_id"]
             cart = Cart.objects.get(id=cart_id)
@@ -289,108 +293,46 @@ class ExternalPassViewSet(
         return False
 
 
+class GlobalCharFilter(GlobalFilter, filters.CharFilter):
+    pass
+
+
 class PassFilter(DatatablesFilterSet):
+    pass_type = GlobalCharFilter(
+        field_name="option__pricing_window__pass_type__name", lookup_expr="icontains"
+    )
+    processing_status = GlobalCharFilter()
     start_date_from = filters.DateFilter(field_name="datetime_start", lookup_expr="gte")
     start_date_to = filters.DateFilter(field_name="datetime_start", lookup_expr="lte")
 
     class Meta:
         model = Pass
         fields = [
-            # "option__pricing_window__pass_type__name",
+            "pass_type",
             "processing_status",
+            "start_date_from",
+            "start_date_to",
         ]
 
 
-class PassViewSet(viewsets.ModelViewSet):
-    """
-    A ViewSet for performing actions on passes.
-    """
-
-    search_fields = ["last_name"]
-    queryset = Pass.objects.all()
-    model = Pass
-    filter_backends = [SearchFilter]
-    pagination_class = DatatablesPageNumberPagination
-    # filterset_class = PassFilter
-    filterset_fields = [
-        "processing_status",
+class InternalPassViewSet(viewsets.ModelViewSet):
+    search_fields = [
+        "pass_number",
+        "first_name",
+        "last_name",
+        "vehicle_registration_1",
+        "vehicle_registration_2",
     ]
-    page_size = 10
-
-    def get_queryset(self):
-        if is_internal(self.request):
-            return Pass.objects.all()
-        elif is_retailer(self.request):
-            retailer_groups_for_user = get_retailer_groups_for_user(self.request)
-            return Pass.objects.filter(sold_via__in=retailer_groups_for_user)
-        else:
-            return Pass.objects.filter(user=self.request.user.id)
-
-    def get_serializer_class(self):
-        if is_internal(self.request):
-            return InternalPassSerializer
-        elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
-            return ExternalPassSerializer
-        else:
-            if "create" == self.action:
-                return ExternalCreatePassSerializer
-            else:
-                return ExternalPassSerializer
-
-    def has_permission(self, request, view):
-        if is_internal(request):
-            return True
-        if belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
-            if view.action in [
-                "list",
-                "retrieve",
-                "create",
-                "update",
-                "partial_update",
-            ]:
-                return True
-            return False
-        if is_customer(request):
-            if view.action in [
-                "list",
-                "create",
-                "update",
-                "partial_update",
-            ]:
-                return True
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        if is_internal(request):
-            return True
-        if is_customer(request):
-            if view.action in [
-                "partial_update",
-                "update",
-            ]:
-                if obj.user == request.user.id:
-                    return True
-        return False
-
-    def list(self, request):
-        queryset = self.get_queryset()
-        filter_backends = self.filter_queryset(queryset)
-        logger.debug(filter_backends.query)
-        serializer = InternalPassSerializer(filter_backends, many=True)
-        logger.debug(serializer.data)
-        return Response(serializer.data)
-
-    def perform_create(self, serializer):
-        if is_internal(self.request):
-            serializer.save()
-        if is_retailer(self.request):
-            if RetailerGroupUser.objects.filter(emailuser=self.request.user).count():
-                retailer_group_user = RetailerGroupUser.objects.filter(
-                    emailuser=self.request.user
-                ).last()
-            serializer.save(sold_via=retailer_group_user.retailer_group)
-        if is_customer(self.request):
-            serializer.save(user=self.request.user.id)
+    model = Pass
+    pagination_class = DatatablesPageNumberPagination
+    queryset = Pass.objects.all()
+    permission_classes = [IsInternal]
+    serializer_class = InternalPassSerializer
+    filter_backends = (
+        SearchFilter,
+        DatatablesFilterBackend,
+    )
+    filterset_class = PassFilter
 
 
 class CancelPass(APIView):
