@@ -26,10 +26,11 @@ class CartUtils:
 
     @classmethod
     def get_basket_parameters(self, lines, vouchers=[], is_no_payment=False):
+        logger.debug("vouchers = " + vouchers)
         return {
             "products": lines,
-            "vouchers": vouchers,
-            "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
+            "vouchers": [],
+            "system": settings.PARKPASSES_PAYMENT_SYSTEM_PREFIX,
             "custom_basket": True,
             "no_payment": is_no_payment,
         }
@@ -44,15 +45,14 @@ class CartUtils:
         return False
 
     @classmethod
-    def get_checkout_parameters(
-        self, request, cart, checkouthash, internal=False, invoice_text=None
-    ):
+    def get_checkout_parameters(self, request, cart, internal=False, invoice_text=None):
         return {
             "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
             "fallback_url": request.build_absolute_uri("/"),
             "return_url": request.build_absolute_uri(reverse("cart_success"))
-            + "?checkouthash="
-            + checkouthash,
+            + "/"
+            + cart.uuid
+            + "/",
             "return_preload_url": settings.PARKSTAY_EXTERNAL_URL
             + "/api/cart/success/"
             + cart.uuid
