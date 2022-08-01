@@ -81,19 +81,21 @@ class CheckoutView(GenericAPIView):
                 objects.append(item)
             return Response(objects)
         else:
+            # Todo: Raise exception or redirect to homepage here?
             return Response([])
 
 
 class LedgerCheckoutView(APIView):
-    def get_ledger_order_lines(self):
+    def get_ledger_order_lines(self, cart):
         ledger_order_lines = []
         line_status = settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS
-        order, order_items = self.create_order()
+
+        order, order_items = cart.create_order()
         for order_item in order_items:
             ledger_order_line = {
                 "ledger_description": order_item.description,
                 "quantity": 1,
-                "price_incl_tax": order_item.amount,
+                "price_incl_tax": str(order_item.amount),
                 "oracle_code": CartUtils.get_oracle_code(),
                 "line_status": line_status,
             }
@@ -101,19 +103,25 @@ class LedgerCheckoutView(APIView):
             logger.debug(pprint.pformat(ledger_order_line))
         return ledger_order_lines
 
-    def post(self, request, format=None):
-        ledger_order_lines = self.get_ledger_order_lines()
-        is_no_payment = self.request.data["no_payment"]
-        basket_parameters = CartUtils.get_basket_parameters(
-            ledger_order_lines, is_no_payment
-        )
-        create_basket_session(request, self.user, basket_parameters)
-        checkouthash = request.session.get("checkouthash", "")
-        checkout_parameters = CartUtils.get_checkout_parameters(
-            request, self, checkouthash
-        )
-        create_checkout_session(request, checkout_parameters)
-        return redirect("ledgergw-payment-details")
+    # Todo: Change this to post once it's working.
+    def get(self, request, format=None):
+        if self.request.session.get("cart_id", None):
+            cart_id = request.session["cart_id"]
+            cart = Cart.objects.get(id=cart_id)
+            ledger_order_lines = self.get_ledger_order_lines(cart)
+            is_no_payment = self.request.POST.get("no_payment", "false")
+            basket_parameters = CartUtils.get_basket_parameters(
+                ledger_order_lines, is_no_payment
+            )
+            logger.debug("basket_parameters = " + str(basket_parameters))
+            create_basket_session(request, request.user.id, basket_parameters)
+            checkout_parameters = CartUtils.get_checkout_parameters(request, self)
+            logger.debug("checkout_parameters = " + str(checkout_parameters))
+            create_checkout_session(request, checkout_parameters)
+            return redirect("ledgergw-payment-details")
+
+        # Todo send user to a page that says their cart has expired?
+        pass
 
 
 class SuccessView(APIView):
@@ -128,7 +136,7 @@ class SuccessView(APIView):
             except ObjectDoesNotExist:
                 logger.warning(
                     "Client has requested cart success view for cart with id:\
-                     {} and uuid: {} that doesn't exist.".format(
+                     {} and uuid: {}. No such cart exists.".format(
                         cart_id, uuid
                     )
                 )
@@ -137,4 +145,4 @@ class SuccessView(APIView):
             order, order_items = cart.create_order(True)
             serializer = OrderListItemSerializer(order)
 
-        return Response(serializer.data)
+            return Response(serializer.data)
