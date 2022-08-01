@@ -6,7 +6,7 @@
                     <div class="form-group">
                         <label for="">Pass Type</label>
                         <select class="form-control" v-model="filterPassType">
-                            <option value="all" selected="selected">All</option>
+                            <option value="" selected="selected">All</option>
                             <option v-for="passType in passTypesDistinct" :value="passType.code">{{ passType.description }}</option>
                         </select>
                     </div>
@@ -15,7 +15,7 @@
                     <div class="form-group">
                         <label for="">Status</label>
                         <select class="form-control" v-model="filterPassProcessingStatus">
-                            <option value="all">All</option>
+                            <option value="">All</option>
                             <option v-for="processingStatus in passProcessingStatusesDistinct" :value="processingStatus.code">{{ processingStatus.description }}</option>
                         </select>
                     </div>
@@ -84,14 +84,30 @@ export default {
             required: false,
             default: 'filterPassProcessingStatus',
         },
+        filterPassTypeCacheName: {
+            type: String,
+            required: false,
+            default: 'filterPassType',
+        },
+        filterPassDatetimeStartFromCacheName: {
+            type: String,
+            required: false,
+            default: 'filterPassDatetimeStartFrom',
+        },
+        filterPassDatetimeStartToCacheName: {
+            type: String,
+            required: false,
+            default: 'filterPassDatetimeStartTo',
+        },
+
     },
     data() {
         let vm = this;
         return {
             datatable_id: 'passes-datatable-' + uuid(),
 
-            filterPassType: 'all',
-            filterPassProcessingStatus: sessionStorage.getItem(vm.filterPassProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterPassProcessingStatusCacheName) : 'all',
+            filterPassType: '',
+            filterPassProcessingStatus: sessionStorage.getItem(vm.filterPassProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterPassProcessingStatusCacheName) : '',
             filterPassDatetimeStartFrom: '',
             filterPassDatetimeStartTo: '',
 
@@ -121,10 +137,27 @@ export default {
         CollapsibleFilters,
     },
     watch: {
+        filterPassType: function() {
+            this.$refs.passDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            sessionStorage.setItem(this.filterPassTypeCacheName, this.filterPassType);
+        },
         filterPassProcessingStatus: function() {
             this.$refs.passDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterPassProcessingStatusCacheName, this.filterPassProcessingStatus);
         },
+        filterPassDatetimeStartFrom: function() {
+            this.$refs.passDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            sessionStorage.setItem(this.filterPassDatetimeStartFromCacheName, this.filterPassDatetimeStartFrom);
+        },
+        filterPassDatetimeStartTo: function() {
+            this.$refs.passDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            sessionStorage.setItem(this.filterPassDatetimeStartToCacheName, this.filterPassDatetimeStartTo);
+        },
+        filterApplied: function() {
+            if (this.$refs.CollapsibleFilters){
+                this.$refs.CollapsibleFilters.show_warning_icon(this.filterApplied)
+            }
+        }
     },
     computed: {
         number_of_columns: function() {
@@ -158,7 +191,8 @@ export default {
                 'Pass Type',
                 'Start Date',
                 'Automatic Renewal',
-                'Vehicles',
+                'Vehicle 1',
+                'Vehicle 2',
                 'Status',
                 'Pass',
                 'Sold Via',
@@ -190,6 +224,7 @@ export default {
             return {
                 data: "first_name",
                 visible: true,
+                searchable: true,
                 name: 'first_name',
             }
         },
@@ -204,7 +239,8 @@ export default {
             return {
                 data: "pass_type",
                 visible: true,
-                name: 'pass_type'
+                searchable: false,
+                name: 'option.pricing_window.pass_type.display_name'
             }
         },
         column_datetime_start: function(){
@@ -222,26 +258,34 @@ export default {
             return {
                 data: "renew_automatically",
                 visible: true,
-                name: 'renew_automatically'
+                className: 'text-center',
+                name: 'renew_automatically',
+                'render': function(row, type, full){
+                    if(full.renew_automatically){
+                        return '<i class="fa fa-check" aria-hidden="true" style="color:green;"></i>';
+                    } else {
+                        return '<i class="fa fa-times" aria-hidden="true" style="color:red;"></i>';
+                    }
+                }
+
             }
         },
         column_vehicle_registration_1: function(){
             let vm = this
             return {
-                data: null,
+                data: "vehicle_registration_1",
                 visible: true,
+                searchable: true,
                 name: 'vehicle_registration_1',
-                'render': function(row, type, full){
-                    if(full.vehicle_registration_1 && full.vehicle_registration_2){
-                        return `<div>${full.vehicle_registration_1}</div> <div>${full.vehicle_registration_2}</div>`
-                    }
-                    else if(full.vehicle_registration_1){
-                        return full.vehicle_registration_1
-                    }
-                    else {
-                        return 'N/A'
-                    }
-                }
+            }
+        },
+        column_vehicle_registration_2: function(){
+            let vm = this
+            return {
+                data: "vehicle_registration_2",
+                visible: true,
+                searchable: true,
+                name: 'vehicle_registration_2',
             }
         },
         column_processing_status: function(){
@@ -262,6 +306,7 @@ export default {
             return {
                 data: "park_pass_pdf",
                 visible: true,
+                orderable: false,
                 name: 'park_pass_pdf',
                 'render': function(row, type, full){
                     return `<a href="${full.park_pass_pdf}" target="blank">ParkPass.pdf</a>`
@@ -272,7 +317,7 @@ export default {
             return {
                 data: "sold_via",
                 visible: true,
-                name: 'sold_via'
+                name: 'sold_via.name'
             }
         },
         columnAction: function(){
@@ -325,6 +370,7 @@ export default {
                 vm.column_datetime_start,
                 vm.column_renew_automatically,
                 vm.column_vehicle_registration_1,
+                vm.column_vehicle_registration_2,
                 vm.column_processing_status,
                 vm.column_park_pass_pdf,
                 vm.column_sold_via,
@@ -351,10 +397,10 @@ export default {
 
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
-                        //d.option__pricing_window__pass_type__name = vm.filterPassType
+                        d.option__pricing_window__pass_type__name = vm.filterPassType
                         d.processing_status = vm.filterPassProcessingStatus
-                        //d.filter_lodged_from = vm.filterPassDatetimeStartFrom
-                        //d.filter_lodged_to = vm.filterPassDatetimeStartTo
+                        d.start_date_from = vm.filterPassDatetimeStartFrom
+                        d.start_date_to = vm.filterPassDatetimeStartTo
                     }
                 },
                 dom: "<'d-flex align-items-center'<'me-auto'l>fB>" +
@@ -471,6 +517,15 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+    i.fa-check {
+        color:green;
+    }
+    i.fa-cross {
+        color:red;
+    }
+</style>
 
 <style>
 .collapse-icon {
