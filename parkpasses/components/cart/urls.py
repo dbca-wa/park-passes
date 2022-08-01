@@ -5,7 +5,6 @@ from parkpasses.components.cart.api import (
     CartItemViewSet,
     CartViewSet,
     CheckoutView,
-    LedgerCheckoutView,
     SuccessView,
 )
 
@@ -16,7 +15,6 @@ router.register(r"cart-items", CartItemViewSet, basename="cart-items")
 
 urlpatterns = [
     url(r"checkout", CheckoutView.as_view()),
-    url(r"ledger-checkout", LedgerCheckoutView.as_view()),
     url(r"success", SuccessView.as_view()),
 ]
 
