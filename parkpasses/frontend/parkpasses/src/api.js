@@ -14,7 +14,7 @@ module.exports = {
 
     /* ========================= Passes =================================================*/
 
-    passesPaginatedList:                '/api/passes/passes/',
+    passesPaginatedList:                '/api/passes/internal/passes/',
     passProcessingStatusesDistinct:     "/api/passes/pass-processing-statuses-distinct?format=json",
     createPass:                         '/api/passes/external/passes/',
 
