@@ -58,7 +58,7 @@ class RetailerGroup(models.Model):
         use the retailer group that is returned by this function.
         """
         dbca_retailer_count = RetailerGroup.objects.filter(
-            name____icontains="DBCA"
+            name__icontains="DBCA"
         ).count()
         if 1 == dbca_retailer_count:
             return RetailerGroup.objects.get(name____contains="DBCA")
