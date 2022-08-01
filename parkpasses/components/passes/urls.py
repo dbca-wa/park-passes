@@ -4,12 +4,12 @@ from rest_framework import routers
 from parkpasses.components.passes.api import (
     CurrentOptionsForPassType,
     ExternalPassViewSet,
+    InternalPassViewSet,
     PassProcessingStatusesDistinct,
     PassTemplateViewSet,
     PassTypePricingWindowOptionViewSet,
     PassTypesDistinct,
     PassTypeViewSet,
-    PassViewSet,
     PricingWindowViewSet,
 )
 
@@ -23,7 +23,7 @@ router.register(
 )
 router.register(r"pass-templates", PassTemplateViewSet, basename="pass-templates")
 router.register(r"external/passes", ExternalPassViewSet, basename="passes-external")
-router.register(r"passes", PassViewSet, basename="passes")
+router.register(r"internal/passes", InternalPassViewSet, basename="passes-internal")
 
 urlpatterns = [
     url(r"pass-types-distinct", PassTypesDistinct.as_view()),
