@@ -63,7 +63,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
-    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    # "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
     # "DEFAULT_FILTER_BACKENDS": ("rest_framework_datatables.filters.DatatablesFilterBackend",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 20,
@@ -84,8 +84,8 @@ if SHOW_DEBUG_TOOLBAR:
             return True
 
     MIDDLEWARE += [
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
         "kolo.middleware.KoloMiddleware",
+        # "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
     KOLO_PATH = "./manage.sh runserver 8010"
     INSTALLED_APPS += ("debug_toolbar",)
@@ -304,9 +304,9 @@ LOGIN_URL = "/ssologin/"
 
 PARKPASSES_PAYMENT_SYSTEM_ID = env("PAYMENT_SYSTEM_ID", "S385")
 
-PAYMENT_SYSTEM_PREFIX = env(
+PARKPASSES_PAYMENT_SYSTEM_PREFIX = env(
     "PAYMENT_SYSTEM_PREFIX", PARKPASSES_PAYMENT_SYSTEM_ID.replace("S", "0")
-)  # '0557'
+)  # '0385'
 
 if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PARKPASSES_PAYMENT_SYSTEM_ID]
@@ -315,8 +315,8 @@ if not VALID_SYSTEMS:
 
 PARKPASSES_LEDGER_DEFAULT_LINE_STATUS = 1
 
-PARKPASSES_VOUCHER_PURCHASE_DESCRIPTION = "Voucher Puchase:"
-PARKPASSES_PASS_PURCHASE_DESCRIPTION = "Park Pass Puchase:"
+PARKPASSES_VOUCHER_PURCHASE_DESCRIPTION = "Voucher Purchase:"
+PARKPASSES_PASS_PURCHASE_DESCRIPTION = "Park Pass Purchase:"
 
 PARKPASSES_CONCESSION_DESCRIPTION = "Concession Discount:"
 PARKPASSES_DISCOUNT_CODE_APPLIED_DESCRIPTION = "Discount Code Applied:"
