@@ -291,25 +291,6 @@ class ExternalPassViewSet(
         return False
 
 
-class InternalPassFilter(DatatablesFilterSet):
-    # pass_type = GlobalCharFilter(
-    #    field_name="option__pricing_window__pass_type__name"
-    # )
-    # filter_processing_status = GlobalCharFilter(field_name="processing_status", lookup_expr="icontains")
-    processing_status = GlobalCharFilter()
-    # start_date_from = filters.DateFilter(field_name="datetime_start", lookup_expr="gte")
-    # start_date_to = filters.DateFilter(field_name="datetime_start", lookup_expr="lte")
-
-    class Meta:
-        model = Pass
-        fields = [
-            # "pass_type",
-            "processing_status",
-            # "start_date_from",
-            # "start_date_to",
-        ]
-
-
 class InternalPassFilterBackend(DatatablesFilterBackend):
     """
     Custom Filters for Internal Pass Viewset
@@ -360,13 +341,7 @@ class InternalPassViewSet(viewsets.ModelViewSet):
     queryset = Pass.objects.all()
     permission_classes = [IsInternal]
     serializer_class = InternalPassSerializer
-    filter_backends = (
-        InternalPassFilterBackend,
-        # SearchFilter,
-        # OrderingFilter
-    )
-    # filterset_fields = ["processing_status"]
-    filterset_class = InternalPassFilter
+    filter_backends = (InternalPassFilterBackend,)
 
 
 class CancelPass(APIView):
