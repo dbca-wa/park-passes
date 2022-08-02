@@ -11,9 +11,9 @@ from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_datatables.django_filters.backends import DatatablesFilterBackend
 from rest_framework_datatables.django_filters.filters import GlobalFilter
 from rest_framework_datatables.django_filters.filterset import DatatablesFilterSet
+from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
 from parkpasses.components.cart.models import Cart, CartItem
@@ -31,10 +31,10 @@ from parkpasses.components.passes.serializers import (
     InternalPassCancellationSerializer,
     InternalPassSerializer,
     InternalPassTypeSerializer,
+    InternalPricingWindowSerializer,
     OptionSerializer,
     PassTemplateSerializer,
     PassTypeSerializer,
-    PricingWindowSerializer,
 )
 from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.helpers import belongs_to, is_customer, is_internal
@@ -46,20 +46,18 @@ from parkpasses.permissions import IsInternal
 logger = logging.getLogger(__name__)
 
 
+class GlobalCharFilter(GlobalFilter, filters.CharFilter):
+    pass
+
+
 class PassTypesDistinct(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        if request.query_params.get("for_filter", ""):
-            pass_types = [
-                {"id": pass_type.name, "text": pass_type.display_name}
-                for pass_type in PassType.objects.all().distinct()
-            ]
-        else:
-            pass_types = [
-                {"code": pass_type.name, "description": pass_type.display_name}
-                for pass_type in PassType.objects.all().distinct()
-            ]
+        pass_types = [
+            {"code": pass_type.id, "description": pass_type.display_name}
+            for pass_type in PassType.objects.all().distinct()
+        ]
         return Response(pass_types)
 
 
@@ -134,34 +132,34 @@ class PassTypeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class PricingWindowViewSet(viewsets.ModelViewSet):
-    """
-    A ViewSet for performing actions on pricing windows.
-    """
+class InternalPricingWindowFilter(DatatablesFilterSet):
+    class Meta:
+        model = PassTypePricingWindow
+        fields = [
+            "pass_type",
+            "name",
+            "datetime_start",
+            "datetime_expiry",
+        ]
 
+
+class InternalPricingWindowViewSet(viewsets.ModelViewSet):
+    search_fields = [
+        "pass_type__display_name",
+        "name",
+    ]
     model = PassTypePricingWindow
-    serializer_class = PricingWindowSerializer
-
-    def get_queryset(self):
-        return PassTypePricingWindow.objects.all()
-
-    def has_permission(self, request, view):
-        if is_internal(request):
-            return True
-        if belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
-            if view.action in [
-                "list",
-                "retrieve",
-            ]:
-                return True
-            return False
-        if is_customer(request):
-            if view.action in [
-                "list",
-                "retrieve",
-            ]:
-                return True
-        return False
+    pagination_class = DatatablesPageNumberPagination
+    queryset = (
+        PassTypePricingWindow.objects.all()
+    )  # .order_by("pass_type__display_order")
+    permission_classes = [IsInternal]
+    serializer_class = InternalPricingWindowSerializer
+    filter_backends = (
+        SearchFilter,
+        DatatablesFilterBackend,
+    )
+    filterset_class = InternalPricingWindowFilter
 
 
 class CurrentOptionsForPassType(generics.ListAPIView):
@@ -293,26 +291,60 @@ class ExternalPassViewSet(
         return False
 
 
-class GlobalCharFilter(GlobalFilter, filters.CharFilter):
-    pass
-
-
-class PassFilter(DatatablesFilterSet):
-    pass_type = GlobalCharFilter(
-        field_name="option__pricing_window__pass_type__name", lookup_expr="icontains"
-    )
+class InternalPassFilter(DatatablesFilterSet):
+    # pass_type = GlobalCharFilter(
+    #    field_name="option__pricing_window__pass_type__name"
+    # )
+    # filter_processing_status = GlobalCharFilter(field_name="processing_status", lookup_expr="icontains")
     processing_status = GlobalCharFilter()
-    start_date_from = filters.DateFilter(field_name="datetime_start", lookup_expr="gte")
-    start_date_to = filters.DateFilter(field_name="datetime_start", lookup_expr="lte")
+    # start_date_from = filters.DateFilter(field_name="datetime_start", lookup_expr="gte")
+    # start_date_to = filters.DateFilter(field_name="datetime_start", lookup_expr="lte")
 
     class Meta:
         model = Pass
         fields = [
-            "pass_type",
+            # "pass_type",
             "processing_status",
-            "start_date_from",
-            "start_date_to",
+            # "start_date_from",
+            # "start_date_to",
         ]
+
+
+class InternalPassFilterBackend(DatatablesFilterBackend):
+    """
+    Custom Filters for Internal Pass Viewset
+    """
+
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        pass_type = request.GET.get("pass_type")
+        processing_status = request.GET.get("processing_status")
+        start_date_from = request.GET.get("start_date_from")
+        start_date_to = request.GET.get("start_date_to")
+
+        if pass_type:
+            queryset = queryset.filter(option__pricing_window__pass_type__id=pass_type)
+
+        if processing_status:
+            queryset = queryset.filter(processing_status=processing_status)
+
+        if start_date_from:
+            queryset = queryset.filter(datetime_start__gte=start_date_from)
+
+        if start_date_to:
+            queryset = queryset.filter(datetime_start__lte=start_date_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
 
 
 class InternalPassViewSet(viewsets.ModelViewSet):
@@ -329,10 +361,12 @@ class InternalPassViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInternal]
     serializer_class = InternalPassSerializer
     filter_backends = (
-        SearchFilter,
-        DatatablesFilterBackend,
+        InternalPassFilterBackend,
+        # SearchFilter,
+        # OrderingFilter
     )
-    filterset_class = PassFilter
+    # filterset_fields = ["processing_status"]
+    filterset_class = InternalPassFilter
 
 
 class CancelPass(APIView):
