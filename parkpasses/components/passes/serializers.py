@@ -38,10 +38,15 @@ class InternalPassTypeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PricingWindowSerializer(serializers.ModelSerializer):
+class InternalPricingWindowSerializer(serializers.ModelSerializer):
+    pass_type = serializers.SerializerMethodField()
+
     class Meta:
         model = PassTypePricingWindow
         fields = "__all__"
+
+    def get_pass_type(self, obj):
+        return obj.pass_type.display_name
 
 
 class OptionSerializer(serializers.ModelSerializer):
