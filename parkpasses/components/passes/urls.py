@@ -5,18 +5,20 @@ from parkpasses.components.passes.api import (
     CurrentOptionsForPassType,
     ExternalPassViewSet,
     InternalPassViewSet,
+    InternalPricingWindowViewSet,
     PassProcessingStatusesDistinct,
     PassTemplateViewSet,
     PassTypePricingWindowOptionViewSet,
     PassTypesDistinct,
     PassTypeViewSet,
-    PricingWindowViewSet,
 )
 
 router = routers.SimpleRouter()
 router.register(r"pass-types", PassTypeViewSet, basename="pass-types")
 router.register(
-    r"pricing-windows", PricingWindowViewSet, basename="pass-type-pricing-windows"
+    r"internal/pricing-windows",
+    InternalPricingWindowViewSet,
+    basename="pricing-windows-internal",
 )
 router.register(
     r"pass-options", PassTypePricingWindowOptionViewSet, basename="pass-options"
