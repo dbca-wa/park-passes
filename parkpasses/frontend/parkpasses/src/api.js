@@ -57,4 +57,9 @@ module.exports = {
 
     checkout:                          "/api/cart/checkout/?format=json",
 
+
+    /* ========================= Pricing Windows ========================================*/
+
+    pricingWindowsPaginatedList:        '/api/passes/internal/pricing-windows/',
+
 }
