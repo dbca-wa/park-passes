@@ -186,7 +186,7 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.voucher)
             };
-            fetch(api_endpoints.createVoucher, requestOptions)
+            fetch(api_endpoints.saveVoucher, requestOptions)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
