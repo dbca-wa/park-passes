@@ -43,7 +43,7 @@ module.exports = {
     isVoucherValid: function (recipient_email, code, pin) {
         return                          `/api/vouchers/validate-voucher?recipient_email=${recipient_email}&code=${code}&pin=${pin}`;
     },
-    createVoucher:                      "/api/vouchers/external/vouchers/",
+    saveVoucher:                      "/api/vouchers/external/vouchers/",
 
     /* ========================= Postcodes ===============================================*/
     isPostcodeValid: function (postcode) {
@@ -61,5 +61,8 @@ module.exports = {
     /* ========================= Pricing Windows ========================================*/
 
     pricingWindowsPaginatedList:        '/api/passes/internal/pricing-windows/',
-
+    savePricingWindow:                  '/api/passes/internal/pricing-windows/',
+    deletePricingWindow: function (id) {
+        return                          `/api/passes/internal/pricing-windows/${id}/`;
+    },
 }
