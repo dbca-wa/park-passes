@@ -2,7 +2,12 @@
     <div>
         <div class="row mb-3">
             <div class="col">
-                <button class="btn licensing-btn-primary float-end" data-bs-toggle="modal" data-bs-target="#exampleModal">Add New Pricing Window</button>
+                <button class="btn licensing-btn-primary float-end" data-bs-toggle="modal" data-bs-target="#pricingWindowModal">Add New Pricing Window</button>
+            </div>
+        </div>
+        <div v-if="successMessage" class="row mx-1">
+            <div id="successMessageAlert" class="col alert alert-success show fade" role="alert">
+                {{ successMessage }}
             </div>
         </div>
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
@@ -22,7 +27,7 @@
                     <div class="form-group">
                         <label for="">Start Date From</label>
                         <div class="input-group date" ref="proposalDateFromPicker">
-                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeStartFrom">
+                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDateStartFrom">
                         </div>
                     </div>
                 </div>
@@ -30,7 +35,7 @@
                     <div class="form-group">
                         <label for="">Start Date To</label>
                         <div class="input-group date" ref="proposalDateToPicker">
-                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeStartTo">
+                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDateStartTo">
                         </div>
                     </div>
                 </div>
@@ -38,7 +43,7 @@
                     <div class="form-group">
                         <label for="">End Date From</label>
                         <div class="input-group date" ref="proposalDateFromPicker">
-                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeExpiryFrom">
+                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDateExpiryFrom">
                         </div>
                     </div>
                 </div>
@@ -46,7 +51,7 @@
                     <div class="form-group">
                         <label for="">End Date To</label>
                         <div class="input-group date" ref="proposalDateToPicker">
-                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeExpiryTo">
+                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDateExpiryTo">
                         </div>
                     </div>
                 </div>
@@ -64,7 +69,8 @@
             </div>
         </div>
     </div>
-    <PricingWindowForm :passTypesDistinct="passTypesDistinct" />
+    <PricingWindowFormModal @saveSuccess="saveSuccess" :passTypesDistinct="passTypesDistinct" />
+    <PricingWindowConfirmDeleteModal @deleteSuccess="deleteSuccess" :pricingWindow="selectedPricingWindow" />
 </template>
 
 <script>
@@ -72,7 +78,9 @@ import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { api_endpoints } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
-import PricingWindowForm from '@/components/internal/forms/PricingWindowForm.vue'
+import PricingWindowFormModal from '@/components/internal/modals/PricingWindowFormModal.vue'
+import PricingWindowConfirmDeleteModal from '@/components/internal/modals/PricingWindowConfirmDeleteModal.vue'
+import BootstrapModalVue from '../../../utils/vue/BootstrapModal.vue';
 
 export default {
     name: 'TablePasses',
@@ -95,25 +103,25 @@ export default {
             required: false,
             default: 'filterPassType',
         },
-        filterDatetimeStartFromCacheName: {
+        filterDateStartFromCacheName: {
             type: String,
             required: false,
-            default: 'filterDatetimeStartFrom',
+            default: 'filterDateStartFrom',
         },
-        filterDatetimeStartToCacheName: {
+        filterDateStartToCacheName: {
             type: String,
             required: false,
-            default: 'filterDatetimeStartTo',
+            default: 'filterDateStartTo',
         },
-        filterDatetimeExpiryFromCacheName: {
+        filterDateExpiryFromCacheName: {
             type: String,
             required: false,
-            default: 'filterDatetimeExpiryFrom',
+            default: 'filterDateExpiryFrom',
         },
-        filterDatetimeExpiryToCacheName: {
+        filterDateExpiryToCacheName: {
             type: String,
             required: false,
-            default: 'filterDatetimeExpiryTo',
+            default: 'filterDateExpiryTo',
         },
     },
     data() {
@@ -123,12 +131,15 @@ export default {
 
             filterPassType: sessionStorage.getItem(vm.filterPassTypeCacheName) ? sessionStorage.getItem(vm.filterPassTypeCacheName) : '',
             filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
-            filterDatetimeStartFrom: sessionStorage.getItem(vm.filterDatetimeStartFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeStartFromCacheName) : '',
-            filterDatetimeStartTo: sessionStorage.getItem(vm.filterDatetimeStartToCacheName) ? sessionStorage.getItem(vm.filterDatetimeStartToCacheName) : '',
-            filterDatetimeExpiryFrom: sessionStorage.getItem(vm.filterDatetimeExpiryFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeExpiryFromCacheName) : '',
-            filterDatetimeExpiryTo: sessionStorage.getItem(vm.filterDatetimeExpiryToCacheName) ? sessionStorage.getItem(vm.filterDatetimeExpiryToCacheName) : '',
+            filterDateStartFrom: sessionStorage.getItem(vm.filterDateStartFromCacheName) ? sessionStorage.getItem(vm.filterDateStartFromCacheName) : '',
+            filterDateStartTo: sessionStorage.getItem(vm.filterDateStartToCacheName) ? sessionStorage.getItem(vm.filterDateStartToCacheName) : '',
+            filterDateExpiryFrom: sessionStorage.getItem(vm.filterDateExpiryFromCacheName) ? sessionStorage.getItem(vm.filterDateExpiryFromCacheName) : '',
+            filterDateExpiryTo: sessionStorage.getItem(vm.filterDateExpiryToCacheName) ? sessionStorage.getItem(vm.filterDateExpiryToCacheName) : '',
+
+            selectedPricingWindow: null,
 
             errorMessage: null,
+            successMessage: null,
 
             // filtering options
             passTypesDistinct: [],
@@ -152,41 +163,42 @@ export default {
     components:{
         datatable,
         CollapsibleFilters,
-        PricingWindowForm,
+        PricingWindowFormModal,
+        PricingWindowConfirmDeleteModal,
     },
     watch: {
         filterPassType: function() {
-            this.$refs.pricingWindowDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.pricingWindowDatatable.vmDataTable.draw();
             sessionStorage.setItem(this.filterPassTypeCacheName, this.filterPassType);
         },
         filterProcessingStatus: function() {
-            this.$refs.pricingWindowDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.pricingWindowDatatable.vmDataTable.draw();
             sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
         },
-        filterDatetimeStartFrom: function() {
-            this.$refs.pricingWindowDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterDatetimeStartFromCacheName, this.filterDatetimeStartFrom);
+        filterDateStartFrom: function() {
+            this.$refs.pricingWindowDatatable.vmDataTable.draw();
+            sessionStorage.setItem(this.filterDateStartFromCacheName, this.filterDateStartFrom);
         },
-        filterDatetimeStartTo: function() {
-            this.$refs.pricingWindowDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterDatetimeStartToCacheName, this.filterDatetimeStartTo);
+        filterDateStartTo: function() {
+            this.$refs.pricingWindowDatatable.vmDataTable.draw();
+            sessionStorage.setItem(this.filterDateStartToCacheName, this.filterDateStartTo);
         },
-        filterDatetimeExpiryFrom: function() {
-            this.$refs.pricingWindowDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterDatetimeExpiryFromCacheName, this.filterDatetimeExpiryFrom);
+        filterDateExpiryFrom: function() {
+            this.$refs.pricingWindowDatatable.vmDataTable.draw();
+            sessionStorage.setItem(this.filterDateExpiryFromCacheName, this.filterDateExpiryFrom);
         },
-        filterDatetimeExpiryTo: function() {
-            this.$refs.pricingWindowDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterDatetimeExpiryToCacheName, this.filterDatetimeExpiryTo);
+        filterDateExpiryTo: function() {
+            this.$refs.pricingWindowDatatable.vmDataTable.draw();
+            sessionStorage.setItem(this.filterDateExpiryToCacheName, this.filterDateExpiryTo);
         },
         filterApplied: function() {
             if (this.$refs.CollapsibleFilters){
-                this.$refs.CollapsibleFilters.show_warning_icon(this.filterApplied)
+                this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
             }
         }
     },
     computed: {
-        number_of_columns: function() {
+        numberOfColumns: function() {
             let num =  this.$refs.pricingWindowDatatable.vmDataTable.columns(':visible').nodes().length;
             return num
         },
@@ -195,10 +207,10 @@ export default {
             if(
                 this.filterProcessingStatus.toLowerCase() === '' &&
                 this.filterPassType.toLowerCase() === '' &&
-                this.filterDatetimeStartFrom.toLowerCase() === '' &&
-                this.filterDatetimeStartTo.toLowerCase() === '' &&
-                this.filterDatetimeExpiryFrom.toLowerCase() === '' &&
-                this.filterDatetimeExpiryTo.toLowerCase() === ''
+                this.filterDateStartFrom.toLowerCase() === '' &&
+                this.filterDateStartTo.toLowerCase() === '' &&
+                this.filterDateExpiryFrom.toLowerCase() === '' &&
+                this.filterDateExpiryTo.toLowerCase() === ''
             ){
                 filter_applied = false
             }
@@ -235,10 +247,11 @@ export default {
         },
         columnPassType: function(){
             return {
-                data: "pass_type",
+                data: "pass_type_display_name",
                 visible: true,
                 orderable: true,
-                name: 'pass_type.display_name',
+                searchable: false,
+                name: 'pass_type',
             }
         },
         columnName: function(){
@@ -246,30 +259,31 @@ export default {
                 data: "name",
                 visible: true,
                 orderable: true,
+                searchable: true,
                 name: 'name',
             }
         },
-        columnDatetimeStart: function(){
+        columnDateStart: function(){
             return {
-                data: "datetime_start",
+                data: "date_start",
                 visible: true,
                 orderable: true,
-                name: 'datetime_start',
+                name: 'date_start',
                 'render': function(row, type, full){
-                    const date = new Date(full.datetime_start);
+                    const date = new Date(full.date_start);
                     return date.toLocaleDateString();
                 }
             }
         },
-        columnDatetimeExpiry: function(){
+        columnDateExpiry: function(){
             return {
-                data: "datetime_expiry",
+                data: "date_expiry",
                 visible: true,
                 orderable: true,
-                name: 'datetime_expiry',
+                name: 'date_expiry',
                 'render': function(row, type, full){
-                    if(full.datetime_expiry){
-                        const date = new Date(full.datetime_expiry);
+                    if(full.date_expiry){
+                        const date = new Date(full.date_expiry);
                         return date.toLocaleDateString();
                     } else {
                         return '';
@@ -287,8 +301,10 @@ export default {
                 visible: true,
                 'render': function(row, type, full){
                     let links = '';
-                    links +=  `<a href='/internal/pricing-window/${full.id}'>Edit</a> | `;
-                    links +=  `<a href='/internal/pricing-window/${full.id}/cancel/'>Cancel</a> | `;
+                    links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
+                    if(full.date_expiry) {
+                        links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="delete">Delete</a>`;
+                    }
                     return links;
                 }
             }
@@ -302,7 +318,7 @@ export default {
                 {
                     extend: 'excel',
                     text: '<i class="fa-solid fa-download"></i> Excel',
-                    className: 'btn btn-primary ml-2',
+                    className: 'btn licensing-btn-primary ml-2',
                     exportOptions: {
                         columns: ':visible'
                     }
@@ -310,7 +326,7 @@ export default {
                 {
                     extend: 'csv',
                     text: '<i class="fa-solid fa-download"></i> CSV',
-                    className: 'btn btn-primary',
+                    className: 'btn licensing-btn-primary',
                     exportOptions: {
                         columns: ':visible'
                     }
@@ -321,8 +337,8 @@ export default {
                 vm.columnId,
                 vm.columnPassType,
                 vm.columnName,
-                vm.columnDatetimeStart,
-                vm.columnDatetimeExpiry,
+                vm.columnDateStart,
+                vm.columnDateExpiry,
                 vm.columnAction,
             ]
             search = true
@@ -332,10 +348,15 @@ export default {
                 language: {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
                 },
-                rowCallback: function (row, pricingWindow){
-                    let row_jq = $(row)
-                    row_jq.attr('id', 'pricingWindowId' + pricingWindow.id)
-                    //row_jq.children().first().addClass(vm.tdExpandClassName)
+                'createdRow': function (row, data, dataIndex){
+                    //console.log('data = ' + JSON.stringify(data));
+                    $(row).find('a[data-action="delete"]').on('click', function(e){
+                        var id = $(this).data('item-id');
+                        console.log('Delete ' + id);
+                        vm.deletePricingWindow(data)
+                        // Add a call to a vue function here that confirms deletion and then delete the record and
+                        // redraws the datatable... :D
+                    });
                 },
                 responsive: true,
                 serverSide: true,
@@ -348,10 +369,10 @@ export default {
                     "data": function ( d ) {
                         d.pass_type = vm.filterPassType
                         d.processing_status = vm.filterProcessingStatus
-                        d.start_date_from = vm.filterDatetimeStartFrom
-                        d.start_date_to = vm.filterDatetimeStartTo
-                        d.datetime_expiry_from = vm.filterDatetimeExpiryFrom
-                        d.datetime_expiry_to = vm.filterDatetimeExpiryTo
+                        d.start_date_from = vm.filterDateStartFrom
+                        d.start_date_to = vm.filterDateStartTo
+                        d.date_expiry_from = vm.filterDateExpiryFrom
+                        d.date_expiry_to = vm.filterDateExpiryTo
                     }
                 },
                 dom: "<'d-flex align-items-center'<'me-auto'l>fB>" +
@@ -374,7 +395,35 @@ export default {
             this.$refs.pricingWindowDatatable.vmDataTable.responsive.recalc()
         },
         collapsibleComponentMounted: function(){
-            this.$refs.CollapsibleFilters.show_warning_icon(this.filterApplied)
+            this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
+        },
+        saveSuccess: function({message, pricingWindow}) {
+            window.scrollTo(0,0);
+            this.successMessage = message;
+            console.log(pricingWindow.name);
+            this.$nextTick(() => {
+                $('#successMessageAlert').fadeOut(4000, function(){
+                    this.successMessage = null;
+                });
+            });
+            this.$refs.pricingWindowDatatable.vmDataTable.search(pricingWindow.name).draw();
+        },
+        deletePricingWindow: function(pricingWindow) {
+            this.selectedPricingWindow = pricingWindow;
+            let pricingWindowConfirmDeleteModal = new bootstrap.Modal(document.getElementById('pricingWindowConfirmDeleteModal'), {});
+            pricingWindowConfirmDeleteModal.show();
+        },
+        deleteSuccess: function({message, pricingWindow}) {
+            window.scrollTo(0,0);
+            this.successMessage = message;
+            console.log(pricingWindow.name);
+            this.$refs.pricingWindowDatatable.vmDataTable.draw();
+            console.log('#successMessageAlert.length = ' + $('#successMessageAlert').length);
+            this.$nextTick(() => {
+                $('#successMessageAlert').fadeOut(4000, function(){
+                    this.successMessage = null;
+                });
+            });
         },
         fetchFilterLists: function(){
             let vm = this;
@@ -465,6 +514,7 @@ export default {
         this.$nextTick(() => {
             vm.addEventListeners();
         });
+        $('input[type=search]').focus();
     }
 }
 </script>
