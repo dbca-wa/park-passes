@@ -1,7 +1,7 @@
 <template lang="html">
     <div>
         <div class="toggle_filters_wrapper">
-            <div data-bs-toggle="collapse" :data-bs-target="'#' + target_elem_id" :id="button_elem_id" class="toggle_filters_button collapsed d-flex align-items-center" @click="toggle_filters_button_clicked">
+            <div data-bs-toggle="collapse" :data-bs-target="'#' + target_elem_id" :id="button_elem_id" class="toggle_filters_button collapsed d-flex align-items-center" @click="toggleFiltersButtonClicked">
                 <div class="me-auto">{{ component_title }}</div>
                 <div class="">
                     <i :id="warning_icon_id" :title="warning_icon_title" class="fa-solid fa-exclamation-circle fa-2x filter_warning_icon"></i>
@@ -52,12 +52,12 @@ export default {
         }
     },
     methods: {
-        toggle_filters_button_clicked: function(e){
+        toggleFiltersButtonClicked: function(e){
             // Bootstrap add a 'collapsed' class name to the element
             let filters_expanded_when_clicked = $('#' + this.button_elem_id).hasClass('collapsed')
             this.filters_expanded = !filters_expanded_when_clicked
         },
-        show_warning_icon: function(show){
+        showWarningIcon: function(show){
             let warning_icon = $('#' + this.warning_icon_id)
             if (show){
                 warning_icon.css('opacity', 1)
