@@ -298,7 +298,7 @@ export default {
                 {
                     extend: 'excel',
                     text: '<i class="fa-solid fa-download"></i> Excel',
-                    className: 'btn btn-primary ml-2',
+                    className: 'btn licensing-btn-primary ml-2',
                     exportOptions: {
                         columns: ':visible'
                     }
@@ -306,7 +306,7 @@ export default {
                 {
                     extend: 'csv',
                     text: '<i class="fa-solid fa-download"></i> CSV',
-                    className: 'btn btn-primary',
+                    className: 'btn licensing-btn-primary',
                     exportOptions: {
                         columns: ':visible'
                     }
@@ -373,7 +373,7 @@ export default {
             this.$refs.voucherDatatable.vmDataTable.responsive.recalc()
         },
         collapsibleComponentMounted: function(){
-            this.$refs.collapsible_filters.show_warning_icon(this.filterApplied)
+            this.$refs.collapsible_filters.showWarningIcon(this.filterApplied)
         },
         addEventListeners: function(){
             let vm = this
