@@ -21,7 +21,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
-                    <button class="dt-button buttons-csv buttons-html5 btn btn-primary">Upload Personnel Passes</button>
+                    <button class="dt-button buttons-csv buttons-html5 btn licensing-btn-primary">Upload Personnel Passes</button>
                 </div>
             </div>
             <div class="row mb-3">
@@ -155,7 +155,7 @@ export default {
         },
         filterApplied: function() {
             if (this.$refs.CollapsibleFilters){
-                this.$refs.CollapsibleFilters.show_warning_icon(this.filterApplied)
+                this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
             }
         }
     },
@@ -348,7 +348,7 @@ export default {
                 {
                     extend: 'excel',
                     text: '<i class="fa-solid fa-download"></i> Excel',
-                    className: 'btn btn-primary ml-2',
+                    className: 'btn licensing-btn-primary ml-2',
                     exportOptions: {
                         columns: ':visible'
                     }
@@ -356,7 +356,7 @@ export default {
                 {
                     extend: 'csv',
                     text: '<i class="fa-solid fa-download"></i> CSV',
-                    className: 'btn btn-primary',
+                    className: 'btn licensing-btn-primary',
                     exportOptions: {
                         columns: ':visible'
                     }
@@ -425,7 +425,7 @@ export default {
             this.$refs.passDatatable.vmDataTable.responsive.recalc()
         },
         collapsibleComponentMounted: function(){
-            this.$refs.CollapsibleFilters.show_warning_icon(this.filterApplied)
+            this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
         },
         fetchFilterLists: function(){
             let vm = this;
