@@ -12,7 +12,6 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_datatables.django_filters.filters import GlobalFilter
-from rest_framework_datatables.django_filters.filterset import DatatablesFilterSet
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
@@ -132,34 +131,20 @@ class PassTypeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class InternalPricingWindowFilter(DatatablesFilterSet):
-    class Meta:
-        model = PassTypePricingWindow
-        fields = [
-            "pass_type",
-            "name",
-            "datetime_start",
-            "datetime_expiry",
-        ]
-
-
 class InternalPricingWindowViewSet(viewsets.ModelViewSet):
     search_fields = [
-        "pass_type__display_name",
+        # "pass_type_display_name",
         "name",
     ]
     model = PassTypePricingWindow
     pagination_class = DatatablesPageNumberPagination
-    queryset = (
-        PassTypePricingWindow.objects.all()
-    )  # .order_by("pass_type__display_order")
+    queryset = PassTypePricingWindow.objects.all()
     permission_classes = [IsInternal]
     serializer_class = InternalPricingWindowSerializer
     filter_backends = (
         SearchFilter,
         DatatablesFilterBackend,
     )
-    filterset_class = InternalPricingWindowFilter
 
 
 class CurrentOptionsForPassType(generics.ListAPIView):
