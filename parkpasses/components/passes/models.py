@@ -15,14 +15,22 @@ import qrcode
 from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.core import serializers
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import (
+    MultipleObjectsReturned,
+    ObjectDoesNotExist,
+    ValidationError,
+)
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
 from parkpasses.components.parks.models import ParkGroup
-from parkpasses.components.passes.exceptions import PassTemplateDoesNotExist
+from parkpasses.components.passes.exceptions import (
+    MultipleDefaultPricingWindowsExist,
+    NoDefaultPricingWindowExists,
+    PassTemplateDoesNotExist,
+)
 from parkpasses.components.passes.utils import PassUtils
 from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.ledger_api_utils import retrieve_email_user
@@ -57,6 +65,32 @@ class PassType(models.Model):
     def __str__(self):
         return f"{self.display_name}"
 
+    @classmethod
+    def get_default_options_by_pass_type_id(self, pass_type_id):
+        default_pricing_window = (
+            PassTypePricingWindow.get_default_pricing_window_by_pass_type_id(
+                pass_type_id
+            )
+        )
+        options = PassTypePricingWindowOption.objects.filter(
+            pricing_window=default_pricing_window
+        ).count()
+        if 0 == options:
+            logger.critical(
+                "CRITICAL: There are no options for pricing window : {} for pass type {}".format(
+                    default_pricing_window.name, default_pricing_window.pass_type.name
+                )
+            )
+            raise NoDefaultPricingWindowExists(
+                "CRITICAL: There are no options for pricing window : {} for pass type {}".format(
+                    default_pricing_window.name, default_pricing_window.pass_type.name
+                )
+            )
+        else:
+            return PassTypePricingWindowOption.objects.filter(
+                pricing_window=default_pricing_window
+            )
+
 
 class PassTypePricingWindowManager(models.Manager):
     def get_queryset(self):
@@ -75,10 +109,14 @@ class PassTypePricingWindow(models.Model):
 
     name = models.CharField(max_length=50, null=False, blank=False)
     pass_type = models.ForeignKey(
-        PassType, on_delete=models.PROTECT, related_name="pricing_window"
+        PassType,
+        on_delete=models.PROTECT,
+        related_name="pricing_window",
+        null=False,
+        blank=False,
     )
-    datetime_start = models.DateTimeField()
-    datetime_expiry = models.DateTimeField(null=True, blank=True)
+    date_start = models.DateField()
+    date_expiry = models.DateField(null=True, blank=True)
 
     class Meta:
         app_label = "parkpasses"
@@ -88,11 +126,11 @@ class PassTypePricingWindow(models.Model):
         return f"{self.name}"
 
     def save(self, *args, **kwargs):
-        if not self.datetime_expiry:
+        if not self.date_expiry:
             default_pricing_window_count = (
                 PassTypePricingWindow.objects.filter(
                     pass_type=self.pass_type,
-                    datetime_expiry__isnull=True,
+                    date_expiry__isnull=True,
                 )
                 .exclude(pk=self.pk)
                 .count()
@@ -103,19 +141,62 @@ class PassTypePricingWindow(models.Model):
                     Default pricing windows are those than have no expiry date."
                 )
             else:
-                if self.datetime_start > timezone.now():
+                if self.date_start > timezone.now().date():
                     raise ValidationError(
                         "The default pricing window start date must be in the past."
                     )
         else:
-            if self.datetime_start >= self.datetime_expiry:
+            if self.date_start >= self.date_expiry:
                 raise ValidationError(
                     "The start date must occur before the expiry date."
                 )
-            if self.datetime_expiry <= timezone.now():
+            if self.date_expiry <= timezone.now().date():
                 raise ValidationError("The expiry date must be in the future.")
 
         super().save(*args, **kwargs)
+
+    @classmethod
+    def get_default_pricing_window_by_pass_type_id(self, pass_type_id):
+        try:
+            default_pricing_window = PassTypePricingWindow.objects.get(
+                pass_type__id=pass_type_id, name="Default"
+            )
+        except ObjectDoesNotExist:
+            logger.critical(
+                f"CRITICAL: There is no default pricing window for pass type with id: {pass_type_id}"
+            )
+            raise NoDefaultPricingWindowExists(
+                f"CRITICAL: There is no default pricing window for pass type with id: {pass_type_id}"
+            )
+        except MultipleObjectsReturned:
+            logger.critical(
+                f"CRITICAL: There is more than one default pricing window for pass type with id: {pass_type_id}"
+            )
+            raise MultipleDefaultPricingWindowsExist(
+                f"CRITICAL: There is more than one default pricing window for pass type with id: {pass_type_id}"
+            )
+        return default_pricing_window
+
+    def is_valid(self):
+        if (
+            not self.datetime_expiry
+            and settings.PRICING_WINDOW_DEFAULT_NAME == self.name
+        ):
+            """The default pricing window is always valid as it forms the template that other pricing windows
+            must follow"""
+            return True
+        else:
+            default_pricing_window = (
+                PassTypePricingWindow.get_default_pricing_window_by_pass_type_id(
+                    self.pass_type.id
+                )
+            )
+            if sorted(list(self.options.values_list("name", "duration"))) == sorted(
+                list(default_pricing_window.options.values_list("name", "duration"))
+            ):
+                return True
+            else:
+                return False
 
 
 class PassTypePricingWindowOptionManager(models.Manager):
@@ -133,7 +214,7 @@ class PassTypePricingWindowOption(models.Model):
     objects = PassTypePricingWindowOptionManager()
 
     pricing_window = models.ForeignKey(
-        PassTypePricingWindow, on_delete=models.PROTECT, related_name="option"
+        PassTypePricingWindow, on_delete=models.PROTECT, related_name="options"
     )
     name = models.CharField(max_length=50)  # i.e. '5 days'
     duration = models.SmallIntegerField()  # in days i.e. 5, 14, 28, 365
@@ -179,7 +260,7 @@ class PassTypePricingWindowOption(models.Model):
         else:
             # Get any pricing windows that are currently valid excluding the default pricing window
             current_pricing_window_count = (
-                PassTypePricingWindow.objects.exclude(datetime_expiry__isnull=False)
+                PassTypePricingWindow.objects.exclude(datetime_expiry__isnull=True)
                 .filter(
                     pass_type=pass_type,
                     datetime_start__lte=timezone.now(),
@@ -195,7 +276,7 @@ class PassTypePricingWindowOption(models.Model):
 
             elif 1 == current_pricing_window_count:
                 pricing_window = PassTypePricingWindow.objects.exclude(
-                    datetime_expiry__isnull=False
+                    datetime_expiry__isnull=True
                 ).get(
                     pass_type=pass_type,
                     datetime_start__lte=timezone.now(),
