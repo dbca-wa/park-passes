@@ -122,23 +122,23 @@ class PassTypePricingWindowAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "pass_type",
-        "datetime_start",
-        "datetime_expiry",
+        "date_start",
+        "date_expiry",
     )
     ordering = [
-        "datetime_start",
+        "date_start",
     ]
     inlines = [
         PassTypePricingWindowOptionInline,
     ]
     readonly_fields = [
-        "datetime_expiry",
+        "date_expiry",
     ]
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # Editing
             # Don't allow user to edit expiry date of default payment window
-            if not obj.datetime_expiry:
+            if not obj.date_expiry:
                 return self.readonly_fields
         return ()
 
