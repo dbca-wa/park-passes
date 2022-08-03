@@ -276,6 +276,8 @@ PASS_TYPES = [
     (DAY_ENTRY_PASS, "Day Entry Pass"),
 ]
 
+PRICING_WINDOW_DEFAULT_NAME = "Default"
+
 COMMUNICATIONS_LOG_ENTRY_CHOICES = [
     ("email", "Email"),
     ("phone", "Phone Call"),
