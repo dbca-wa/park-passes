@@ -39,14 +39,25 @@ class InternalPassTypeSerializer(serializers.ModelSerializer):
 
 
 class InternalPricingWindowSerializer(serializers.ModelSerializer):
-    pass_type = serializers.SerializerMethodField()
+    pass_type = serializers.PrimaryKeyRelatedField(queryset=PassType.objects.all())
+    pass_type_display_name = serializers.ReadOnlyField(source="pass_type.display_name")
 
     class Meta:
         model = PassTypePricingWindow
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "pass_type_display_name",
+            "pass_type",
+            "date_start",
+            "date_expiry",
+        ]
+        read_only_fields = [
+            "pass_type_display_name",
+        ]
 
-    def get_pass_type(self, obj):
-        return obj.pass_type.display_name
+    # def get_pass_type_display_name(self, obj):
+    #    return obj.pass_type.display_name
 
 
 class OptionSerializer(serializers.ModelSerializer):
