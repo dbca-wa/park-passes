@@ -9,6 +9,7 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindow,
     PassTypePricingWindowOption,
 )
+from parkpasses.components.retailers.models import RetailerGroup
 
 
 class PassTypeSerializer(serializers.ModelSerializer):
@@ -167,9 +168,15 @@ class ExternalUpdatePassSerializer(serializers.ModelSerializer):
 
 
 class InternalPassSerializer(serializers.ModelSerializer):
-    pass_type = serializers.CharField(source="option.pricing_window.pass_type")
+    pass_type = serializers.CharField(
+        source="option.pricing_window.pass_type", read_only=True
+    )
     pricing_window = serializers.CharField(source="option.pricing_window")
-    sold_via = serializers.CharField(source="sold_via.name")
+    sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
+    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    processing_status_display_name = serializers.CharField(
+        source="get_processing_status_display", read_only=True
+    )
 
     class Meta:
         model = Pass
@@ -178,6 +185,8 @@ class InternalPassSerializer(serializers.ModelSerializer):
         datatables_always_serialize = [
             "id",
             "pass_number",
+            "sold_via",
+            "sold_via_name",
             "option",
             "first_name",
             "last_name",
@@ -189,7 +198,7 @@ class InternalPassSerializer(serializers.ModelSerializer):
             "datetime_expiry",
             "renew_automatically",
             "processing_status",
-            "processing_status",
+            "processing_status_display_name",
             "datetime_created",
             "datetime_updated",
         ]
