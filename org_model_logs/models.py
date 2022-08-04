@@ -8,11 +8,19 @@ from django.db import models
 from parkpasses import settings
 
 
-class ModelLogManager(models.Manager):
+class UserActionManager(models.Manager):
     """This manager adds convenience methods for querying User Actions
 
     and Communication Event Logs.
     """
+
+    def log_action(self, content_type_id, object_id, who, what):
+        return self.model.objects.create(
+            content_type_id=content_type_id,
+            object_id=str(object_id),
+            who=who,
+            what=what,
+        )
 
     def get_for_model(self, model):
         content_type = ContentType.objects.get(model._meta.model)
@@ -31,7 +39,7 @@ class UserAction(models.Model):
     User actions can be attached to any model in a project
     """
 
-    objects = ModelLogManager()
+    objects = UserActionManager()
 
     object_id = models.CharField(
         max_length=191,
@@ -54,8 +62,24 @@ class UserAction(models.Model):
         )
 
     class Meta:
-        unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
+
+
+class CommunicationsLogEntryManager(models.Manager):
+    """This manager adds convenience methods for querying User Actions
+
+    and Communication Event Logs.
+    """
+
+    def get_for_model(self, model):
+        content_type = ContentType.objects.get(model._meta.model)
+        return self.filter(content_type=content_type)
+
+    def get_for_object_reference(self, model, object_id):
+        return self.get_for_model(model).filter(object_id=object_id)
+
+    def get_for_object(self, obj, model_db=None):
+        return self.get_for_object_reference(obj.__class__, obj.pk)
 
 
 class CommunicationsLogEntry(models.Model):
@@ -64,7 +88,7 @@ class CommunicationsLogEntry(models.Model):
     User actions can be attached to any model in your project
     """
 
-    objects = ModelLogManager()
+    objects = CommunicationsLogEntryManager()
 
     object_id = models.CharField(
         max_length=191,
@@ -99,7 +123,6 @@ class CommunicationsLogEntry(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
 
     class Meta:
-        unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
         verbose_name = "Communications Log Entry"
         verbose_name_plural = "Communications Log Entries"
