@@ -260,27 +260,27 @@ class PassTypePricingWindowOption(models.Model):
         else:
             # Get any pricing windows that are currently valid excluding the default pricing window
             current_pricing_window_count = (
-                PassTypePricingWindow.objects.exclude(datetime_expiry__isnull=True)
+                PassTypePricingWindow.objects.exclude(date_expiry__isnull=True)
                 .filter(
                     pass_type=pass_type,
-                    datetime_start__lte=timezone.now(),
-                    datetime_expiry__gte=timezone.now(),
+                    date_start__lte=timezone.now(),
+                    date_expiry__gte=timezone.now(),
                 )
                 .count()
             )
             # If there are none just get the default pricing window
             if 0 == current_pricing_window_count:
                 pricing_window = PassTypePricingWindow.objects.get(
-                    pass_type=pass_type, datetime_expiry__isnull=True
+                    pass_type=pass_type, date_expiry__isnull=True
                 )
 
             elif 1 == current_pricing_window_count:
                 pricing_window = PassTypePricingWindow.objects.exclude(
-                    datetime_expiry__isnull=True
+                    date_expiry__isnull=True
                 ).get(
                     pass_type=pass_type,
-                    datetime_start__lte=timezone.now(),
-                    datetime_expiry__gte=timezone.now(),
+                    date_start__lte=timezone.now(),
+                    date_expiry__gte=timezone.now(),
                 )
             else:
                 # When there are two or more currently valid pricing windows we return the window that
@@ -290,11 +290,11 @@ class PassTypePricingWindowOption(models.Model):
                     f"There are more than one currently valid pricing windows for Pass Type: {pass_type}"
                 )
                 pricing_window = (
-                    PassTypePricingWindow.objects.exclude(datetime_expiry__isnull=False)
+                    PassTypePricingWindow.objects.exclude(date_expiry__isnull=False)
                     .filter(
                         pass_type=pass_type,
-                        datetime_start__lte=timezone.now(),
-                        datetime_expiry__gte=timezone.now(),
+                        date_start__lte=timezone.now(),
+                        date_expiry__gte=timezone.now(),
                     )
                     .order_by("datetime_start")
                     .last()
