@@ -1,20 +1,4 @@
 <template lang="html">
-    <!--div class="accordion" :id="custom_id">
-      <div class="accordion-item">
-        <div class="accordion-header" :id="section_header_id">
-          <h2 class="mb-0">
-            <button id="mybutton" class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="'#'+section_body_id" :aria-expanded="true" :aria-controls="section_body_id">
-                {{ label }}
-            </button>
-          </h2>
-        </div>
-        <div :id="section_body_id" class="accordion-collapse collapse show" :aria-labelledby="section_header_id" :data-parent="'#'+custom_id">
-          <div class="accordion-body">
-              <slot></slot>
-          </div>
-        </div>
-      </div>
-    </div-->
     <div class="card section-wrapper" :id="custom_id">
         <div class="card-header fw-bold h4" style='padding:30px;'>
             <div class='row'>
