@@ -15,6 +15,7 @@ from rest_framework_datatables.django_filters.filters import GlobalFilter
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from org_model_logs.utils import UserActionViewSet
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.passes.models import (
     Pass,
@@ -313,7 +314,7 @@ class InternalPassFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalPassViewSet(viewsets.ModelViewSet):
+class InternalPassViewSet(UserActionViewSet):
     search_fields = [
         "pass_number",
         "first_name",
