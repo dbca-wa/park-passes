@@ -5,6 +5,14 @@ from org_model_logs.models import CommunicationsLogEntry, UserAction
 
 class UserActionAdmin(admin.ModelAdmin):
     model = UserAction
+    fields = [
+        "object_id",
+        "content_type",
+        "who",
+        "when",
+        "what",
+    ]
+
     list_display = (
         "object_id",
         "content_type",
@@ -12,6 +20,8 @@ class UserActionAdmin(admin.ModelAdmin):
         "when",
         "what",
     )
+
+    readonly_fields = ["when"]
     ordering = ["-when"]
 
 
