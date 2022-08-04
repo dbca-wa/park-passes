@@ -305,6 +305,7 @@ export default {
                     if(full.date_expiry) {
                         links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="delete">Delete</a>`;
                     }
+                    // Todo don't show delete option if the pricing window has already commenced.
                     return links;
                 }
             }
@@ -353,7 +354,7 @@ export default {
                     $(row).find('a[data-action="delete"]').on('click', function(e){
                         var id = $(this).data('item-id');
                         console.log('Delete ' + id);
-                        vm.deletePricingWindow(data)
+                        vm.deletePricingWindow(data);
                         // Add a call to a vue function here that confirms deletion and then delete the record and
                         // redraws the datatable... :D
                     });
