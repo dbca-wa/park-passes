@@ -51,22 +51,25 @@
         <div :if="errorMessage">{{errorMessage}}</div>
         <div class="row">
             <div class="col-lg-12">
-                <datatable
+                <Datatable v-if="passProcessingStatusesDistinct"
                     ref="passDatatable"
-                    :id="datatable_id"
+                    :id="dataTableId"
                     :dtOptions="dtOptions"
                     :dtHeaders="dtHeaders"
                 />
             </div>
         </div>
     </div>
+    <PassCancellationModal @cancelSuccess="cancelSuccess" :pass="selectedPass" />
 </template>
 
 <script>
-import datatable from '@/utils/vue/Datatable.vue'
+import Datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { api_endpoints } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
+import PassCancellationModal from '@/components/internal/modals/PassCancellationModal.vue'
+
 
 export default {
     name: 'TablePasses',
@@ -104,12 +107,14 @@ export default {
     data() {
         let vm = this;
         return {
-            datatable_id: 'passes-datatable-' + uuid(),
+            dataTableId: 'passes-datatable-' + uuid(),
 
             filterPassType: sessionStorage.getItem(vm.filterPassTypeCacheName) ? sessionStorage.getItem(vm.filterPassTypeCacheName) : '',
             filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
             filterDatetimeStartFrom: sessionStorage.getItem(vm.filterDatetimeStartFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeStartFromCacheName) : '',
             filterDatetimeStartTo: sessionStorage.getItem(vm.filterDatetimeStartToCacheName) ? sessionStorage.getItem(vm.filterDatetimeStartToCacheName) : '',
+
+            selectedPass: null,
 
             errorMessage: null,
 
@@ -133,8 +138,9 @@ export default {
         }
     },
     components:{
-        datatable,
+        Datatable,
         CollapsibleFilters,
+        PassCancellationModal,
     },
     watch: {
         filterPassType: function() {
@@ -160,7 +166,7 @@ export default {
         }
     },
     computed: {
-        number_of_columns: function() {
+        numberOfColumns: function() {
             let num =  this.$refs.passDatatable.vmDataTable.columns(':visible').nodes().length;
             return num
         },
@@ -293,15 +299,9 @@ export default {
         columnProcessingStatus: function(){
             let vm = this;
             return {
-                data: "processing_status",
+                data: "processing_status_display_name",
                 visible: true,
                 name: 'processing_status',
-                'render': function(row, type, full){
-                    const processingStatus = vm.passProcessingStatusesDistinct.find(obj => {
-                        return obj.code === full.processing_status;
-                    })
-                    return processingStatus.description;
-                }
             }
         },
         columnParkPassPdf: function(){
@@ -317,9 +317,9 @@ export default {
         },
         columnSoldVia: function(){
             return {
-                data: "sold_via",
+                data: "sold_via_name",
                 visible: true,
-                name: 'sold_via.name'
+                name: 'sold_via_name'
             }
         },
         columnAction: function(){
@@ -332,9 +332,9 @@ export default {
                 visible: true,
                 'render': function(row, type, full){
                     let links = '';
-                    links +=  `<a href='/internal/pass/${full.id}'>Edit</a> | `;
-                    links +=  `<a href='/internal/pass/${full.id}/cancel/'>Cancel</a> | `;
-                    links +=  `<a href='/internal/pass/${full.id}/payment-details/'>View Payment Details</a><br/>`;
+                    links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
+                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
+                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
                     return links;
                 }
             }
@@ -427,6 +427,19 @@ export default {
         collapsibleComponentMounted: function(){
             this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
         },
+        cancelPass: function(pass) {
+            this.selectedPass = pass;
+            let passCancellationModalElement = document.getElementById('passCancellationModal')
+            let passCancellationModal = new bootstrap.Modal(passCancellationModalElement, {});
+            passCancellationModalElement.addEventListener('shown.bs.modal', function() {
+                $('#cancellationReason').focus();
+            });
+            passCancellationModal.show();
+
+        },
+        cancelSuccess: function() {
+
+        },
         fetchFilterLists: function(){
             let vm = this;
 
@@ -462,10 +475,24 @@ export default {
         },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-discard-proposal]', function(e) {
+            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="edit"]', function(e) {
                 e.preventDefault();
-                let id = $(this).attr('data-discard-proposal');
-                vm.discardProposal(id)
+                let action = $(this).data('action');
+                let id = $(this).data('item-id');
+                console.log(action + id);
+            });
+            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="cancel"]', function(e) {
+                e.preventDefault();
+                let id = $(this).data('item-id');
+                let name = $(this).data('name');
+                vm.cancelPass({id, name})
+            });
+            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="view-payment-details"]', function(e) {
+                e.preventDefault();
+                let action = $(this).data('action');
+                let id = $(this).data('item-id');
+                // call
+                console.log(action + id);
             });
 
             // Listener for the row
