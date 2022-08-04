@@ -241,6 +241,11 @@ if DEBUG:
                 "level": "DEBUG",
                 "propagate": False,
             },
+            "org_model_logs": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
         },
     }
 
@@ -277,6 +282,18 @@ PASS_TYPES = [
 ]
 
 PRICING_WINDOW_DEFAULT_NAME = "Default"
+
+""" ==================== USER ACTIONS ======================== """
+
+
+ACTION_VIEW = "View {} {}"
+ACTION_LIST = "List {} {}"
+ACTION_CREATE = "Create {} {}"
+ACTION_UPDATE = "Update {} {}"
+ACTION_PARTIAL_UPDATE = "Partial Update {} {}"
+ACTION_DESTROY = "Destroy {} {}"
+ACTION_CANCEL = "Cancel {} {}"
+
 
 COMMUNICATIONS_LOG_ENTRY_CHOICES = [
     ("email", "Email"),
