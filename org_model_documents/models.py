@@ -56,7 +56,6 @@ class Document(models.Model):
     datetime_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
 
     def __str__(self):
