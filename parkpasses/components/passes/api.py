@@ -36,9 +36,9 @@ from parkpasses.components.passes.serializers import (
     PassTemplateSerializer,
     PassTypeSerializer,
 )
-from parkpasses.components.retailers.models import RetailerGroup
+from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.helpers import belongs_to, is_customer, is_internal
-from parkpasses.permissions import IsInternal
+from parkpasses.permissions import IsInternal, IsRetailer
 
 # from rest_framework_datatables.filters import DatatablesFilterBackend
 
@@ -92,7 +92,7 @@ class PassTypeViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return PassType.objects.all().order_by("display_order")
         elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
-            return PassType.objects.filter(display_retail=True).order_by(
+            return PassType.objects.filter(display_retailer=True).order_by(
                 "display_order"
             )
         else:
@@ -123,13 +123,11 @@ class PassTypeViewSet(viewsets.ModelViewSet):
 
     @method_decorator(cache_page(60 * 60 * 2))
     def retrieve(self, request, pk=None):
-        response = super().retrieve(request, pk=pk)
-        return response
+        return super().retrieve(request, pk=pk)
 
     @method_decorator(cache_page(60 * 60 * 2))
     def list(self, request, pk=None):
-        response = super().list(request, pk=pk)
-        return response
+        return super().list(request, pk=pk)
 
 
 class InternalPricingWindowViewSet(viewsets.ModelViewSet):
@@ -277,7 +275,7 @@ class ExternalPassViewSet(
         return False
 
 
-class InternalPassFilterBackend(DatatablesFilterBackend):
+class PassFilterBackend(DatatablesFilterBackend):
     """
     Custom Filters for Internal Pass Viewset
     """
@@ -314,6 +312,32 @@ class InternalPassFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
+class RetailerPassViewSet(UserActionViewSet):
+    search_fields = [
+        "pass_number",
+        "first_name",
+        "last_name",
+        "vehicle_registration_1",
+        "vehicle_registration_2",
+    ]
+    model = Pass
+    pagination_class = DatatablesPageNumberPagination
+    permission_classes = [IsRetailer]
+    serializer_class = InternalPassSerializer
+    filter_backends = (PassFilterBackend,)
+
+    def get_queryset(self):
+        if RetailerGroupUser.objects.filter(
+            emailuser__id=self.request.user.id
+        ).exists():
+            retailer_groups = RetailerGroupUser.objects.filter(
+                emailuser__id=self.request.user.id
+            ).values_list("retailer_group__id")
+            return Pass.objects.filter(sold_via__in=list(retailer_groups))
+
+        return Pass.objects.none()
+
+
 class InternalPassViewSet(UserActionViewSet):
     search_fields = [
         "pass_number",
@@ -327,7 +351,7 @@ class InternalPassViewSet(UserActionViewSet):
     queryset = Pass.objects.all()
     permission_classes = [IsInternal]
     serializer_class = InternalPassSerializer
-    filter_backends = (InternalPassFilterBackend,)
+    filter_backends = (PassFilterBackend,)
 
 
 class CancelPass(APIView):
