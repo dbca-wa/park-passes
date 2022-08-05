@@ -319,6 +319,8 @@ export default {
             return {
                 data: "sold_via_name",
                 visible: true,
+                orderable: false,
+                searchable: false,
                 name: 'sold_via_name'
             }
         },
@@ -480,6 +482,7 @@ export default {
                 let action = $(this).data('action');
                 let id = $(this).data('item-id');
                 console.log(action + id);
+                vm.$router.push(`/internal/passes/${id}`)
             });
             vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="cancel"]', function(e) {
                 e.preventDefault();
