@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.views.generic.base import TemplateView
 
 from parkpasses.forms import LoginForm
-from parkpasses.helpers import is_internal
+from parkpasses.helpers import is_internal, is_retailer
 
 logger = logging.getLogger("payment_checkout")
 
@@ -27,8 +27,11 @@ class InternalView(UserPassesTestMixin, TemplateView):
         return context
 
 
-class RetailerView(LoginRequiredMixin, TemplateView):
+class RetailerView(UserPassesTestMixin, TemplateView):
     template_name = "parkpasses/dash/index.html"
+
+    def test_func(self):
+        return is_retailer(self.request)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -58,7 +61,8 @@ class ParkPassesRoutingView(TemplateView):
         if self.request.user.is_authenticated:
             if is_internal(self.request):
                 return redirect("internal")
-            # return redirect("/")
+            if is_retailer(self.request):
+                return redirect("retailer")
         kwargs["form"] = LoginForm
         return super().get(*args, **kwargs)
 
