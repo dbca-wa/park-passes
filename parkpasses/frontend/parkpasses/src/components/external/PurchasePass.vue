@@ -127,9 +127,12 @@
                             </div>
                             <div class="col-auto">
                                 <input v-if="isAnnualLocalPass" @keyup="validatePostcode" @change="validatePostcode" type="text" id="postcode" name="postcode" ref="postcode" v-model="pass.postcode" class="form-control" pattern="6[0-9]{3}" required="required" minlength="4" maxlength="4">
-                                <input v-else type="text" id="postcode" name="postcode" ref="postcode" v-model="pass.postcode" class="form-control" pattern="6[0-9]{3}" required="required" minlength="4" maxlength="4">
-                                <div class="invalid-feedback">
+                                <input v-else type="text" id="postcode" name="postcode" ref="postcode" v-model="pass.postcode" class="form-control" pattern="[0-9]{4}" required="required" minlength="4" maxlength="4">
+                                <div v-if="!noParkForPostcodeError" class="invalid-feedback">
                                     Please enter a valid postcode.
+                                </div>
+                                <div v-else="noParkForPostcodeError" class="org-error-message">
+                                    {{noParkForPostcodeError}}
                                 </div>
                                 <span v-if="loadingParkGroups" class="spinner-border-sm org-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -352,7 +355,8 @@ export default {
             discountCodeError: '',
             voucherCodeError: '',
             voucherPinError: '',
-            systemErrorMessage: null
+            systemErrorMessage: null,
+            noParkForPostcodeError: '',
         };
     },
     components: {
@@ -491,8 +495,9 @@ export default {
                         }
                     });
                 } else {
-                    vm.systemErrorMessage = constants.ERRORS.CRITICAL;
-                    console.error(`SYSTEM ERROR: No park groups found for postcode: ${vm.pass.postcode}`);
+                    console.log('Something goes here.')
+                    vm.noParkForPostcodeError = "Unfortunately there are no local parks for your postcode.";
+                    this.$refs.postcode.setCustomValidity("Invalid field.");
                 }
             })
             .catch(error => {
@@ -570,8 +575,13 @@ export default {
             }
         },
         validatePostcode: function () {
+            /*
+                This validation only occurs for local park passes (due to logic in the template)
+            */
             let vm = this;
+            vm.noParkForPostcodeError = '';
             if(vm.pass.postcode.length==4){
+                /*
                 const firstNumber = vm.pass.postcode.substring(0,1);
                 if('6'==firstNumber){
 
@@ -580,7 +590,7 @@ export default {
                     vm.parkGroups = []
                     vm.pass.park_group = null
                     return false;
-                }
+                }*/
                 fetch(api_endpoints.isPostcodeValid(vm.pass.postcode))
                 .then(async response => {
                     const data = await response.json();
@@ -589,18 +599,17 @@ export default {
                         console.log(error);
                         return Promise.reject(error);
                     }
-                    const is_postcode_valid = data.is_postcode_valid
-                    console.log('is_postcode_valid = ' + is_postcode_valid)
-                    if(!is_postcode_valid){
+                    const isPostcodeValid = data.is_postcode_valid
+                    console.log('isPostcodeValid = ' + isPostcodeValid)
+                    if(!isPostcodeValid){
                         vm.$refs.postcode.setCustomValidity("Invalid field.");
                         vm.parkGroups = []
                         vm.pass.park_group = null
                         return false;
-                    } else {
-                        vm.$refs.postcode.setCustomValidity("");
-                        vm.fetchParkGroups();
-                        return true;
                     }
+                    vm.$refs.postcode.setCustomValidity("");
+                    vm.fetchParkGroups();
+                    return true;
                 })
                 .catch(error => {
                     this.systemErrorMessage = "ERROR: Please try again in an hour.";
@@ -737,13 +746,11 @@ export default {
             this.$refs.confirmEmail.focus();
         }
     }
-
-
-
 };
 </script>
 
 <style scoped>
+
     .form-control.no-validate:valid {
         border-color: #ced4da;
         padding-right: .75rem;
