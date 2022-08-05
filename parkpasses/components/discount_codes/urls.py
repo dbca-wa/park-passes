@@ -11,10 +11,10 @@ from parkpasses.components.discount_codes.api import (
 router = routers.SimpleRouter()
 
 router.register(
-    r"external/discount-codes", DiscountCodeViewSet, basename="discount-codes"
+    r"external/discount-codes", DiscountCodeViewSet, basename="external-discount-codes"
 )
 router.register(
-    r"internal/discount-codes", DiscountCodeViewSet, basename="discount-codes"
+    r"internal/discount-codes", DiscountCodeViewSet, basename="internal-discount-codes"
 )
 router.register(
     r"internal/discount-code-batches",
