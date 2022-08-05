@@ -1,16 +1,15 @@
 import { RouterView } from 'vue-router'
 
 import RetailerDashboard from '@/components/retailer/Dashboard.vue'
-export default
 
-{
+export default {
     path: '/retailer',
     component: RouterView,
-    name: 'external',
+    name: 'retailer',
     children: [
         {
             path: '/retailer',
-            component: ShopHome,
+            component: RetailerDashboard,
             name: 'retailer'
         },
     ]
