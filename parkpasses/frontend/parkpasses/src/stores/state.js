@@ -10,8 +10,8 @@ export const useStore = defineStore('main', {
                 lastName: '',
                 email: ''
             },
-            isAuthenticated: false,
-            authorisationLevel: 'external',
+            is_authenticated: false,
+            authorisation_level: 'external',
             retailerGroups: []
         }*/
     }),
