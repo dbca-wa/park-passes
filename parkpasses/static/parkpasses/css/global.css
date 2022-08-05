@@ -29,6 +29,12 @@
     color:#286090;
 }
 
+.org-error-message {
+    color:#dc3545;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+}
+
 .org-form-switch-primary:checked {
     background-color: #337ab7;
     border-color: #337ab7;
