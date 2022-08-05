@@ -20,7 +20,33 @@ api_patterns = [
 
 # URL Patterns
 urlpatterns = [
-    path(r"admin/", admin.site.urls),
+    # ========================================================================== External Public
+    url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
+    url(r"^help/", ParkPassesHelpView.as_view(), name="help"),
+    url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
+    url(r"^faq/", views.ParkPassesFAQView.as_view(), name="ds_contact"),
+    url(
+        r"^further_info/",
+        views.ParkPassesFurtherInformationView.as_view(),
+        name="ds_further_info",
+    ),
+    # ========================================================================== External Authenticated
+    url(r"^checkout/", CheckoutView.as_view(), name="checkout"),
+    url(r"^ledger-checkout/", LedgerCheckoutView.as_view(), name="checkout"),
+    url(r"^external/", views.ExternalView.as_view(), name="external"),
+    url(r"^account/$", views.ExternalView.as_view(), name="manage-account"),
+    url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
+    # ========================================================================== Internal
+    url(r"^internal/", views.InternalView.as_view(), name="internal"),
+    url(r"^internal/vouchers/", views.InternalView.as_view(), name="internal-vouchers"),
+    url(
+        r"^internal/discount-codes/",
+        views.InternalView.as_view(),
+        name="internal-discount-codes",
+    ),
+    # ========================================================================== Retailer
+    url(r"^retailer/", views.RetailerView.as_view(), name="retailer"),
+    # ========================================================================== Component API end-points
     url(r"api/passes/", include("parkpasses.components.passes.urls")),
     url(r"api/parks/", include("parkpasses.components.parks.urls")),
     url(r"api/concessions/", include("parkpasses.components.concessions.urls")),
@@ -30,27 +56,12 @@ urlpatterns = [
     url(r"api/help/", include("parkpasses.components.help.urls")),
     url(r"api/orders/", include("parkpasses.components.orders.urls")),
     url(r"api/users/", include("parkpasses.components.users.urls")),
-    # url(r"api/", include(api_patterns)),
-    url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
-    url(r"^checkout/", CheckoutView.as_view(), name="checkout"),
-    url(r"^ledger-checkout/", LedgerCheckoutView.as_view(), name="checkout"),
-    url(r"^help/", ParkPassesHelpView.as_view(), name="help"),
-    url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
-    url(r"^faq/", views.ParkPassesFAQView.as_view(), name="ds_contact"),
-    url(
-        r"^further_info/",
-        views.ParkPassesFurtherInformationView.as_view(),
-        name="ds_further_info",
-    ),
-    url(r"^internal/", views.InternalView.as_view(), name="internal"),
-    url(r"^internal/vouchers/", views.InternalView.as_view(), name="internal"),
-    # url(r'^internal/proposal/(?P<pk>\d+)/$', views.ExternalProposalView.as_view(), name='external-proposal-detail'),
-    url(r"^external/", views.ExternalView.as_view(), name="external"),
-    url(r"^account/$", views.ExternalView.as_view(), name="manage-account"),
-    url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
+    # ========================================================================== Management Commands
     url(
         r"^mgt-commands/$", views.ManagementCommandsView.as_view(), name="mgt-commands"
     ),
+    # ========================================================================== Admin
+    path(r"admin/", admin.site.urls),
 ] + ledger_patterns
 
 
