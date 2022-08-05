@@ -11,6 +11,7 @@ from parkpasses.components.passes.api import (
     PassTypePricingWindowOptionViewSet,
     PassTypesDistinct,
     PassTypeViewSet,
+    RetailerPassViewSet,
 )
 
 router = routers.SimpleRouter()
@@ -25,6 +26,7 @@ router.register(
 )
 router.register(r"pass-templates", PassTemplateViewSet, basename="pass-templates")
 router.register(r"external/passes", ExternalPassViewSet, basename="passes-external")
+router.register(r"retailer/passes", RetailerPassViewSet, basename="passes-internal")
 router.register(r"internal/passes", InternalPassViewSet, basename="passes-internal")
 
 urlpatterns = [
