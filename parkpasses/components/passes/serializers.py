@@ -181,12 +181,11 @@ class InternalPassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pass
         fields = "__all__"
-        read_only_fields = ["pass_type", "pricing_window", "sold_via"]
+        read_only_fields = ["pass_type", "pricing_window", "sold_via", "sold_via_name"]
         datatables_always_serialize = [
             "id",
             "pass_number",
             "sold_via",
-            "sold_via_name",
             "option",
             "first_name",
             "last_name",
