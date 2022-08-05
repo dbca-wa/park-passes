@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import external_routes from '@/components/external/routes'
-import internal_routes from '@/components/internal/routes'
+import ExternalRoutes from '@/components/external/routes'
+import InternalRoutes from '@/components/internal/routes'
+import RetailerRoutes from '@/components/retailer/routes'
 
 var NotFoundComponent = null
 
@@ -11,8 +12,9 @@ const router = createRouter({
             path: '/:pathMatch(.*)',
             component: NotFoundComponent
         },
-        external_routes,
-        internal_routes,
+        ExternalRoutes,
+        InternalRoutes,
+        RetailerRoutes,
     ]
 })
 
