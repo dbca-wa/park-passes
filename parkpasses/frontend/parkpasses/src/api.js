@@ -3,11 +3,11 @@ module.exports = {
 
     /* ========================= User Data =============================================*/
 
-    userData:                           "/api/users/user-data/?format=json",
+    userData:                           '/api/users/user-data/?format=json',
 
     /* ========================= Concessions ============================================*/
 
-    concessions:                        "/api/concessions/concessions/?format=json",
+    concessions:                        '/api/concessions/concessions/?format=json',
     concession: function (id) {
         return                          `/api/concessions/concessions/${id}/?format=json`;
     },
@@ -15,13 +15,14 @@ module.exports = {
     /* ========================= Passes =================================================*/
 
     passesPaginatedList:                '/api/passes/internal/passes/',
-    passProcessingStatusesDistinct:     "/api/passes/pass-processing-statuses-distinct?format=json",
+    retailerPassesList:                 '/api/passes/retailer/passes/',
+    passProcessingStatusesDistinct:     '/api/passes/pass-processing-statuses-distinct?format=json',
     createPass:                         '/api/passes/external/passes/',
 
     /* ========================= Pass Types =============================================*/
 
-    passTypesDistinct:                  "/api/passes/pass-types-distinct?format=json",
-    passTypes:                          "/api/passes/pass-types?format=json",
+    passTypesDistinct:                  '/api/passes/pass-types-distinct?format=json',
+    passTypes:                          '/api/passes/pass-types?format=json',
     passType: function (id) {
         return                          `/api/passes/pass-types/${id}/?format=json`;
     },
@@ -43,7 +44,7 @@ module.exports = {
     isVoucherValid: function (recipient_email, code, pin) {
         return                          `/api/vouchers/validate-voucher?recipient_email=${recipient_email}&code=${code}&pin=${pin}`;
     },
-    saveVoucher:                      "/api/vouchers/external/vouchers/",
+    saveVoucher:                        '/api/vouchers/external/vouchers/',
 
     /* ========================= Postcodes ===============================================*/
     isPostcodeValid: function (postcode) {
@@ -55,7 +56,7 @@ module.exports = {
 
     /* ========================= Cart Items =============================================*/
 
-    checkout:                          "/api/cart/checkout/?format=json",
+    checkout:                           '/api/cart/checkout/?format=json',
 
 
     /* ========================= Pricing Windows ========================================*/
