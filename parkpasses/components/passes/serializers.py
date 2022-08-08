@@ -167,6 +167,60 @@ class ExternalUpdatePassSerializer(serializers.ModelSerializer):
         ]
 
 
+class InternalPassRetrieveSerializer(serializers.ModelSerializer):
+    pass_type = serializers.CharField(
+        source="option.pricing_window.pass_type", read_only=True
+    )
+    pricing_window = serializers.CharField(source="option.pricing_window")
+    sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
+    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    processing_status_display_name = serializers.CharField(
+        source="get_processing_status_display", read_only=True
+    )
+    discount_code_used = serializers.CharField(
+        source="discountcodeusage.discount_code.code", required=False
+    )
+    discount_code_discount = serializers.SerializerMethodField(
+        read_only=True, required=False
+    )
+    voucher_number = serializers.CharField(
+        source="vouchertransaction.voucher.voucher_number",
+        read_only=True,
+        required=False,
+    )
+    voucher_transaction_amount = serializers.CharField(
+        source="vouchertransaction.voucher.amount"
+    )
+    concession_type = serializers.CharField(
+        source="concessionusage.concession.concession_type",
+        read_only=True,
+        required=False,
+    )
+    concession_discount_percentage = serializers.CharField(
+        source="concessionusage.concession.discount_percentage",
+        read_only=True,
+        required=False,
+    )
+
+    def get_discount_code_discount(self, obj):
+        if hasattr(obj, "discountcodeusage"):
+            discount = (
+                obj.discountcodeusage.discount_code.discount_code_batch.discount_amount
+            )
+            if discount:
+                return f"${discount}"
+            discount = (
+                obj.discountcodeusage.discount_code.discount_code_batch.discount_percentage
+            )
+            return f"{discount}% Off"
+        return None
+
+    class Meta:
+        model = Pass
+        fields = "__all__"
+        read_only_fields = ["pass_type", "pricing_window", "sold_via", "sold_via_name"]
+
+
 class InternalPassSerializer(serializers.ModelSerializer):
     pass_type = serializers.CharField(
         source="option.pricing_window.pass_type", read_only=True
