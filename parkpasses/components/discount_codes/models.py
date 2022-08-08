@@ -6,6 +6,7 @@ import uuid
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from parkpasses.components.passes.models import Pass
 from parkpasses.ledger_api_utils import retrieve_email_user
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
@@ -118,7 +119,6 @@ class DiscountCode(models.Model):
         DiscountCodeBatch, related_name="codes", on_delete=models.PROTECT
     )
     code = models.CharField(max_length=50, unique=True)
-    remaining_uses = models.SmallIntegerField(null=False, blank=False)
 
     class Meta:
         app_label = "parkpasses"
@@ -129,6 +129,51 @@ class DiscountCode(models.Model):
         else:
             discount = f"${self.discount_code_batch.discount_amount} Off"
         return f"{self.code} ({discount})"
+
+    @property
+    def remaining_uses(self):
+        times_code_can_be_used = self.discount_code_batch.times_each_code_can_be_used
+        current_uses = self.discount_code_usages.count()
+        return times_code_can_be_used - current_uses
+
+
+class DiscountCodeUsage(models.Model):
+    """A class to represent a discount code
+
+    Every time a discount code is used a discount code usage record will be created
+    to show which park pass the discount code was used for"""
+
+    discount_code = models.ForeignKey(
+        DiscountCode,
+        related_name="discount_code_usages",
+        on_delete=models.PROTECT,
+        null=False,
+        blank=False,
+    )
+    park_pass = models.OneToOneField(
+        Pass, on_delete=models.PROTECT, primary_key=True, null=False, blank=False
+    )
+
+    def __str__(self):
+        if self.discount_code.discount_code_batch.discount_amount:
+            discount = f"${self.discount_code.discount_code_batch.discount_amount}"
+        else:
+            discount = (
+                f"{self.discount_code.discount_code_batch.discount_percentage}% Off"
+            )
+        str_value = (
+            "Discount Code "
+            + self.discount_code.code
+            + " ("
+            + discount
+            + ")"
+            + " used to purchase Park Pass "
+            + self.park_pass.pass_number
+        )
+        return str_value
+
+    class Meta:
+        app_label = "parkpasses"
 
 
 class DiscountCodeBatchComment(models.Model):
