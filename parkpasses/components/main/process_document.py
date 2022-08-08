@@ -16,9 +16,9 @@ def process_generic_document(request, instance, document_type=None, *args, **kwa
         comms_instance = None
 
         if document_type == "comms_log" and comms_log_id and comms_log_id != "null":
-            comms_instance = instance.comms_logs.get(id=comms_log_id)
+            comms_instance = instance.CommsLogs.get(id=comms_log_id)
         elif document_type == "comms_log":
-            comms_instance = instance.comms_logs.create()
+            comms_instance = instance.CommsLogs.create()
 
         if action == "list":
             pass
