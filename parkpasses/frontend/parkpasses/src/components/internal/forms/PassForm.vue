@@ -1,64 +1,218 @@
 <template lang="html">
-    <div class="container" id="internalPass">
-        <div class="row">
-            <h1></h1>
-            <div class="col-md-3">
-
-            </div>
-            <div class="col-md-1">
-
-            </div>
-            <div class="col-md-8">
-                <SectionToggle label="Park Pass - Holiday">
-                    <form>
-                    <div class="row mb-3">
-                        <label for="name" class="col-sm-2 col-form-label">Pass Holder</label>
-                        <div class="col-sm-10">
-                            <span class="form-text">John Recipient</span>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="name" class="col-sm-2 col-form-label">Email Address</label>
-                        <div class="col-sm-10">
-                            <span class="form-text"><a target="blank" href="mailto:john@recipient.org">john@recipient.org</a></span>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="name" class="col-sm-2 col-form-label">Mobile Number</label>
-                        <div class="col-sm-10">
-                            <span class="form-text">0411 223 344</span>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="name" class="col-sm-2 col-form-label">Email Address</label>
-                        <div class="col-sm-10">
-                            <input type="text" readonly class="form-control" id="name" value="john@recipient.org" />
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="" class="col-sm-2 col-form-label">Email Address</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Sign in</button>
-                    </form>
-                </SectionToggle>
+    <div v-if="pass" class="container" id="internalPass">
+        <div class="row px-4">
+            <div class="col-sm-12 mb-4">
+                <strong>{{ pass.pass_number }} - {{ pass.pass_type }} </strong>
             </div>
         </div>
+        <div class="row px-4">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-md-3">
+                        <CommsLog commsUrl="" logsUrl="" commAddUrl="" />
+                    </div>
+                    <div class="col-md-1">
+
+                    </div>
+                    <div class="col-md-8">
+                        <SectionToggle :label="'Park Pass - ' + pass.pass_type">
+                            <form>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Pass Holder</label>
+                                <div class="col-sm-6">
+                                    <span class="form-text">{{ pass.first_name + ' ' + pass.last_name  }}</span>
+                                </div>
+                                <div v-if="pass.park_pass_pdf" class="col">
+                                    <a :href="pass.park_pass_pdf" target="blank">ParkPass.pdf</a>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Email Address</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text"><a target="blank" :href="'mailto:' + pass.email">{{ pass.email  }}</a></span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Mobile Number</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{Would need to come from ledger api}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Postcode</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{Would need to come from ledger api}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Duration</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">14 Days</span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start">
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label for="endDate" class="col-sm-4 col-form-label">End Date</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        <input class="form-control" name="endDate" type="date" v-model="pass.date_end">
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration <span v-if="pass.vehicle_registration_2">1</span></label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1">
+                                    </span>
+                                </div>
+                            </div>
+                            <div v-if="pass.vehicle_registration_2" class="row mb-1">
+                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2">
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label for="preventFurtherVehicleUpdates" class="col-sm-4 col-form-label">Prevent Further Vehicle Updates</label>
+                                <div class="col-sm-8">
+                                    <div class="form-switch">
+                                        <input class="form-check-input org-form-switch-primary" type="checkbox" id="preventFurtherVehicleUpdates" v-model="pass.prevent_further_vehicle_updates">
+                                    </div>
+                                </div>
+                            </div>
+                            </form>
+                        </SectionToggle>
+                        <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher and Discount">
+                            <form>
+                            <div v-if="pass.concession_type" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Concession Type</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{{ pass.concession_type }}</span>
+                                </div>
+                            </div>
+                            <div v-if="pass.concession_discount_percentage" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Concession Discount</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{{ pass.concession_discount_percentage }}% Off</span>
+                                </div>
+                            </div>
+                            <div v-else class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Concession Used for Purchase</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">No</span>
+                                </div>
+                            </div>
+                            <div v-if="pass.voucher_number" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Voucher Used for Payment</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{{ voucher_number }}</span>
+                                </div>
+                            </div>
+                            <div v-if="pass.voucher_transaction_amount" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Voucher Amount</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{{ voucher_transaction_amount }}</span>
+                                </div>
+                            </div>
+                            <div v-if="pass.discount_code_used" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Discount Code Used</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{{ pass.discount_code_used }}</span>
+                                </div>
+                            </div>
+                            <div v-if="pass.discount_code_discount" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Discount Amount</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{{pass.discount_code_discount}}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label for="startDate" class="col-sm-4 col-form-label">Sold Via</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        {{ pass.sold_via_name }}
+                                    </span>
+                                </div>
+                            </div>
+                            </form>
+                        </SectionToggle>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <div v-else>
+        <loader isLoading="true" />
     </div>
 </template>
 
 <script>
+import { useRoute } from 'vue-router'
+import { api_endpoints, constants, helpers } from '@/utils/hooks'
+import Loader from '@/utils/vue/Loader.vue'
+
 import SectionToggle from '@/components/forms/SectionToggle.vue'
+import CommsLog from '@/components/common/CommsLog.vue'
 
 export default {
     name: "PassForm",
     props: {
 
     },
+    data() {
+        return {
+            passId: null,
+            pass: null,
+        }
+    },
+    computed: {
+        showDiscountsPanel: function() {
+            return this.pass.concession_type || this.pass.voucher_number || this.pass.discount_code_used;
+        }
+    },
     components: {
-        SectionToggle
+        SectionToggle,
+        CommsLog,
+        Loader
+    },
+    methods: {
+        fetchPass: function (passId) {
+            let vm = this;
+            fetch(api_endpoints.internalPass(passId))
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    console.log(error)
+                    return Promise.reject(error);
+                }
+                vm.pass = data
+                vm.pass.date_start = helpers.getDateFromDatetime(vm.pass.datetime_start);
+                vm.pass.date_end = helpers.getDateFromDatetime(vm.pass.datetime_expiry);
+                console.log(vm.pass);
+                console.log('date_start = ' + vm.pass.date_start);
+            })
+            .catch(error => {
+                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                console.error("There was an error!", error);
+            });
+        },
+    },
+    created: function() {
+        const route = useRoute()
+        this.fetchPass(route.params['passId'] );
     }
 }
 </script>
@@ -69,5 +223,9 @@ export default {
         padding: 0.375rem 0.75rem 0 0;
         margin:0;
         font-size:1rem;
+    }
+
+    .form-switch{
+         padding-top:0.375em;
     }
 </style>
