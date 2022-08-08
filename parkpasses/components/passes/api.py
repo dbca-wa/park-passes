@@ -2,11 +2,13 @@ import logging
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.http import FileResponse, Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django_filters import rest_framework as filters
 from rest_framework import generics, mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -29,6 +31,7 @@ from parkpasses.components.passes.serializers import (
     ExternalPassSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
+    InternalPassRetrieveSerializer,
     InternalPassSerializer,
     InternalPassTypeSerializer,
     InternalPricingWindowSerializer,
@@ -274,6 +277,15 @@ class ExternalPassViewSet(
                 return True
         return False
 
+    @action(methods=["GET"], detail=True, url_path="retrieve-park-pass-pdf")
+    def retrieve_park_pass_pdf(self, request, *args, **kwargs):
+        park_pass = self.get_object()
+        logger.debug("user = " + str(self.request.user.id))
+        if park_pass.user == self.request.user.id:
+            if park_pass.park_pass_pdf:
+                return FileResponse(park_pass.park_pass_pdf)
+        raise Http404
+
 
 class PassFilterBackend(DatatablesFilterBackend):
     """
@@ -350,8 +362,19 @@ class InternalPassViewSet(UserActionViewSet):
     pagination_class = DatatablesPageNumberPagination
     queryset = Pass.objects.all()
     permission_classes = [IsInternal]
-    serializer_class = InternalPassSerializer
     filter_backends = (PassFilterBackend,)
+
+    def get_serializer_class(self):
+        if "retrieve" == self.action:
+            return InternalPassRetrieveSerializer
+        return InternalPassSerializer
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-park-pass-pdf")
+    def retrieve_park_pass_pdf(self, request, *args, **kwargs):
+        park_pass = self.get_object()
+        if park_pass.park_pass_pdf:
+            return FileResponse(park_pass.park_pass_pdf)
+        raise Http404
 
 
 class CancelPass(APIView):
