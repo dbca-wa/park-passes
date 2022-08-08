@@ -2,7 +2,7 @@
     <div>
         <div class="toggle_filters_wrapper">
             <div data-bs-toggle="collapse" :data-bs-target="'#' + target_elem_id" :id="button_elem_id" class="toggle_filters_button collapsed d-flex align-items-center" @click="toggleFiltersButtonClicked">
-                <div class="me-auto">{{ component_title }}</div>
+                <div class="me-auto">{{ label }}</div>
                 <div class="">
                     <i :id="warning_icon_id" :title="warning_icon_title" class="fa-solid fa-exclamation-circle fa-2x filter_warning_icon"></i>
                 </div>
@@ -24,7 +24,7 @@ import { v4 as uuid } from 'uuid';
 export default {
     name:"CollapsibleComponent",
     props: {
-        component_title: {
+        label: {
             type: String,
             required: false,
             default: '',
