@@ -15,6 +15,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from parkpasses import settings
+from parkpasses.components.passes.models import Pass
 from parkpasses.ledger_api_utils import retrieve_email_user
 
 logger = logging.getLogger(__name__)
@@ -140,6 +141,9 @@ class VoucherTransaction(models.Model):
 
     voucher = models.ForeignKey(
         Voucher, related_name="transactions", on_delete=models.PROTECT
+    )
+    park_pass = models.OneToOneField(
+        Pass, on_delete=models.PROTECT, primary_key=True, null=False, blank=False
     )
     credit = models.DecimalField(
         max_digits=7, decimal_places=2, blank=False, null=False
