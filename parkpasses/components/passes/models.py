@@ -20,6 +20,7 @@ from django.core.exceptions import (
     ObjectDoesNotExist,
     ValidationError,
 )
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -311,6 +312,11 @@ def pass_template_file_path(instance, filename):
     return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.version}/{filename}"
 
 
+upload_protected_files_storage = FileSystemStorage(
+    location=settings.PROTECTED_MEDIA_ROOT, base_url="/protected_media"
+)
+
+
 class PassTemplate(models.Model):
     """A class to represent a pass template
 
@@ -320,7 +326,10 @@ class PassTemplate(models.Model):
     """
 
     template = models.FileField(
-        upload_to=pass_template_file_path, null=False, blank=False
+        upload_to=pass_template_file_path,
+        storage=upload_protected_files_storage,
+        null=False,
+        blank=False,
     )
     version = models.SmallIntegerField(unique=True, null=False, blank=False)
 
@@ -501,6 +510,7 @@ class Pass(models.Model):
         # self.last_name = email_user.last_name
         # self.email = email_user.email
         super().save(*args, **kwargs)
+        self.generate_park_pass_pdf()
 
 
 # Update the pass_number field after saving
