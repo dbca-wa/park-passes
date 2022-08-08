@@ -94,6 +94,7 @@ target/
 
 # media
 media/
+protected_media/
 spatial_data/
 
 # Database/fixture dumps
