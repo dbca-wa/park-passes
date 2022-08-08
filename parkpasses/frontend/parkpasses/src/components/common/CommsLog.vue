@@ -1,4 +1,4 @@
-<template id="comms_logs">
+<template id="CommsLogs">
     <div class="">
         <div class="card card-default">
             <div class="card-header">
@@ -12,7 +12,7 @@
                             <div class="col-sm-5">
                                 <a tabindex="2" ref="showCommsBtn" @click.prevent="" class="actionBtn">Show</a>
                             </div>
-                            <template v-if="!disable_add_entry">
+                            <template v-if="!disableAddEntry">
                                 <div class="col-sm-1">
                                     <span>|</span>
                                 </div>
@@ -29,12 +29,12 @@
                 </div>
             </div>
         </div>
-        <AddCommLog ref="add_comm" :url="comms_add_url"/>
+        <AddCommLog ref="addComm" :url="commAddUrl"/>
     </div>
 </template>
 
 <script>
-import AddCommLog from './add_comm_log.vue'
+import AddCommLog from './AddCommLog.vue'
 import {
     api_endpoints,
     helpers
@@ -44,19 +44,19 @@ import { v4 as uuid } from 'uuid';
 export default {
     name: 'CommsLogSection',
     props: {
-        comms_url:{
+        commsUrl:{
             type: String,
             required: true
         },
-        logs_url:{
+        logsUrl:{
             type: String,
             required: true
         },
-        comms_add_url:{
+        commAddUrl:{
             type: String,
             required: true
         },
-        disable_add_entry: {
+        disableAddEntry: {
             type: Boolean,
             default: true
         }
@@ -82,7 +82,7 @@ export default {
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 processing: true,
                 ajax: {
-                    "url": vm.logs_url,
+                    "url": vm.logsUrl,
                     "dataSrc": '',
                 },
                 order: [],
@@ -127,7 +127,7 @@ export default {
                     "<'row'<'col-sm-12'tr>>" +
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 ajax: {
-                    "url": vm.comms_url,
+                    "url": vm.commsUrl,
                     "dataSrc": '',
                 },
                 columns:[
@@ -372,16 +372,6 @@ export default {
 
                 //vm.commsTable.on('draw.dt', function () {
                 vm.commsTable.on('draw', function () { // Draw event - fired once the table has completed a draw.
-                    //var $tablePopover = $(this).find('[data-bs-toggle="popover"]');
-                    //if ($tablePopover.length > 0) {
-                    //    //$tablePopover.popover();
-                    //    new bootstrap.Popover($tablePopover)
-                    //    // the next line prevents from scrolling up to the top after clicking on the popover.
-                    //    $($tablePopover).on('click', function (e) {
-                    //        e.preventDefault();
-                    //        return true;
-                    //    });
-                    //}
 
                     var popoverTriggerList = [].slice.call(document.querySelectorAll('#' + commsLogId + ' [data-bs-toggle="popover"]'))
                     var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
@@ -398,52 +388,6 @@ export default {
                 var x = diff + 5;
                 $('.'+popover_name).children('.arrow').css('top', x + 'px');
             })
-            //$(ref).popover({
-            //    content: function() {
-            //        return `
-            //        <table id="${commsLogId}" class="hover table table-striped table-bordered dt-responsive " cellspacing="0" width="100%">
-            //        </table>`
-            //    },
-            //    sanitize:false,
-            //    html: true,
-            //    title: 'Communications Log',
-            //    container: 'body',
-            //    placement: 'right',
-            //    trigger: "click",
-            //    template: `<div class="popover ${popover_name}" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>`,
-            //}).on('inserted.bs.popover', function () {
-            //    table = $('#'+commsLogId).DataTable(datatable_options);
-
-            //    // activate popover when table is drawn.
-            //    table.on('draw.dt', function () {
-            //        var $tablePopover = $(this).find('[data-toggle="popover"]');
-            //        if ($tablePopover.length > 0) {
-            //            $tablePopover.popover();
-            //            // the next line prevents from scrolling up to the top after clicking on the popover.
-            //            $($tablePopover).on('click', function (e) {
-            //                e.preventDefault();
-            //                return true;
-            //            });
-            //        }
-            //    });
-            //}).on('shown.bs.popover', function () {
-            //    var el = ref;
-            //    var popoverheight = parseInt($('.'+popover_name).height());
-
-            //    var popover_bounding_top = parseInt($('.'+popover_name)[0].getBoundingClientRect().top);
-            //    var popover_bounding_bottom = parseInt($('.'+popover_name)[0].getBoundingClientRect().bottom);
-
-            //    var el_bounding_top = parseInt($(el)[0].getBoundingClientRect().top);
-            //    var el_bounding_bottom = parseInt($(el)[0].getBoundingClientRect().top);
-
-            //    var diff = el_bounding_top - popover_bounding_top;
-
-            //    var position = parseInt($('.'+popover_name).position().top);
-            //    var pos2 = parseInt($(el).position().top) - 5;
-
-            //    var x = diff + 5;
-            //    $('.'+popover_name).children('.arrow').css('top', x + 'px');
-            //});
 
         },
         initialiseActionLogs: function(){
@@ -501,60 +445,17 @@ export default {
                 $('.'+popover_name).children('.arrow').css('top', x + 'px');
             })
 
-            //$(ref).popover({
-            //    content: function() {
-            //        return `
-            //        <table id="${actionLogId}" class="hover table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
-            //            <thead>
-            //                <tr>
-            //                    <th>Who</th>
-            //                    <th>What</th>
-            //                    <th>When</th>
-            //                </tr>
-            //            </thead>
-            //            <tbody>
-            //            </tbody>
-            //        </table>`
-            //    },
-            //    sanitize:false,
-            //    html: true,
-            //    title: 'Action Log',
-            //    container: 'body',
-            //    placement: 'right',
-            //    trigger: "click",
-            //    template: `<div class="popover ${popover_name}" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>`,
-            //})
-            //.on('inserted.bs.popover', function () {
-            //    table = $('#'+actionLogId).DataTable(datatable_options);
-            //}).on('shown.bs.popover', function () {
-            //    var el = ref;
-            //    var popoverheight = parseInt($('.'+popover_name).height());
-
-            //    var popover_bounding_top = parseInt($('.'+popover_name)[0].getBoundingClientRect().top);
-            //    var popover_bounding_bottom = parseInt($('.'+popover_name)[0].getBoundingClientRect().bottom);
-
-            //    var el_bounding_top = parseInt($(el)[0].getBoundingClientRect().top);
-            //    var el_bounding_bottom = parseInt($(el)[0].getBoundingClientRect().top);
-
-            //    var diff = el_bounding_top - popover_bounding_top;
-
-            //    var position = parseInt($('.'+popover_name).position().top);
-            //    var pos2 = parseInt($(el).position().top) - 5;
-
-            //    var x = diff + 5;
-            //    $('.'+popover_name).children('.arrow').css('top', x + 'px');
-            //});
         },
         initialisePopovers: function(){
             if (!this.popoversInitialised){
-                console.log(this._uid)
+                console.log(this.uuid)
                 this.initialiseActionLogs();
                 this.initialiseCommLogs();
                 this.popoversInitialised = true;
             }
         },
         addComm(){
-            this.$refs.add_comm.isModalOpen = true;
+            this.$refs.addComm.isModalOpen = true;
         }
     },
     mounted: function(){
