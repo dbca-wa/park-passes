@@ -1,9 +1,13 @@
 from django.contrib import admin
 
-from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeBatch
+from parkpasses.components.discount_codes.models import (
+    DiscountCode,
+    DiscountCodeBatch,
+    DiscountCodeUsage,
+)
 
 
-class DiscountCodeAdmin(admin.TabularInline):
+class DiscountCodeTabularInlineAdmin(admin.TabularInline):
     model = DiscountCode
 
 
@@ -24,7 +28,7 @@ class DiscountCodeBatchAdmin(admin.ModelAdmin):
         "datetime_created",
         "datetime_updated",
     )
-    inlines = [DiscountCodeAdmin]
+    inlines = [DiscountCodeTabularInlineAdmin]
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # Editing
@@ -33,3 +37,22 @@ class DiscountCodeBatchAdmin(admin.ModelAdmin):
 
 
 admin.site.register(DiscountCodeBatch, DiscountCodeBatchAdmin)
+
+
+class DiscountCodeUsageAdmin(admin.TabularInline):
+    model = DiscountCodeUsage
+
+
+class DiscountCodeAdmin(admin.ModelAdmin):
+    model = DiscountCode
+
+    list_display = (
+        "code",
+        "remaining_uses",
+    )
+    readonly_fields = ("remaining_uses",)
+
+    inlines = [DiscountCodeUsageAdmin]
+
+
+admin.site.register(DiscountCode, DiscountCodeAdmin)
