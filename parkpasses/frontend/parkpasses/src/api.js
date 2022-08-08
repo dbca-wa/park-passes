@@ -16,6 +16,9 @@ module.exports = {
 
     passesPaginatedList:                '/api/passes/internal/passes/',
     retailerPassesList:                 '/api/passes/retailer/passes/',
+    internalPass: function (passId) {
+        return                          `/api/passes/internal/passes/${passId}`
+    },
     passProcessingStatusesDistinct:     '/api/passes/pass-processing-statuses-distinct?format=json',
     createPass:                         '/api/passes/external/passes/',
 
