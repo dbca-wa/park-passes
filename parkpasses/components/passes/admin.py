@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib import admin
+from django.utils.html import format_html
 
 from parkpasses import settings
 from parkpasses.components.passes.models import (
@@ -149,12 +150,19 @@ admin.site.register(PassTypePricingWindow, PassTypePricingWindowAdmin)
 class PassTemplateAdmin(admin.ModelAdmin):
     model = PassTemplate
     list_display = (
-        "template",
+        "template_secure",
         "version",
     )
     ordering = [
         "-version",
     ]
+
+    def template_secure(self, instance):
+        value_link = (
+            f"/api/passes/internal/passes/{instance.id}/retreieve-park-pass-pdf/"
+        )
+        value_desc = str(instance.template)
+        return format_html('<a href="{}">{}</a>', value_link, value_desc)
 
 
 admin.site.register(PassTemplate, PassTemplateAdmin)
