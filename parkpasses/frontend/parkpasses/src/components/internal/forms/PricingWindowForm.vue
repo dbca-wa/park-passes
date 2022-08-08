@@ -3,7 +3,7 @@
     <div class="row">
         <h3>{{ pricing_window.name }}</h3>
         <div class="col-md-3">
-            <CommsLogs :comms_url="comms_url" :logs_url="logs_url" :comms_add_url="comms_add_url" :disable_add_entry="false"/>
+            <CommsLogs :commsUrl="commsUrl" :logsUrl="logsUrl" :comms_add_url="comms_add_url" :disableAddEntry="false"/>
             <div class="row">
                 <div class="card card-default">
                     <div class="card-header">
