@@ -5,6 +5,7 @@ from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 
 class VoucherTransactionInline(admin.TabularInline):
     model = VoucherTransaction
+    raw_id_fields = ["park_pass"]
 
 
 class VoucherAdmin(admin.ModelAdmin):
