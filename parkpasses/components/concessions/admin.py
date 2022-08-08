@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from parkpasses.components.concessions.models import Concession
+from parkpasses.components.concessions.models import Concession, ConcessionUsage
 
 
 class ConcessionAdmin(admin.ModelAdmin):
@@ -9,4 +9,9 @@ class ConcessionAdmin(admin.ModelAdmin):
     ordering = ["display_order"]
 
 
+class ConcessionUsageAdmin(admin.ModelAdmin):
+    model = ConcessionUsage
+
+
 admin.site.register(Concession, ConcessionAdmin)
+admin.site.register(ConcessionUsage, ConcessionUsageAdmin)
