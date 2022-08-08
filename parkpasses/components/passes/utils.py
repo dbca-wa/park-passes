@@ -20,12 +20,12 @@ class PassUtils:
         self, park_pass, pass_template, qr_code_path
     ):
 
-        park_park_docx = DocxTemplate(
-            f"{settings.MEDIA_ROOT}/{pass_template.template.name}"
+        park_pass_docx = DocxTemplate(
+            f"{settings.PROTECTED_MEDIA_ROOT}/{pass_template.template.name}"
         )
 
         qr_image = InlineImage(
-            park_park_docx, image_descriptor=qr_code_path, width=Mm(60)
+            park_pass_docx, image_descriptor=qr_code_path, width=Mm(60)
         )
 
         date_format = DateFormat(park_pass.datetime_start)
@@ -47,7 +47,7 @@ class PassUtils:
             "pass_purchase_date": datetime_created,
         }
 
-        park_park_docx.render(context)
+        park_pass_docx.render(context)
         park_pass_file_path = f"{park_pass._meta.app_label}/"
         park_pass_file_path += (
             f"{park_pass._meta.model.__name__}/passes/{park_pass.user}/{park_pass.pk}/"
@@ -56,9 +56,12 @@ class PassUtils:
 
         park_pass_docx_file_name = "ParkPass.docx"
         park_pass_docx_full_file_path = (
-            settings.MEDIA_ROOT + "/" + park_pass_file_path + park_pass_docx_file_name
+            settings.PROTECTED_MEDIA_ROOT
+            + "/"
+            + park_pass_file_path
+            + park_pass_docx_file_name
         )
-        park_park_docx.save(f"{park_pass_docx_full_file_path}")
+        park_pass_docx.save(f"{park_pass_docx_full_file_path}")
         output = subprocess.check_output(
             [
                 "libreoffice",
@@ -66,7 +69,7 @@ class PassUtils:
                 "pdf",
                 park_pass_docx_full_file_path,
                 "--outdir",
-                settings.MEDIA_ROOT + "/" + park_pass_file_path,
+                settings.PROTECTED_MEDIA_ROOT + "/" + park_pass_file_path,
             ]
         )
 
