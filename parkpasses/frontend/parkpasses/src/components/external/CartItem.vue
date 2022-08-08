@@ -50,7 +50,7 @@
 import { api_endpoints, helpers } from '@/utils/hooks'
 
 export default {
-    name: "Checkout",
+    name: "CartItem",
     props: {
         cartItem: {},
     },
