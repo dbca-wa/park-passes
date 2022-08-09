@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from parkpasses.components.help.models import HelpText
+from parkpasses.components.help.models import FAQ, HelpText
 
 
 class HelpTextAdmin(admin.ModelAdmin):
@@ -8,4 +8,12 @@ class HelpTextAdmin(admin.ModelAdmin):
     list_display = ("label", "version")
 
 
+class FAQAdmin(admin.ModelAdmin):
+    model = FAQ
+    list_display = ("question", "display_order")
+
+    ordering = ["display_order"]
+
+
 admin.site.register(HelpText, HelpTextAdmin)
+admin.site.register(FAQ, FAQAdmin)
