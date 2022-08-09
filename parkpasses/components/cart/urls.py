@@ -15,7 +15,7 @@ router.register(r"cart-items", CartItemViewSet, basename="cart-items")
 
 urlpatterns = [
     url(r"checkout", CheckoutView.as_view()),
-    url(r"success", SuccessView.as_view()),
+    url(r"checkout-success", SuccessView.as_view(), name="checkout-success"),
 ]
 
 urlpatterns = router.urls + urlpatterns
