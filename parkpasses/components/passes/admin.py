@@ -42,7 +42,7 @@ class PassAdmin(admin.ModelAdmin):
     list_display = (
         "pass_number",
         "sold_via",
-        "park_pass_pdf",
+        "park_pass_pdf_secure",
         "processing_status",
         "pass_type",
         "pricing_window",
@@ -84,6 +84,13 @@ class PassAdmin(admin.ModelAdmin):
         if obj:  # Editing
             return self.readonly_fields
         return ()
+
+    def park_pass_pdf_secure(self, instance):
+        value_link = (
+            f"/api/passes/internal/passes/{instance.id}/retrieve-park-pass-pdf/"
+        )
+        value_desc = str(instance.park_pass_pdf)
+        return format_html('<a href="{}" target="blank">{}</a>', value_link, value_desc)
 
 
 admin.site.register(Pass, PassAdmin)
@@ -158,11 +165,9 @@ class PassTemplateAdmin(admin.ModelAdmin):
     ]
 
     def template_secure(self, instance):
-        value_link = (
-            f"/api/passes/internal/passes/{instance.id}/retreieve-park-pass-pdf/"
-        )
+        value_link = f"/api/passes/pass-templates/{instance.id}/retrieve-pass-template/"
         value_desc = str(instance.template)
-        return format_html('<a href="{}">{}</a>', value_link, value_desc)
+        return format_html('<a href="{}" target="blank">{}</a>', value_link, value_desc)
 
 
 admin.site.register(PassTemplate, PassTemplateAdmin)
