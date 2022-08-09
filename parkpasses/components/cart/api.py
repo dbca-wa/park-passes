@@ -4,6 +4,7 @@ import pprint
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
+from django.urls import reverse
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import create_basket_session, create_checkout_session
 from rest_framework import viewsets
@@ -88,6 +89,7 @@ class CheckoutView(GenericAPIView):
 class LedgerCheckoutView(APIView):
     def get_ledger_order_lines(self, cart):
         ledger_order_lines = []
+        ledger_order_line_descriptions = []
         line_status = settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS
 
         order, order_items = cart.create_order()
@@ -100,25 +102,34 @@ class LedgerCheckoutView(APIView):
                 "line_status": line_status,
             }
             ledger_order_lines.append(ledger_order_line)
+            ledger_order_line_descriptions.append(order_item.description)
             logger.debug(pprint.pformat(ledger_order_line))
-        return ledger_order_lines
+        return ledger_order_lines, ledger_order_line_descriptions
 
     # Todo: Change this to post once it's working.
     def get(self, request, format=None):
         if self.request.session.get("cart_id", None):
             cart_id = request.session["cart_id"]
             cart = Cart.objects.get(id=cart_id)
-            ledger_order_lines = self.get_ledger_order_lines(cart)
+            (
+                ledger_order_lines,
+                ledger_order_line_descriptions,
+            ) = self.get_ledger_order_lines(cart)
             is_no_payment = self.request.POST.get("no_payment", "false")
             basket_parameters = CartUtils.get_basket_parameters(
                 ledger_order_lines, is_no_payment
             )
             logger.debug("basket_parameters = " + str(basket_parameters))
             create_basket_session(request, request.user.id, basket_parameters)
-            checkout_parameters = CartUtils.get_checkout_parameters(request, self)
+            logger.debug(request.user)
+            invoice_text = f"Park Passes Purchase for {request.user} [{','.join(ledger_order_line_descriptions)}]"
+            logger.debug("invoice_text = " + invoice_text)
+            checkout_parameters = CartUtils.get_checkout_parameters(
+                request, cart, invoice_text
+            )
             logger.debug("checkout_parameters = " + str(checkout_parameters))
             create_checkout_session(request, checkout_parameters)
-            return redirect("ledgergw-payment-details")
+            return redirect(reverse("ledgergw-payment-details"))
 
         # Todo send user to a page that says their cart has expired?
         pass
