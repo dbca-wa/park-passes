@@ -1,23 +1,11 @@
 import { RouterView } from 'vue-router'
 import ShopHome from '@/components/external/ShopHome.vue'
+import FAQs from '@/components/external/FAQs.vue'
 import PurchaseVoucher from '@/components/external/PurchaseVoucher.vue'
 import PurchasePass from '@/components/external/PurchasePass.vue'
 import Checkout from '@/components/external/Checkout.vue'
-import ExternalDashboard from '@/components/external/Dashboard.vue'
-export default
-/*[{
-    path: '/',
-    component: RouterView,
-    name: 'shop',
-    children: [
-        {
-            path: '/',
-            component: ShopHome,
-            name: 'shop-home'
-        },
-    ]
-},]*/
-{
+
+export default {
     path: '/',
     component: RouterView,
     name: 'external',
@@ -26,6 +14,11 @@ export default
             path: '/',
             component: ShopHome,
             name: 'external'
+        },
+        {
+            path: '/faq',
+            component: FAQs,
+            name: 'faqs'
         },
         {
             path: '/purchase-voucher',
