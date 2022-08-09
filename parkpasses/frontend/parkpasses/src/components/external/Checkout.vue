@@ -88,7 +88,7 @@ export default {
     },
     methods: {
         checkoutCart: function () {
-
+            window.location.href = '/ledger-checkout/';
         },
         fetchCartItems: function () {
             let vm = this;
