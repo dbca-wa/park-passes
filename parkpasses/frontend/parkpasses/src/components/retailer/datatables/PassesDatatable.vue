@@ -78,7 +78,7 @@ export default {
             type: String,
             required: true,
             validator: function(val) {
-                let options = ['internal', 'referral', 'external'];
+                let options = ['internal', 'retailer', 'external'];
                 return options.indexOf(val) != -1 ? true: false;
             }
         },
@@ -311,7 +311,7 @@ export default {
                 orderable: false,
                 name: 'park_pass_pdf',
                 'render': function(row, type, full){
-                    return `<a href="${full.park_pass_pdf}" target="blank">ParkPass.pdf</a>`
+                    return `<a href="${api_endpoints.retailerParkPassPdf(full.id)}" target="blank">ParkPass.pdf</a>`
                 }
             }
         },
