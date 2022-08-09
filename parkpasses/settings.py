@@ -83,10 +83,10 @@ if SHOW_DEBUG_TOOLBAR:
             return True
 
     MIDDLEWARE += [
-        "kolo.middleware.KoloMiddleware",
-        # "debug_toolbar.middleware.DebugToolbarMiddleware",
+        # "kolo.middleware.KoloMiddleware",
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
-    KOLO_PATH = "./manage.sh runserver 8010"
+    # KOLO_PATH = "./manage.sh runserver 8010"
     INSTALLED_APPS += ("debug_toolbar",)
     INTERNAL_IPS = ("127.0.0.1", "localhost")
 
@@ -324,10 +324,12 @@ DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")
 
 LOGIN_URL = "/ssologin/"
 
-PARKPASSES_PAYMENT_SYSTEM_ID = env("PAYMENT_SYSTEM_ID", "S385")
+PARKPASSES_PAYMENT_SYSTEM_ID = env("PARKPASSES_PAYMENT_SYSTEM_ID", "S385")
+
+# missing
 
 PARKPASSES_PAYMENT_SYSTEM_PREFIX = env(
-    "PAYMENT_SYSTEM_PREFIX", PARKPASSES_PAYMENT_SYSTEM_ID.replace("S", "0")
+    "PARKPASSES_PAYMENT_SYSTEM_PREFIX", PARKPASSES_PAYMENT_SYSTEM_ID.replace("S", "0")
 )  # '0385'
 
 if not VALID_SYSTEMS:
@@ -344,7 +346,7 @@ PARKPASSES_CONCESSION_DESCRIPTION = "Concession Discount:"
 PARKPASSES_DISCOUNT_CODE_APPLIED_DESCRIPTION = "Discount Code Applied:"
 PARKPASSES_VOUCHER_CODE_REDEEMED_DESCRIPTION = "Voucher Code Redeemed:"
 
-PARKPASSES_ORACLE_CODE = "#FN46V9L80"
+PARKPASSES_ORACLE_CODE = "FN46V9L80"
 
 
 CKEDITOR_CONFIGS = {
