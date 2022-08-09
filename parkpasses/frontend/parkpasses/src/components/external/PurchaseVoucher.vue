@@ -194,7 +194,6 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                // Do something after adding the voucher to the database and the users cart
                 window.location.href = 'checkout/';
             })
             .catch(error => {
