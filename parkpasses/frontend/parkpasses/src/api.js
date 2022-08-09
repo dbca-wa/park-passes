@@ -22,6 +22,9 @@ module.exports = {
 
     passProcessingStatusesDistinct:     '/api/passes/pass-processing-statuses-distinct?format=json',
     createPass:                         '/api/passes/external/passes/',
+    internalParkPassPdf: function (passId) {
+        return                          `/api/passes/internal/passes/${passId}/retrieve-park-pass-pdf`
+    },
     retailerParkPassPdf: function (passId) {
         return                          `/api/passes/retailer/passes/${passId}/retrieve-park-pass-pdf`
     },
