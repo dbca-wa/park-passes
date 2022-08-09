@@ -536,7 +536,8 @@ export default {
                 }
             }
         },
-        toggleExtraVehicle: function () {
+        toggleExtraVehicle: function (e) {
+            e.preventDefault();
             this.extraVehicle = !this.extraVehicle;
             if(this.extraVehicle) {
                 this.vehicleInputs = 2;
