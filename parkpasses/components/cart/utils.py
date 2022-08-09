@@ -45,25 +45,22 @@ class CartUtils:
         return False
 
     @classmethod
-    def get_checkout_parameters(self, request, cart, internal=False, invoice_text=None):
+    def get_checkout_parameters(self, request, cart, invoice_text, internal=False):
         return {
             "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
             "fallback_url": request.build_absolute_uri("/"),
-            "return_url": request.build_absolute_uri(reverse("cart_success"))
+            "return_url": request.build_absolute_uri(reverse("checkout-success"))
             + "/"
             + cart.uuid
             + "/",
-            "return_preload_url": settings.PARKSTAY_EXTERNAL_URL
-            + "/api/cart/success/"
-            + cart.uuid
-            + "/"
-            + str(cart.id)
-            + "/",
+            "return_preload_url": request.build_absolute_uri(
+                "/api/cart/success/" + cart.uuid + "/" + str(cart.id) + "/"
+            ),
             "force_redirect": True,
             "proxy": True if internal else False,
             "invoice_text": invoice_text,
             "session_type": "ledger_api",
-            "basket_owner": cart.user.id,
+            "basket_owner": cart.user,
         }
 
     @classmethod
