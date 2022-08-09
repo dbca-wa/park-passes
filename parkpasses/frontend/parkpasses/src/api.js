@@ -19,8 +19,12 @@ module.exports = {
     internalPass: function (passId) {
         return                          `/api/passes/internal/passes/${passId}`
     },
+
     passProcessingStatusesDistinct:     '/api/passes/pass-processing-statuses-distinct?format=json',
     createPass:                         '/api/passes/external/passes/',
+    retailerParkPassPdf: function (passId) {
+        return                          `/api/passes/retailer/passes/${passId}/retrieve-park-pass-pdf`
+    },
 
     /* ========================= Pass Types =============================================*/
 
@@ -69,4 +73,8 @@ module.exports = {
     deletePricingWindow: function (id) {
         return                          `/api/passes/internal/pricing-windows/${id}/`;
     },
+
+    /* ========================= FAQs ===================================================*/
+
+    faqsList:                           '/api/help/faqs/',
 }
