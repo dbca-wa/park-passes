@@ -25,6 +25,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django_resized import ResizedImageField
 
 from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.exceptions import (
@@ -50,7 +51,14 @@ def pass_type_image_path(instance, filename):
 class PassType(models.Model):
     """A class to represent a pass type"""
 
-    image = models.ImageField(upload_to=pass_type_image_path, null=False, blank=False)
+    image = ResizedImageField(
+        size=[300, 150],
+        quality=99,
+        upload_to=pass_type_image_path,
+        help_text="Ideal dimension for image are 300px (width) x 150px (height)",
+        null=False,
+        blank=False,
+    )
     name = models.CharField(max_length=100)  # Name reserved for system use
     display_name = models.CharField(max_length=50, null=False, blank=False)
     description = RichTextField(null=True)
@@ -400,7 +408,9 @@ class Pass(models.Model):
     prevent_further_vehicle_updates = models.BooleanField(
         null=False, blank=False, default=False
     )
-    park_pass_pdf = models.FileField(null=True, blank=True)
+    park_pass_pdf = models.FileField(
+        storage=upload_protected_files_storage, null=True, blank=True
+    )
     processing_status = models.CharField(
         max_length=2, choices=PROCESSING_STATUS_CHOICES, null=True, blank=True
     )
@@ -505,12 +515,10 @@ class Pass(models.Model):
             days=self.option.duration
         )
         self.set_processing_status()
-        # email_user = self.email_user
-        # self.first_name = email_user.first_name
-        # self.last_name = email_user.last_name
-        # self.email = email_user.email
-        super().save(*args, **kwargs)
+
+        """ Consider: Running generate_park_pass_pdf() with a message queue would be much better """
         self.generate_park_pass_pdf()
+        super().save(*args, **kwargs)
 
 
 # Update the pass_number field after saving
