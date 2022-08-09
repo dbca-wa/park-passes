@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from parkpasses.components.help.models import HelpText
+from parkpasses.components.help.models import FAQ, HelpText
 
 
 class HelpTextSerializer(serializers.ModelSerializer):
@@ -12,4 +12,10 @@ class HelpTextSerializer(serializers.ModelSerializer):
 class InternalHelpTextSerializer(serializers.ModelSerializer):
     class Meta:
         model = HelpText
+        fields = "__all__"
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
         fields = "__all__"
