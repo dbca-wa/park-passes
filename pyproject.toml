@@ -52,6 +52,7 @@ docxtpl = "^0.16.0"
 django-filter = "^22.1"
 django-redis = "^5.2.0"
 kolo = "^1.8.0"
+django-resized = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"
