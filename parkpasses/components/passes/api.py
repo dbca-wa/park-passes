@@ -212,15 +212,17 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
     """
 
     model = PassTemplate
+    queryset = PassTemplate.objects.all()
     serializer_class = PassTemplateSerializer
+    permission_classes = [IsInternal]
 
-    def get_queryset(self):
-        return PassTemplate.objects.all()
-
-    def has_permission(self, request, view):
-        if is_internal(request):
-            return True
-        return False
+    @action(methods=["GET"], detail=True, url_path="retrieve-pass-template")
+    def retrieve_park_pass_pdf(self, request, *args, **kwargs):
+        pass_template = self.get_object()
+        logger.debug("user = " + str(self.request.user.id))
+        if pass_template.template:
+            return FileResponse(pass_template.template)
+        raise Http404
 
 
 class ExternalPassViewSet(
@@ -348,6 +350,22 @@ class RetailerPassViewSet(UserActionViewSet):
             return Pass.objects.filter(sold_via__in=list(retailer_groups))
 
         return Pass.objects.none()
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-park-pass-pdf")
+    def retrieve_park_pass_pdf(self, request, *args, **kwargs):
+        if RetailerGroupUser.objects.filter(
+            emailuser__id=self.request.user.id
+        ).exists():
+            retailer_groups = RetailerGroupUser.objects.filter(
+                emailuser__id=self.request.user.id
+            ).values_list("retailer_group__id", flat=True)
+            park_pass = self.get_object()
+            logger.debug("park_pass.sold_via = " + str(park_pass.sold_via.id))
+            logger.debug("list(retailer_groups) = " + str(list(retailer_groups)))
+            if park_pass.sold_via.id in list(retailer_groups):
+                if park_pass.park_pass_pdf:
+                    return FileResponse(park_pass.park_pass_pdf)
+        raise Http404
 
 
 class InternalPassViewSet(UserActionViewSet):
