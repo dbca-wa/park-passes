@@ -311,7 +311,7 @@ export default {
                 orderable: false,
                 name: 'park_pass_pdf',
                 'render': function(row, type, full){
-                    return `<a href="${full.park_pass_pdf}" target="blank">ParkPass.pdf</a>`
+                    return `<a href="${api_endpoints.internalParkPassPdf(full.id)}" target="blank">ParkPass.pdf</a>`
                 }
             }
         },
@@ -607,12 +607,5 @@ export default {
     margin: 5px;
 }
 
-div.dt-buttons{
-    margin-left:8px;
-}
-
-li.paginate_button{
-    padding-right:5px;
-}
 
 </style>
