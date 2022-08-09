@@ -72,7 +72,7 @@ class ParkPassesContactView(TemplateView):
 
 
 class ParkPassesFAQView(TemplateView):
-    template_name = "parkpasses/faq.html"
+    template_name = "parkpasses/index.html"
 
 
 class ParkPassesFurtherInformationView(TemplateView):
