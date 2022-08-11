@@ -399,6 +399,7 @@ class Pass(models.Model):
     email = models.EmailField(null=False, blank=False)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
+    drivers_licence_number = models.CharField(max_length=11, null=True, blank=True)
     park_group = models.ForeignKey(
         ParkGroup, on_delete=models.PROTECT, null=True, blank=True
     )
