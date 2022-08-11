@@ -390,7 +390,7 @@ export default {
                 rowCallback: function (row, pass){
                     let row_jq = $(row)
                     row_jq.attr('id', 'pass_id_' + pass.id)
-                    row_jq.children().first().addClass(vm.tdExpandClassName)
+                    //row_jq.children().first().addClass(vm.tdExpandClassName)
                 },
                 responsive: true,
                 serverSide: true,
@@ -497,45 +497,6 @@ export default {
                 // call
                 console.log(action + id);
             });
-
-            // Listener for the row
-            vm.$refs.passDatatable.vmDataTable.on('click', 'td', function(e) {
-                let td_link = $(this)
-
-                if (!(td_link.hasClass(vm.tdExpandClassName) || td_link.hasClass(vm.tdCollapseClassName))){
-                    // This row is not configured as expandable row (at the rowCallback)
-                    return
-                }
-
-                // Get <tr> element as jQuery object
-                let tr = td_link.closest('tr')
-
-                // Retrieve id from the id of the <tr>
-                let tr_id = tr.attr('id')
-                let proposal_id = tr_id.replace('pass_id_', '')
-
-                let first_td = tr.children().first()
-                if(first_td.hasClass(vm.tdExpandClassName)){
-                    // Expand
-
-                    // If we don't need to retrieve the data from the server, follow the code below
-                    let contents = '<div><strong>Site:</strong> (site name here)</div><div><strong>Group:</strong> (group name here)</div>'
-
-                    // Change icon class name to vm.tdCollapseClassName
-                    first_td.removeClass(vm.tdExpandClassName).addClass(vm.tdCollapseClassName)
-                } else {
-                    let nextElem = tr.next()
-                    // Collapse
-                    if(nextElem.is('tr') & nextElem.hasClass(vm.expandableRowClassName)){
-                        // Sticker details row is already shown.  Remove it.
-                        nextElem.fadeOut(500, function(){
-                            nextElem.remove()
-                        })
-                    }
-                    // Change icon class name to vm.tdExpandClassName
-                    first_td.removeClass(vm.tdCollapseClassName).addClass(vm.tdExpandClassName)
-                }
-            })
         },
     },
     created: function(){
@@ -557,55 +518,4 @@ export default {
     i.fa-cross {
         color:red;
     }
-</style>
-
-<style>
-.collapse-icon {
-    cursor: pointer;
-}
-.collapse-icon::before {
-    top: 5px;
-    left: 4px;
-    height: 14px;
-    width: 14px;
-    border-radius: 14px;
-    line-height: 14px;
-    border: 2px solid white;
-    line-height: 14px;
-    content: '-';
-    color: white;
-    background-color: #d33333;
-    display: inline-block;
-    box-shadow: 0px 0px 3px #444;
-    box-sizing: content-box;
-    text-align: center;
-    text-indent: 0 !important;
-    font-family: 'Courier New', Courier monospace;
-    margin: 5px;
-}
-.expand-icon {
-    cursor: pointer;
-}
-.expand-icon::before {
-    top: 5px;
-    left: 4px;
-    height: 14px;
-    width: 14px;
-    border-radius: 14px;
-    line-height: 14px;
-    border: 2px solid white;
-    line-height: 14px;
-    content: '+';
-    color: white;
-    background-color: #337ab7;
-    display: inline-block;
-    box-shadow: 0px 0px 3px #444;
-    box-sizing: content-box;
-    text-align: center;
-    text-indent: 0 !important;
-    font-family: 'Courier New', Courier monospace;
-    margin: 5px;
-}
-
-
 </style>
