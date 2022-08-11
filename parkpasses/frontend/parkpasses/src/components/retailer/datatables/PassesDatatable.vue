@@ -1,5 +1,15 @@
 <template>
     <div>
+        <div class="row mb-3">
+            <div class="col">
+                <button class="btn licensing-btn-primary float-end" data-bs-toggle="modal" data-bs-target="#pricingWindowModal">Sell a Park Pass</button>
+            </div>
+        </div>
+        <div v-if="successMessage" class="row mx-1">
+            <div id="successMessageAlert" class="col alert alert-success show fade" role="alert">
+                {{ successMessage }}
+            </div>
+        </div>
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
             <div class="row mb-3">
                 <div class="col-md-3">
