@@ -1,15 +1,19 @@
 """
     This module contains the models required for implimenting discount codes
 """
+import logging
 import uuid
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from parkpasses.components.passes.models import Pass
+from parkpasses.components.passes.models import Pass, PassType
 from parkpasses.ledger_api_utils import retrieve_email_user
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
+
+
+logger = logging.getLogger(__name__)
 
 
 class DiscountCodeBatch(models.Model):
@@ -25,7 +29,7 @@ class DiscountCodeBatch(models.Model):
     datetime_start = models.DateTimeField(null=False, blank=False)
     datetime_expiry = models.DateTimeField(null=False, blank=False)
     codes_to_generate = models.SmallIntegerField()
-    times_each_code_can_be_used = models.SmallIntegerField()
+    times_each_code_can_be_used = models.SmallIntegerField(null=True, blank=False)
     invalidated = models.BooleanField(default=False)
     discount_amount = models.DecimalField(
         max_digits=7, decimal_places=2, blank=True, null=True
@@ -91,12 +95,43 @@ class DiscountCodeBatch(models.Model):
                 DiscountCode.objects.create(
                     discount_code_batch=self,
                     code=code,
-                    remaining_uses=self.times_each_code_can_be_used,
                 )
         if not self.discount_code_batch_number:
             discount_code_batch_number = f"DC{self.pk:06d}"
             self.discount_code_batch_number = discount_code_batch_number
-            super().save(*args, **kwargs)
+            logger.debug("args = " + str(args))
+            logger.debug("kwargs = " + str(kwargs))
+            super().save(force_insert=False)
+
+
+class DiscountCodeBatchValidPassType(models.Model):
+    discount_code_batch = models.ForeignKey(
+        DiscountCodeBatch, on_delete=models.PROTECT, null=False, blank=False
+    )
+    pass_type = models.ForeignKey(
+        PassType,
+        on_delete=models.PROTECT,
+        related_name="valid_pass_types",
+        null=False,
+        blank=False,
+    )
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Valid Pass Type"
+        unique_together = (("discount_code_batch", "pass_type"),)
+
+
+class DiscountCodeBatchValidUser(models.Model):
+    discount_code_batch = models.ForeignKey(
+        DiscountCodeBatch, on_delete=models.PROTECT, null=False, blank=False
+    )
+    user = models.IntegerField(null=False, blank=False)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Valid User"
+        unique_together = (("discount_code_batch", "user"),)
 
 
 class DiscountCodeManager(models.Manager):
@@ -133,6 +168,8 @@ class DiscountCode(models.Model):
     @property
     def remaining_uses(self):
         times_code_can_be_used = self.discount_code_batch.times_each_code_can_be_used
+        if not times_code_can_be_used:
+            return 0
         current_uses = self.discount_code_usages.count()
         return times_code_can_be_used - current_uses
 
