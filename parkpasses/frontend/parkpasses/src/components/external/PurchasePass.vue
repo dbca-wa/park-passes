@@ -15,13 +15,7 @@
                     <h1>Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
                 </div>
 
-
                 <div v-if="passType" v-html="passType.description"></div>
-
-                <p>
-                    An annual all parks pass gives you unlimited access to all national parks
-                    in Western Australia for one year. Concession disocunts are available.
-                </p>
 
                 <div>
                     <form @submit.prevent="validateForm" @keydown.enter="$event.preventDefault()" class="needs-validation" novalidate>
@@ -77,6 +71,17 @@
                                 <input type="tel" id="mobile" name="mobile" v-model="pass.mobile" class="form-control" pattern="[0-9]{4}[0-9]{3}[0-9]{3}" required="required">
                                 <div class="invalid-feedback">
                                     Please enter a valid mobile phone number.
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="isPinjarPass" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                <label for="driversLicenceNumber" class="col-form-label">Driver's Licence Number</label>
+                            </div>
+                            <div class="col-auto">
+                                <input type="tel" id="driversLicenceNumber" name="driversLicenceNumber" v-model="pass.drivers_licence_number" class="form-control" pattern="[a-zA-Z0-9]{8}" required="required">
+                                <div class="invalid-feedback">
+                                    Please enter a valid driver's licence number.
                                 </div>
                             </div>
                         </div>
@@ -160,8 +165,7 @@
                                 </ul>
                             </div>
                         </div>
-
-                        <div class="row g-1 align-top mb-2">
+                        <div v-if="!isPinjarPass" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="concession" class="col-form-label">Elibible for Concession</label>
                             </div>
@@ -230,17 +234,17 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-1 align-top mb-2">
+                        <div v-if="!isPinjarPass" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="vehicleRegistrationNumbersKnown" class="col-form-label">Vehicle Registration Number<span v-if="isHolidayPass">s</span> Known</label>
                             </div>
                             <div class="col-auto">
                                 <div class="form-switch">
-                                    <input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="vehicleRegistrationNumbersKnown" name="vehicleRegistrationNumbersKnown" v-model="vehicleRegistrationNumbersKnown">
+                                    {{isPinjarPass}}<input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="vehicleRegistrationNumbersKnown" name="vehicleRegistrationNumbersKnown" v-model="vehicleRegistrationNumbersKnown">
                                 </div>
                             </div>
                         </div>
-                        <div v-if="vehicleRegistrationNumbersKnown" class="row g-1 align-top mb-2">
+                        <div v-if="!isPinjarPass && vehicleRegistrationNumbersKnown" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="vehicleRegistration1" class="col-form-label">Vehicle Registration<span v-if="vehicleInputs>1"> 1</span></label>
                             </div>
@@ -254,7 +258,7 @@
                                 <button @click="toggleExtraVehicle" class="btn licensing-btn-primary">{{extraVehicleText}}</button>
                             </div>
                         </div>
-                        <div v-if="vehicleRegistrationNumbersKnown && vehicleInputs>1" class="row g-1 align-top mb-2">
+                        <div v-if="!isPinjarPass && vehicleRegistrationNumbersKnown && vehicleInputs>1" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="vehicleRegistration2" class="col-form-label">Vehicle Registration 2</label>
                             </div>
@@ -401,6 +405,12 @@ export default {
                 }
             }
             return false;
+        },
+        isPinjarPass() {
+            if(!this.passType){
+                return false;
+            }
+            return ('PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS'==this.passType.name ? true : false)
         }
     },
     methods: {
