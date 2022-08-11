@@ -49,6 +49,9 @@ class InternalDiscountCodeBatchViewSet(viewsets.ModelViewSet):
         "times_each_code_can_be_used",
     ]
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user.id)
+
 
 class DiscountCodeBatchCommentViewSet(viewsets.ModelViewSet):
     model = DiscountCodeBatchComment
