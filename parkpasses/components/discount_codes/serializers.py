@@ -19,7 +19,6 @@ class ExternalDiscountCodeSerializer(serializers.ModelSerializer):
         model = DiscountCode
         fields = [
             "code",
-            "remaining_uses",
         ]
 
 
@@ -43,6 +42,9 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
             "datetime_created",
             "datetime_updated",
             "status",
+        ]
+        read_only_fields = [
+            "created_by_name",
         ]
         datatables_always_serialize = ("id",)
 
