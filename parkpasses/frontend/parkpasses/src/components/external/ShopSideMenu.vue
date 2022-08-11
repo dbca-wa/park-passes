@@ -4,7 +4,7 @@
       @click="purchaseVoucher()"
       :class="[
         'list-item voucher',
-        { 'opacity-25': activeItem && 0 != activeItem },
+        { 'opacity-25': activeItem && 1 != activeItem },
       ]"
     >
       <img src="/media/gift-voucher.jpg" width="300" />
@@ -16,12 +16,13 @@
     </div>
 
     <div
-        @click="purchasePass(passType.id)"
-        v-for="passType in passTypes"
+
+        v-for="(passType, index) in passTypes"
         :class="[
             'list-item pass-type',
-            { 'opacity-25': activeItem && passType.id != activeItem },
+            { 'opacity-25': activeItem && (index+2) != activeItem },
         ]"
+        @click="purchasePass(passType.id, index)"
         :key="passType.id"
         >
         <img :src="passType.image" width="300" />
@@ -62,19 +63,20 @@ export default {
           console.error("There was an error!", error);
         });
     },
-    purchasePass: function (passTypeId) {
+    purchasePass: function (passTypeId, index) {
         this.$emit('purchasePass', passTypeId);
-        this.activeItem = passTypeId;
+        this.activeItem = index+2;
         console.log('this.activeItem = ' + this.activeItem)
     },
     purchaseVoucher: function () {
         this.$emit('purchaseVoucher');
-        this.activeItem = 0;
+        this.activeItem = 1;
         console.log('this.activeItem = ' + this.activeItem)
     },
   },
   created: function () {
     this.fetchPassTypes();
+    console.log('this.activeItem = ' + this.activeItem);
   },
   mounted: function () {},
 };
