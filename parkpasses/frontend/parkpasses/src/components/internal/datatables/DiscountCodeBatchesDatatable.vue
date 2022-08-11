@@ -1,5 +1,15 @@
 <template>
     <div>
+        <div class="row mb-3">
+            <div class="col">
+                <button class="btn licensing-btn-primary float-end" data-bs-toggle="modal" data-bs-target="#discountCodeBatchModal">Add Discount Code Batch</button>
+            </div>
+        </div>
+        <div v-if="successMessage" class="row mx-1">
+            <div id="successMessageAlert" class="col alert alert-success show fade" role="alert">
+                {{ successMessage }}
+            </div>
+        </div>
         <CollapsibleFilters component_title="Filters" ref="collapsible_filters" @created="collapsibleComponentMounted" class="mb-2">
             <div class="row mb-3">
                 <div class="col-md-3">
@@ -51,7 +61,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <datatable
-                    ref="voucherDatatable"
+                    ref="discountCodeBatchDatatable"
                     :id="datatable_id"
                     :dtOptions="dtOptions"
                     :dtHeaders="dtHeaders"
@@ -59,6 +69,7 @@
             </div>
         </div>
     </div>
+    <DiscountCodeBatchFormModal @saveSuccess="saveSuccess" />
 </template>
 
 <script>
@@ -66,6 +77,7 @@ import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { api_endpoints } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
+import DiscountCodeBatchFormModal from '@/components/internal/modals/DiscountCodeBatchFormModal.vue'
 
 export default {
     name: 'TablePasses',
@@ -95,6 +107,7 @@ export default {
             filterDatetimeExpiryFrom: '',
             filterDatetimeExpiryTo: '',
 
+            successMessage: null,
             errorMessage: null,
 
             // filtering options
@@ -126,16 +139,17 @@ export default {
     components:{
         datatable,
         CollapsibleFilters,
+        DiscountCodeBatchFormModal,
     },
     watch: {
         filterStatus: function() {
-            this.$refs.voucherDatatable.vmDataTable.draw();
+            this.$refs.discountCodeBatchDatatable.vmDataTable.draw();
             sessionStorage.setItem(this.filterStatusCacheName, this.filterStatus);
         },
     },
     computed: {
         numberOfColumns: function() {
-            let num =  this.$refs.voucherDatatable.vmDataTable.columns(':visible').nodes().length;
+            let num =  this.$refs.discountCodeBatchDatatable.vmDataTable.columns(':visible').nodes().length;
             return num
         },
         filterApplied: function(){
@@ -257,6 +271,8 @@ export default {
             return {
                 data: "created_by_name",
                 visible: true,
+                orderable: false,
+                searchable: false,
                 name: 'created_by_name',
             }
         },
@@ -271,7 +287,10 @@ export default {
             return {
                 data: "status",
                 visible: true,
+                orderable: false,
+                searchable: false,
                 name: 'status'
+
             }
         },
         columnAction: function(){
@@ -369,22 +388,32 @@ export default {
     },
     methods: {
         adjustTableWidth: function(){
-            this.$refs.voucherDatatable.vmDataTable.columns.adjust()
-            this.$refs.voucherDatatable.vmDataTable.responsive.recalc()
+            this.$refs.discountCodeBatchDatatable.vmDataTable.columns.adjust()
+            this.$refs.discountCodeBatchDatatable.vmDataTable.responsive.recalc()
         },
         collapsibleComponentMounted: function(){
             this.$refs.collapsible_filters.showWarningIcon(this.filterApplied)
         },
+        saveSuccess: function({message, discountCodeBatch}) {
+            window.scrollTo(0,0);
+            this.successMessage = message;
+            console.log(JSON.stringify(discountCodeBatch));
+            this.$nextTick(() => {
+                $('#successMessageAlert').fadeOut(4000, function(){
+                    this.successMessage = null;
+                });
+            });
+        },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.voucherDatatable.vmDataTable.on('click', 'a[data-discard-proposal]', function(e) {
+            vm.$refs.discountCodeBatchDatatable.vmDataTable.on('click', 'a[data-discard-proposal]', function(e) {
                 e.preventDefault();
                 let id = $(this).attr('data-discard-proposal');
                 vm.discardProposal(id)
             });
 
             // Listener for the row
-            vm.$refs.voucherDatatable.vmDataTable.on('click', 'td', function(e) {
+            vm.$refs.discountCodeBatchDatatable.vmDataTable.on('click', 'td', function(e) {
                 let td_link = $(this)
 
                 if (!(td_link.hasClass(vm.td_expand_class_name) || td_link.hasClass(vm.td_collapse_class_name))){
@@ -430,6 +459,12 @@ export default {
         let vm = this;
         this.$nextTick(() => {
             vm.addEventListeners();
+        var discountCodeBatchModal = document.getElementById('discountCodeBatchModal');
+        discountCodeBatchModal.addEventListener('shown.bs.modal', function() {
+            console.log('shown.bs.modal');
+            $('.select2-search__field').attr("style", "width:750px");
+            $('#discountCodeBatchModal').find('input:visible:first').focus();
+        });
         });
     }
 }
