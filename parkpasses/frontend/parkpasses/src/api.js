@@ -4,6 +4,8 @@ module.exports = {
     /* ========================= User Data =============================================*/
 
     userData:                           '/api/users/user-data/?format=json',
+    select2Customers:                   '/api/users/users/get_customers',
+    allUsers:                              '/api/users/users/',
 
     /* ========================= Concessions ============================================*/
 
@@ -45,6 +47,7 @@ module.exports = {
 
     /* ========================= Discount Codes =========================================*/
     discountCodeBatchPaginatedList:     '/api/discount-codes/internal/discount-code-batches/',
+    saveDiscountCodeBatch:              '/api/discount-codes/internal/discount-code-batches/',
     isDiscountCodeValid: function (id) {
         return                          `to be implimented`;
     },
