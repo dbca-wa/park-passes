@@ -3,8 +3,18 @@ from django.contrib import admin
 from parkpasses.components.discount_codes.models import (
     DiscountCode,
     DiscountCodeBatch,
+    DiscountCodeBatchValidPassType,
+    DiscountCodeBatchValidUser,
     DiscountCodeUsage,
 )
+
+
+class DiscountCodeBatchValidPassTypeTabularInlineAdmin(admin.TabularInline):
+    model = DiscountCodeBatchValidPassType
+
+
+class DiscountCodeBatchValidUserTabularInlineAdmin(admin.TabularInline):
+    model = DiscountCodeBatchValidUser
 
 
 class DiscountCodeTabularInlineAdmin(admin.TabularInline):
@@ -28,7 +38,11 @@ class DiscountCodeBatchAdmin(admin.ModelAdmin):
         "datetime_created",
         "datetime_updated",
     )
-    inlines = [DiscountCodeTabularInlineAdmin]
+    inlines = [
+        DiscountCodeTabularInlineAdmin,
+        DiscountCodeBatchValidPassTypeTabularInlineAdmin,
+        DiscountCodeBatchValidUserTabularInlineAdmin,
+    ]
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # Editing
@@ -41,6 +55,7 @@ admin.site.register(DiscountCodeBatch, DiscountCodeBatchAdmin)
 
 class DiscountCodeUsageAdmin(admin.TabularInline):
     model = DiscountCodeUsage
+    raw_id_fields = ["park_pass"]
 
 
 class DiscountCodeAdmin(admin.ModelAdmin):
@@ -50,7 +65,6 @@ class DiscountCodeAdmin(admin.ModelAdmin):
         "code",
         "remaining_uses",
     )
-    readonly_fields = ("remaining_uses",)
 
     inlines = [DiscountCodeUsageAdmin]
 
