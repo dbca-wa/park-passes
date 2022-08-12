@@ -19,9 +19,8 @@ class ConcessionTestCase(TestCase):
         low_income_health_care_card = Concession.objects.get(
             concession_type="Low Income Health Care Card"
         )
+        concession_str = pensioner_concession_card.__str__()
+        self.assertEqual(concession_str, "Pensioner Concession Card")
         self.assertEqual(
-            pensioner_concession_card.__str__(), "Pensioner Concession Card"
-        )
-        self.assertEqual(
-            low_income_health_care_card.__str__(), "Low Income Health Care Card"
+            str(low_income_health_care_card), "Low Income Health Care Card"
         )
