@@ -280,7 +280,13 @@ export default {
             return {
                 data: "times_each_code_can_be_used",
                 visible: true,
-                name: 'times_each_code_can_be_used'
+                name: 'times_each_code_can_be_used',
+                'render': function(row, type, full){
+                    if(!full.times_each_code_can_be_used){
+                        return '<span class="to-infinity-and-beyond">&infin;</span>';
+                    }
+                    return full.times_each_code_can_be_used;
+                }
             }
         },
         columnStatus: function(){
@@ -302,8 +308,12 @@ export default {
                 visible: true,
                 'render': function(row, type, full){
                     let links = '';
-                    links +=  `<a href='/internal/discount-code-batch/${full.id}'>Edit</a> | `;
-                    links +=  `<a href='/internal/discount-code-batch/${full.id}/invalidate/'>Invalidate</a> | `;
+                    let today = new Date();
+                    let expiryDate = new Date(full.datetime_expiry);
+                    if(today<expiryDate) {
+                        links +=  `<a href='/internal/discount-code-batch/${full.id}'>Edit</a> | `;
+                        links +=  `<a href='/internal/discount-code-batch/${full.id}/invalidate/'>Invalidate</a>`;
+                    }
                     return links;
                 }
             }
