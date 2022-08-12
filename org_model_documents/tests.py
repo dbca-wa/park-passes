@@ -1,3 +1,4 @@
+"""
 import shutil
 import tempfile
 
@@ -48,3 +49,4 @@ class DocumentTestCase(TestCase):
 
     def tearDown(self):
         shutil.rmtree("/tmp/mediatest*")
+"""
