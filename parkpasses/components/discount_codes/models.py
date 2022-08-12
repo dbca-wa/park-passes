@@ -29,7 +29,7 @@ class DiscountCodeBatch(models.Model):
     datetime_start = models.DateTimeField(null=False, blank=False)
     datetime_expiry = models.DateTimeField(null=False, blank=False)
     codes_to_generate = models.SmallIntegerField()
-    times_each_code_can_be_used = models.SmallIntegerField(null=True, blank=False)
+    times_each_code_can_be_used = models.SmallIntegerField(null=True, blank=True)
     invalidated = models.BooleanField(default=False)
     discount_amount = models.DecimalField(
         max_digits=7, decimal_places=2, blank=True, null=True
@@ -99,8 +99,6 @@ class DiscountCodeBatch(models.Model):
         if not self.discount_code_batch_number:
             discount_code_batch_number = f"DC{self.pk:06d}"
             self.discount_code_batch_number = discount_code_batch_number
-            logger.debug("args = " + str(args))
-            logger.debug("kwargs = " + str(kwargs))
             super().save(force_insert=False)
 
 
@@ -169,7 +167,7 @@ class DiscountCode(models.Model):
     def remaining_uses(self):
         times_code_can_be_used = self.discount_code_batch.times_each_code_can_be_used
         if not times_code_can_be_used:
-            return 0
+            return "Unlimited"
         current_uses = self.discount_code_usages.count()
         return times_code_can_be_used - current_uses
 
