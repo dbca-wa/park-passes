@@ -348,6 +348,7 @@ PARKPASSES_VOUCHER_CODE_REDEEMED_DESCRIPTION = "Voucher Code Redeemed:"
 
 PARKPASSES_ORACLE_CODE = "FN46V9L80"
 
+""" ==================== CKEDITOR CONFIGS ======================== """
 
 CKEDITOR_CONFIGS = {
     "default": {
