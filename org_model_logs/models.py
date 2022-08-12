@@ -9,10 +9,7 @@ from parkpasses import settings
 
 
 class UserActionManager(models.Manager):
-    """This manager adds convenience methods for querying User Actions
-
-    and Communication Event Logs.
-    """
+    """This manager adds convenience methods for querying User Actions"""
 
     def log_action(self, content_type_id, object_id, who, what):
         return self.model.objects.create(
@@ -66,10 +63,7 @@ class UserAction(models.Model):
 
 
 class CommunicationsLogEntryManager(models.Manager):
-    """This manager adds convenience methods for querying User Actions
-
-    and Communication Event Logs.
-    """
+    """This manager adds convenience methods for querying Communication Event Logs."""
 
     def get_for_model(self, model):
         content_type = ContentType.objects.get(model._meta.model)
