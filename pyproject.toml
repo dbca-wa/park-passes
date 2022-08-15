@@ -53,6 +53,7 @@ django-filter = "^22.1"
 django-redis = "^5.2.0"
 kolo = "^1.8.0"
 django-resized = "^1.0.1"
+drf-renderer-xlsx = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"

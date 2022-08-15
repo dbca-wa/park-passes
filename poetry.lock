@@ -525,6 +525,29 @@ six = "*"
 docs = ["sphinx", "sphinxcontrib-napoleon"]
 
 [[package]]
+name = "drf-excel"
+version = "2.1.0"
+description = "Django REST Framework renderer for Excel spreadsheet (xlsx) files."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+djangorestframework = ">=3.6"
+openpyxl = ">=2.4"
+
+[[package]]
+name = "drf-renderer-xlsx"
+version = "1.0.0"
+description = "Stub to alias the `drf-excel` package."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+drf-excel = "*"
+
+[[package]]
 name = "et-xmlfile"
 version = "1.1.0"
 description = "An implementation of lxml.xmlfile for the standard library"
@@ -1275,7 +1298,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "b76659b146dd0a20e2d4d76973b87abf4005c414eed5d1ddf675afefafeeb80a"
+content-hash = "d99cd6cdd638574cc93b1efb7b7be243b90def022aa3532dc0028f13e0446438"
 
 [metadata.files]
 appnope = [
@@ -1501,6 +1524,8 @@ docxtpl = [
     {file = "docxtpl-0.16.0-py2.py3-none-any.whl", hash = "sha256:6ce60f38ce01d1698932bfba5c8b02e14c2cbdfb13c1c1fa15c30c433d88982d"},
     {file = "docxtpl-0.16.0.tar.gz", hash = "sha256:a18e33e2e25a4c63d49cd76a3f1e495e53eb96062ecbc7715a8d8f4540c3195b"},
 ]
+drf-excel = []
+drf-renderer-xlsx = []
 et-xmlfile = [
     {file = "et_xmlfile-1.1.0-py3-none-any.whl", hash = "sha256:a2ba85d1d6a74ef63837eed693bcb89c3f752169b0e3e7ae5b16ca5e1b3deada"},
     {file = "et_xmlfile-1.1.0.tar.gz", hash = "sha256:8eb9e2bc2f8c97e37a2dc85a09ecdcdec9d8a396530a6d5a33b30b9a92da0c5c"},
