@@ -47,6 +47,9 @@ module.exports = {
 
     /* ========================= Discount Codes =========================================*/
     discountCodeBatchPaginatedList:     '/api/discount-codes/internal/discount-code-batches/',
+    discountCodeBatch: function (id) {
+        return                          `/api/discount-codes/internal/discount-code-batches/${id}/`;
+    },
     saveDiscountCodeBatch:              '/api/discount-codes/internal/discount-code-batches/',
     isDiscountCodeValid: function (id) {
         return                          `to be implimented`;
