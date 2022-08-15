@@ -19,6 +19,13 @@ class DiscountCodeBatchValidUserTabularInlineAdmin(admin.TabularInline):
 
 class DiscountCodeTabularInlineAdmin(admin.TabularInline):
     model = DiscountCode
+    readonly_fields = ["code"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class DiscountCodeBatchAdmin(admin.ModelAdmin):
@@ -39,9 +46,9 @@ class DiscountCodeBatchAdmin(admin.ModelAdmin):
         "datetime_updated",
     )
     inlines = [
-        DiscountCodeTabularInlineAdmin,
         DiscountCodeBatchValidPassTypeTabularInlineAdmin,
         DiscountCodeBatchValidUserTabularInlineAdmin,
+        DiscountCodeTabularInlineAdmin,
     ]
 
     def get_readonly_fields(self, request, obj=None):
