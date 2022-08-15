@@ -11,12 +11,13 @@ from parkpasses import settings
 class UserActionManager(models.Manager):
     """This manager adds convenience methods for querying User Actions"""
 
-    def log_action(self, content_type_id, object_id, who, what):
+    def log_action(self, content_type, object_id, who, what, why=None):
         return self.model.objects.create(
-            content_type_id=content_type_id,
+            content_type=content_type,
             object_id=str(object_id),
             who=who,
             what=what,
+            why=why,
         )
 
     def get_for_model(self, model):
@@ -51,11 +52,12 @@ class UserAction(models.Model):
 
     who = models.IntegerField()  # EmailUserRO
     when = models.DateTimeField(null=False, blank=False, auto_now_add=True)
-    what = models.TextField(blank=False)
+    what = models.TextField(null=False, blank=False)
+    why = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return "{what} ({who} at {when})".format(
-            what=self.what, who=self.who, when=self.when
+        return "{what} ({who} at {when}) {why}".format(
+            what=self.what, who=self.who, when=self.when, why=str(self.why or "")
         )
 
     class Meta:
