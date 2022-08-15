@@ -157,8 +157,9 @@ class DiscountCodeBatchValidUser(models.Model):
         unique_together = (("discount_code_batch", "user"),)
 
     @property
-    def email(self):
-        return retrieve_email_user(self.user).email
+    def display_name(self):
+        email_user = retrieve_email_user(self.user)
+        return f"{email_user.first_name} {email_user.last_name} ({email_user.email})"
 
 
 class DiscountCodeManager(models.Manager):
