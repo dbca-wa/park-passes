@@ -51,13 +51,13 @@ class ValidPassTypeSerializer(serializers.ModelSerializer):
 
 
 class ValidUserSerializer(serializers.ModelSerializer):
-    email = serializers.ReadOnlyField()
+    display_name = serializers.ReadOnlyField()
 
     class Meta:
         model = DiscountCodeBatchValidUser
         fields = [
             "user",
-            "email",
+            "display_name",
         ]
 
 
@@ -66,6 +66,8 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
     valid_pass_types = ValidPassTypeSerializer(many=True, read_only=True)
     valid_users = ValidUserSerializer(many=True, read_only=True)
     created_by_name = serializers.ReadOnlyField()
+    datetime_start = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
+    datetime_expiry = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
     status = serializers.SerializerMethodField()
 
     class Meta:
