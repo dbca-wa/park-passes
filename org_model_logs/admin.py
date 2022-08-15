@@ -11,6 +11,7 @@ class UserActionAdmin(admin.ModelAdmin):
         "who",
         "when",
         "what",
+        "why",
     ]
 
     list_display = (
@@ -19,6 +20,7 @@ class UserActionAdmin(admin.ModelAdmin):
         "who",
         "when",
         "what",
+        "why",
     )
 
     readonly_fields = ["when"]
