@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, helpers } from '@/utils/hooks'
 
 export default {
     name: "CartItem",
@@ -60,7 +60,7 @@ export default {
         };
     },
     components: {
-        api_endpoints,
+        apiEndpoints,
         helpers
     },
     computed: {

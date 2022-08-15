@@ -133,7 +133,7 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, helpers } from '@/utils/hooks'
 import { useStore } from '@/stores/state'
 
 export default {
@@ -150,7 +150,7 @@ export default {
         };
     },
     components: {
-        api_endpoints,
+        apiEndpoints,
         helpers
     },
     computed: {
@@ -186,7 +186,7 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.voucher)
             };
-            fetch(api_endpoints.saveVoucher, requestOptions)
+            fetch(apiEndpoints.saveVoucher, requestOptions)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {

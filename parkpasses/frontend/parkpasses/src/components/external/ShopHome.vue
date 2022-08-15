@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { api_endpoints } from '@/utils/hooks'
+import { apiEndpoints } from '@/utils/hooks'
 import { useStore } from '@/stores/state'
 import ShopSideMenu from '@/components/external/ShopSideMenu.vue'
 import HomeContent from '@/components/external/HomeContent.vue'
@@ -42,7 +42,7 @@ export default {
         };
     },
     components: {
-        api_endpoints,
+        apiEndpoints,
         ShopSideMenu,
         HomeContent,
         PurchaseVoucher,

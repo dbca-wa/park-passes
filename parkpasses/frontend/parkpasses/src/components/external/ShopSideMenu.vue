@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import { api_endpoints } from "@/utils/hooks";
+import { apiEndpoints } from "@/utils/hooks";
 
 export default {
   name: "ShopSideMenu",
@@ -48,7 +48,7 @@ export default {
   methods: {
     fetchPassTypes: function () {
       let vm = this;
-      fetch(api_endpoints.passTypes)
+      fetch(apiEndpoints.passTypes)
         .then(async (response) => {
           const data = await response.json();
           if (!response.ok) {

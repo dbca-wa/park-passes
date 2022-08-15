@@ -36,7 +36,7 @@
 <script>
 import AddCommLog from './AddCommLog.vue'
 import {
-    api_endpoints,
+    apiEndpoints,
     helpers
 }from '@/utils/hooks'
 import { v4 as uuid } from 'uuid';

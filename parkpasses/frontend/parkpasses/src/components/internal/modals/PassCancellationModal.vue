@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, helpers } from '@/utils/hooks'
 
 export default {
     name: 'PassCancellationModal',
@@ -59,7 +59,7 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.pricing_window)
             };
-            fetch(api_endpoints.savePricingWindow, requestOptions)
+            fetch(apiEndpoints.savePricingWindow, requestOptions)
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {

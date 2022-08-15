@@ -317,7 +317,7 @@
 </template>
 
 <script>
-import { api_endpoints } from '@/utils/hooks'
+import { apiEndpoints } from '@/utils/hooks'
 import { constants } from '@/utils/hooks'
 import { helpers } from '@/utils/hooks'
 import { useStore } from '@/stores/state'
@@ -364,7 +364,7 @@ export default {
         };
     },
     components: {
-        api_endpoints,
+        apiEndpoints,
         constants,
     },
     computed: {
@@ -420,7 +420,7 @@ export default {
         },
         fetchConcessions: function () {
             let vm = this;
-            fetch(api_endpoints.concessions)
+            fetch(apiEndpoints.concessions)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -437,7 +437,7 @@ export default {
         },
         fetchPassType: function () {
             let vm = this;
-            fetch(api_endpoints.passType(vm.passTypeId))
+            fetch(apiEndpoints.passType(vm.passTypeId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -461,7 +461,7 @@ export default {
         },
         fetchPassOptions: function () {
             let vm = this;
-            fetch(api_endpoints.passOptions(vm.passTypeId))
+            fetch(apiEndpoints.passOptions(vm.passTypeId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -486,7 +486,7 @@ export default {
         fetchParkGroups: function () {
             let vm = this;
             vm.loadingParkGroups = true;
-            fetch(api_endpoints.parkGroupsForPostcode(vm.pass.postcode))
+            fetch(apiEndpoints.parkGroupsForPostcode(vm.pass.postcode))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -602,7 +602,7 @@ export default {
                     vm.pass.park_group = null
                     return false;
                 }*/
-                fetch(api_endpoints.isPostcodeValid(vm.pass.postcode))
+                fetch(apiEndpoints.isPostcodeValid(vm.pass.postcode))
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {
@@ -659,7 +659,7 @@ export default {
         },
         validateVoucherCodeBackend: function () {
             let vm = this;
-            fetch(api_endpoints.isVoucherValid(vm.pass.recipient_email, vm.pass.voucher_code, vm.pass.voucher_pin))
+            fetch(apiEndpoints.isVoucherValid(vm.pass.recipient_email, vm.pass.voucher_code, vm.pass.voucher_pin))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -692,7 +692,7 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.pass)
             };
-            fetch(api_endpoints.createPass, requestOptions)
+            fetch(apiEndpoints.createPass, requestOptions)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {

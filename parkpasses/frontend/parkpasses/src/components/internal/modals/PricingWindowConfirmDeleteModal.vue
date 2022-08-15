@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, helpers } from '@/utils/hooks'
 
 export default {
     name: 'pricingWindowConfirmDeleteModal',
@@ -41,7 +41,7 @@ export default {
         deletePricingWindow: function (pricingWindowId) {
             let vm = this;
             vm.pricingWindow.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
-            fetch(api_endpoints.deletePricingWindow(pricingWindowId), {method: "DELETE"})
+            fetch(apiEndpoints.deletePricingWindow(pricingWindowId), {method: "DELETE"})
                 .then(async response => {
                     // check for error response
                     if (!response.ok) {

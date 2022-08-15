@@ -76,7 +76,7 @@
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { api_endpoints } from '@/utils/hooks'
+import { apiEndpoints } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import PricingWindowFormModal from '@/components/internal/modals/PricingWindowFormModal.vue'
 import PricingWindowConfirmDeleteModal from '@/components/internal/modals/PricingWindowConfirmDeleteModal.vue'
@@ -363,7 +363,7 @@ export default {
                 serverSide: true,
                 searching: true,
                 ajax: {
-                    "url": api_endpoints.pricingWindowsPaginatedList + '?format=datatables',
+                    "url": apiEndpoints.pricingWindowsPaginatedList + '?format=datatables',
                     "dataSrc": 'data',
 
                     // adding extra GET params for Custom filtering
@@ -430,7 +430,7 @@ export default {
             let vm = this;
 
             // Pass Types
-            fetch(api_endpoints.passTypesDistinct)
+            fetch(apiEndpoints.passTypesDistinct)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -445,7 +445,7 @@ export default {
             });
 
             // Pass Processing Statuses
-            fetch(api_endpoints.passProcessingStatusesDistinct)
+            fetch(apiEndpoints.passProcessingStatusesDistinct)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {

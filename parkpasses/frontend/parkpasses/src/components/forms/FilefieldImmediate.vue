@@ -47,7 +47,7 @@
 
 <script>
 import {
-  api_endpoints,
+  apiEndpoints,
   helpers
 }
 from '@/utils/hooks';
@@ -120,9 +120,9 @@ export default {
             let url = ''
             if (this.documentActionUrl == 'temporary_document') {
                 if (!this.temporary_document_collection_id) {
-                    url = api_endpoints.temporary_document
+                    url = apiEndpoints.temporary_document
                 } else {
-                    url = api_endpoints.temporary_document + this.temporary_document_collection_id + '/process_temp_document/'
+                    url = apiEndpoints.temporary_document + this.temporary_document_collection_id + '/process_temp_document/'
                 }
             } else {
                 url = this.documentActionUrl

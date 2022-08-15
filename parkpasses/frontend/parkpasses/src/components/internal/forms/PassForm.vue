@@ -160,7 +160,7 @@
 
 <script>
 import { useRoute } from 'vue-router'
-import { api_endpoints, constants, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import Loader from '@/utils/vue/Loader.vue'
 
 import SectionToggle from '@/components/forms/SectionToggle.vue'
@@ -190,7 +190,7 @@ export default {
     methods: {
         fetchPass: function (passId) {
             let vm = this;
-            fetch(api_endpoints.internalPass(passId))
+            fetch(apiEndpoints.internalPass(passId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {

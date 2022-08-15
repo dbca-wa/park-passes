@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { api_endpoints } from '@/utils/hooks'
+import { apiEndpoints } from '@/utils/hooks'
 import Loader from '@/utils/vue/Loader.vue'
 
 export default {
@@ -64,7 +64,7 @@ export default {
     methods: {
         fetchFAQs: function () {
             let vm = this;
-            fetch(api_endpoints.faqsList)
+            fetch(apiEndpoints.faqsList)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {

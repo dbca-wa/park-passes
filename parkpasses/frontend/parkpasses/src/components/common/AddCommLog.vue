@@ -106,7 +106,7 @@
 //import $ from 'jquery'
 import Modal from '@vue-utils/BootstrapModal.vue'
 import Alert from '@vue-utils/Alert.vue'
-import {helpers,api_endpoints} from "@/utils/hooks.js"
+import {helpers,apiEndpoints} from "@/utils/hooks.js"
 export default {
     name:'Add-Comms',
     components:{

@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, helpers } from '@/utils/hooks'
 import CartItem from '@/components/external/CartItem.vue'
 
 export default {
@@ -59,7 +59,7 @@ export default {
         };
     },
     components: {
-        api_endpoints,
+        apiEndpoints,
         helpers,
         CartItem
     },
@@ -93,7 +93,7 @@ export default {
         fetchCartItems: function () {
             let vm = this;
             vm.loading = true;
-            fetch(api_endpoints.checkout)
+            fetch(apiEndpoints.checkout)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
