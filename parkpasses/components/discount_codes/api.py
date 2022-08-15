@@ -1,6 +1,8 @@
 import logging
 
 from django.contrib.contenttypes.models import ContentType
+from drf_excel.mixins import XLSXFileMixin
+from drf_excel.renderers import XLSXRenderer
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
@@ -22,10 +24,41 @@ from parkpasses.components.discount_codes.serializers import (
     InternalDiscountCodeBatchCommentSerializer,
     InternalDiscountCodeBatchSerializer,
     InternalDiscountCodeSerializer,
+    InternalDiscountCodeXlsxSerializer,
 )
 from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
+
+
+class DiscountCodeXlsxViewSet(XLSXFileMixin, viewsets.ReadOnlyModelViewSet):
+    """
+    A ViewSet for performing actions on discount codes.
+    """
+
+    model = DiscountCode
+    permission_classes = [IsInternal]
+    serializer_class = InternalDiscountCodeXlsxSerializer
+    renderer_classes = (XLSXRenderer,)
+    paginator = None
+
+    def get_discount_code_batch(self):
+        discount_code_batch_id = self.kwargs["discount_code_batch_id"]
+        if DiscountCodeBatch.objects.filter(id=discount_code_batch_id).exists():
+            return DiscountCodeBatch.objects.get(id=discount_code_batch_id)
+        return None  # raise object does not exist exception?
+
+    def get_queryset(self):
+        discount_code_batch = self.get_discount_code_batch()
+        return DiscountCode.objects.filter(
+            discount_code_batch_id=discount_code_batch.id
+        )
+
+    def get_filename(self, request, *args, **kwargs):
+        discount_code_batch = self.get_discount_code_batch()
+        discount_code_batch_number = discount_code_batch.discount_code_batch_number
+        discount_codes_count = len(list(self.get_queryset()))
+        return f"discount_code_batch_{discount_code_batch_number}_{discount_codes_count}_codes.xlsx"
 
 
 class DiscountCodeViewSet(viewsets.ModelViewSet):
