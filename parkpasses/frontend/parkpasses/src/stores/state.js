@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { api_endpoints } from '@/utils/hooks'
+import { apiEndpoints } from '@/utils/hooks'
 
 export const useStore = defineStore('main', {
     state: () => ({
@@ -17,7 +17,7 @@ export const useStore = defineStore('main', {
     }),
     actions: {
         async fetchUserData() {
-            fetch(api_endpoints.userData)
+            fetch(apiEndpoints.userData)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
