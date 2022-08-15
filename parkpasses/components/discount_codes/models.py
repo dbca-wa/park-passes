@@ -16,6 +16,13 @@ PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 logger = logging.getLogger(__name__)
 
 
+class DiscountCodeBatchManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super().get_queryset().prefetch_related("valid_pass_types", "valid_users")
+        )
+
+
 class DiscountCodeBatch(models.Model):
     """A class to represent a discount code batch
 
@@ -23,6 +30,8 @@ class DiscountCodeBatch(models.Model):
     of random, unqiue discount codes with the characteristics
     defined in the batch.
     """
+
+    objects = DiscountCodeBatchManager()
 
     created_by = models.IntegerField(null=False, blank=False)  # EmailUserRO
     discount_code_batch_number = models.CharField(max_length=10, null=True, blank=True)
@@ -102,14 +111,24 @@ class DiscountCodeBatch(models.Model):
             super().save(force_insert=False)
 
 
+class DiscountCodeBatchValidPassTypeManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("pass_type")
+
+
 class DiscountCodeBatchValidPassType(models.Model):
+    objects = DiscountCodeBatchValidPassTypeManager()
+
     discount_code_batch = models.ForeignKey(
-        DiscountCodeBatch, on_delete=models.PROTECT, null=False, blank=False
+        DiscountCodeBatch,
+        related_name="valid_pass_types",
+        on_delete=models.PROTECT,
+        null=False,
+        blank=False,
     )
     pass_type = models.ForeignKey(
         PassType,
         on_delete=models.PROTECT,
-        related_name="valid_pass_types",
         null=False,
         blank=False,
     )
@@ -122,7 +141,11 @@ class DiscountCodeBatchValidPassType(models.Model):
 
 class DiscountCodeBatchValidUser(models.Model):
     discount_code_batch = models.ForeignKey(
-        DiscountCodeBatch, on_delete=models.PROTECT, null=False, blank=False
+        DiscountCodeBatch,
+        related_name="valid_users",
+        on_delete=models.PROTECT,
+        null=False,
+        blank=False,
     )
     user = models.IntegerField(null=False, blank=False)
 
