@@ -83,7 +83,7 @@ import PricingWindowConfirmDeleteModal from '@/components/internal/modals/Pricin
 import BootstrapModalVue from '../../../utils/vue/BootstrapModal.vue';
 
 export default {
-    name: 'TablePasses',
+    name: 'PricingWindowsDatatable',
     props: {
         level:{
             type: String,
