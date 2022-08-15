@@ -5,6 +5,8 @@ from parkpasses.components.discount_codes.models import (
     DiscountCode,
     DiscountCodeBatch,
     DiscountCodeBatchComment,
+    DiscountCodeBatchValidPassType,
+    DiscountCodeBatchValidUser,
 )
 
 
@@ -22,7 +24,30 @@ class ExternalDiscountCodeSerializer(serializers.ModelSerializer):
         ]
 
 
+class ValidPassTypeSerializer(serializers.ModelSerializer):
+    pass_type_display_name = serializers.StringRelatedField(
+        source="pass_type.display_name"
+    )
+
+    class Meta:
+        model = DiscountCodeBatchValidPassType
+        fields = [
+            "pass_type_id",
+            "pass_type_display_name",
+        ]
+
+
+class ValidUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiscountCodeBatchValidUser
+        fields = [
+            "user",
+        ]
+
+
 class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
+    valid_pass_types = ValidPassTypeSerializer(many=True, read_only=True)
+    valid_users = ValidUserSerializer(many=True, read_only=True)
     created_by_name = serializers.ReadOnlyField()
     status = serializers.SerializerMethodField()
 
@@ -41,12 +66,17 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
             "discount_percentage",
             "datetime_created",
             "datetime_updated",
+            "valid_pass_types",
+            "valid_users",
             "status",
         ]
         read_only_fields = [
             "created_by_name",
         ]
-        datatables_always_serialize = ("id",)
+        datatables_always_serialize = (
+            "id",
+            "valid_pass_types",
+        )
 
     def get_status(self, obj):
         if obj.datetime_start >= timezone.now():
