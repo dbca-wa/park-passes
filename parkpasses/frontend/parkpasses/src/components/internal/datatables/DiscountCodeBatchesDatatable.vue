@@ -62,7 +62,7 @@
             <div class="col-lg-12">
                 <datatable
                     ref="discountCodeBatchDatatable"
-                    :id="datatable_id"
+                    :id="datatableId"
                     :dtOptions="dtOptions"
                     :dtHeaders="dtHeaders"
                 />
@@ -80,7 +80,7 @@ import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import DiscountCodeBatchFormModal from '@/components/internal/modals/DiscountCodeBatchFormModal.vue'
 
 export default {
-    name: 'TablePasses',
+    name: 'DiscountCodeBatchDatatable',
     props: {
         level:{
             type: String,
@@ -99,7 +99,7 @@ export default {
     data() {
         let vm = this;
         return {
-            datatable_id: 'passes-datatable-' + uuid(),
+            datatableId: 'discount-code-batch-datatable-' + uuid(),
 
             filterStatus: sessionStorage.getItem(vm.filterStatusCacheName) ? sessionStorage.getItem(vm.filterStatusCacheName) : 'all',
             filterDatetimeStartFrom: '',
@@ -184,7 +184,8 @@ export default {
                 'Created By',
                 'Uses',
                 'Status',
-                'Action'
+                'Action',
+                'Valid Pass Types',
             ]
         },
         columnId: function(){
@@ -318,6 +319,27 @@ export default {
                 }
             }
         },
+        columnValidPassTypes: function(){
+            return {
+                data: "valid_pass_types",
+                visible: true,
+                orderable: false,
+                searchable: false,
+                name: 'valid_pass_types',
+                'render': function(row, type, full){
+                    let validPassTypes = '';
+                    if(full.valid_pass_types.length) {
+                        full.valid_pass_types.forEach(function(validPassType, index){
+                            validPassTypes += '<span class="badge org-badge-primary">' + validPassType.pass_type_display_name + '</span>&nbsp;';
+
+                    });
+                    } else {
+                        return '<span class="badge org-badge-primary">All Pass Types</span>';
+                    }
+                    return validPassTypes;
+                }
+            }
+        },
         dtOptions: function(){
             let vm = this
 
@@ -354,6 +376,7 @@ export default {
                 vm.column_times_each_code_can_be_used,
                 vm.columnStatus,
                 vm.columnAction,
+                vm.columnValidPassTypes,
             ]
             search = true
 
@@ -471,7 +494,7 @@ export default {
             vm.addEventListeners();
         var discountCodeBatchModal = document.getElementById('discountCodeBatchModal');
         discountCodeBatchModal.addEventListener('shown.bs.modal', function() {
-            console.log('shown.bs.modal');
+            // This next line is needed to reveal the placeholders in the select2s
             $('.select2-search__field').attr("style", "width:750px");
             $('#discountCodeBatchModal').find('input:visible:first').focus();
         });
