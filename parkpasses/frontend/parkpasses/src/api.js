@@ -51,6 +51,9 @@ module.exports = {
     isDiscountCodeValid: function (id) {
         return                          `to be implimented`;
     },
+    discountCodesXlsx: function (discount_code_batch_id) {
+        return                          `/api/discount-codes/internal/discount-codes-xlsx/${discount_code_batch_id}/`;
+    },
 
     /* ========================= Vouchers ===============================================*/
     vouchersInternalPaginatedList:      '/api/vouchers/internal/vouchers/',
