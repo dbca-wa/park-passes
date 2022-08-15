@@ -185,7 +185,9 @@ export default {
                 'Uses',
                 'Status',
                 'Action',
-                'Valid Pass Types',
+                'Discount code(s)',
+                'Valid for Pass Type(s)',
+                'Valid for User(s)',
             ]
         },
         columnId: function(){
@@ -319,6 +321,27 @@ export default {
                 }
             }
         },
+        columnDiscountCodes: function(){
+            return {
+                data: "discount_codes",
+                visible: true,
+                orderable: false,
+                searchable: false,
+                name: 'discount_codes',
+                'render': function(row, type, full){
+                    let discountCodes = '';
+                    if(1==full.discount_codes.length) {
+                        return '<span class="badge org-badge-primary">' + full.discount_codes[0].code + '</span>';
+
+                    } else if(1<full.discount_codes.length){
+                        return `<a data-id="${full.id}" data-action="view-discount-codes" href="${api_endpoints.discountCodesXlsx(full.id)}">View ${full.discount_codes.length} Discount Codes</a>`;
+                    } else {
+                        return '<span class="badge badge-danger">Error no codes were created</span>';
+                    }
+                    return discountCodes;
+                }
+            }
+        },
         columnValidPassTypes: function(){
             return {
                 data: "valid_pass_types",
@@ -337,6 +360,27 @@ export default {
                         return '<span class="badge org-badge-primary">All Pass Types</span>';
                     }
                     return validPassTypes;
+                }
+            }
+        },
+        columnValidUsers: function(){
+            return {
+                data: "valid_users",
+                visible: true,
+                orderable: false,
+                searchable: false,
+                name: 'valid_users',
+                'render': function(row, type, full){
+                    let validUsers = '';
+                    if(full.valid_users.length) {
+                        full.valid_users.forEach(function(validUser, index){
+                            validUsers += '<span class="badge org-badge-primary">' + validUser.email + '</span>&nbsp;';
+
+                    });
+                    } else {
+                        return '<span class="badge org-badge-primary">All Users</span>';
+                    }
+                    return validUsers;
                 }
             }
         },
@@ -376,7 +420,9 @@ export default {
                 vm.column_times_each_code_can_be_used,
                 vm.columnStatus,
                 vm.columnAction,
+                vm.columnDiscountCodes,
                 vm.columnValidPassTypes,
+                vm.columnValidUsers,
             ]
             search = true
 
@@ -388,7 +434,7 @@ export default {
                 rowCallback: function (row, pass){
                     let row_jq = $(row)
                     row_jq.attr('id', 'pass_id_' + pass.id)
-                    row_jq.children().first().addClass(vm.td_expand_class_name)
+                    //row_jq.children().first().addClass(vm.td_expand_class_name)
                 },
                 responsive: true,
                 serverSide: true,
@@ -490,15 +536,19 @@ export default {
     },
     mounted: function(){
         let vm = this;
-        this.$nextTick(() => {
-            vm.addEventListeners();
+        vm.addEventListeners();
         var discountCodeBatchModal = document.getElementById('discountCodeBatchModal');
         discountCodeBatchModal.addEventListener('shown.bs.modal', function() {
             // This next line is needed to reveal the placeholders in the select2s
             $('.select2-search__field').attr("style", "width:750px");
             $('#discountCodeBatchModal').find('input:visible:first').focus();
         });
-        });
     }
 }
 </script>
+
+<style scoped>
+    td.child span.dtr-title {
+        width: 200px;
+    }
+</style>
