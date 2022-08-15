@@ -10,10 +10,23 @@ from parkpasses.components.discount_codes.models import (
 )
 
 
-class InternalDiscountCodeSerializer(serializers.ModelSerializer):
+class InternalDiscountCodeXlsxSerializer(serializers.ModelSerializer):
+    discount_code_batch = serializers.ReadOnlyField(
+        source="discount_code_batch.discount_code_batch_number"
+    )
+    remaining_uses = serializers.ReadOnlyField()
+
     class Meta:
         model = DiscountCode
-        fields = "__all__"
+        fields = ["discount_code_batch", "code", "remaining_uses"]
+
+
+class InternalDiscountCodeSerializer(serializers.ModelSerializer):
+    remaining_uses = serializers.ReadOnlyField()
+
+    class Meta:
+        model = DiscountCode
+        fields = ["id", "code", "discount_code_batch", "remaining_uses"]
 
 
 class ExternalDiscountCodeSerializer(serializers.ModelSerializer):
@@ -38,14 +51,18 @@ class ValidPassTypeSerializer(serializers.ModelSerializer):
 
 
 class ValidUserSerializer(serializers.ModelSerializer):
+    email = serializers.ReadOnlyField()
+
     class Meta:
         model = DiscountCodeBatchValidUser
         fields = [
             "user",
+            "email",
         ]
 
 
 class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
+    discount_codes = InternalDiscountCodeSerializer(many=True, read_only=True)
     valid_pass_types = ValidPassTypeSerializer(many=True, read_only=True)
     valid_users = ValidUserSerializer(many=True, read_only=True)
     created_by_name = serializers.ReadOnlyField()
@@ -66,17 +83,15 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
             "discount_percentage",
             "datetime_created",
             "datetime_updated",
+            "status",
             "valid_pass_types",
             "valid_users",
-            "status",
+            "discount_codes",
         ]
         read_only_fields = [
             "created_by_name",
         ]
-        datatables_always_serialize = (
-            "id",
-            "valid_pass_types",
-        )
+        datatables_always_serialize = ("id",)
 
     def get_status(self, obj):
         if obj.datetime_start >= timezone.now():
