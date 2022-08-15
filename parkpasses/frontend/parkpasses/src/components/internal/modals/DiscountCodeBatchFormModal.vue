@@ -2,9 +2,11 @@
     <div class="modal fade" id="discountCodeBatchModal" aria-labelledby="discountCodeBatchModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form @submit.prevent="validateForm" @keydown.enter="$event.preventDefault()" class="needs-validation" novalidate>
+                <Loader v-if="loading" isLoading="loading" />
+                <form v-else @submit.prevent="validateForm" @keydown.enter="$event.preventDefault()" class="needs-validation" novalidate>
                     <div class="modal-header">
-                        <h5 class="modal-title" id="discountCodeBatchModalLabel">Create New Discount Codes</h5>
+                        <h5 v-if="discount_code_batch.discount_code_batch_number" class="modal-title" id="discountCodeBatchModalLabel">Update Discount Code Batch {{discount_code_batch.discount_code_batch_number}}</h5>
+                        <h5 v-else class="modal-title" id="discountCodeBatchModalLabel">Create New Discount Code Batch</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -74,6 +76,16 @@
                                 </div>
                             </div>
                             <div class="row">
+                                <div v-if="discount_code_batch.discount_codes" class="col">
+                                    <label for="" class="col-form-label">Discount Codes:</label>
+                                    <div>
+                                        <template v-for="discount_code in discount_code_batch.discount_codes">
+                                            <span class="badge org-badge-primary">{{ discount_code.code }}</span>&nbsp;
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
                                 <div class="col">
                                     <label for="uses" class="col-form-label">Number of times each code can be used:</label>
                                     <input type="number" class="form-control" :class="errors.name ? 'is-invalid' : ''" id="uses"
@@ -127,13 +139,15 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="reason" class="col-form-label">Reason:</label>
+                                <label for="reason" class="col-form-label">Reason for <span v-if="discount_code_batch.id">Updating {{ discount_code_batch.discount_code_batch_number }}</span><span v-else>Creating Discount Code Batch</span>:</label>
                                 <textarea class="form-control" :class="errors.reason ? 'is-invalid' : ''" id="reason" name="reason" v-model="discount_code_batch.reason" aria-describedby="validationServerReasonFeedback" required></textarea>
                                 <div v-if="errors.reason" id="validationServerReasonFeedback" class="invalid-feedback">
                                     <p v-for="(error, index) in errors.reason" :key="index">{{ error }}</p>
                                 </div>
                                 <div v-else id="validationServerReasonFeedback" class="invalid-feedback">
-                                    Please enter the reason this discount code batch is being created.
+                                    Please enter the reason this discount code batch is being
+                                    <span v-if="discount_code_batch.id">Updated</span>
+                                    <span v-else>Created</span>.
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -150,7 +164,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn licensing-btn-primary">Submit</button>
+                        <button v-if="discount_code_batch.discount_code_batch_number" type="submit" class="btn licensing-btn-primary">Update</button>
+                        <button v-else type="submit" class="btn licensing-btn-primary">Create</button>
                     </div>
                 </form>
             </div>
@@ -159,23 +174,40 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, helpers } from '@/utils/hooks'
+import Loader from '@/utils/vue/Loader.vue'
+import { forEach } from 'jszip';
 
 export default {
     name: 'DiscountCodeBatchFormModal',
     emits: ['saveSuccess'],
     props: {
-
+        selectedDiscountCodeBatch: {
+            type: Number,
+            default: null,
+        }
     },
     data() {
         return {
             discount_code_batch: this.getDiscountCodeBatchInitialState(),
             passTypes: null,
             errors: {},
+            loading: false,
+        }
+    },
+    watch: {
+        selectedDiscountCodeBatch: function(newValue, oldValue) {
+            console.log('selectedDiscountCodeBatch.oldValue = ' + oldValue);
+            console.log('selectedDiscountCodeBatch.newValue = ' + newValue);
+            if (newValue) {
+                this.fetchDiscountCodeBatch(newValue);
+            } else {
+                this.discount_code_batch = this.getDiscountCodeBatchInitialState();
+            }
         }
     },
     components: {
-
+        Loader
     },
     computed: {
         minEndDate: function () {
@@ -206,6 +238,7 @@ export default {
                 discount_type: 'percentage',
                 discount_percentage: '',
                 discount_amount: '',
+                discount_codes: [],
                 valid_pass_types: [],
                 valid_users: [],
                 codes_to_generate: 1,
@@ -213,9 +246,51 @@ export default {
                 datetime_expiry: this.minEndDate,
             }
         },
+        fetchDiscountCodeBatch: function (id) {
+            let vm = this;
+            vm.loading = true;
+            fetch(apiEndpoints.discountCodeBatch(id))
+            .then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    console.log(error);
+                    return Promise.reject(error);
+                }
+                vm.discount_code_batch = Object.assign({}, data);
+                if(vm.discount_code_batch.discount_percentage) {
+                    vm.discount_code_batch.discount_type = 'percentage';
+                } else {
+                    vm.discount_code_batch.discount_type = 'amount';
+                }
+                vm.discount_code_batch.valid_pass_types =
+                vm.discount_code_batch.valid_pass_types.map(({pass_type_id}) => pass_type_id);
+
+                vm.discount_code_batch.valid_users.forEach(function(validUser){
+                    console.log("validUser.display_name = " + validUser.display_name);
+                    var option = new Option(validUser.display_name, validUser.user, true, true);
+                    $(vm.$refs.validUsers).append(option);
+                });
+                $(vm.$refs.validUsers).trigger('change');
+                vm.discount_code_batch.valid_users =
+                vm.discount_code_batch.valid_users.map(({pass_type_id}) => pass_type_id);
+                console.log("valid_users = " + vm.discount_code_batch.valid_users);
+
+                //console.log("vm.discount_code_batch = " + JSON.stringify(vm.discount_code_batch));
+                if(vm.valid_pass_types) {
+                    var validPassTypes = vm.valid_pass_types.split(',');
+                    $(".select2").select2().val(validPassTypes).trigger('change');
+                }
+                vm.loading = false;
+            })
+            .catch((error) => {
+                this.errorMessage = "ERROR: Please try again in an hour.";
+                console.error("There was an error!", error);
+            })
+        },
         fetchPassTypes: function () {
             let vm = this;
-            fetch(api_endpoints.passTypes)
+            fetch(apiEndpoints.passTypes)
             .then(async (response) => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -253,7 +328,7 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.discount_code_batch)
             };
-            fetch(api_endpoints.saveDiscountCodeBatch, requestOptions)
+            fetch(apiEndpoints.saveDiscountCodeBatch, requestOptions)
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {
@@ -300,7 +375,7 @@ export default {
         var dropdownParentEl = $('#discountCodeBatchModal > .modal-dialog > .modal-content')
         $(vm.$refs.validUsers).select2({
             ajax: {
-                url: api_endpoints.select2Customers,
+                url: apiEndpoints.select2Customers,
                 dataType: 'json'
             },
             dropdownParent: dropdownParentEl,
