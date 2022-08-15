@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 class DiscountCodeBatchManager(models.Manager):
     def get_queryset(self):
         return (
-            super().get_queryset().prefetch_related("valid_pass_types", "valid_users")
+            super()
+            .get_queryset()
+            .prefetch_related("valid_pass_types", "valid_users", "discount_codes")
         )
 
 
@@ -154,10 +156,19 @@ class DiscountCodeBatchValidUser(models.Model):
         verbose_name = "Valid User"
         unique_together = (("discount_code_batch", "user"),)
 
+    @property
+    def email(self):
+        return retrieve_email_user(self.user).email
+
 
 class DiscountCodeManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related("discount_code_batch")
+        return (
+            super()
+            .get_queryset()
+            .select_related("discount_code_batch")
+            .prefetch_related("discount_code_usages")
+        )
 
 
 class DiscountCode(models.Model):
@@ -172,7 +183,7 @@ class DiscountCode(models.Model):
     objects = DiscountCodeManager()
 
     discount_code_batch = models.ForeignKey(
-        DiscountCodeBatch, related_name="codes", on_delete=models.PROTECT
+        DiscountCodeBatch, related_name="discount_codes", on_delete=models.PROTECT
     )
     code = models.CharField(max_length=50, unique=True)
 
