@@ -51,8 +51,8 @@ module.exports = {
         return                          `/api/discount-codes/internal/discount-code-batches/${id}/`;
     },
     saveDiscountCodeBatch:              '/api/discount-codes/internal/discount-code-batches/',
-    isDiscountCodeValid: function (id) {
-        return                          `to be implimented`;
+    isDiscountCodeValid: function (email, code, pass_type_id) {
+        return                          `/api/discount-codes/validate-discount-code?email=${email}&code=${code}&pass_type_id=${pass_type_id}`;
     },
     discountCodesXlsx: function (discount_code_batch_id) {
         return                          `/api/discount-codes/internal/discount-codes-xlsx/${discount_code_batch_id}/`;
@@ -60,8 +60,8 @@ module.exports = {
 
     /* ========================= Vouchers ===============================================*/
     vouchersInternalPaginatedList:      '/api/vouchers/internal/vouchers/',
-    isVoucherValid: function (recipient_email, code, pin) {
-        return                          `/api/vouchers/validate-voucher?recipient_email=${recipient_email}&code=${code}&pin=${pin}`;
+    isVoucherValid: function (email, code, pin) {
+        return                          `/api/vouchers/validate-voucher?email=${email}&code=${code}&pin=${pin}`;
     },
     saveVoucher:                        '/api/vouchers/external/vouchers/',
 
