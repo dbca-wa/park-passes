@@ -127,14 +127,24 @@ class ValidateVoucherView(APIView):
     throttle_classes = [AnonRateThrottle]
 
     def get(self, request, format=None):
-        recipient_email = request.query_params.get("recipient_email", None)
+        email = request.query_params.get("email", None)
         code = request.query_params.get("code", None)
         pin = request.query_params.get("pin", None)
-        if code and pin:
-            if (
-                Voucher.objects.exclude(in_cart=True)
-                .filter(recipient_email=recipient_email, code=code, pin=pin)
-                .exists()
-            ):
-                return Response({"is_voucher_code_valid_for_user": True})
-        return Response({"is_voucher_code_valid_for_user": False})
+
+        if email and code and pin:
+            if Voucher.objects.filter(
+                in_cart=False, recipient_email=email, code=code, pin=pin
+            ).exists():
+                voucher = Voucher.objects.get(
+                    in_cart=False, recipient_email=email, code=code, pin=pin
+                )
+                logger.debug(
+                    "voucher.remaining_balance = " + str(voucher.remaining_balance)
+                )
+                return Response(
+                    {
+                        "is_voucher_code_valid": True,
+                        "balance_remaining": voucher.remaining_balance,
+                    }
+                )
+        return Response({"is_voucher_code_valid": False})
