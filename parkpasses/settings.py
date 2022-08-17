@@ -287,6 +287,8 @@ PASS_TYPES = [
 
 PRICING_WINDOW_DEFAULT_NAME = "Default"
 
+UNLIMITED_USES_TEXT = "Unlimited"
+
 """ ==================== USER ACTIONS ======================== """
 
 
