@@ -1,6 +1,8 @@
 import logging
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from drf_excel.mixins import XLSXFileMixin
 from drf_excel.renderers import XLSXRenderer
 from rest_framework import viewsets
@@ -128,7 +130,28 @@ class ValidateDiscountCodeView(APIView):
 
     def get(self, request, format=None):
         code = request.query_params.get("code", None)
-        if code:
-            if DiscountCode.objects.filter(remaining_uses__gt=0, code=code).exists():
-                return Response({"is_discount_code_valid": True})
+        pass_type_id = request.query_params.get("pass_type_id", None)
+        email = request.query_params.get("email", None)
+
+        if code and 8 == len(code) and email and pass_type_id:
+            if DiscountCode.objects.filter(
+                code=code,
+                discount_code_batch__datetime_start__lte=timezone.now(),
+                discount_code_batch__datetime_expiry__gte=timezone.now(),
+            ).exists():
+                discount_code = DiscountCode.objects.get(code=code)
+                if (
+                    discount_code.remaining_uses == settings.UNLIMITED_USES_TEXT
+                    or 0 < discount_code.remaining_uses
+                ):
+                    if discount_code.is_valid_for_pass_type(pass_type_id):
+                        if discount_code.is_valid_for_email(email):
+                            return Response(
+                                {
+                                    "is_discount_code_valid": True,
+                                    "discount_type": discount_code.discount_type,
+                                    "discount": discount_code.discount,
+                                }
+                            )
+
         return Response({"is_discount_code_valid": False})
