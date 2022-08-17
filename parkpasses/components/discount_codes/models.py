@@ -4,8 +4,10 @@
 import logging
 import uuid
 
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from parkpasses.components.passes.models import Pass, PassType
 from parkpasses.ledger_api_utils import retrieve_email_user
@@ -18,11 +20,7 @@ logger = logging.getLogger(__name__)
 
 class DiscountCodeBatchManager(models.Manager):
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .prefetch_related("valid_pass_types", "valid_users", "discount_codes")
-        )
+        return super().get_queryset()
 
 
 class DiscountCodeBatch(models.Model):
@@ -112,6 +110,16 @@ class DiscountCodeBatch(models.Model):
             self.discount_code_batch_number = discount_code_batch_number
             super().save(force_insert=False)
 
+    def valid_pass_type_ids(self):
+        logger.debug(
+            "valid_pass_types" + str(self.valid_pass_types.values_list("id", flat=True))
+        )
+        return list(self.valid_pass_types.values_list("pass_type_id", flat=True))
+
+    def valid_user_ids(self):
+        logger.debug("valid_users" + str(self.valid_users.values_list("id", flat=True)))
+        return list(self.valid_users.values_list("user", flat=True))
+
 
 class DiscountCodeBatchValidPassTypeManager(models.Manager):
     def get_queryset(self):
@@ -139,6 +147,12 @@ class DiscountCodeBatchValidPassType(models.Model):
         app_label = "parkpasses"
         verbose_name = "Valid Pass Type"
         unique_together = (("discount_code_batch", "pass_type"),)
+
+    def __str__(self):
+        return (
+            f"Pass Type: {self.pass_type.display_name} (id:{self.pass_type.id})"
+            f'is valid for Discount Code Batch" {self.discount_code_batch.discount_code_batch_number}'
+        )
 
 
 class DiscountCodeBatchValidUser(models.Model):
@@ -176,7 +190,7 @@ class DiscountCode(models.Model):
     """A class to represent a discount code
 
     Discount codes are random and unique.
-    If remaining_uses is defined then the code can only
+    If remaining_uses is defined in the discount code batch then the code can only
     be used that amount of times, otherwise it can be used
     any number of times.
     """
@@ -186,7 +200,7 @@ class DiscountCode(models.Model):
     discount_code_batch = models.ForeignKey(
         DiscountCodeBatch, related_name="discount_codes", on_delete=models.PROTECT
     )
-    code = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=50, unique=True, null=False, blank=False)
 
     class Meta:
         app_label = "parkpasses"
@@ -202,9 +216,42 @@ class DiscountCode(models.Model):
     def remaining_uses(self):
         times_code_can_be_used = self.discount_code_batch.times_each_code_can_be_used
         if not times_code_can_be_used:
-            return "Unlimited"
+            return settings.UNLIMITED_USES_TEXT
         current_uses = self.discount_code_usages.count()
         return times_code_can_be_used - current_uses
+
+    @property
+    def discount_type(self):
+        if self.discount_code_batch.discount_percentage:
+            return "percentage"
+        return "amount"
+
+    @property
+    def discount(self):
+        if self.discount_code_batch.discount_percentage:
+            return self.discount_code_batch.discount_percentage
+        return self.discount_code_batch.discount_amount
+
+    def is_valid_for_pass_type(self, pass_type_id):
+        # If no valid pass types are specified that means the code is valid for all pass types
+        if not len(self.discount_code_batch.valid_pass_types.all()):
+            return True
+        if PassType.objects.filter(id=pass_type_id).exists():
+            if int(pass_type_id) in self.discount_code_batch.valid_pass_type_ids():
+                return True
+        return False
+
+    def is_valid_for_email(self, email):
+        # If no users are specified that means the code is valid for all users
+        if not len(self.discount_code_batch.valid_users.all()):
+            return True
+
+        if EmailUser.objects.filter(email=email).exists():
+            email_user = EmailUser.objects.get(email=email)
+            if email_user.id in self.discount_code_batch.valid_user_ids():
+                return True
+
+        return False
 
 
 class DiscountCodeUsage(models.Model):
