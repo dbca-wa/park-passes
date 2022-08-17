@@ -16,6 +16,10 @@ from django.dispatch import receiver
 
 from parkpasses import settings
 from parkpasses.components.passes.models import Pass
+from parkpasses.components.vouchers.exceptions import (
+    RemainingBalanceExceedsVoucherAmountException,
+    RemainingVoucherBalanceLessThanZeroException,
+)
 from parkpasses.ledger_api_utils import retrieve_email_user
 
 logger = logging.getLogger(__name__)
@@ -86,14 +90,20 @@ class Voucher(models.Model):
             if transaction.debit > 0.00:
                 remaining_balance -= transaction.debit
         if remaining_balance > self.amount:
-            raise Exception(
-                "The balance of transactions for this voucher are greater than the amount of the voucher."
+            exception_message = (
+                f"The remaining balance of {remaining_balance} for voucher with id"
+                f"{self.id} is greater than the amount of the voucher."
             )
+            logger.error(exception_message)
+            raise RemainingBalanceExceedsVoucherAmountException(exception_message)
         if remaining_balance < 0.00:
-            raise Exception(
-                "The balance of transactions for this voucher are below 0.00."
+            exception_message = (
+                f"The remaining balance of {remaining_balance}"
+                f"for voucher with id {self.id} is below 0.00."
             )
-        return f"{remaining_balance:.2f}"
+            logger.error(exception_message)
+            raise RemainingVoucherBalanceLessThanZeroException(exception_message)
+        return remaining_balance
 
     @classmethod
     def get_new_voucher_code(self):
