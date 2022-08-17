@@ -46,7 +46,7 @@
                                 <label for="email" class="col-form-label">Your Email Address</label>
                             </div>
                             <div class="col-auto">
-                                <input type="email" id="email" name="email" v-model="pass.email" class="form-control" required="required">
+                                <input type="email" id="email" name="email" ref="email" v-model="pass.email" class="form-control" required="required">
                                 <div class="invalid-feedback">
                                     Please enter a valid email address.
                                 </div>
@@ -57,7 +57,7 @@
                                 <label for="confirmEmail" class="col-form-label">Confirm Your Email</label>
                             </div>
                             <div class="col-auto">
-                                <input @change="validateConfirmEmail" type="email" id="confirmEmail" name="confirmEmail" v-model="confirmEmail" ref="confirmEmail" class="form-control" required="required">
+                                <input @change="validateConfirmEmail" type="email" id="confirmEmail" name="confirmEmail" ref="confirmEmail" v-model="confirmEmail" class="form-control" required="required">
                                 <div class="invalid-feedback">
                                     Please make sure your confirmation email matches your email.
                                 </div>
@@ -197,25 +197,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-if="passOptions" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
-                                Duration
-                            </div>
-                            <div class="col-auto">
-                                <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option.id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
-                                    <option v-for="passOption in passOptions" :value="passOption.id" :key="passOption.id">{{passOption.name}}</option>
-                                </select>
-                                <span v-else>{{pass.option.name}}</span>
-                            </div>
-                        </div>
-                        <div v-if="totalPrice" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
-                                Price
-                            </div>
-                            <div class="col-auto lead">
-                                <strong>${{ totalPrice }}</strong>
-                            </div>
-                        </div>
+
                         <div class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="startDate" class="col-form-label">Start Date for Pass</label>
@@ -269,25 +251,28 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-1 align-top mb-2">
+                        <div v-if="isEmailValid" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="discountCode" class="col-form-label">Discount Code</label>
                             </div>
                             <div class="col-auto">
-                                <input @change="validateDiscountCode" v-model="pass.discount_code" type="text" id="discountCode" name="discountCode" ref="discountCode" class="form-control short-control" :class="{'is-invalid' : discountCodeError}" minlength="8" maxlength="8">
+                                <input @keyup="validateDiscountCode" v-model="pass.discount_code" type="text" id="discountCode" name="discountCode" ref="discountCode" class="form-control short-control" :class="{'is-invalid' : discountCodeError}" minlength="8" maxlength="8">
+                                <div v-if="!pass.email" class="invalid-feedback">
+                                    You must enter your email address in order to validate the discount code.
+                                </div>
                                 <div class="invalid-feedback">
                                     This discount code is not valid.
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-1 align-top mb-2">
+                        <div v-if="isEmailValid" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="voucherCode" class="col-form-label">Voucher Code</label>
                             </div>
                             <div class="col-auto">
                                 <input @change="validateVoucherCode" @keyup="focusVoucherPin" v-model="pass.voucher_code" type="text" id="voucherCode" name="voucherCode" ref="voucherCode" class="form-control short-control" :class="{'is-invalid' : voucherCodeError}" minlength="8" maxlength="8">
                                 <div class="invalid-feedback">
-                                    This voucher code is not valid.
+                                    This voucher code is not valid (or does not match with the voucher pin provided).
                                 </div>
                             </div>
                         </div>
@@ -296,10 +281,53 @@
                                 <label for="voucherPin" class="col-form-label">Voucher Pin</label>
                             </div>
                             <div class="col-auto">
-                                <input @change="validateVoucherPin" v-model="pass.voucher_pin" type="text" id="voucherPin" name="voucherPin" ref="voucherPin" class="form-control pin-control" minlength="6" maxlength="6">
+                                <input @keyup="validateVoucherPin" v-model="pass.voucher_pin" type="text" id="voucherPin" name="voucherPin" ref="voucherPin" class="form-control pin-control" minlength="6" maxlength="6">
                                 <div class="invalid-feedback">
                                     This voucher pin is not valid.
                                 </div>
+                            </div>
+                        </div>
+                        <div v-if="passOptions" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                Duration
+                            </div>
+                            <div class="col-auto">
+                                <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option.id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
+                                    <option v-for="passOption in passOptions" :value="passOption.id" :key="passOption.id">{{passOption.name}}</option>
+                                </select>
+                                <span v-else>{{pass.option.name}}</span>
+                            </div>
+                        </div>
+                        <div v-if="totalPrice" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                Price
+                            </div>
+                            <div class="col-auto lead">
+                                <strong>${{ totalPrice }}</strong>
+                            </div>
+                        </div>
+                        <div v-if="discount_code_discount" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                Discount Code
+                            </div>
+                            <div class="col-auto lead">
+                                <strong>-${{ discount_code_discount }}</strong>
+                            </div>
+                        </div>
+                        <div v-if="voucher_redemption_amount" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                Voucher Redemption
+                            </div>
+                            <div class="col-auto lead">
+                                <strong>-${{ voucher_redemption_amount }}</strong>
+                            </div>
+                        </div>
+                        <div v-if="discount_code_discount || voucher_redemption_amount" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                Grand Total
+                            </div>
+                            <div class="col-auto lead">
+                                <strong>${{ grandTotal }}</strong>
                             </div>
                         </div>
                         <div class="row g-1 mb-2">
@@ -334,6 +362,9 @@ export default {
             store: useStore(),
             pass: {
                 first_name: '',
+                last_name: '',
+                email: '',
+                confirmEmail: '',
                 concession_type: 0,
                 datetime_start: this.startDate(),
                 discount_code: '',
@@ -356,6 +387,16 @@ export default {
             extraVehicle: false,
             vehicleInputs: 1,
             extraVehicleText: 'Add a second vehicle',
+
+            discountType: null,
+            discountPercentage: 0.00,
+            discount_amount: 0.00,
+            discount_code_discount: 0.00,
+
+            voucher_redemption_amount: 0.00,
+
+            voucher_balance_remaining: null,
+
             discountCodeError: '',
             voucherCodeError: '',
             voucherPinError: '',
@@ -375,6 +416,10 @@ export default {
             }
             totalPrice = this.passPrice - ((this.concessionDiscountPercentage / 100) * this.passPrice);
             return totalPrice.toFixed(2);
+        },
+        grandTotal() {
+            let grandTotal = this.totalPrice - this.discount_code_discount - this.voucher_redemption_amount;
+            return Math.max(grandTotal, 0.00).toFixed(2);
         },
         isHolidayPass() {
             if(!this.passType){
@@ -411,6 +456,14 @@ export default {
                 return false;
             }
             return ('PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS'==this.passType.name ? true : false)
+        },
+        isEmailValid() {
+            if(this.pass.email && this.confirmEmail){
+                if(this.pass.email==this.confirmEmail) {
+                    return this.$refs.email.checkValidity() && this.$refs.confirmEmail.checkValidity();
+                }
+            }
+            return false;
         }
     },
     methods: {
@@ -566,11 +619,17 @@ export default {
             }
         },
         validateDiscountCode: function () {
+            this.discount = 0.00;
             if(this.pass.discount_code.length && (8!=this.pass.discount_code.length)){
                 this.$refs.discountCode.setCustomValidity("Invalid field.");
                 return false;
             } else {
-                this.$refs.discountCode.setCustomValidity("");
+                if(0==this.pass.discount_code.length){
+                    this.$refs.discountCode.setCustomValidity("");
+                    return true;
+                } else {
+                    return this.validateDiscountCodeBackend();
+                }
             }
         },
         validateVoucherCode: function () {
@@ -580,7 +639,7 @@ export default {
                 this.$refs.voucherCode.setCustomValidity("Invalid field.");
                 return false;
             } else {
-                console.log('voucher code is not invalid')
+                console.log('voucher code passes basic validation')
                 this.$refs.voucherCode.setCustomValidity("");
                 return true;
             }
@@ -653,13 +712,13 @@ export default {
                     return false;
                 } else {
                     this.$refs.voucherPin.setCustomValidity("");
+                    return this.validateVoucherCodeBackend();
                 }
             }
-
         },
-        validateVoucherCodeBackend: function () {
+        validateDiscountCodeBackend: function () {
             let vm = this;
-            fetch(apiEndpoints.isVoucherValid(vm.pass.recipient_email, vm.pass.voucher_code, vm.pass.voucher_pin))
+            fetch(apiEndpoints.isDiscountCodeValid(vm.pass.email, vm.pass.discount_code, vm.passTypeId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -667,12 +726,60 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                const is_voucher_code_valid_for_user = data
-                console.log('is_voucher_code_valid_for_user = ' + is_voucher_code_valid_for_user)
-                if(!is_voucher_code_valid_for_user){
-                    this.$refs.voucherCode.setCustomValidity("Invalid field.");
+                const is_discount_code_valid = data.is_discount_code_valid;
+                console.log('is_discount_code_valid = ' + is_discount_code_valid)
+                if(!is_discount_code_valid){
+                    this.$refs.discountCode.setCustomValidity("Invalid field.");
+                    return false;
                 } else {
+                    vm.discountType = data.discount_type
+                    console.log('vm.discountType = ' + vm.discountType)
+                    if('percentage'==vm.discountType) {
+                        vm.discountPercentage = data.discount
+                        console.log('vm.discountPercentage = ' + vm.discountPercentage)
+                        vm.discount_code_discount = vm.totalPrice * (vm.discountPercentage/100);
+                        vm.discount_code_discount = vm.discount.toFixed(2);
+                    } else {
+                        vm.discount_amount = data.discount
+                        vm.discount_code_discount = vm.totalPrice - vm.discount_amount
+                    }
+                    console.log('vm.discount_code_discount = ' + vm.discount_code_discount)
+                    // Check if the discount is a percentage or an amount
+                    vm.$refs.discountCode.setCustomValidity("");
+                    return true;
+                }
+            })
+            .catch(error => {
+                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                console.error("There was an error!", error);
+            });
+        },
+        validateVoucherCodeBackend: function () {
+            let vm = this;
+            fetch(apiEndpoints.isVoucherValid(vm.pass.email, vm.pass.voucher_code, vm.pass.voucher_pin))
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    console.log(error);
+                    return Promise.reject(error);
+                }
+                const is_voucher_code_valid = data.is_voucher_code_valid;
+                console.log('is_voucher_code_valid = ' + is_voucher_code_valid)
+                if(!is_voucher_code_valid){
+                    this.$refs.voucherCode.setCustomValidity("Invalid field.");
+                    return false;
+                } else {
+                    const balance_remaining = data.balance_remaining.toFixed(2);
+                    console.log('balance_remaining = ' + balance_remaining);
+                    console.log('vm.grandTotal = ' + vm.grandTotal);
+                    if(balance_remaining > vm.grandTotal){
+                        vm.voucher_redemption_amount = vm.grandTotal;
+                    } else {
+                        vm.voucher_redemption_amount = balance_remaining;
+                    }
                     this.$refs.voucherCode.setCustomValidity("");
+                    return true;
                 }
             })
             .catch(error => {
@@ -714,26 +821,27 @@ export default {
             let vm = this;
             var forms = document.querySelectorAll('.needs-validation')
 
-            this.validateDiscountCode();
-            this.validateConfirmEmail();
-            let voucherCodeValid = this.validateVoucherCode();
-            let voucherPinValid = false;
-            if(this.pass.voucher_code.length && voucherCodeValid){
-                voucherPinValid = this.validateVoucherPin();
+            if(vm.isEmailValid){
+                this.validateDiscountCode();
+                this.validateConfirmEmail();
+                let voucherCodeValid = this.validateVoucherCode();
+                let voucherPinValid = false;
+                if(this.pass.voucher_code.length && voucherCodeValid){
+                    voucherPinValid = this.validateVoucherPin();
+                }
+
+                if(voucherCodeValid && voucherPinValid){
+                    this.validateVoucherCodeBackend();
+                }
             }
 
-            if(voucherCodeValid && voucherPinValid){
-                this.validateVoucherCodeBackend();
-            }
 
             Array.prototype.slice.call(forms)
             .forEach(function (form) {
                 if(form.checkValidity()){
-                    //Call some api with the valid data.
                     vm.submitForm();
                 } else {
                     form.classList.add('was-validated');
-                    //app.getElement('.invalid-feedback:first').focus();
                     console.log($(".invalid-feedback:first"));
                     $(".invalid-feedback:visible:first").siblings('input').focus();
                 }
