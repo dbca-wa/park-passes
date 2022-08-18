@@ -10,7 +10,7 @@
 
       <div class="col">
 
-        <h1>Checkout</h1>
+        <h1>Cart</h1>
 
         <div v-if="loading" class="d-flex justify-content-center mt-5">
             <div class="spinner-border text-primary" role="status">
@@ -19,9 +19,18 @@
         </div>
 
         <div v-else>
-            <div v-if="cartItems" class="accordion" id="accordionExample">
-                <CartItem v-for="cartItem in cartItems" :cartItem="cartItem" :key="cartItem.id" />
-                <div v-if="cartItems">
+            <div class="accordion" id="checkoutAccordion">
+                <template v-if="cartItems && cartItems.length">
+                    <CartItem v-for="cartItem in cartItems" @deleteCartItem="deleteCartItem" :cartItem="cartItem" :key="cartItem.id" />
+                </template>
+                <template v-else>
+                    <div class="card mb-1">
+                        <div class="card-header checkout-item-header">
+                            There are no items in your cart.
+                        </div>
+                    </div>
+                </template>
+                <div>
                     <div class="row my-3 mx-1 g-0">
                         <div class="col">
                             Total
@@ -36,9 +45,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div v-if="0==cartItems.length">
-                There are no items in your cart.
+
             </div>
         </div>
       </div>
@@ -51,7 +58,7 @@ import { apiEndpoints, helpers } from '@/utils/hooks'
 import CartItem from '@/components/external/CartItem.vue'
 
 export default {
-    name: "Checkout",
+    name: "Cart",
     data: function () {
         return {
             cartItems: [],
@@ -110,6 +117,10 @@ export default {
             }).finally(() => {
                 vm.loading = false;
             });
+        },
+        deleteCartItem: function(cart_item_id) {
+            console.log("deleteCartItem = " + cart_item_id);
+            this.cartItems.splice(this.cartItems.findIndex(cartItem => cartItem.cart_item_id === cart_item_id), 1);
         }
     },
     created: function () {
