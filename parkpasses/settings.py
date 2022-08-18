@@ -271,6 +271,8 @@ GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
 template_title = "Park Passes"
 template_group = "parkswildlife"
 
+LEDGER_TEMPLATE = "bootstrap5"
+
 HOLIDAY_PASS = "HOLIDAY_PASS"
 ANNUAL_LOCAL_PASS = "ANNUAL_LOCAL_PASS"
 ALL_PARKS_PASS = "ALL_PARKS_PASS"
@@ -349,6 +351,7 @@ PARKPASSES_DISCOUNT_CODE_APPLIED_DESCRIPTION = "Discount Code Applied:"
 PARKPASSES_VOUCHER_CODE_REDEEMED_DESCRIPTION = "Voucher Code Redeemed:"
 
 PARKPASSES_ORACLE_CODE = "FN46V9L80"
+
 
 """ ==================== CKEDITOR CONFIGS ======================== """
 
