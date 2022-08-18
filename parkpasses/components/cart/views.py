@@ -1,14 +1,15 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 
 from parkpasses.components.cart.models import Cart, CartItem
+from parkpasses.components.orders.models import Order
 from parkpasses.forms import LoginForm
 from parkpasses.helpers import is_internal
 
 
-class CheckoutView(LoginRequiredMixin, ListView):
-    template_name = "parkpasses/checkout.html"
+class CartView(LoginRequiredMixin, ListView):
+    template_name = "parkpasses/cart.html"
     model = CartItem
 
     def get_queryset(self):
@@ -18,6 +19,18 @@ class CheckoutView(LoginRequiredMixin, ListView):
             return CartItem.objects.filter(cart=cart)
         else:
             return CartItem.objects.none()
+
+    def get(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            if is_internal(self.request):
+                return redirect("internal")
+        kwargs["form"] = LoginForm
+        return super().get(*args, **kwargs)
+
+
+class CheckoutSuccessView(LoginRequiredMixin, DetailView):
+    template_name = "parkpasses/checkout-success.html"
+    model = Order
 
     def get(self, *args, **kwargs):
         if self.request.user.is_authenticated:
