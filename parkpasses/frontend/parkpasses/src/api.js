@@ -75,8 +75,10 @@ module.exports = {
 
     /* ========================= Cart Items =============================================*/
 
-    checkout:                           '/api/cart/checkout/?format=json',
-
+    cart:                           '/api/cart/cart/?format=json',
+    deleteCartItem: function (id) {
+        return                          `/api/cart/cart-items/${id}/`;
+    },
 
     /* ========================= Pricing Windows ========================================*/
 
