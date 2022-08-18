@@ -8,7 +8,6 @@ from django.urls import reverse
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import create_basket_session, create_checkout_session
 from rest_framework import viewsets
-from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,7 +16,7 @@ from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.serializers import CartItemSerializer, CartSerializer
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.orders.serializers import OrderListItemSerializer
-from parkpasses.helpers import is_internal
+from parkpasses.helpers import is_customer, is_internal
 
 logger = logging.getLogger(__name__)
 
@@ -55,12 +54,27 @@ class CartItemViewSet(viewsets.ModelViewSet):
             return CartItem.objects.all()
         if self.request.session.get("cart_id", None):
             cart_id = self.request.session["cart_id"]
-            return Cart.objects.filter(id=cart_id)
+            return CartItem.objects.filter(cart_id=cart_id)
         else:
-            return Cart.objects.none()
+            return CartItem.objects.none()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # cart_item = instance.content_type.get_object_for_this_type(pk=instance.object_id)
+        logger.debug("cart_item = " + str(instance))
+        instance.delete_attached_object()  # will delete the voucher or pass attached to the cart item
+        return super().destroy(request, *args, **kwargs)
+
+    def has_object_permission(self, request, view, obj):
+        if is_internal(request):
+            return True
+        if is_customer(request):
+            if obj.cart.user == request.user.id:
+                return True
+        return False
 
 
-class CheckoutView(GenericAPIView):
+class CartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
@@ -79,6 +93,8 @@ class CheckoutView(GenericAPIView):
                 item.purchaser_email = purchaser.email
                 item.purchaser_first_name = purchaser.first_name
                 item.purchaser_last_name = purchaser.last_name
+                item["cart_item_id"] = cart_item.id
+                logger.debug("item = " + str(item))
                 objects.append(item)
             return Response(objects)
         else:
@@ -157,3 +173,5 @@ class SuccessView(APIView):
             serializer = OrderListItemSerializer(order)
 
             return Response(serializer.data)
+
+        return Response({"Nope, didn't work"})
