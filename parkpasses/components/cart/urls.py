@@ -3,8 +3,8 @@ from rest_framework import routers
 
 from parkpasses.components.cart.api import (
     CartItemViewSet,
+    CartView,
     CartViewSet,
-    CheckoutView,
     SuccessView,
 )
 
@@ -14,8 +14,12 @@ router.register(r"carts", CartViewSet, basename="carts")
 router.register(r"cart-items", CartItemViewSet, basename="cart-items")
 
 urlpatterns = [
-    url(r"checkout", CheckoutView.as_view()),
-    url(r"checkout-success", SuccessView.as_view(), name="checkout-success"),
+    url(
+        r"ledger-api-success-callback/(?P<uuid>.+)/",
+        SuccessView.as_view(),
+        name="ledger-api-success-callback",
+    ),
+    url(r"cart", CartView.as_view(), name="cart"),
 ]
 
 urlpatterns = router.urls + urlpatterns
