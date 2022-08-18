@@ -5,6 +5,10 @@ from parkpasses.components.cart.models import Cart, CartItem
 
 class CartItemInline(admin.TabularInline):
     model = CartItem
+    raw_id_fields = [
+        "voucher",
+        "discount_code",
+    ]
 
 
 class CartAdmin(admin.ModelAdmin):
