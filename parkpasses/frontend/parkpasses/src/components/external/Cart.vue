@@ -100,7 +100,7 @@ export default {
         fetchCartItems: function () {
             let vm = this;
             vm.loading = true;
-            fetch(apiEndpoints.checkout)
+            fetch(apiEndpoints.cart)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
