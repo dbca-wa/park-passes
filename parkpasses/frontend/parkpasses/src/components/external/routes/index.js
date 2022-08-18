@@ -3,7 +3,7 @@ import ShopHome from '@/components/external/ShopHome.vue'
 import FAQs from '@/components/external/FAQs.vue'
 import PurchaseVoucher from '@/components/external/PurchaseVoucher.vue'
 import PurchasePass from '@/components/external/PurchasePass.vue'
-import Checkout from '@/components/external/Checkout.vue'
+import Cart from '@/components/external/Cart.vue'
 
 export default {
     path: '/',
@@ -31,9 +31,9 @@ export default {
             name: 'purchase-pass'
         },
         {
-            path: '/checkout',
-            component: Checkout,
-            name: 'checkout'
+            path: '/cart',
+            component: Cart,
+            name: 'cart'
         },
     ]
 }
