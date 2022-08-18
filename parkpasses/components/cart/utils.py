@@ -49,12 +49,11 @@ class CartUtils:
         return {
             "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
             "fallback_url": request.build_absolute_uri("/"),
-            "return_url": request.build_absolute_uri(reverse("checkout-success"))
-            + "/"
-            + cart.uuid
-            + "/",
+            "return_url": request.build_absolute_uri(
+                reverse("checkout-success", kwargs={"uuid": cart.uuid})
+            ),
             "return_preload_url": request.build_absolute_uri(
-                "/api/cart/success/" + cart.uuid + "/" + str(cart.id) + "/"
+                reverse("ledger-api-success-callback", kwargs={"uuid": cart.uuid})
             ),
             "force_redirect": True,
             "proxy": True if internal else False,
@@ -65,6 +64,11 @@ class CartUtils:
 
     @classmethod
     def get_oracle_code(self):
+        # Check if the request user belongs to retailer group and if so assign their oracle code
+
+        # If not, assign the oracle code for the pass type
+
+        # If not then just fall back to the default code from settings.
         return settings.PARKPASSES_ORACLE_CODE
 
     @classmethod
