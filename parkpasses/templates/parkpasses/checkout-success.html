@@ -1,0 +1,11 @@
+{% extends 'parkpasses/base.html' %}
+
+{% load static %}
+
+{% block content %}
+    <div class="container-fluid" id="vue-root">
+        {% block vue-component %}
+        <div id="app"></div>
+        {% endblock %}
+    </div>
+{% endblock %}
