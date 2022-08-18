@@ -248,6 +248,12 @@ class CartItem(models.Model):
     def is_pass_purchase(self):
         return "parkpasses | pass" == str(self.content_type)
 
+    def delete_attached_object(self):
+        if self.is_voucher_purchase():
+            Voucher.objects.filter(id=self.object_id).delete()
+        elif self.is_pass_purchase():
+            Pass.objects.filter(id=self.object_id).delete()
+
     def get_price_before_discounts(self):
         """Does not take concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
