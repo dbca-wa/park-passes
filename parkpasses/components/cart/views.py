@@ -1,9 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-from django.views.generic import DetailView, ListView
+from django.views.generic import ListView
+from django.views.generic.base import TemplateView
 
 from parkpasses.components.cart.models import Cart, CartItem
-from parkpasses.components.orders.models import Order
 from parkpasses.forms import LoginForm
 from parkpasses.helpers import is_internal
 
@@ -13,8 +13,9 @@ class CartView(LoginRequiredMixin, ListView):
     model = CartItem
 
     def get_queryset(self):
-        if self.request.session.get("cart_id", None):
-            cart = Cart.objects.get(id=self.request.session["cart_id"])
+        cart_id = self.request.session.get("cart_id", None)
+        if cart_id and Cart.objects.filter(id=cart_id).exists():
+            cart = Cart.objects.get(id=cart_id)
             cart.set_user_for_cart_and_items(self.request.user.id)
             return CartItem.objects.filter(cart=cart)
         else:
@@ -28,11 +29,14 @@ class CartView(LoginRequiredMixin, ListView):
         return super().get(*args, **kwargs)
 
 
-class CheckoutSuccessView(LoginRequiredMixin, DetailView):
+class CheckoutSuccessView(LoginRequiredMixin, TemplateView):
     template_name = "parkpasses/checkout-success.html"
-    model = Order
 
     def get(self, *args, **kwargs):
+        self.request.session["cart_item_count"] = 0
+        cart_id = self.request.session.get("cart_id", None)
+        if cart_id:
+            del self.request.session["cart_id"]
         if self.request.user.is_authenticated:
             if is_internal(self.request):
                 return redirect("internal")
