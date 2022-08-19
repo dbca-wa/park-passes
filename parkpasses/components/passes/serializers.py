@@ -1,4 +1,3 @@
-from django.conf import settings
 from rest_framework import serializers
 
 from parkpasses.components.passes.models import (
@@ -80,11 +79,13 @@ class PassTemplateSerializer(serializers.ModelSerializer):
 
 
 class ExternalCreatePassSerializer(serializers.ModelSerializer):
-    sold_via = serializers.SerializerMethodField()
+    sold_via = serializers.PrimaryKeyRelatedField(
+        queryset=RetailerGroup.objects.all(),
+        default=RetailerGroup.get_dbca_retailer_group(),
+    )
 
-    def get_sold_via(self, obj):
-        return getattr(obj, "sold_via", settings.PARKPASSES_DEFAULT_SOLD_VIA)
-
+    # def get_sold_via(self, obj):
+    #    return getattr(obj, "sold_via", settings.PARKPASSES_DEFAULT_SOLD_VIA)
     class Meta:
         model = Pass
         fields = [
@@ -145,7 +146,6 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "processing_status",
             "datetime_created",
             "datetime_updated",
-            "sold_via",
         ]
 
     def get_price(self, obj):
