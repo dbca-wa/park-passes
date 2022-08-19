@@ -7,15 +7,15 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import create_basket_session, create_checkout_session
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.serializers import CartItemSerializer, CartSerializer
 from parkpasses.components.cart.utils import CartUtils
-from parkpasses.components.orders.serializers import OrderListItemSerializer
 from parkpasses.helpers import is_customer, is_internal
 
 logger = logging.getLogger(__name__)
@@ -33,9 +33,10 @@ class CartViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if is_internal(self.request):
             return Cart.objects.all()
-        if self.request.session.get("cart_id", None):
-            cart_id = self.request.session["cart_id"]
-            return Cart.objects.filter(id=cart_id)
+
+        cart_id = self.request.session.get("cart_id", None)
+        if cart_id and Cart.objects.filter(id=cart_id).exists():
+            return Cart.objects.get(id=cart_id)
         else:
             return Cart.objects.none()
 
@@ -52,17 +53,17 @@ class CartItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if is_internal(self.request):
             return CartItem.objects.all()
-        if self.request.session.get("cart_id", None):
-            cart_id = self.request.session["cart_id"]
+        cart_id = self.request.session.get("cart_id", None)
+        if cart_id and Cart.objects.filter(id=cart_id).exists():
             return CartItem.objects.filter(cart_id=cart_id)
         else:
             return CartItem.objects.none()
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        # cart_item = instance.content_type.get_object_for_this_type(pk=instance.object_id)
         logger.debug("cart_item = " + str(instance))
         instance.delete_attached_object()  # will delete the voucher or pass attached to the cart item
+        CartUtils.decrement_cart_item_count(request)
         return super().destroy(request, *args, **kwargs)
 
     def has_object_permission(self, request, view, obj):
@@ -78,11 +79,9 @@ class CartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        if request.session.get("cart_id", None):
-            cart_id = request.session["cart_id"]
+        cart_id = request.session.get("cart_id", None)
+        if cart_id and Cart.objects.filter(id=cart_id).exists():
             cart = Cart.objects.get(id=cart_id)
-            logger.debug("cart = " + str(cart))
-            logger.debug("cart.items = " + str(cart.items))
             purchaser = EmailUser.objects.get(id=cart.user)
             cart_items = CartItem.objects.filter(cart=cart)
             objects = []
@@ -94,7 +93,6 @@ class CartView(APIView):
                 item.purchaser_first_name = purchaser.first_name
                 item.purchaser_last_name = purchaser.last_name
                 item["cart_item_id"] = cart_item.id
-                logger.debug("item = " + str(item))
                 objects.append(item)
             return Response(objects)
         else:
@@ -124,8 +122,8 @@ class LedgerCheckoutView(APIView):
 
     # Todo: Change this to post once it's working.
     def get(self, request, format=None):
-        if self.request.session.get("cart_id", None):
-            cart_id = request.session["cart_id"]
+        cart_id = request.session.get("cart_id", None)
+        if cart_id and Cart.objects.filter(id=cart_id).exists():
             cart = Cart.objects.get(id=cart_id)
             (
                 ledger_order_lines,
@@ -147,31 +145,34 @@ class LedgerCheckoutView(APIView):
             create_checkout_session(request, checkout_parameters)
             return redirect(reverse("ledgergw-payment-details"))
 
-        # Todo send user to a page that says their cart has expired?
-        pass
+        return redirect(reverse("cart"))
 
 
 class SuccessView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+    throttle_classes = [AnonRateThrottle]
 
-    def get(self, request, format=None):
-        uuid = self.request.query_params.get("uuid")
-        cart_id = self.request.query_params.get("cart_id")
-        if uuid and cart_id:
+    def get(self, request, uuid, format=None):
+        logger.debug("\n\nParkPasses SuccessView get method called.\n\n")
+        if uuid:
             try:
-                cart = Cart.objects.get(id=cart_id, uuid=uuid)
+                cart = Cart.objects.get(uuid=uuid)
+                # Create the order and order lines, save them to the database and then delete the cart.
+                order, order_items = cart.create_order(True)
+                CartUtils.reset_cart_item_count(request)
+                CartUtils.remove_cart_id_from_session(request)
+                # this end-point is called by an unmonitored get request in ledger so there is no point having a
+                # a response body however we will return a status in case this is used on the ledger end in future
+                return Response(status=status.HTTP_204_NO_CONTENT)
             except ObjectDoesNotExist:
                 logger.warning(
-                    "Client has requested cart success view for cart with id:\
-                     {} and uuid: {}. No such cart exists.".format(
-                        cart_id, uuid
+                    "Client has requested cart success view for cart with  uuid: {}. No such cart exists.".format(
+                        uuid
                     )
                 )
-                return Response([])
-            # Create the order and order lines, save them to the database and then delete the cart.
-            order, order_items = cart.create_order(True)
-            serializer = OrderListItemSerializer(order)
 
-            return Response(serializer.data)
-
-        return Response({"Nope, didn't work"})
+        request.session["cart_item_count"] = 0
+        logger.debug("FFS =====================>")
+        # If there is no uuid to identify the cart then sent a bad request status back in case ledger can
+        # do something with this in future
+        return Response(status=status.HTTP_400_BAD_REQUEST)
