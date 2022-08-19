@@ -79,13 +79,6 @@ class PassTemplateSerializer(serializers.ModelSerializer):
 
 
 class ExternalCreatePassSerializer(serializers.ModelSerializer):
-    sold_via = serializers.PrimaryKeyRelatedField(
-        queryset=RetailerGroup.objects.all(),
-        default=RetailerGroup.get_dbca_retailer_group(),
-    )
-
-    # def get_sold_via(self, obj):
-    #    return getattr(obj, "sold_via", settings.PARKPASSES_DEFAULT_SOLD_VIA)
     class Meta:
         model = Pass
         fields = [
@@ -99,7 +92,6 @@ class ExternalCreatePassSerializer(serializers.ModelSerializer):
             "vehicle_registration_2",
             "park_group",
             "renew_automatically",
-            "sold_via",
             "datetime_start",
             "processing_status",
             "datetime_created",
