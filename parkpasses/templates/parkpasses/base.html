@@ -44,14 +44,72 @@
 
         {% endblock %}
 
-        {% block menu_items2_right %}
-        {% if not user.is_authenticated %}
-        <ul class="navbar-nav navbar-right">
+        {% block menu_items_right %}
+
+            {% if request.user.is_authenticated %}
+                {% if not request.user.is_staff %}
+                <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+                    <div class="btn-group mr-2" role="group" aria-label="First group">
+                        <a role="button" href="/cart" class="btn position-relative">
+                            <i class="fa-solid fa-cart-shopping fa-xl"></i>
+                            <span class="badge rounded-pill bg-danger">
+                                <span id="cart-item-count">{{ request.session.cart_item_count|default:"0" }}</span>
+                                <span class="visually-hidden">items in cart</span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
             <li class="nav-item">
-                <a href="/ssologin" class="btn licensing-btn-primary btn-sm">Login</a>
+
+                <a class="nav-link" href="#">
+                    Welcome
+                    <strong>
+                    {% if request.user.first_name %}
+                        {{ request.user.first_name }}
+                    {% elif request.user.last_name %}
+                        {{ request.user.last_name }}
+                    {% else %}
+                        {{ request.user.email }}
+                    {% endif %}
+                    </strong>
+                </a>
             </li>
-        </ul>
-        {% endif %}
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Options
+                </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown">
+            <span class='caret-above-menu hidden-sm' style=''><i class="bi bi-caret-up-fill fas ml-2"></i></span>
+            {% block menu_dropdown %}
+                {% block menu_extra_dropdown_top %}
+                {% endblock %}
+                {% if request.user.is_staff %}
+                    {% include 'webtemplate_dbca/includes/staff_menu.html' %}
+                    {% block menu_extra_dropdown_staff_top %}
+                        {% include 'webtemplate_dbca/includes/staff_menu_extras.html' %}
+                    {% endblock %}
+                {% endif %}
+                <li><hr class="dropdown-divider"></li>
+                {% block menu_extra_dropdown_bottom %}
+                {% include 'webtemplate_dbca/includes/menu_bottom.html' %}
+            {% endblock %}
+            <li><a class="dropdown-item" href="{% url 'logout' %}?next=/">Logout</a></li>
+            {% endblock %}
+            </ul>
+            </li>
+            {% endif %}
+        {% endblock %}
+
+        {% block menu_items2_right %}
+            {% if not user.is_authenticated %}
+                <ul class="navbar-nav navbar-right">
+                    <li class="nav-item">
+                        <a href="/ssologin" class="btn licensing-btn-primary btn-sm">Login</a>
+                    </li>
+                </ul>
+            {% endif %}
         {% endblock %}
 
         {% block menu_spacer %}
