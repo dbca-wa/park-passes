@@ -6,14 +6,12 @@ from django.http import FileResponse, Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django_filters import rest_framework as filters
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_datatables.django_filters.filters import GlobalFilter
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
@@ -40,7 +38,7 @@ from parkpasses.components.passes.serializers import (
     PassTemplateSerializer,
     PassTypeSerializer,
 )
-from parkpasses.components.retailers.models import RetailerGroupUser
+from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.helpers import belongs_to, is_customer, is_internal
 from parkpasses.permissions import IsInternal, IsRetailer
 
@@ -48,10 +46,6 @@ from parkpasses.permissions import IsInternal, IsRetailer
 
 
 logger = logging.getLogger(__name__)
-
-
-class GlobalCharFilter(GlobalFilter, filters.CharFilter):
-    pass
 
 
 class PassTypesDistinct(APIView):
@@ -252,6 +246,9 @@ class ExternalPassViewSet(
             park_pass = serializer.save(user=self.request.user.id)
         else:
             park_pass = serializer.save()
+
+        park_pass.sold_via = RetailerGroup.get_dbca_retailer_group()
+        park_pass.save()
 
         cart_id = self.request.session.get("cart_id", None)
         if cart_id and Cart.objects.filter(id=cart_id).exists():
