@@ -4,6 +4,7 @@ import FAQs from '@/components/external/FAQs.vue'
 import PurchaseVoucher from '@/components/external/PurchaseVoucher.vue'
 import PurchasePass from '@/components/external/PurchasePass.vue'
 import Cart from '@/components/external/Cart.vue'
+import CheckoutSuccess from '@/components/external/CheckoutSuccess.vue'
 
 export default {
     path: '/',
@@ -34,6 +35,11 @@ export default {
             path: '/cart',
             component: Cart,
             name: 'cart'
+        },
+        {
+            path: '/checkout-success/:uuid',
+            component: CheckoutSuccess,
+            name: 'checkout-success'
         },
     ]
 }
