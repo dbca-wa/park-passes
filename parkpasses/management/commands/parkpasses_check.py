@@ -6,6 +6,7 @@ Usage: ./manage.sh parkpasses_check
 
 If there are any critical issues, they will be printed to the console.
 """
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from parkpasses.components.passes.models import PassType, PassTypePricingWindow
@@ -17,7 +18,7 @@ class Command(BaseCommand):
 
     def check_DBCA_retailer_group(self):
         dbca_retailer_count = RetailerGroup.objects.filter(
-            name__icontains="DBCA"
+            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
         ).count()
         if 1 == dbca_retailer_count:
             self.stdout.write(
