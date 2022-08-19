@@ -7,7 +7,7 @@
         { 'opacity-25': activeItem && 1 != activeItem },
       ]"
     >
-      <img src="/media/gift-voucher.jpg" width="300" />
+      <img src="/media/gift-voucher.jpg" width="300" height="266" />
       <div class="more-information">More Information</div>
     </div>
 
@@ -25,7 +25,7 @@
         @click="purchasePass(passType.id, index)"
         :key="passType.id"
         >
-        <img :src="passType.image" width="300" />
+        <img :src="passType.image" width="300" height="150" />
         <div class="more-information">More Information</div>
         <div class="display-name">{{ passType.display_name }}</div>
         </div>
