@@ -4,6 +4,7 @@
 import json
 import logging
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import models
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -58,10 +59,10 @@ class RetailerGroup(models.Model):
         use the retailer group that is returned by this function.
         """
         dbca_retailer_count = RetailerGroup.objects.filter(
-            name__contains="DBCA"
+            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
         ).count()
         if 1 == dbca_retailer_count:
-            return RetailerGroup.objects.get(name__contains="DBCA")
+            return RetailerGroup.objects.get(name=settings.PARKPASSES_DEFAULT_SOLD_VIA)
         if 1 < dbca_retailer_count:
             logger.critical(
                 "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
