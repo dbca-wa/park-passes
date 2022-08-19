@@ -58,10 +58,10 @@ class RetailerGroup(models.Model):
         use the retailer group that is returned by this function.
         """
         dbca_retailer_count = RetailerGroup.objects.filter(
-            name__icontains="DBCA"
+            name__contains="DBCA"
         ).count()
         if 1 == dbca_retailer_count:
-            return RetailerGroup.objects.get(name____contains="DBCA")
+            return RetailerGroup.objects.get(name__contains="DBCA")
         if 1 < dbca_retailer_count:
             logger.critical(
                 "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
