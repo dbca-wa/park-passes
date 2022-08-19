@@ -808,7 +808,7 @@ export default {
                     return Promise.reject(error);
                 }
                 // Do something after adding the voucher to the database and the users cart
-                window.location.href = 'checkout/';
+                window.location.href = '/cart/';
             })
             .catch(error => {
                 this.systemErrorMessage = "ERROR: Please try again in an hour.";
