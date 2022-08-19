@@ -110,6 +110,7 @@ export default {
                 }
                 // Do something after adding the voucher to the database and the users cart
                 vm.cartItems = data
+                $("#cart-item-count").text(` ${vm.cartItems.length} `)
             })
             .catch(error => {
                 vm.systemErrorMessage = "ERROR: Please try again in an hour.";
@@ -121,6 +122,10 @@ export default {
         deleteCartItem: function(cart_item_id) {
             console.log("deleteCartItem = " + cart_item_id);
             this.cartItems.splice(this.cartItems.findIndex(cartItem => cartItem.cart_item_id === cart_item_id), 1);
+
+            if($("#cart-item-count").text().trim()>0){
+                $("#cart-item-count").text($("#cart-item-count").text() - 1)
+            }
         }
     },
     created: function () {
