@@ -19,6 +19,7 @@ from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
 from org_model_logs.utils import UserActionViewSet
 from parkpasses.components.cart.models import Cart, CartItem
+from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.passes.models import (
     Pass,
     PassTemplate,
@@ -39,7 +40,7 @@ from parkpasses.components.passes.serializers import (
     PassTemplateSerializer,
     PassTypeSerializer,
 )
-from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
+from parkpasses.components.retailers.models import RetailerGroupUser
 from parkpasses.helpers import belongs_to, is_customer, is_internal
 from parkpasses.permissions import IsInternal, IsRetailer
 
@@ -246,27 +247,28 @@ class ExternalPassViewSet(
             return ExternalPassSerializer
 
     def perform_create(self, serializer):
+        logger.debug("perform create -------------\n\n")
         if is_customer(self.request):
             park_pass = serializer.save(user=self.request.user.id)
         else:
             park_pass = serializer.save()
 
-        dbca_retailer_group = RetailerGroup.get_dbca_retailer_group()
-        park_pass.sold_via = dbca_retailer_group
-        park_pass.save()
-
-        if self.request.session.get("cart_id", None):
-            cart_id = self.request.session["cart_id"]
+        cart_id = self.request.session.get("cart_id", None)
+        if cart_id and Cart.objects.filter(id=cart_id).exists():
             cart = Cart.objects.get(id=cart_id)
         else:
             cart = Cart()
             cart.save()
             self.request.session["cart_id"] = cart.id
+
         content_type = ContentType.objects.get_for_model(park_pass)
         cart_item = CartItem(
             cart=cart, object_id=park_pass.id, content_type=content_type
         )
         cart_item.save()
+        if is_customer(self.request):
+            CartUtils.increment_cart_item_count(self.request)
+
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
         cart.datetime_last_added_to = timezone.now()
