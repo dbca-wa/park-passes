@@ -20,7 +20,7 @@ DISABLE_EMAIL = env("DISABLE_EMAIL", False)
 SHOW_TESTS_URL = env("SHOW_TESTS_URL", False)
 SHOW_DEBUG_TOOLBAR = env("SHOW_DEBUG_TOOLBAR", False)
 BUILD_TAG = env(
-    "BUILD_TAG", hashlib.md5(os.urandom(32)).hexdigest()
+    "BUILD_TAG", hashlib.sha256(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
 
 
