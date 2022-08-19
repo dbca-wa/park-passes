@@ -38,6 +38,7 @@ INSTALLED_APPS += [
     "org_model_documents",
     "org_model_logs",
     "parkpasses",
+    "parkpasses.components.retailers",
     "parkpasses.components.concessions",
     "parkpasses.components.main",
     "parkpasses.components.vouchers",
@@ -48,7 +49,6 @@ INSTALLED_APPS += [
     "parkpasses.components.orders",
     "parkpasses.components.users",
     "parkpasses.components.help",
-    "parkpasses.components.retailers",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -322,7 +322,10 @@ PARKPASSES_VALID_CART_CONTENT_TYPES = [
     "parkpasses | pass",
 ]
 
-PARKPASSES_DEFAULT_SOLD_VIA = "DBCA"
+""" ==================== DEFAULT DATA CONFIGS ======================== """
+
+PARKPASSES_DEFAULT_SOLD_VIA = "DBCA Website"
+
 
 DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")
 
