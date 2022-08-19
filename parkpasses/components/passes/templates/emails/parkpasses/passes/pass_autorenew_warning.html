@@ -1,0 +1,11 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{%  block content %}
+
+    {{first_name}} {{last_name}},
+
+    Your current {{pass_type}} is due to renew automatically on {{datetime_expiry}}.
+
+    If you do not want to renew your park pass, log in to your accoutn at {{url}} and cancel the automatic renewal of your park pass.
+
+{%  endblock %}

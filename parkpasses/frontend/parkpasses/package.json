@@ -1,0 +1,52 @@
+{
+  "name": "parkpasses",
+  "version": "1.0.0",
+  "description": "The Vue.js front-end for the Park Passes web application.",
+  "author": "Oak McIlwain <oak.mcilwain@dbca.wa.gov.au>",
+  "private": true,
+  "scripts": {
+    "build": "vue-cli-service build",
+    "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs",
+    "serve": "vue-cli-service serve"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^34.0.0",
+    "@ckeditor/ckeditor5-vue": "^4.0.0",
+    "@fortawesome/fontawesome-free": "^6.0.0",
+    "@vue/cli-service": "^5.0.4",
+    "babel-eslint": "^10.1.0",
+    "datatables.net-bs5": "^1.12.1",
+    "datatables.net-buttons-bs5": "^2.2.3",
+    "datatables.net-responsive-bs5": "^2.3.0",
+    "express": "^4.17.3",
+    "jquery": "^3.6.0",
+    "jquery-validation": "^1.19.3",
+    "jszip": "^3.9.1",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.3",
+    "moment-range": "^4.0.2",
+    "ol": "^6.3.1",
+    "pinia": "^2.0.17",
+    "select2": "^4.0.3",
+    "select2-bootstrap-5-theme": "^1.2.0",
+    "sweetalert2": "^11.4.10",
+    "uuid": "^8.3.2",
+    "vue": "^3.2.32",
+    "vue-router": "^4.0.14"
+  },
+  "engines": {
+    "node": ">= 4.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "sass": "^1.53.0",
+    "sass-loader": "^13.0.2",
+    "vls": "^0.7.6"
+  }
+}

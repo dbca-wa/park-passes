@@ -1,0 +1,54 @@
+
+.parks_bg_banner .col-lg-9 {
+    display: flex;
+    align-items: center;
+}
+.parks_bg_banner .col-lg-9 h1 {
+    font-size: 3em;
+}
+
+.licensing-btn-primary {
+    color:#fff;
+    background-color:#337ab7;
+}
+
+.licensing-btn-primary:hover {
+    color:#fff;
+    background-color:#286090;
+}
+
+.org-primary{
+    color:#337ab7;
+}
+
+.org-icon-primary {
+    color:#337ab7;
+}
+
+.org-icon-primary:hover {
+    color:#286090;
+}
+
+.org-error-message {
+    color:#dc3545;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+}
+
+.org-form-switch-primary:checked {
+    background-color: #337ab7;
+    border-color: #337ab7;
+}
+
+.org-badge-primary {
+    color: #fff;
+    background-color: #337ab7;
+}
+
+.fa-cart-shopping {
+    color:#337ab7;
+}
+
+.fa-cart-shopping:hover {
+    color:#286090;;
+}

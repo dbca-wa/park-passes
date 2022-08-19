@@ -1,0 +1,11 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{%  block content %}
+
+    {{first_name}} {{last_name}},
+
+    You have not yet provided your vehicle registration details for your park pass valid from {{datetime_start}}.
+
+    Log in to your account on {{url}} and enter the vehicle registration details for your park pass.
+
+{%  endblock %}

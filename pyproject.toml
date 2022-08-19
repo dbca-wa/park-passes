@@ -1,0 +1,68 @@
+[tool.poetry]
+name = "parkpasses"
+version = "1.0.0"
+description = "Park Passes"
+authors = ["DBCA OIM <asi@dbca.wa.gov.au>"]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Django = "3.2.13"
+django-confy = "1.0.4" # old
+dj-database-url = "0.5.0" # old
+django_countries = "7.3.2"
+django_cron = "0.5.1"
+django_reversion = "5.0.0"
+geojson = "2.5.0"
+python_dateutil = "2.8.2"
+pytz = "2019.3"
+reportlab = "3.5.34"
+requests = "2.24.0"
+setuptools = "45.2.0"
+six = "1.14.0"
+# git+https://github.com/xzzy/webtemplate.git#egg=webtemplate_dbca
+webtemplate_dbca = {git = "https://github.com/xzzy/webtemplate.git"}
+# git+https://github.com/dbca-wa/dbca-utils@1.1.1#egg=dbca-utils
+dbca-utils = {git = "https://github.com/dbca-wa/dbca-utils.git", rev = "1.1.1"}
+psycopg2-binary = "2.8.5"
+django-extensions = "3.1.5"
+# git+https://github.com/xzzy/ledger_api_client.git#egg=ledger_api_client
+ledger_api_client = {git = "https://github.com/dbca-wa/ledger_api_client.git"}
+whitenoise = "6.1.0"
+djangorestframework = "3.13.1"
+djangorestframework-gis = "1.0"
+openpyxl = "3.0.9"
+django-ckeditor = "6.4.0"
+django-widget-tweaks = "1.4.12"
+djangorestframework-datatables = "0.7.0"
+django-utils-six = "2.0" # old
+django-phonenumber-field = "6.1.0"
+phonenumbers = "8.12.48"
+babel = "2.10.1"
+django-dirtyfields = "1.8.1"
+pytest = "^7.1.2"
+coverage = "^6.4.1"
+django-coverage-plugin = "^2.0.3"
+mypy = "^0.961"
+pytest-sugar = "^0.9.4"
+pytest-django = "^4.5.2"
+django-debug-toolbar = "^3.4.0"
+qrcode = "^7.3.1"
+docxtpl = "^0.16.0"
+django-filter = "^22.1"
+django-redis = "^5.2.0"
+kolo = "^1.8.0"
+django-resized = "^1.0.1"
+drf-renderer-xlsx = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+ipython = "^8.3.0"
+ipdb = "^0.13.9"
+pylint = "2.13.8"
+flake8 = "4.0.1"
+autopep8 = "1.6.0"
+black = "22.3.0"
+
+[build-system]
+requires = ["poetry_core>=1.1.13"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,21 @@
+--- 0001_initial.py.upd	2021-12-14 06:36:05.897813569 +0800
++++ 0001_initial.py.upd2	2021-12-14 06:47:11.559595589 +0800
+@@ -27,13 +27,11 @@
+                     to='contenttypes.ContentType',
+                     verbose_name='content type',
+                 )),
+-                ('user', models.IntegerField(
+-                    verbose_name='user')),
+-                #('user', models.ForeignKey(
+-                #    to=settings.AUTH_USER_MODEL,
+-                #    on_delete=models.CASCADE,
+-                #    verbose_name='user',
+-                #)),
++                ('user', models.ForeignKey(
++                    to=settings.AUTH_USER_MODEL,
++                    on_delete=models.CASCADE,
++                    verbose_name='user',
++                )),
+             ],
+             options={
+                 'ordering': ['-action_time'],

@@ -1,13 +1,23 @@
 .settings/
 .env
+.venv/
+venv/
+venv2/
+node_modules/
+#cronjobs
+.ropeproject/
+parkpasses/cache/*
+.ropeproject/
 *.swo
 venv/
 venv*/
 node_modules/
 cronjobs
-mooring/cache/*
 tmp/
 csv*/
+*.csv
+*.xls*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -84,6 +94,7 @@ target/
 
 # media
 media/
+protected_media/
 spatial_data/
 
 # Database/fixture dumps
@@ -100,11 +111,7 @@ importo.py
 uwsgi*.ini
 *.djcache
 
-# front-end build static files
-park-passes/static/park-passes_vue/static/*
+# npm build files
+parkpasses/static/parkpasses_vue/
 
-# npm locks
-#*-lock.json
-
-park-passes/frontend/park-passes/tests_output*
-park-passes/static/park-passes_vue/static/*
+git_history_recent
