@@ -268,7 +268,12 @@ export default {
 
                 vm.discount_code_batch.valid_users.forEach(function(validUser){
                     console.log("validUser.display_name = " + validUser.display_name);
-                    var option = new Option(validUser.display_name, validUser.user, true, true);
+                    var option = new Option(
+                        helpers.escapeHtml(validUser.display_name),
+                        helpers.escapeHtml(validUser.user),
+                        true,
+                        true
+                    );
                     $(vm.$refs.validUsers).append(option);
                 });
                 $(vm.$refs.validUsers).trigger('change');
