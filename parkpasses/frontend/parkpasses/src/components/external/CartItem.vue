@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div v-if="cartItem.hasOwnProperty('pass_number')" class="card" :id="cartItem.cart_item_id">
+    <div v-if="cartItem.hasOwnProperty('pass_number')" class="card mb-1" :id="cartItem.cart_item_id">
         <div class="card-header checkout-item-header">
             <span class="item-type">Park Pass: {{cartItem.pass_number}}</span>
             <a class="accordian-header-note text-secondary" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show details</a>
@@ -36,15 +36,16 @@
         <div :id="'collapse' + $.vnode.key" class="collapse" aria-labelledby="headingOne" data-parent="#checkoutAccordion">
             <div class="card-body">
                 <table class="table">
-                    <tr><th>Voucher Code</th><td>{{cartItem.code}}</td></tr>
-                    <tr><th>Recipient Name</th><td>{{cartItem.recipient_name}}</td></tr>
-                    <tr><th>Recipient Email</th><td>{{cartItem.recipient_email}}</td></tr>
-                    <tr><th>Date to Email</th><td>{{formatDate(cartItem.datetime_to_email)}}</td></tr>
-                    <tr><th>Personal Message</th><td>{{cartItem.personal_message}}</td></tr>
-                    <tr><th>Your First Name</th><td>{{cartItem.purchaser.first_name}}</td></tr>
-                    <tr><th>Your Last Name</th><td>{{cartItem.purchaser.last_name}}</td></tr>
-                    <tr><th>Your Email</th><td>{{cartItem.purchaser.email}}</td></tr>
-                    <tr><th>Amount</th><td>${{cartItem.amount}}</td></tr>
+                    <tr><th>Pass Type</th><td>{{cartItem.pass_type}}</td></tr>
+                    <tr><th>Duration</th><td>{{cartItem.duration}}</td></tr>
+                    <tr><th>Pass Start Date</th><td>{{formatDate(cartItem.datetime_start)}}</td></tr>
+                    <tr><th>Pass Expiry Date</th><td>{{formatDate(cartItem.datetime_expiry)}}</td></tr>
+                    <tr v-if="cartItem.vehicle_registration_1"><th>Vehicle Registraion <span v-if="cartItem.vehicle_registration_2">1</span></th><td>{{cartItem.vehicle_registration_1}}</td></tr>
+                    <tr v-if="cartItem.vehicle_registration_2"><th>Vehicle Registraion <span v-if="cartItem.vehicle_registration_1">2</span></th><td>{{cartItem.vehicle_registration_2}}</td></tr>
+                    <tr><th>Your First Name</th><td>{{cartItem.first_name}}</td></tr>
+                    <tr><th>Your Last Name</th><td>{{cartItem.last_name}}</td></tr>
+                    <tr><th>Your Email</th><td>{{cartItem.email}}</td></tr>
+                    <tr><th>Price</th><td>${{cartItem.price}}</td></tr>
                 </table>
             </div>
         </div>
