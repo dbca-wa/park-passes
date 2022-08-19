@@ -415,7 +415,7 @@ class Pass(models.Model):
     )
     in_cart = models.BooleanField(null=False, blank=False, default=True)
     sold_via = models.ForeignKey(
-        RetailerGroup, on_delete=models.PROTECT, null=False, blank=False
+        RetailerGroup, on_delete=models.PROTECT, null=True, blank=True
     )
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)

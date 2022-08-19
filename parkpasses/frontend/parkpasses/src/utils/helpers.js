@@ -205,6 +205,13 @@ module.exports = {
     getDateFromDatetime(dateTime) {
         date = new Date(dateTime);
         return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
-    }
-
+    },
+    escapeHtml(unsafe){
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+     },
 };

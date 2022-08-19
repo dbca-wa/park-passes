@@ -20,7 +20,7 @@ DISABLE_EMAIL = env("DISABLE_EMAIL", False)
 SHOW_TESTS_URL = env("SHOW_TESTS_URL", False)
 SHOW_DEBUG_TOOLBAR = env("SHOW_DEBUG_TOOLBAR", False)
 BUILD_TAG = env(
-    "BUILD_TAG", hashlib.md5(os.urandom(32)).hexdigest()
+    "BUILD_TAG", hashlib.sha256(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
 
 
@@ -38,6 +38,7 @@ INSTALLED_APPS += [
     "org_model_documents",
     "org_model_logs",
     "parkpasses",
+    "parkpasses.components.retailers",
     "parkpasses.components.concessions",
     "parkpasses.components.main",
     "parkpasses.components.vouchers",
@@ -48,7 +49,6 @@ INSTALLED_APPS += [
     "parkpasses.components.orders",
     "parkpasses.components.users",
     "parkpasses.components.help",
-    "parkpasses.components.retailers",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -322,7 +322,10 @@ PARKPASSES_VALID_CART_CONTENT_TYPES = [
     "parkpasses | pass",
 ]
 
-PARKPASSES_DEFAULT_SOLD_VIA = "DBCA"
+""" ==================== DEFAULT DATA CONFIGS ======================== """
+
+PARKPASSES_DEFAULT_SOLD_VIA = "DBCA Website"
+
 
 DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")
 

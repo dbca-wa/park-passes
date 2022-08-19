@@ -379,7 +379,7 @@ export default {
                     let validUsers = '';
                     if (full.valid_users.length) {
                         full.valid_users.forEach(function (validUser, index) {
-                            validUsers += '<span class="badge org-badge-primary">' + validUser.email + '</span>&nbsp;';
+                            validUsers += '<span class="badge org-badge-primary">' + validUser.display_name + '</span>&nbsp;';
 
                         });
                     } else {
