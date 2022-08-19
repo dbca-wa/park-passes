@@ -194,7 +194,7 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                window.location.href = 'cart/';
+                window.location.href = '/cart/';
             })
             .catch(error => {
                 this.systemErrorMessage = "ERROR: Please try again in an hour.";
