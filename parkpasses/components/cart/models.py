@@ -235,7 +235,6 @@ class CartItem(models.Model):
             )
             raise ValueError("A Cart Item can only contain a Voucher or a Pass")
         datetime_item_added = timezone.now()
-        logger.debug("self.cart.items = " + str(self.cart.items))
         if not self.cart.datetime_first_added_to and not self.cart.items.count():
             self.cart.datetime_first_added_to = datetime_item_added
         self.cart.datetime_last_added_to = datetime_item_added
