@@ -1,5 +1,3 @@
-import json
-
 import pytz
 import requests
 from django.conf import settings
@@ -31,23 +29,6 @@ def handle_validation_error(e):
             raise serializers.ValidationError(e.message)
         else:
             raise
-
-
-def get_department_user(email):
-    try:
-        res = requests.get(
-            f"{settings.CMS_URL}/api/users?email={email}",
-            auth=(settings.LEDGER_USER, settings.LEDGER_PASS),
-            verify=False,
-        )
-        res.raise_for_status()
-        data = json.loads(res.content).get("objects")
-        if len(data) > 0:
-            return data[0]
-        else:
-            return None
-    except Exception:
-        raise
 
 
 def to_local_tz(_date):
