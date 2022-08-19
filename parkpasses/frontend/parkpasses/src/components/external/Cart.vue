@@ -41,7 +41,7 @@
                     </div>
                     <div v-if="totalPrice > 0" class="d-flex flex-row-reverse">
                         <div class="col-auto align-right">
-                            <button @click="checkoutCart" class="btn licensing-btn-primary px-5" type="button">Pay</button>
+                            <button @click="checkoutCart" class="btn licensing-btn-primary px-5" type="button">Checkout</button>
                         </div>
                     </div>
                 </div>
