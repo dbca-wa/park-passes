@@ -22,8 +22,6 @@ from django.core.exceptions import (
 )
 from django.core.files.storage import FileSystemStorage
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils import timezone
 from django_resized import ResizedImageField
 
@@ -518,18 +516,12 @@ class Pass(models.Model):
         self.set_processing_status()
 
         """ Consider: Running generate_park_pass_pdf() with a message queue would be much better """
-        self.generate_park_pass_pdf()
         super().save(*args, **kwargs)
-
-
-# Update the pass_number field after saving
-@receiver(post_save, sender=Pass, dispatch_uid="update_pass_number")
-def update_pass_number(sender, instance, **kwargs):
-    if not instance.pass_number:
-        pass_number = f"PP{instance.pk:06d}"
-        logger.debug("pass_number = " + pass_number)
-        instance.pass_number = pass_number
-        instance.save()
+        self.generate_park_pass_pdf()
+        if not self.pass_number:
+            self.pass_number = f"PP{self.pk:06d}"
+        logger.debug("pass_number = " + self.pass_number)
+        super().save(force_update=True)
 
 
 class PassCancellationManager(models.Manager):
