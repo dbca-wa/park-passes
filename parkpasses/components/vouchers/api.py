@@ -25,6 +25,8 @@ from parkpasses.components.vouchers.serializers import (
 from parkpasses.helpers import is_customer, is_internal
 from parkpasses.permissions import IsInternal
 
+from ..cart.utils import CartUtils
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,8 +53,8 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
             voucher = serializer.save(purchaser=self.request.user.id)
         else:
             voucher = serializer.save()
-        if self.request.session.get("cart_id", None):
-            cart_id = self.request.session["cart_id"]
+        cart_id = self.request.session.get("cart_id", None)
+        if cart_id and Cart.objects.filter(id=cart_id).exists():
             cart = Cart.objects.get(id=cart_id)
         else:
             cart = Cart()
@@ -61,6 +63,8 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
         content_type = ContentType.objects.get_for_model(voucher)
         cart_item = CartItem(cart=cart, object_id=voucher.id, content_type=content_type)
         cart_item.save()
+        if is_customer(self.request):
+            CartUtils.increment_cart_item_count(self.request)
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
         cart.datetime_last_added_to = timezone.now()
