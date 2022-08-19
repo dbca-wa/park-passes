@@ -38,6 +38,8 @@ class PassAdmin(admin.ModelAdmin):
         "datetime_start",
         "datetime_expiry",
         "renew_automatically",
+        "datetime_created",
+        "datetime_updated",
     ]
     list_display = (
         "pass_number",
@@ -59,9 +61,11 @@ class PassAdmin(admin.ModelAdmin):
         "last_name",
         "email",
         "datetime_expiry",
+        "datetime_created",
+        "datetime_updated",
     ]
     ordering = [
-        "datetime_created",
+        "-id",
     ]
     inlines = [
         PassCancellationInline,
