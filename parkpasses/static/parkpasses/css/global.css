@@ -44,3 +44,11 @@
     color: #fff;
     background-color: #337ab7;
 }
+
+.fa-cart-shopping {
+    color:#337ab7;
+}
+
+.fa-cart-shopping:hover {
+    color:#286090;;
+}
