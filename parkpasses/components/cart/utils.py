@@ -99,7 +99,25 @@ class CartUtils:
         return f"{settings.PARKPASSES_VOUCHER_CODE_REDEEMED_DESCRIPTION} {code}"
 
     @classmethod
-    def checkout(request):
-        # Ipliment checkout function
-        # https://github.com/dbca-wa/parkstay_bs/blob/881019cc4df996ebeca3629d45cccbcb91704205/parkstay/utils.py#L1676
-        pass
+    def increment_cart_item_count(self, request):
+        cart_item_count = request.session.get("cart_item_count", None)
+        if cart_item_count:
+            request.session["cart_item_count"] = cart_item_count + 1
+        else:
+            request.session["cart_item_count"] = 1
+
+    @classmethod
+    def decrement_cart_item_count(self, request):
+        cart_item_count = request.session.get("cart_item_count", None)
+        if cart_item_count:
+            request.session["cart_item_count"] = cart_item_count - 1
+        else:
+            request.session["cart_item_count"] = 0
+
+    @classmethod
+    def reset_cart_item_count(self, request):
+        request.session["cart_item_count"] = 0
+
+    @classmethod
+    def remove_cart_id_from_session(self, request):
+        del request.session["cart_id"]
