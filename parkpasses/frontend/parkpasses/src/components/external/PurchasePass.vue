@@ -203,7 +203,7 @@
                                 <label for="startDate" class="col-form-label">Start Date for Pass</label>
                             </div>
                             <div class="col-auto">
-                                <input type="date" id="startDate" name="startDate" v-model="pass.datetime_start" class="form-control" required="required" :min="startDate()">
+                                <input type="date" id="startDate" name="startDate" v-model="pass.datetime_start_formatted" class="form-control" required="required" :min="startDate()">
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
@@ -292,10 +292,10 @@
                                 Duration
                             </div>
                             <div class="col-auto">
-                                <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option.id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
+                                <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option_id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
                                     <option v-for="passOption in passOptions" :value="passOption.id" :key="passOption.id">{{passOption.name}}</option>
                                 </select>
-                                <span v-else>{{pass.option.name}}</span>
+                                <span v-else>{{pass.option_name}}</span>
                             </div>
                         </div>
                         <div v-if="totalPrice" class="row g-1 align-top mb-2">
@@ -335,7 +335,12 @@
                                 &nbsp;
                             </div>
                             <div class="col-auto">
-                                <button class="btn licensing-btn-primary px-5" type="submit">Next</button>
+                                <button v-if="!isLoading" class="btn licensing-btn-primary px-5" type="submit">Next</button>
+                                <button v-else class="btn licensing-btn-primary px-5">
+                                    <div class="spinner-border text-light" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -345,9 +350,7 @@
 </template>
 
 <script>
-import { apiEndpoints } from '@/utils/hooks'
-import { constants } from '@/utils/hooks'
-import { helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import { useStore } from '@/stores/state'
 
 export default {
@@ -366,7 +369,7 @@ export default {
                 email: '',
                 confirmEmail: '',
                 concession_type: 0,
-                datetime_start: this.startDate(),
+                datetime_start_formatted: this.startDate(),
                 discount_code: '',
                 voucher_code: '',
                 voucher_pin: '',
@@ -402,6 +405,8 @@ export default {
             voucherPinError: '',
             systemErrorMessage: null,
             noParkForPostcodeError: '',
+
+            isLoading: false,
         };
     },
     components: {
@@ -524,7 +529,8 @@ export default {
                 }
                 if(data.results.length > 0) {
                     vm.passOptions = data.results
-                    vm.pass.option = Object.assign({}, vm.passOptions[0]);
+                    vm.pass.option_id = vm.passOptions[0].id;
+                    vm.pass.option_name = vm.passOptions[0].name;
                     vm.passPrice = vm.passOptions[0].price
                 } else {
                     this.systemErrorMessage = constants.ERRORS.CRITICAL;
@@ -789,11 +795,13 @@ export default {
         },
         submitForm: function() {
             let vm = this;
+            vm.isLoading = true;
             vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
-            let start_date = new Date(vm.pass.datetime_start)
+            let start_date = new Date(vm.pass.datetime_start_formatted)
             vm.pass.datetime_start = start_date.toISOString();
             console.log('vm.pass.datetime_start = ' + vm.pass.datetime_start);
-            vm.pass.option = vm.pass.option.id;
+            console.log('vm.pass.option = ' + vm.pass.option);
+            vm.pass.option = vm.pass.option_id;
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
