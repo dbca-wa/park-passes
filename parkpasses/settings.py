@@ -100,8 +100,8 @@ TEMPLATES[0]["DIRS"].append(os.path.join(BASE_DIR, "parkpasses", "templates"))
 TEMPLATES[0]["DIRS"].append(
     os.path.join(BASE_DIR, "parkpasses", "components", "emails", "templates")
 )
-
-if DEBUG:
+USE_DUMMY_CACHE = env("USE_DUMMY_CACHE", False)
+if USE_DUMMY_CACHE:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.dummy.DummyCache",
