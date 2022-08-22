@@ -84,11 +84,6 @@ class PassAdmin(admin.ModelAdmin):
                     self.fields.insert(7, "park_group")
         return self.fields
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj:  # Editing
-            return self.readonly_fields
-        return ()
-
     def park_pass_pdf_secure(self, instance):
         value_link = (
             f"/api/passes/internal/passes/{instance.id}/retrieve-park-pass-pdf/"
