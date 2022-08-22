@@ -518,6 +518,11 @@ class Pass(models.Model):
         )
         self.set_processing_status()
 
+        email_user = self.email_user
+        self.first_name = email_user.first_name
+        self.last_name = email_user.last_name
+        self.email = email_user.email
+
         """ Consider: Running generate_park_pass_pdf() with a message queue would be much better """
         super().save(*args, **kwargs)
         self.generate_park_pass_pdf()
