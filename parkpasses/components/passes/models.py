@@ -404,7 +404,7 @@ class Pass(models.Model):
     park_group = models.ForeignKey(
         ParkGroup, on_delete=models.PROTECT, null=True, blank=True
     )
-    datetime_start = models.DateTimeField(null=False, default=False)
+    datetime_start = models.DateTimeField(null=False, blank=False)
     datetime_expiry = models.DateTimeField(null=False, blank=False)
     renew_automatically = models.BooleanField(null=False, blank=False, default=False)
     prevent_further_vehicle_updates = models.BooleanField(
@@ -517,6 +517,11 @@ class Pass(models.Model):
             days=self.option.duration
         )
         self.set_processing_status()
+
+        email_user = self.email_user
+        self.first_name = email_user.first_name
+        self.last_name = email_user.last_name
+        self.email = email_user.email
 
         """ Consider: Running generate_park_pass_pdf() with a message queue would be much better """
         super().save(*args, **kwargs)

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class RetailerGroup(models.Model):
     name = models.CharField(max_length=150, unique=True)
-    oracle_code = models.CharField(max_length=50, null=True, blank=True)
+    oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
 
     class Meta:
         app_label = "parkpasses"

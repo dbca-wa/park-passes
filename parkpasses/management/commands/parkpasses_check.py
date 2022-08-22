@@ -22,19 +22,22 @@ class Command(BaseCommand):
         ).count()
         if 1 == dbca_retailer_count:
             self.stdout.write(
-                self.style.SUCCESS("SUCCESS: One DBCA Retailer Group Exists")
+                self.style.SUCCESS(
+                    "SUCCESS: One DBCA Retailer Group Exists where name = '{}'"
+                ).format(settings.PARKPASSES_DEFAULT_SOLD_VIA)
             )
             return 0
         if 1 < dbca_retailer_count:
             self.stdout.write(
                 self.style.ERROR(
-                    "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
+                    f"CRITICAL: There is more than one retailer group whose name = "
+                    f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
                 )
             )
         if 0 == dbca_retailer_count:
             self.stdout.write(
                 self.style.ERROR(
-                    "CRITICAL: There is no retailer group whose name contains 'DBCA'"
+                    f"CRITICAL: There is no retailer group whose name = '{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
                 )
             )
         return 1
