@@ -275,6 +275,9 @@ class PassTypePricingWindowOption(models.Model):
                 )
                 .count()
             )
+            logger.debug(
+                "current_pricing_window_count = " + str(current_pricing_window_count)
+            )
             # If there are none just get the default pricing window
             if 0 == current_pricing_window_count:
                 pricing_window = PassTypePricingWindow.objects.get(
@@ -294,16 +297,16 @@ class PassTypePricingWindowOption(models.Model):
                 # started the most recently And log a warning so that admins can be alerted to this.
                 # Validation shouldn't allow this sitation to occur but ... just in case.
                 logger.warning(
-                    f"There are more than one currently valid pricing windows for Pass Type: {pass_type}"
+                    f"WARNING: There are more than one currently valid pricing windows for Pass Type: {pass_type}"
                 )
                 pricing_window = (
-                    PassTypePricingWindow.objects.exclude(date_expiry__isnull=False)
+                    PassTypePricingWindow.objects.exclude(date_expiry__isnull=True)
                     .filter(
                         pass_type=pass_type,
                         date_start__lte=timezone.now(),
                         date_expiry__gte=timezone.now(),
                     )
-                    .order_by("datetime_start")
+                    .order_by("date_start")
                     .last()
                 )
 
