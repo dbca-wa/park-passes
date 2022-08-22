@@ -8,6 +8,9 @@ class HelpTextAdmin(admin.ModelAdmin):
     list_display = ("label", "version")
 
 
+admin.site.register(HelpText, HelpTextAdmin)
+
+
 class FAQAdmin(admin.ModelAdmin):
     model = FAQ
     list_display = ("question", "display_order")
@@ -15,5 +18,4 @@ class FAQAdmin(admin.ModelAdmin):
     ordering = ["display_order"]
 
 
-admin.site.register(HelpText, HelpTextAdmin)
 admin.site.register(FAQ, FAQAdmin)
