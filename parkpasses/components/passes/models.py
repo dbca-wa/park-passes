@@ -525,7 +525,8 @@ class Pass(models.Model):
 
         """ Consider: Running generate_park_pass_pdf() with a message queue would be much better """
         super().save(*args, **kwargs)
-        self.generate_park_pass_pdf()
+        if not self.in_cart:
+            self.generate_park_pass_pdf()
         if not self.pass_number:
             self.pass_number = f"PP{self.pk:06d}"
         logger.debug("pass_number = " + self.pass_number)
