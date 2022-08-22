@@ -404,7 +404,7 @@ class Pass(models.Model):
     park_group = models.ForeignKey(
         ParkGroup, on_delete=models.PROTECT, null=True, blank=True
     )
-    datetime_start = models.DateTimeField(null=False, default=False)
+    datetime_start = models.DateTimeField(null=False, blank=False)
     datetime_expiry = models.DateTimeField(null=False, blank=False)
     renew_automatically = models.BooleanField(null=False, blank=False, default=False)
     prevent_further_vehicle_updates = models.BooleanField(
