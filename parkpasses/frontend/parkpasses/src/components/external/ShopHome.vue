@@ -52,41 +52,36 @@ export default {
         purchaseVoucher: function () {
             this.passTypeId = 0;
             console.log('this.passTypeId = ' + this.passTypeId)
+            this.$router.push({ name:'purchase-voucher' });
             this.showHomeContent = false;
             this.showPurchasePass = false;
             this.showPurchaseVoucher = true;
         },
         purchasePass: function (passTypeId) {
             this.passTypeId = passTypeId;
+            this.$router.push({ name:'purchase-pass', params: { passTypeId: this.passTypeId } });
             this.showHomeContent = false;
             this.showPurchaseVoucher = false;
             this.showPurchasePass = true;
         },
         redirectToFAQ: function() {
-            window.location.href = 'faq/'
+            window.location.href = '/faq/'
         },
         redirectToHelp: function() {
-            window.location.href = 'help/'
+            window.location.href = '/help/'
         }
     },
-    mounted: function () {
-
-    }
+    created: function() {
+        if('purchase-voucher'==this.$route.name){
+            this.showHomeContent = false;
+            this.showPurchasePass = false;
+            this.showPurchaseVoucher = true;
+        } else if ('purchase-pass'==this.$route.name) {
+            this.passTypeId = this.$route.params.passTypeId;
+            this.showHomeContent = false;
+            this.showPurchaseVoucher = false;
+            this.showPurchasePass = true;
+        }
+    },
 };
 </script>
-
-<style scoped>
-.card-text ul {
-  margin:10px 0 0 0;
-  font-size:.9em;
-}
-
-.card {
-  opacity: 1;
-}
-
-.card:hover {
-  cursor: pointer;
-  opacity: 0.8;
-}
-</style>
