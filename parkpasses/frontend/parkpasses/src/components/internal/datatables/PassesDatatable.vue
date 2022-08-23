@@ -396,7 +396,7 @@ export default {
                 serverSide: true,
                 searching: true,
                 ajax: {
-                    "url": apiEndpoints.passesPaginatedList + '?format=datatables',
+                    "url": apiEndpoints.passesList + '?format=datatables',
                     "dataSrc": 'data',
 
                     // adding extra GET params for Custom filtering
