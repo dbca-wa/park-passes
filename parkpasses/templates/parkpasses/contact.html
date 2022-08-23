@@ -2,14 +2,8 @@
 
 {% load utils %}
 
-{% load static %}
-
 {% system_name as system_name %}
 {% support_email as support_email %}
-
-{% block extra_css %}
-    <link type="text/css" href="{% static 'wl/css/index.css' %}" rel="stylesheet">
-{% endblock %}
 
 {% block left_menu_items %}
     <li><a  href="{% url 'ds_contact' %}">Contact Us</a></li>
