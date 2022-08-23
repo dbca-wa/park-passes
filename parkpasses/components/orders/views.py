@@ -1,3 +1,5 @@
-# from django.shortcuts import render
+from django.views.generic.base import TemplateView
 
-# Create your views here.
+
+class ExternalOrdersView(TemplateView):
+    template_name = "parkpasses/your-orders.html"

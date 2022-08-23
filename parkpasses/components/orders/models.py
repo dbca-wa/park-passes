@@ -4,6 +4,7 @@
 import logging
 
 from django.db import models
+from django.db.models import Sum
 
 from parkpasses.ledger_api_utils import retrieve_email_user
 
@@ -18,7 +19,10 @@ class OrderManager(models.Manager):
 class Order(models.Model):
     """A class to represent an order"""
 
+    objects = OrderManager()
+
     order_number = models.CharField(unique=True, max_length=50, null=True, blank=True)
+    invoice_reference = models.CharField(max_length=50, unique=True, null=True)
     user = models.IntegerField(null=False, blank=False)  # EmailUserRO
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
 
@@ -33,6 +37,12 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order for user: {self.user} (Created: {self.datetime_created})"
+
+    @property
+    def total(self):
+        logger.debug(" -- total --")
+        logger.debug(str(self.items.all()))
+        return self.items.all().aggregate(Sum("amount"))["amount__sum"]
 
     @property
     def email_user(self):
