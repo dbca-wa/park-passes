@@ -67,6 +67,14 @@ class ParkPassesRoutingView(TemplateView):
         return super().get(*args, **kwargs)
 
 
+class ParkPassesPurchaseVoucherView(TemplateView):
+    template_name = "parkpasses/index.html"
+
+
+class ParkPassesPurchasePassView(TemplateView):
+    template_name = "parkpasses/index.html"
+
+
 class ParkPassesContactView(TemplateView):
     template_name = "parkpasses/contact.html"
 
