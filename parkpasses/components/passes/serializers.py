@@ -90,7 +90,7 @@ class ExternalCreatePassSerializer(serializers.ModelSerializer):
             "email",
             "vehicle_registration_1",
             "vehicle_registration_2",
-            "park_group",
+            "park_group_id",
             "renew_automatically",
             "datetime_start",
             "processing_status",
@@ -100,6 +100,9 @@ class ExternalCreatePassSerializer(serializers.ModelSerializer):
 
 
 class ExternalPassSerializer(serializers.ModelSerializer):
+    processing_status_display_name = serializers.CharField(
+        source="get_processing_status_display", read_only=True
+    )
     price = serializers.SerializerMethodField()
     duration = serializers.SerializerMethodField()
     pass_type = serializers.SerializerMethodField()
@@ -119,11 +122,12 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "vehicle_registration_1",
             "vehicle_registration_2",
             "park_group",
+            "park_pass_pdf",
             "datetime_start",
             "datetime_expiry",
             "renew_automatically",
             "processing_status",
-            "processing_status",
+            "processing_status_display_name",
             "datetime_created",
             "datetime_updated",
         ]
@@ -136,6 +140,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "datetime_expiry",
             "park_pass_pdf",
             "processing_status",
+            "processing_status_display_name",
             "datetime_created",
             "datetime_updated",
         ]
