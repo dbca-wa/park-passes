@@ -149,7 +149,7 @@
                                 <label for="parkGroup" class="col-form-label">Park Group</label>
                             </div>
                             <div class="col-auto">
-                                <select v-if="parkGroups.length>1" @change="updateParkGroup" v-model="pass.park_group.id" ref="parkGroup" id="parkGroup" name="parkGroup" class="form-select" aria-label="Park Group" required="required">
+                                <select v-if="parkGroups.length>1" @change="updateParkGroup" v-model="pass.park_group_id" ref="parkGroup" id="parkGroup" name="parkGroup" class="form-select" aria-label="Park Group" required="required">
                                     <option v-for="parkGroup in parkGroups" :value="parkGroup.id" :key="parkGroup.id">{{parkGroup.name}}</option>
                                 </select>
                                 <span v-else>{{pass.park_group.name}}</span>
@@ -357,7 +357,7 @@ export default {
     name: "PurchasePass",
     props: {
         passTypeId: {
-            type: Number
+            type: [Number, String]
         }
     },
     data: function () {
@@ -374,7 +374,8 @@ export default {
                 voucher_code: '',
                 voucher_pin: '',
                 state: 'WA',
-                park_group: null
+                park_group: null,
+                park_group_id: null,
             },
             passType: null,
             passOptions: null,
@@ -558,6 +559,7 @@ export default {
                     vm.parkGroups = data.results
                     console.log(vm.parkGroups);
                     vm.pass.park_group = Object.assign({}, vm.parkGroups[0]);
+                    vm.pass.park_group_id = vm.pass.park_group.id;
                     vm.$nextTick( function() {
                         if(vm.parkGroups.length>1){
                             vm.$refs.parkGroup.focus();
@@ -799,8 +801,12 @@ export default {
             vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
             let start_date = new Date(vm.pass.datetime_start_formatted)
             vm.pass.datetime_start = start_date.toISOString();
+            //if(vm.pass.park_group_id){
+            //   vm.pass.park_group = vm.pass.park_group_id
+            //}
             console.log('vm.pass.datetime_start = ' + vm.pass.datetime_start);
             console.log('vm.pass.option = ' + vm.pass.option);
+            console.log('vm.pass.park_group = ' + vm.pass.park_group);
             vm.pass.option = vm.pass.option_id;
             const requestOptions = {
                 method: "POST",
@@ -816,7 +822,8 @@ export default {
                     return Promise.reject(error);
                 }
                 // Do something after adding the voucher to the database and the users cart
-                window.location.href = '/cart/';
+                //window.location.href = '/cart/';
+                vm.$router.push({ path: '/cart/'});
             })
             .catch(error => {
                 this.systemErrorMessage = "ERROR: Please try again in an hour.";
