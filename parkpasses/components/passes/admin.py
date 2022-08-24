@@ -32,6 +32,7 @@ class PassAdmin(admin.ModelAdmin):
         "email",
         "option",
         "park_group",
+        "postcode",
         "vehicle_registration_1",
         "vehicle_registration_2",
         "prevent_further_vehicle_updates",
