@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.models import (
     Pass,
     PassCancellation,
@@ -78,7 +79,7 @@ class PassTemplateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ExternalCreatePassSerializer(serializers.ModelSerializer):
+class ExternalCreateHolidayPassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pass
         fields = [
@@ -90,7 +91,112 @@ class ExternalCreatePassSerializer(serializers.ModelSerializer):
             "email",
             "vehicle_registration_1",
             "vehicle_registration_2",
-            "park_group_id",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+
+class ExternalCreateAnnualLocalPassSerializer(serializers.ModelSerializer):
+    park_group = serializers.PrimaryKeyRelatedField(
+        queryset=ParkGroup.objects.all(), many=False
+    )
+
+    class Meta:
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "park_group",
+            "postcode",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+
+class ExternalCreateAllParksPassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+
+class ExternalCreateGoldStarPassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+
+class ExternalCreateDayEntryPassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+
+class ExternalCreatePinjarOffRoadPassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
             "renew_automatically",
             "datetime_start",
             "processing_status",
@@ -106,6 +212,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     duration = serializers.SerializerMethodField()
     pass_type = serializers.SerializerMethodField()
+    park_group = serializers.CharField()
 
     class Meta:
         model = Pass
