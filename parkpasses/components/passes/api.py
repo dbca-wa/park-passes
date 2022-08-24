@@ -18,6 +18,7 @@ from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from org_model_logs.utils import UserActionViewSet
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
+from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
 from parkpasses.components.passes.models import (
     Pass,
     PassTemplate,
@@ -26,7 +27,12 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.passes.serializers import (
-    ExternalCreatePassSerializer,
+    ExternalCreateAllParksPassSerializer,
+    ExternalCreateAnnualLocalPassSerializer,
+    ExternalCreateDayEntryPassSerializer,
+    ExternalCreateGoldStarPassSerializer,
+    ExternalCreateHolidayPassSerializer,
+    ExternalCreatePinjarOffRoadPassSerializer,
     ExternalPassSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
@@ -236,12 +242,34 @@ class ExternalPassViewSet(
 
     def get_serializer_class(self):
         if "create" == self.action:
-            return ExternalCreatePassSerializer
-        else:
-            return ExternalPassSerializer
+            if "pass_type_name" in self.request.data:
+                pass_type_name = self.request.data["pass_type_name"]
+                if pass_type_name:
+                    if settings.HOLIDAY_PASS == pass_type_name:
+                        return ExternalCreateHolidayPassSerializer
+                    if settings.ANNUAL_LOCAL_PASS == pass_type_name:
+                        return ExternalCreateAnnualLocalPassSerializer
+                    if settings.ALL_PARKS == pass_type_name:
+                        return ExternalCreateAllParksPassSerializer
+                    if settings.GOLD_STAR == pass_type_name:
+                        return ExternalCreateGoldStarPassSerializer
+                    if settings.DAY_ENTRY_PASS == pass_type_name:
+                        return ExternalCreateDayEntryPassSerializer
+                    if (
+                        settings.PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS
+                        == pass_type_name
+                    ):
+                        return ExternalCreatePinjarOffRoadPassSerializer
+
+                    raise NoValidPassTypeFoundInPost(
+                        "ERROR: No valid pass type name found in POST."
+                    )
+
+        return ExternalPassSerializer
 
     def perform_create(self, serializer):
         logger.debug("perform create -------------\n\n")
+        logger.debug("serializer data = " + str(serializer.validated_data))
         if is_customer(self.request):
             park_pass = serializer.save(user=self.request.user.id)
         else:
