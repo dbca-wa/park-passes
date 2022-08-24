@@ -398,6 +398,7 @@ class Pass(models.Model):
     first_name = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
+    postcode = models.CharField(max_length=4, null=True, blank=True)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
     drivers_licence_number = models.CharField(max_length=11, null=True, blank=True)
