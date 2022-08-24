@@ -1,6 +1,7 @@
 import logging
 
 from rest_framework import mixins, viewsets
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from parkpasses.components.orders.models import Order, OrderItem
@@ -11,6 +12,15 @@ from parkpasses.components.orders.serializers import (
 from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
+
+
+class ExternalOrderByUUID(RetrieveAPIView):
+    serializer_class = OrderSerializer
+    lookup_field = "uuid"
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user.id)
 
 
 class ExternalOrderViewSet(
