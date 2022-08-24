@@ -2,7 +2,6 @@ import logging
 import pprint
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 from django.urls import reverse
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -154,22 +153,26 @@ class SuccessView(APIView):
 
     def get(self, request, uuid, format=None):
         logger.debug("\n\nParkPasses SuccessView get method called.\n\n")
-        if uuid:
-            try:
-                cart = Cart.objects.get(uuid=uuid)
-                # Create the order and order lines, save them to the database and then delete the cart.
-                order, order_items = cart.create_order(True)
-                CartUtils.reset_cart_item_count(request)
-                CartUtils.remove_cart_id_from_session(request)
-                # this end-point is called by an unmonitored get request in ledger so there is no point having a
-                # a response body however we will return a status in case this is used on the ledger end in future
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except ObjectDoesNotExist:
-                logger.warning(
-                    "Client has requested cart success view for cart with  uuid: {}. No such cart exists.".format(
-                        uuid
-                    )
-                )
+        invoice_reference = request.GET.get("invoice", "false")
+        logger.debug(f"uuid:{uuid} invoice_reference: {invoice_reference} \n")
+        if uuid and invoice_reference:
+            # TODO: decide what to do if that cart has expired and been deleted
+            cart = Cart.objects.get(uuid=uuid)
+            # Create the order and order lines, save them to the database and then delete the cart.
+            logger.debug("\n\ncart = " + str(cart))
+            order, order_items = cart.create_order(
+                save_order_to_db_and_delete_cart=True,
+                uuid=uuid,
+                invoice_reference=invoice_reference,
+            )
+
+            logger.debug(f"uuid: \n{uuid} invoice_reference: {invoice_reference} \n")
+
+            CartUtils.reset_cart_item_count(request)
+            CartUtils.remove_cart_id_from_session(request)
+            # this end-point is called by an unmonitored get request in ledger so there is no point having a
+            # a response body however we will return a status in case this is used on the ledger end in future
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         request.session["cart_item_count"] = 0
         logger.debug("FFS =====================>")
