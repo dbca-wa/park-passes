@@ -96,4 +96,7 @@ module.exports = {
     /* ========================= Orders =================================================*/
 
     ordersListExternal:                 '/api/orders/external/orders',
+    orderRetrieveExternal: function (uuid) {
+        return                          `/api/orders/external/order-by-uuid/${uuid}/`;
+    },
 }
