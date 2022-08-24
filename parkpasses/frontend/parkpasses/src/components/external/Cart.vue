@@ -29,7 +29,7 @@
                             </div>
                         </template>
                         <div>
-                            <div class="row my-3 mx-1 g-0">
+                            <div v-if="totalPrice > 0"  class="row my-3 mx-1 g-0">
                                 <div class="col border-bottom">
                                     GST
                                 </div>
@@ -47,8 +47,12 @@
                             </div>
                             <div v-if="totalPrice > 0" class="d-flex flex-row-reverse">
                                 <div class="col-auto align-right">
-                                    <button @click="checkoutCart" class="btn licensing-btn-primary px-5"
-                                        type="button">Checkout</button>
+                                    <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5" type="button">Checkout</button>
+                                    <button v-else class="btn licensing-btn-primary px-5">
+                                        <div class="spinner-border text-light" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -70,6 +74,7 @@ export default {
         return {
             cartItems: [],
             loading: false,
+            isRedirecting: false,
         };
     },
     components: {
@@ -106,6 +111,7 @@ export default {
     },
     methods: {
         checkoutCart: function () {
+            this.isRedirecting = true;
             window.location.href = '/ledger-checkout/';
         },
         fetchCartItems: function () {
