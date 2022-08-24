@@ -68,18 +68,29 @@ class Cart(models.Model):
             grand_total += float(item.get_total_price())
         return grand_total
 
-    def create_order(self, save_order_to_db_and_delete_cart=False):
+    def create_order(
+        self, save_order_to_db_and_delete_cart=False, uuid=None, invoice_reference=None
+    ):
         """This method can create an order and order items from a cart (and cart items)
         By default it doesn't add this order to the database. This is so we can use the
         order to submit to leger and wait until that order is confirmed before we add
         the order to the park passes database.
         """
+        logger.debug("create_order running")
+        logger.debug(
+            "save_order_to_db_and_delete_cart = "
+            + str(save_order_to_db_and_delete_cart)
+        )
         order = Order(user=self.user)
         order_items = []
         if save_order_to_db_and_delete_cart:
+            order.uuid = uuid
+            order.invoice_reference = invoice_reference
             order.save()
         for cart_item in self.items.all():
             order_item = OrderItem()
+            order_item.object_id = cart_item.object_id
+            order_item.content_type_id = cart_item.content_type_id
             order_item.order = order
             if cart_item.is_voucher_purchase():
                 voucher = Voucher.objects.get(pk=cart_item.object_id)
@@ -153,8 +164,8 @@ class Cart(models.Model):
                         if save_order_to_db_and_delete_cart:
                             order_item.save()
 
-            if save_order_to_db_and_delete_cart:
-                self.delete()
+        if save_order_to_db_and_delete_cart:
+            self.delete()
 
         return order, order_items
 
