@@ -2,7 +2,7 @@
 
     <div v-if="cartItem.hasOwnProperty('voucher_number')" class="card mb-1" :id="cartItem.cart_item_id">
         <div class="card-header checkout-item-header">
-            <span class="item-type">Park Pass Voucher: {{cartItem.voucher_number}} </span>
+            <span class="item-type">Park Pass Voucher</span>
             <a class="accordian-header-note text-secondary" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show details</a>
             <span class="item-amount">${{cartItem.amount}}</span>
             <span class="delete-button"><i @click="deleteCartItem($event, cartItem.cart_item_id)" class="fa fa-trash org-primary" aria-hidden="true"></i></span>
@@ -27,7 +27,7 @@
 
     <div v-if="cartItem.hasOwnProperty('pass_number')" class="card mb-1" :id="cartItem.cart_item_id">
         <div class="card-header checkout-item-header">
-            <span class="item-type">Park Pass: {{cartItem.pass_number}}</span>
+            <span class="item-type">{{cartItem.pass_type}} <span v-if="cartItem.park_group && cartItem.park_group.length">({{ cartItem.park_group }})</span></span>
             <a class="accordian-header-note text-secondary" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show details</a>
             <span class="item-amount">${{cartItem.price}}</span>
             <span class="delete-button"><i @click="deleteCartItem($event, cartItem.cart_item_id)" class="fa fa-trash org-primary" aria-hidden="true"></i></span>
@@ -35,16 +35,19 @@
 
         <div :id="'collapse' + $.vnode.key" class="collapse" aria-labelledby="headingOne" data-parent="#checkoutAccordion">
             <div class="card-body">
-                <table class="table">
+                <table class="table table-sm">
                     <tr><th>Pass Type</th><td>{{cartItem.pass_type}}</td></tr>
+                    <tr v-if="cartItem.park_group && cartItem.park_group.length"><th>Park Group</th><td>{{cartItem.park_group}}</td></tr>
                     <tr><th>Duration</th><td>{{cartItem.duration}}</td></tr>
+                    <tr v-if="cartItem.renew_automatically"><th>Automatically Renew</th><td><i class="fa fa-check" style="color:green;" aria-hidden="true"></i></td></tr>
                     <tr><th>Pass Start Date</th><td>{{formatDate(cartItem.datetime_start)}}</td></tr>
                     <tr><th>Pass Expiry Date</th><td>{{formatDate(cartItem.datetime_expiry)}}</td></tr>
-                    <tr v-if="cartItem.vehicle_registration_1"><th>Vehicle Registraion <span v-if="cartItem.vehicle_registration_2">1</span></th><td>{{cartItem.vehicle_registration_1}}</td></tr>
-                    <tr v-if="cartItem.vehicle_registration_2"><th>Vehicle Registraion <span v-if="cartItem.vehicle_registration_1">2</span></th><td>{{cartItem.vehicle_registration_2}}</td></tr>
+                    <tr v-if="cartItem.vehicle_registration_1"><th>Vehicle Registration <span v-if="cartItem.vehicle_registration_2">1</span></th><td>{{cartItem.vehicle_registration_1}}</td></tr>
+                    <tr v-if="cartItem.vehicle_registration_2"><th>Vehicle Registration <span v-if="cartItem.vehicle_registration_1">2</span></th><td>{{cartItem.vehicle_registration_2}}</td></tr>
                     <tr><th>Your First Name</th><td>{{cartItem.first_name}}</td></tr>
                     <tr><th>Your Last Name</th><td>{{cartItem.last_name}}</td></tr>
                     <tr><th>Your Email</th><td>{{cartItem.email}}</td></tr>
+                    <tr v-if="cartItem.postcode && cartItem.postcode.length"><th>Postcode</th><td>{{cartItem.postcode}}</td></tr>
                     <tr><th>Price</th><td>${{cartItem.price}}</td></tr>
                 </table>
             </div>
@@ -129,5 +132,9 @@ export default {
     .accordian-header-note {
         font-size:0.9em;
         text-decoration:none;
+    }
+
+    .table tr {
+        border-bottom:1px solid #efefef;
     }
 </style>
