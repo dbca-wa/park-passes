@@ -7,6 +7,7 @@ import uuid
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from parkpasses.components.passes.models import Pass, PassType
@@ -178,12 +179,7 @@ class DiscountCodeBatchValidUser(models.Model):
 
 class DiscountCodeManager(models.Manager):
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related("discount_code_batch")
-            .prefetch_related("discount_code_usages")
-        )
+        return super().get_queryset().select_related("discount_code_batch")
 
 
 class DiscountCode(models.Model):
@@ -213,10 +209,14 @@ class DiscountCode(models.Model):
         return f"{self.code} ({discount})"
 
     @property
+    def has_expired(self):
+        return self.discount_code_batch.datetime_expiry < timezone.now()
+
+    @property
     def remaining_uses(self):
         times_code_can_be_used = self.discount_code_batch.times_each_code_can_be_used
         if not times_code_can_be_used:
-            return settings.UNLIMITED_USES_TEXT
+            return settings.UNLIMITED_USES
         current_uses = self.discount_code_usages.count()
         return times_code_can_be_used - current_uses
 
@@ -232,6 +232,14 @@ class DiscountCode(models.Model):
             return self.discount_code_batch.discount_percentage
         return self.discount_code_batch.discount_amount
 
+    def discount_as_amount(self, pass_price):
+        if self.discount_code_batch.discount_amount:
+            return self.discount_code_batch.discount_amount
+        discount_percentage = self.discount_code_batch.discount_percentage / 100
+        logger.debug("pass_price = " + str(pass_price))
+        logger.debug("discount_percentage = " + str(discount_percentage))
+        return pass_price * discount_percentage
+
     def is_valid_for_pass_type(self, pass_type_id):
         # If no valid pass types are specified that means the code is valid for all pass types
         if not len(self.discount_code_batch.valid_pass_types.all()):
@@ -242,6 +250,8 @@ class DiscountCode(models.Model):
         return False
 
     def is_valid_for_email(self, email):
+        """This method can be called before we have a user id in the session as it uses the email they have entered
+        on the purchase pass form"""
         # If no users are specified that means the code is valid for all users
         if not len(self.discount_code_batch.valid_users.all()):
             return True
@@ -253,12 +263,49 @@ class DiscountCode(models.Model):
 
         return False
 
+    def is_valid_for_user(self, user_id):
+        """This method will be useful once the user has logged in as we can check the user id is valid for the discount_code
+        without having to hit the ledger api"""
+        # If no users are specified that means the code is valid for all users
+        if not len(self.discount_code_batch.valid_users.all()):
+            return True
+
+        if user_id in self.discount_code_batch.valid_user_ids():
+            return True
+
+        return False
+
+    @classmethod
+    def is_valid(self, code, user_id, pass_type_id):
+        if not DiscountCode.objects.filter(code=code).exists():
+            return False
+        discount_code = DiscountCode.objects.get(code=code)
+        if discount_code.has_expired:
+            return False
+        if 1 > discount_code.remaining_uses:
+            return False
+        if not discount_code.is_valid_for_pass_type(pass_type_id):
+            return False
+        if not discount_code.is_valid_for_user(user_id):
+            return False
+
+        """ To get here the discount code must:
+            - Exist
+            - Have not expired yet
+            - Still have 1 or more remaining uses
+            - Be valid for the Pass Type of the purchase
+            - Be valid for the specific user that is purchasing the pass
+        """
+        return True
+
 
 class DiscountCodeUsage(models.Model):
     """A class to represent a discount code
 
     Every time a discount code is used a discount code usage record will be created
-    to show which park pass the discount code was used for"""
+    to show which park pass the discount code was used for
+
+    """
 
     discount_code = models.ForeignKey(
         DiscountCode,
@@ -268,7 +315,12 @@ class DiscountCodeUsage(models.Model):
         blank=False,
     )
     park_pass = models.OneToOneField(
-        Pass, on_delete=models.PROTECT, primary_key=True, null=False, blank=False
+        Pass,
+        on_delete=models.PROTECT,
+        related_name="discount_code_usage",
+        primary_key=True,
+        null=False,
+        blank=False,
     )
 
     def __str__(self):
