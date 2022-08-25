@@ -8,11 +8,11 @@
         <div class="row ms-4">
             <div class="col-md-3">
                 <div class="card">
-                    <h5 class="card-header">Side menu</h5>
+                    <h5 class="card-header">What Next?</h5>
                     <div class="card-body">
-                        <h5 class="card-title">Special title treatment</h5>
-                        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                        <p class="card-text"><a href="/your-park-passes">View Your Park Passes</a></p>
+                        <p class="card-text"><a href="/your-orders">View Your Orders</a></p>
+                        <p class="card-text"><a href="/">Return home</a></p>
                     </div>
                 </div>
             </div>
