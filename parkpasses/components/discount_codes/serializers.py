@@ -30,11 +30,26 @@ class InternalDiscountCodeSerializer(serializers.ModelSerializer):
 
 
 class ExternalDiscountCodeSerializer(serializers.ModelSerializer):
+    discount_type = serializers.SerializerMethodField()
+    discount = serializers.SerializerMethodField()
+
     class Meta:
         model = DiscountCode
         fields = [
             "code",
+            "discount_type",
+            "discount",
         ]
+
+    def get_discount_type(self, obj):
+        if obj.discount_code_batch.discount_percentage:
+            return "percentage"
+        return "amount"
+
+    def get_discount(self, obj):
+        if obj.discount_code_batch.discount_percentage:
+            return obj.discount_code_batch.discount_percentage
+        return obj.discount_code_batch.discount_amount
 
 
 class ValidPassTypeSerializer(serializers.ModelSerializer):
