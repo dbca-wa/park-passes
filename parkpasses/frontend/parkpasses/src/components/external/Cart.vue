@@ -84,24 +84,28 @@ export default {
     },
     computed: {
         totalPrice() {
-            if (0 == this.cartItems.length) {
-                return '0.00'
-            } else if (1 == this.cartItems.length) {
-                if (this.cartItems[0].hasOwnProperty('voucher_number')) {
-                    return this.cartItems[0].amount;
-                } else {
-                    return this.cartItems[0].price;
-                }
-            } else {
-                let total = 0.00;
-                this.cartItems.forEach(function (cartItem, index) {
-                    if (cartItem.hasOwnProperty('voucher_number')) {
-                        return total += parseFloat(cartItem.amount);
+            if(this.cartItems){
+                if (0 == this.cartItems.length) {
+                    return '0.00'
+                } else if (1 == this.cartItems.length) {
+                    let price = 0.00;
+                    if (this.cartItems[0].hasOwnProperty('voucher_number')) {
+                        price = parseFloat(this.cartItems[0].amount);
                     } else {
-                        return total += parseFloat(cartItem.price);
+                        price = parseFloat(this.cartItems[0].price_after_discount_code_applied);
                     }
-                });
-                return total.toFixed(2);
+                    return price.toFixed(2);
+                } else {
+                    let total = 0.00;
+                    this.cartItems.forEach(function (cartItem, index) {
+                        if (cartItem.hasOwnProperty('voucher_number')) {
+                            return total += parseFloat(cartItem.amount);
+                        } else {
+                            return total += parseFloat(cartItem.price_after_discount_code_applied);
+                        }
+                    });
+                    return total.toFixed(2);
+                }
             }
         },
         gst() {
