@@ -60,7 +60,7 @@ class DiscountCodeBatchAdmin(admin.ModelAdmin):
 admin.site.register(DiscountCodeBatch, DiscountCodeBatchAdmin)
 
 
-class DiscountCodeUsageAdmin(admin.TabularInline):
+class DiscountCodeUsageInlineAdmin(admin.TabularInline):
     model = DiscountCodeUsage
     raw_id_fields = ["park_pass"]
 
@@ -72,8 +72,16 @@ class DiscountCodeAdmin(admin.ModelAdmin):
         "code",
         "remaining_uses",
     )
-
-    inlines = [DiscountCodeUsageAdmin]
+    search_fields = ["code"]
+    inlines = [DiscountCodeUsageInlineAdmin]
 
 
 admin.site.register(DiscountCode, DiscountCodeAdmin)
+
+
+class DiscountCodeUsageAdmin(admin.ModelAdmin):
+    model = DiscountCodeUsage
+    raw_id_fields = ["park_pass"]
+
+
+admin.site.register(DiscountCodeUsage, DiscountCodeUsageAdmin)
