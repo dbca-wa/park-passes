@@ -48,6 +48,8 @@ from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupU
 from parkpasses.helpers import belongs_to, is_customer, is_internal
 from parkpasses.permissions import IsInternal, IsRetailer
 
+from ..discount_codes.models import DiscountCode, DiscountCodeUsage
+
 # from rest_framework_datatables.filters import DatatablesFilterBackend
 
 
@@ -249,9 +251,9 @@ class ExternalPassViewSet(
                         return ExternalCreateHolidayPassSerializer
                     if settings.ANNUAL_LOCAL_PASS == pass_type_name:
                         return ExternalCreateAnnualLocalPassSerializer
-                    if settings.ALL_PARKS == pass_type_name:
+                    if settings.ALL_PARKS_PASS == pass_type_name:
                         return ExternalCreateAllParksPassSerializer
-                    if settings.GOLD_STAR == pass_type_name:
+                    if settings.GOLD_STAR_PASS == pass_type_name:
                         return ExternalCreateGoldStarPassSerializer
                     if settings.DAY_ENTRY_PASS == pass_type_name:
                         return ExternalCreateDayEntryPassSerializer
@@ -270,6 +272,11 @@ class ExternalPassViewSet(
     def perform_create(self, serializer):
         logger.debug("perform create -------------\n\n")
         logger.debug("serializer data = " + str(serializer.validated_data))
+
+        # Pop these values out so they don't mess with the model serializer
+        discount_code = serializer.validated_data.pop("discount_code", None)
+        serializer.validated_data.pop("voucher_code", None)
+
         if is_customer(self.request):
             park_pass = serializer.save(user=self.request.user.id)
         else:
@@ -290,6 +297,15 @@ class ExternalPassViewSet(
         cart_item = CartItem(
             cart=cart, object_id=park_pass.id, content_type=content_type
         )
+        if discount_code:
+            pass_type_id = park_pass.option.pricing_window.pass_type.id
+            if DiscountCode.is_valid(discount_code, self.request.user.id, pass_type_id):
+                discount_code = DiscountCode.objects.get(code=discount_code)
+                cart_item.discount_code = discount_code
+                # Creating a discount usage record will decrease the remaining uses for the discount code by 1
+                DiscountCodeUsage.objects.create(
+                    discount_code=discount_code, park_pass=park_pass
+                )
         cart_item.save()
         if is_customer(self.request):
             CartUtils.increment_cart_item_count(self.request)
