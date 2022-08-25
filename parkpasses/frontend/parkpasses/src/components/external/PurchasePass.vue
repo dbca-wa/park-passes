@@ -222,7 +222,7 @@
                             </div>
                             <div class="col-auto">
                                 <div class="form-switch">
-                                    {{isPinjarPass}}<input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="vehicleRegistrationNumbersKnown" name="vehicleRegistrationNumbersKnown" v-model="vehicleRegistrationNumbersKnown">
+                                    <input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="vehicleRegistrationNumbersKnown" name="vehicleRegistrationNumbersKnown" v-model="vehicleRegistrationNumbersKnown">
                                 </div>
                             </div>
                         </div>
@@ -247,7 +247,7 @@
                             <div class="col-auto">
                                 <input type="text" id="vehicleRegistration2" name="vehicleRegistration2" v-model="pass.vehicle_registration_2" class="form-control short-control" required="required">
                                 <div class="invalid-feedback">
-                                    Please enter a valid vehicle registration .
+                                    Please enter a valid vehicle registration.
                                 </div>
                             </div>
                         </div>
@@ -308,10 +308,10 @@
                         </div>
                         <div v-if="discount_code_discount" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
-                                Discount Code
+                                Discount Amount
                             </div>
                             <div class="col-auto lead">
-                                <strong>-${{ discount_code_discount }}</strong>
+                                <strong class="text-success">-${{ discount_code_discount }}</strong>
                             </div>
                         </div>
                         <div v-if="voucher_redemption_amount" class="row g-1 align-top mb-2">
@@ -324,10 +324,10 @@
                         </div>
                         <div v-if="discount_code_discount || voucher_redemption_amount" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
-                                Grand Total
+                                Sub Total
                             </div>
                             <div class="col-auto lead">
-                                <strong>${{ grandTotal }}</strong>
+                                <strong>${{ subTotal }}</strong>
                             </div>
                         </div>
                         <div class="row g-1 mb-2">
@@ -423,9 +423,9 @@ export default {
             totalPrice = this.passPrice - ((this.concessionDiscountPercentage / 100) * this.passPrice);
             return totalPrice.toFixed(2);
         },
-        grandTotal() {
-            let grandTotal = this.totalPrice - this.discount_code_discount - this.voucher_redemption_amount;
-            return Math.max(grandTotal, 0.00).toFixed(2);
+        subTotal() {
+            let subTotal = this.totalPrice - this.discount_code_discount - this.voucher_redemption_amount;
+            return Math.max(subTotal, 0.00).toFixed(2);
         },
         isHolidayPass() {
             if(!this.passType){
@@ -746,10 +746,9 @@ export default {
                         vm.discountPercentage = data.discount
                         console.log('vm.discountPercentage = ' + vm.discountPercentage)
                         vm.discount_code_discount = vm.totalPrice * (vm.discountPercentage/100);
-                        vm.discount_code_discount = vm.discount.toFixed(2);
+                        vm.discount_code_discount = vm.discount_code_discount.toFixed(2);
                     } else {
-                        vm.discount_amount = data.discount
-                        vm.discount_code_discount = vm.totalPrice - vm.discount_amount
+                        vm.discount_code_discount = data.discount
                     }
                     console.log('vm.discount_code_discount = ' + vm.discount_code_discount)
                     // Check if the discount is a percentage or an amount
@@ -780,9 +779,9 @@ export default {
                 } else {
                     const balance_remaining = data.balance_remaining.toFixed(2);
                     console.log('balance_remaining = ' + balance_remaining);
-                    console.log('vm.grandTotal = ' + vm.grandTotal);
-                    if(balance_remaining > vm.grandTotal){
-                        vm.voucher_redemption_amount = vm.grandTotal;
+                    console.log('vm.subTotal = ' + vm.subTotal);
+                    if(balance_remaining > vm.subTotal){
+                        vm.voucher_redemption_amount = vm.subTotal;
                     } else {
                         vm.voucher_redemption_amount = balance_remaining;
                     }
@@ -801,13 +800,17 @@ export default {
             vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
             let start_date = new Date(vm.pass.datetime_start_formatted)
             vm.pass.datetime_start = start_date.toISOString();
-            //if(vm.pass.park_group_id){
-            //   vm.pass.park_group = vm.pass.park_group_id
-            //}
-            console.log('vm.pass.datetime_start = ' + vm.pass.datetime_start);
-            console.log('vm.pass.option = ' + vm.pass.option);
+            if(vm.pass.park_group_id){
+               vm.pass.park_group = vm.pass.park_group_id;
+            } else {
+                vm.pass.park_group = null;
+            }
+
             console.log('vm.pass.park_group = ' + vm.pass.park_group);
             vm.pass.option = vm.pass.option_id;
+            vm.pass.pass_type_name = vm.passType.name;
+            console.log('vm.pass = ' + JSON.stringify(vm.pass));
+            alert('vm.pass = ' + JSON.stringify(vm.pass));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -822,8 +825,7 @@ export default {
                     return Promise.reject(error);
                 }
                 // Do something after adding the voucher to the database and the users cart
-                //window.location.href = '/cart/';
-                vm.$router.push({ path: '/cart/'});
+                window.location.href = '/cart/';
             })
             .catch(error => {
                 this.systemErrorMessage = "ERROR: Please try again in an hour.";
