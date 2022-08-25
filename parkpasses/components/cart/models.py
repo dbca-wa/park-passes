@@ -3,6 +3,7 @@
 """
 import logging
 import uuid
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -10,7 +11,7 @@ from django.db import models
 from django.utils import timezone
 
 from parkpasses.components.cart.utils import CartUtils
-from parkpasses.components.discount_codes.models import DiscountCode
+from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeUsage
 from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.users.models import UserInformation
@@ -39,6 +40,16 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"Cart for user: {self.user} (Created: {self.datetime_created})"
+
+    @classmethod
+    def get_or_create_cart(self, request):
+        cart_id = request.session.get("cart_id", None)
+        if cart_id and Cart.objects.filter(id=cart_id).exists():
+            return Cart.objects.get(id=cart_id)
+        cart = Cart()
+        cart.save()
+        request.session["cart_id"] = cart.id
+        return cart
 
     def set_user_for_cart_and_items(self, user_id):
         self.user = user_id
@@ -146,7 +157,9 @@ class Cart(models.Model):
                                 cart_item.discount_code.code
                             )
                         )
-                        order_item.amount = -abs(discount_code_discount)
+                        order_item.amount = -abs(
+                            discount_code_discount.quantize(Decimal("0.01"))
+                        )
                         order_items.append(order_item)
                         if save_order_to_db_and_delete_cart:
                             order_item.save()
@@ -159,6 +172,8 @@ class Cart(models.Model):
                         order_item.description = CartUtils.get_voucher_code_description(
                             cart_item.voucher.code
                         )
+                        voucher_discount = Decimal.from_float(voucher_discount)
+                        voucher_discount = round(voucher_discount, 2)
                         order_item.amount = -abs(voucher_discount)
                         order_items.append(order_item)
                         if save_order_to_db_and_delete_cart:
@@ -262,6 +277,11 @@ class CartItem(models.Model):
         if self.is_voucher_purchase():
             Voucher.objects.filter(id=self.object_id).delete()
         elif self.is_pass_purchase():
+            if Pass.objects.filter(id=self.object_id).exists():
+                park_pass = Pass.objects.get(id=self.object_id)
+                DiscountCodeUsage.objects.filter(park_pass=park_pass).delete()
+                park_pass.delete()
+
             Pass.objects.filter(id=self.object_id).delete()
 
     def get_price_before_discounts(self):
