@@ -3,7 +3,7 @@
     <div v-if="cartItem.hasOwnProperty('voucher_number')" class="card mb-1" :id="cartItem.cart_item_id">
         <div class="card-header checkout-item-header">
             <span class="item-type">Park Pass Voucher</span>
-            <a class="accordian-header-note text-secondary" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show details</a>
+            <a class="accordian-header-note text-secondary" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show more details</a>
             <span class="item-amount">${{cartItem.amount}}</span>
             <span class="delete-button"><i @click="deleteCartItem($event, cartItem.cart_item_id)" class="fa fa-trash org-primary" aria-hidden="true"></i></span>
         </div>
@@ -27,8 +27,11 @@
 
     <div v-if="cartItem.hasOwnProperty('pass_number')" class="card mb-1" :id="cartItem.cart_item_id">
         <div class="card-header checkout-item-header">
-            <span class="item-type">{{cartItem.pass_type}} <span v-if="cartItem.park_group && cartItem.park_group.length">({{ cartItem.park_group }})</span></span>
-            <a class="accordian-header-note text-secondary" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show details</a>
+            <span class="item-type">{{cartItem.pass_type}}
+                <span v-if="cartItem.park_group && cartItem.park_group.length">({{ cartItem.park_group }})</span>
+                <span v-if="isHolidayPass(cartItem)">({{ cartItem.duration }})</span>
+            </span>
+            <a class="accordian-header-note text-secondary" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show more details</a>
             <span class="item-amount">${{cartItem.price}}</span>
             <span class="delete-button"><i @click="deleteCartItem($event, cartItem.cart_item_id)" class="fa fa-trash org-primary" aria-hidden="true"></i></span>
         </div>
@@ -52,6 +55,26 @@
                 </table>
             </div>
         </div>
+
+        <div v-if="cartItem.discount_code" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
+            <div class="col text-secondary border-bottom">
+                Discount Code Applied {{ cartItem.discount_code.code }}
+                <span v-if="'percentage'==cartItem.discount_code.discount_type">({{ cartItem.discount_code.discount }}% OFF)</span>
+            </div>
+            <div class="col-md-auto text-success border-bottom">
+                -${{ discountAmount(cartItem) }}
+            </div>
+        </div>
+        <div v-if="cartItem.discount_code" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
+            <div class="col text-secondary">
+                Sub total
+            </div>
+            <div class="col-md-auto">
+                ${{cartItem.price_after_discount_code_applied.toFixed(2)}}
+            </div>
+
+        </div>
+
     </div>
 
 </template>
@@ -78,6 +101,32 @@ export default {
 
     },
     methods: {
+        isHolidayPass(cartItem) {
+            if(!cartItem){
+                return false;
+            }
+            return ('HOLIDAY_PASS'==cartItem.pass_type_name ? true : false)
+        },
+        discountAmount(cartItem) {
+            if(!cartItem){
+                return 0.00;
+            }
+            if(!cartItem.discount_code){
+                return 0.00;
+            }
+            console.log('discountAmount = ' + cartItem.discount_code.discount);
+            if('percentage'==cartItem.discount_code.discount_type){
+                const priceBeforeDiscount = cartItem.price;
+                const discount = cartItem.discount_code.discount;
+                const percentage = discount / 100;
+                const price = priceBeforeDiscount * percentage;
+                const amount = parseFloat(price).toFixed(2);
+                //cartItem.price = priceBeforeDiscount - amount;
+                return amount;
+            } else {
+                return parseFloat(cartItem.discount_code.discount).toFixed(2);
+            }
+        },
         formatDate(dateString) {
             const date = new Date(dateString);
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -136,5 +185,9 @@ export default {
 
     .table tr {
         border-bottom:1px solid #efefef;
+    }
+
+    .discount-code-text{
+        font-size:0.9em;
     }
 </style>
