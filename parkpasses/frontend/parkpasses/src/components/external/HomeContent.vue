@@ -73,13 +73,13 @@ export default {
     },
     methods: {
         redirectToFAQ: function() {
-            window.location.href = 'faq/';
+            window.location.href = '/faq/';
         },
         redirectToHelp: function() {
-            window.location.href = 'help/';
+            window.location.href = '/help/';
         },
         redirectToSSoLogin: function() {
-            window.location.href = 'ssologin/';
+            window.location.href = '/ssologin';
         }
     },
 };
