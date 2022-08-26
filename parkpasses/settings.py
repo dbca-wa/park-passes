@@ -128,7 +128,7 @@ if DEV_STATIC and not DEV_STATIC_URL:
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 TEMPLATES[0]["OPTIONS"]["context_processors"].append(
-    "parkpasses.context_processors.parkpasses_template_url"
+    "parkpasses.context_processors.parkpasses_url"
 )
 
 # Department details
