@@ -7,7 +7,7 @@
         { 'opacity-25': activeItem && 1 != activeItem },
       ]"
     >
-      <img src="/media/gift-voucher.jpg" width="300" height="266" />
+      <img src="/static/parkpasses/img/gift-voucher.jpg" width="300" height="266" />
       <div class="more-information">More Information</div>
     </div>
 
