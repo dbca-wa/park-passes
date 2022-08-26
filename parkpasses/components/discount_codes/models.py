@@ -3,6 +3,7 @@
 """
 import logging
 import uuid
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -233,12 +234,17 @@ class DiscountCode(models.Model):
         return self.discount_code_batch.discount_amount
 
     def discount_as_amount(self, pass_price):
+        discount_amount = Decimal(0.00)
         if self.discount_code_batch.discount_amount:
-            return self.discount_code_batch.discount_amount
-        discount_percentage = self.discount_code_batch.discount_percentage / 100
-        logger.debug("pass_price = " + str(pass_price))
-        logger.debug("discount_percentage = " + str(discount_percentage))
-        return pass_price * discount_percentage
+            discount_amount = self.discount_code_batch.discount_amount
+        else:
+            discount_percentage = self.discount_code_batch.discount_percentage / 100
+            discount_amount = pass_price * discount_percentage
+        if Decimal(0.00) >= discount_amount:
+            return Decimal(0.00)
+        if discount_amount >= pass_price:
+            return pass_price
+        return discount_amount
 
     def is_valid_for_pass_type(self, pass_type_id):
         # If no valid pass types are specified that means the code is valid for all pass types
