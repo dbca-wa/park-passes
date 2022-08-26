@@ -10,6 +10,7 @@
 import logging
 import math
 import os
+from decimal import Decimal
 
 import qrcode
 from ckeditor.fields import RichTextField
@@ -450,6 +451,15 @@ class Pass(models.Model):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def price_after_discount_code_applied(self):
+        if self.hasattr("discount_code_usage"):
+            discount_code = self.discount_code_usage.discount_code
+            discount_amount = discount_code.discount_as_amount(self.price)
+            price_after_discount = self.price - discount_amount
+            return price_after_discount
+        return Decimal(0.00)
 
     def generate_qrcode(self):
         qr = qrcode.QRCode()
