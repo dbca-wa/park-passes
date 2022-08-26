@@ -5,7 +5,6 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
@@ -23,7 +22,7 @@ from parkpasses.components.vouchers.serializers import (
     VoucherTransactionSerializer,
 )
 from parkpasses.helpers import is_customer, is_internal
-from parkpasses.permissions import IsInternal
+from parkpasses.permissions import IsInternal, IsInternalOrReadOnly
 
 from ..cart.utils import CartUtils
 
@@ -115,7 +114,7 @@ class VoucherTransactionViewSet(viewsets.ModelViewSet):
     """
 
     model = VoucherTransaction
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsInternalOrReadOnly]
 
     def get_queryset(self):
         return VoucherTransaction.objects.all()
