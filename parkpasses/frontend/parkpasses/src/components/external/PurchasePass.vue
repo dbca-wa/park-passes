@@ -265,14 +265,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-if="isEmailValid" class="row g-1 align-top mb-2">
+                        <div v-if="showVoucherCodeField" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="voucherCode" class="col-form-label">Voucher Code</label>
                             </div>
                             <div class="col-auto">
                                 <input @change="validateVoucherCode" @keyup="focusVoucherPin" v-model="pass.voucher_code" type="text" id="voucherCode" name="voucherCode" ref="voucherCode" class="form-control short-control" :class="{'is-invalid' : voucherCodeError}" minlength="8" maxlength="8">
                                 <div class="invalid-feedback">
-                                    This voucher code is not valid (or does not match with the voucher pin provided).
+                                    This voucher code is not valid, has expired or does not match the pin.
                                 </div>
                             </div>
                         </div>
@@ -302,27 +302,35 @@
                             <div class="col-md-4">
                                 Price
                             </div>
-                            <div class="col-auto lead">
+                            <div class="col-auto">
                                 <strong>${{ totalPrice }}</strong>
                             </div>
                         </div>
-                        <div v-if="discount_code_discount" class="row g-1 align-top mb-2">
+                        <div v-if="discountCodeDiscount" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 Discount Amount
                             </div>
-                            <div class="col-auto lead">
-                                <strong class="text-success">-${{ discount_code_discount }}</strong>
+                            <div class="col-auto">
+                                <strong class="text-success">-${{ discountCodeDiscount }}</strong>
                             </div>
                         </div>
-                        <div v-if="voucher_redemption_amount" class="row g-1 align-top mb-2">
+                        <div v-if="voucherRedemptionAmount" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 Voucher Redemption
                             </div>
-                            <div class="col-auto lead">
-                                <strong>-${{ voucher_redemption_amount }}</strong>
+                            <div class="col-auto">
+                                <strong class="text-success">-${{ voucherRedemptionAmount }}</strong>
                             </div>
                         </div>
-                        <div v-if="discount_code_discount || voucher_redemption_amount" class="row g-1 align-top mb-2">
+                        <div v-if="voucherRedemptionAmount" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                Voucher Balance Remaining
+                            </div>
+                            <div class="col-auto">
+                                <strong class="text-success">${{ voucherBalanceRemainingIfUsedForThisPurchase }}</strong>
+                            </div>
+                        </div>
+                        <div v-if="discountCodeDiscount || voucherRedemptionAmount" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 Sub Total
                             </div>
@@ -394,12 +402,9 @@ export default {
 
             discountType: null,
             discountPercentage: 0.00,
-            discount_amount: 0.00,
-            discount_code_discount: 0.00,
+            discountCodeDiscount: 0.00,
 
-            voucher_redemption_amount: 0.00,
-
-            voucher_balance_remaining: null,
+            voucherBalanceRemaining: 0.00,
 
             discountCodeError: '',
             voucherCodeError: '',
@@ -423,8 +428,12 @@ export default {
             totalPrice = this.passPrice - ((this.concessionDiscountPercentage / 100) * this.passPrice);
             return totalPrice.toFixed(2);
         },
+        totalPriceAfterDiscounts() {
+            let totalPriceAfterDiscounts = this.totalPrice - this.discountCodeDiscount;
+            return Math.max(totalPriceAfterDiscounts, 0.00).toFixed(2);
+        },
         subTotal() {
-            let subTotal = this.totalPrice - this.discount_code_discount - this.voucher_redemption_amount;
+            let subTotal = this.totalPrice - this.discountCodeDiscount - this.voucherRedemptionAmount;
             return Math.max(subTotal, 0.00).toFixed(2);
         },
         isHolidayPass() {
@@ -470,6 +479,24 @@ export default {
                 }
             }
             return false;
+        },
+        voucherRedemptionAmount() {
+            if (0.00>=this.voucherBalanceRemaining) {
+                return null;
+            }
+            if(this.voucherBalanceRemaining >= this.totalPriceAfterDiscounts){
+                return Math.max(this.totalPriceAfterDiscounts, 0.00).toFixed(2);
+            } else {
+                return Math.max(this.voucherBalanceRemaining, 0.00).toFixed(2);;
+            }
+        },
+        voucherBalanceRemainingIfUsedForThisPurchase() {
+            let remaining = this.voucherBalanceRemaining - this.voucherRedemptionAmount;
+            return Math.max(remaining, 0.00).toFixed(2);
+        },
+        showVoucherCodeField() {
+            console.log('this.totalPriceAfterDiscounts = ' + this.totalPriceAfterDiscounts);
+            return (this.isEmailValid && (0.00 < this.totalPriceAfterDiscounts)) ? true : false;
         }
     },
     methods: {
@@ -627,9 +654,10 @@ export default {
             }
         },
         validateDiscountCode: function () {
-            this.discount = 0.00;
+
             if(this.pass.discount_code.length && (8!=this.pass.discount_code.length)){
                 this.$refs.discountCode.setCustomValidity("Invalid field.");
+                this.discountCodeDiscount = 0.00;
                 return false;
             } else {
                 if(0==this.pass.discount_code.length){
@@ -714,12 +742,13 @@ export default {
                 this.$refs.voucherPin.setCustomValidity("Invalid field.");
                 return false;
             } else {
-                console.log('Pin is valid.')
                 if(this.pass.voucher_pin.length && !/^\d+$/.test(this.pass.voucher_pin)){
                     this.$refs.voucherPin.setCustomValidity("Invalid field.");
                     return false;
                 } else {
+                    console.log('Pin is valid.')
                     this.$refs.voucherPin.setCustomValidity("");
+                    console.log('calling validateVoucherCodeBackend.')
                     return this.validateVoucherCodeBackend();
                 }
             }
@@ -734,10 +763,11 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                const is_discount_code_valid = data.is_discount_code_valid;
-                console.log('is_discount_code_valid = ' + is_discount_code_valid)
-                if(!is_discount_code_valid){
+                const isDiscountCodeValid = data.is_discount_code_valid;
+                console.log('isDiscountCodeValid = ' + isDiscountCodeValid)
+                if(!isDiscountCodeValid){
                     this.$refs.discountCode.setCustomValidity("Invalid field.");
+                    this.discountCodeDiscount = 0.00;
                     return false;
                 } else {
                     vm.discountType = data.discount_type
@@ -745,12 +775,12 @@ export default {
                     if('percentage'==vm.discountType) {
                         vm.discountPercentage = data.discount
                         console.log('vm.discountPercentage = ' + vm.discountPercentage)
-                        vm.discount_code_discount = vm.totalPrice * (vm.discountPercentage/100);
-                        vm.discount_code_discount = vm.discount_code_discount.toFixed(2);
+                        vm.discountCodeDiscount = vm.totalPrice * (vm.discountPercentage/100);
+                        vm.discountCodeDiscount = vm.discountCodeDiscount.toFixed(2);
                     } else {
-                        vm.discount_code_discount = data.discount
+                        vm.discountCodeDiscount = data.discount
                     }
-                    console.log('vm.discount_code_discount = ' + vm.discount_code_discount)
+                    console.log('vm.discountCodeDiscount = ' + vm.discountCodeDiscount)
                     // Check if the discount is a percentage or an amount
                     vm.$refs.discountCode.setCustomValidity("");
                     return true;
@@ -771,20 +801,14 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                const is_voucher_code_valid = data.is_voucher_code_valid;
-                console.log('is_voucher_code_valid = ' + is_voucher_code_valid)
-                if(!is_voucher_code_valid){
+                const isVoucherCodeValid = data.is_voucher_code_valid;
+                console.log('isVoucherCodeValid = ' + isVoucherCodeValid)
+                if(!isVoucherCodeValid){
                     this.$refs.voucherCode.setCustomValidity("Invalid field.");
                     return false;
                 } else {
-                    const balance_remaining = data.balance_remaining.toFixed(2);
-                    console.log('balance_remaining = ' + balance_remaining);
-                    console.log('vm.subTotal = ' + vm.subTotal);
-                    if(balance_remaining > vm.subTotal){
-                        vm.voucher_redemption_amount = vm.subTotal;
-                    } else {
-                        vm.voucher_redemption_amount = balance_remaining;
-                    }
+                    this.voucherBalanceRemaining = data.balance_remaining.toFixed(2);
+                    console.log('this.voucherBalanceRemaining = ' + this.voucherBalanceRemaining);
                     this.$refs.voucherCode.setCustomValidity("");
                     return true;
                 }
@@ -834,24 +858,34 @@ export default {
             console.log(this.voucher);
             return false;
         },
-        validateForm: function () {
+        validateForm: async function () {
             let vm = this;
             var forms = document.querySelectorAll('.needs-validation')
 
+            console.log("validating form -- >")
+
             if(vm.isEmailValid){
+                console.log("email is valid -- >")
+
                 this.validateDiscountCode();
                 this.validateConfirmEmail();
-                let voucherCodeValid = this.validateVoucherCode();
-                let voucherPinValid = false;
-                if(this.pass.voucher_code.length && voucherCodeValid){
-                    voucherPinValid = this.validateVoucherPin();
+                if(vm.showVoucherCodeField){
+                    console.log("vm.showVoucherCodeField -- >")
+                    let voucherCodeValid = this.validateVoucherCode();
+                    let voucherPinValid = false;
+                    if(this.pass.voucher_code.length && voucherCodeValid){
+                        console.log("voucherCodeValid valid -- >")
+                        voucherPinValid = this.validateVoucherPin();
+
+                    }
+                    console.log("voucherPinValid = " + voucherPinValid)
+                    if(voucherCodeValid && voucherPinValid){
+                        console.log("Is this happening -- >")
+                        this.validateVoucherCodeBackend();
+                    }
                 }
 
-                if(voucherCodeValid && voucherPinValid){
-                    this.validateVoucherCodeBackend();
-                }
             }
-
 
             Array.prototype.slice.call(forms)
             .forEach(function (form) {
