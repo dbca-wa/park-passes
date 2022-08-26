@@ -15,7 +15,7 @@ from parkpasses.components.discount_codes.models import DiscountCode, DiscountCo
 from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.users.models import UserInformation
-from parkpasses.components.vouchers.models import Voucher
+from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.ledger_api_utils import retrieve_email_user
 
 logger = logging.getLogger(__name__)
@@ -146,6 +146,7 @@ class Cart(models.Model):
                                 order_item.save()
 
                 if cart_item.discount_code:
+                    # A discount code is being applied to this pass purchase
                     discount_code_discount = (
                         cart_item.get_discount_code_discount_as_amount()
                     )
@@ -157,23 +158,32 @@ class Cart(models.Model):
                                 cart_item.discount_code.code
                             )
                         )
-                        order_item.amount = -abs(
-                            discount_code_discount.quantize(Decimal("0.01"))
-                        )
+                        # The ledger checkout doesn't round a negative balance to zero so in order to avoid
+                        # processing a refund we have to make sure the discount is no more than the total pass price
+                        if discount_code_discount >= park_pass.price:
+                            order_item.amount = -abs(
+                                park_pass.price.quantize(Decimal("0.01"))
+                            )
+                        else:
+                            order_item.amount = -abs(
+                                discount_code_discount.quantize(Decimal("0.01"))
+                            )
                         order_items.append(order_item)
                         if save_order_to_db_and_delete_cart:
                             order_item.save()
 
                 if cart_item.voucher:
+                    # A voucher is being used for this pass purchase
                     voucher_discount = cart_item.get_voucher_discount_as_amount()
-                    if voucher_discount > 0.00:
+                    if 0.00 < voucher_discount:
                         order_item = OrderItem()
                         order_item.order = order
                         order_item.description = CartUtils.get_voucher_code_description(
                             cart_item.voucher.code
                         )
-                        voucher_discount = Decimal.from_float(voucher_discount)
-                        voucher_discount = round(voucher_discount, 2)
+                        order_item.amount = -abs(
+                            voucher_discount.quantize(Decimal("0.01"))
+                        )
                         order_item.amount = -abs(voucher_discount)
                         order_items.append(order_item)
                         if save_order_to_db_and_delete_cart:
@@ -280,6 +290,7 @@ class CartItem(models.Model):
             if Pass.objects.filter(id=self.object_id).exists():
                 park_pass = Pass.objects.get(id=self.object_id)
                 DiscountCodeUsage.objects.filter(park_pass=park_pass).delete()
+                VoucherTransaction.objects.filter(park_pass=park_pass).delete()
                 park_pass.delete()
 
             Pass.objects.filter(id=self.object_id).delete()
@@ -334,7 +345,7 @@ class CartItem(models.Model):
     def get_voucher_discount_as_amount(self):
         if not self.voucher:
             return 0.00
-        if 0.00 == self.voucher.amount:
+        if 0.00 >= self.voucher.amount:
             return 0.00
         price_before_discounts = self.get_price_before_discounts()
         concession_discount_amount = self.get_concession_discount_as_amount()
