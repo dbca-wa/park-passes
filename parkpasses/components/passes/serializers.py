@@ -15,6 +15,7 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.retailers.models import RetailerGroup
+from parkpasses.components.vouchers.serializers import ExternalVoucherSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -95,11 +96,19 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
     voucher_code = serializers.CharField(
         write_only=True, required=False, allow_blank=True
     )
+    voucher_pin = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
+    concession_id = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
 
     class Meta:
         fields = [
             "discount_code",
             "voucher_code",
+            "voucher_pin",
+            "concession_id",
         ]
 
 
@@ -242,6 +251,8 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     park_group = serializers.CharField()
     discount_code = serializers.SerializerMethodField()
     price_after_discount_code_applied = serializers.SerializerMethodField()
+    voucher_transaction = serializers.SerializerMethodField()
+    price_after_voucher_transaction_applied = serializers.SerializerMethodField()
 
     class Meta:
         model = Pass
@@ -314,6 +325,23 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             logger.debug("discount_amount = " + str(discount_amount))
             return obj.price - (discount_code.discount_as_amount(obj.price))
         return obj.price
+
+    def get_voucher_transaction(self, obj):
+        if hasattr(obj, "voucher_transaction"):
+            voucher = obj.voucher_transaction.voucher
+            serializer = ExternalVoucherSerializer(voucher)
+            return serializer.data
+        return None
+
+    def get_price_after_voucher_transaction_applied(self, obj):
+        if hasattr(obj, "voucher_transaction"):
+            voucher = obj.voucher_transaction.voucher
+            remaining_balance = voucher.remaining_balance
+            if remaining_balance >= obj.price_after_discount_code_applied:
+                return obj.price_after_discount_code_applied
+
+            return remaining_balance
+        return obj.price_after_discount_code_applied
 
 
 class ExternalUpdatePassSerializer(serializers.ModelSerializer):
