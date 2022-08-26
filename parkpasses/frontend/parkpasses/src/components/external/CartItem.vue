@@ -60,6 +60,7 @@
             <div class="col text-secondary border-bottom">
                 Discount Code Applied {{ cartItem.discount_code.code }}
                 <span v-if="'percentage'==cartItem.discount_code.discount_type">({{ cartItem.discount_code.discount }}% OFF)</span>
+                <span v-else>(${{ cartItem.discount_code.discount }} OFF)</span>
             </div>
             <div class="col-md-auto text-success border-bottom">
                 -${{ discountAmount(cartItem) }}
@@ -70,7 +71,7 @@
                 Sub total
             </div>
             <div class="col-md-auto">
-                ${{cartItem.price_after_discount_code_applied.toFixed(2)}}
+                ${{ subTotal }}
             </div>
 
         </div>
@@ -98,7 +99,9 @@ export default {
         helpers
     },
     computed: {
-
+        subTotal() {
+            return Math.max(this.cartItem.price_after_discount_code_applied, 0.00).toFixed(2);
+        },
     },
     methods: {
         isHolidayPass(cartItem) {
@@ -120,13 +123,15 @@ export default {
                 const discount = cartItem.discount_code.discount;
                 const percentage = discount / 100;
                 const price = priceBeforeDiscount * percentage;
-                const amount = parseFloat(price).toFixed(2);
-                //cartItem.price = priceBeforeDiscount - amount;
-                return amount;
+                return parseFloat(price).toFixed(2);
             } else {
-                return parseFloat(cartItem.discount_code.discount).toFixed(2);
+                let discountAmount = parseFloat(cartItem.discount_code.discount).toFixed(2);
+                if (discountAmount >= cartItem.price) {
+                    return parseFloat(cartItem.price).toFixed(2);
+                }
             }
         },
+
         formatDate(dateString) {
             const date = new Date(dateString);
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
