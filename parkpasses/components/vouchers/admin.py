@@ -29,8 +29,16 @@ class VoucherAdmin(admin.ModelAdmin):
         "datetime_purchased",
         "datetime_updated",
     ]
+    search_fields = ["code"]
     ordering = ("-datetime_purchased",)
     inlines = [VoucherTransactionInline]
 
 
 admin.site.register(Voucher, VoucherAdmin)
+
+
+class VoucherTransactionAdmin(admin.ModelAdmin):
+    model = VoucherTransaction
+
+
+admin.site.register(VoucherTransaction, VoucherTransactionAdmin)
