@@ -20,6 +20,36 @@
                         <template v-if="cartItems && cartItems.length">
                             <CartItem v-for="cartItem in cartItems" @deleteCartItem="deleteCartItem"
                                 :cartItem="cartItem" :key="cartItem.id" />
+
+                            <div>
+                                <div class="row my-3 mx-1 g-0">
+                                    <div class="col border-bottom">
+                                        GST
+                                    </div>
+                                    <div class="col-md-auto border-bottom">
+                                        ${{ gst }}
+                                    </div>
+                                </div>
+                                <div class="row my-3 mx-1 g-0">
+                                    <div class="col border-bottom">
+                                        Sub Total for {{ cartItems.length }} Item<template v-if="cartItems.length>1">s</template>  (Inc GST)
+                                    </div>
+                                    <div class="col-md-auto border-bottom">
+                                        ${{ totalPrice }}
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-row-reverse">
+                                    <div class="col-auto align-right">
+                                        <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5" type="button">Checkout</button>
+                                        <button v-else class="btn licensing-btn-primary px-5">
+                                            <div class="spinner-border text-light" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                         </template>
                         <template v-else>
                             <div class="card mb-1">
@@ -28,34 +58,6 @@
                                 </div>
                             </div>
                         </template>
-                        <div>
-                            <div v-if="totalPrice > 0"  class="row my-3 mx-1 g-0">
-                                <div class="col border-bottom">
-                                    GST
-                                </div>
-                                <div class="col-md-auto border-bottom">
-                                    ${{ gst }}
-                                </div>
-                            </div>
-                            <div v-if="totalPrice > 0" class="row my-3 mx-1 g-0">
-                                <div class="col border-bottom">
-                                    Sub Total for {{ cartItems.length }} Item<template v-if="cartItems.length>1">s</template>  (Inc GST)
-                                </div>
-                                <div class="col-md-auto border-bottom">
-                                    ${{ totalPrice }}
-                                </div>
-                            </div>
-                            <div v-if="totalPrice > 0" class="d-flex flex-row-reverse">
-                                <div class="col-auto align-right">
-                                    <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5" type="button">Checkout</button>
-                                    <button v-else class="btn licensing-btn-primary px-5">
-                                        <div class="spinner-border text-light" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
                     </div>
                 </div>
@@ -86,7 +88,7 @@ export default {
         totalPrice() {
             if(this.cartItems){
                 if (0 == this.cartItems.length) {
-                    return '0.00'
+                    return 0.00;
                 } else if (1 == this.cartItems.length) {
                     let price = 0.00;
                     if (this.cartItems[0].hasOwnProperty('voucher_number')) {
@@ -94,23 +96,34 @@ export default {
                     } else {
                         price = parseFloat(this.cartItems[0].price_after_discount_code_applied);
                     }
-                    return price.toFixed(2);
+                    console.log('price = ' + price);
+                    console.log('Math.max(price, 0.00) = ' + Math.max(price, 0.00));
+                    if(0.00 >= Math.max(price, 0.00)){
+                        return Math.max(price, 0.00).toFixed(2);
+                    }
+                    return Math.max(price, 0.00).toFixed(2);
                 } else {
                     let total = 0.00;
                     this.cartItems.forEach(function (cartItem, index) {
                         if (cartItem.hasOwnProperty('voucher_number')) {
-                            return total += parseFloat(cartItem.amount);
+                            total += parseFloat(cartItem.amount);
                         } else {
-                            return total += parseFloat(cartItem.price_after_discount_code_applied);
+                            total += parseFloat(cartItem.price_after_discount_code_applied);
+                        }
+                        console.log('total = ' + total);
+                        if(0.00 > total){
+                            return 0.00;
                         }
                     });
-                    return total.toFixed(2);
+
+                    return Math.max(total, 0.00).toFixed(2);
                 }
             }
         },
         gst() {
             let gst = this.totalPrice / 10;
-            return gst.toFixed(2);
+            console.log(gst);
+            return Math.max(gst, 0.00).toFixed(2);
         }
     },
     methods: {
