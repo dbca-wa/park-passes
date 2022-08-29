@@ -279,7 +279,9 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "datetime_created",
             "datetime_updated",
             "discount_code",
+            "voucher_transaction",
             "price_after_discount_code_applied",
+            "price_after_voucher_transaction_applied",
         ]
         read_only_fields = [
             "id",
@@ -287,7 +289,9 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "pass_type",
             "pass_type_name",
             "price",
+            "voucher_transaction",
             "price_after_discount_code_applied",
+            "price_after_voucher_transaction_applied",
             "park_group",
             "datetime_expiry",
             "park_pass_pdf",
