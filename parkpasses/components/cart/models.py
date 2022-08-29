@@ -3,6 +3,7 @@
 """
 import logging
 import uuid
+from copy import copy
 from decimal import Decimal
 
 from django.conf import settings
@@ -45,9 +46,33 @@ class Cart(models.Model):
     def get_or_create_cart(self, request):
         cart_id = request.session.get("cart_id", None)
         if cart_id and Cart.objects.filter(id=cart_id).exists():
-            return Cart.objects.get(id=cart_id)
-        cart = Cart()
-        cart.save()
+            cart = Cart.objects.get(id=cart_id)
+            # There is an edge case here where a user has a cart in db but is browsing the site
+            # annonymously and adds one or more items to their cart. When they log in we need to move
+            # the items from their anonymous cart to their already existing cart...
+            if Cart.objects.filter(user=request.user.id).exclude(id=cart.id).exists():
+                anon_cart = copy(cart)
+                cart = (
+                    Cart.objects.filter(user=request.user.id)
+                    .exclude(id=cart.id)
+                    .order_by("user", "-datetime_created")
+                    .first()
+                )
+                if anon_cart.items.all().exists():
+                    anon_cart.items.all().update(cart=cart)
+                    anon_cart.delete()
+        else:
+            if Cart.objects.filter(user=request.user.id).exists():
+                cart = (
+                    Cart.objects.filter(user=request.user.id)
+                    .order_by("user", "-datetime_created")
+                    .first()
+                )
+            elif cart_id and Cart.objects.filter(id=cart_id).exists():
+                cart = Cart.objects.get(id=cart_id)
+            else:
+                cart = Cart.objects.create()
+        request.session["cart_item_count"] = CartItem.objects.filter(cart=cart).count()
         request.session["cart_id"] = cart.id
         return cart
 
