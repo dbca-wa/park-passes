@@ -834,7 +834,7 @@ export default {
             vm.pass.option = vm.pass.option_id;
             vm.pass.pass_type_name = vm.passType.name;
             console.log('vm.pass = ' + JSON.stringify(vm.pass));
-            alert('vm.pass = ' + JSON.stringify(vm.pass));
+            //alert('vm.pass = ' + JSON.stringify(vm.pass));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
