@@ -454,7 +454,7 @@ class Pass(models.Model):
 
     @property
     def price_after_discount_code_applied(self):
-        if self.hasattr("discount_code_usage"):
+        if hasattr(self, "discount_code_usage"):
             discount_code = self.discount_code_usage.discount_code
             discount_amount = discount_code.discount_as_amount(self.price)
             price_after_discount = self.price - discount_amount
