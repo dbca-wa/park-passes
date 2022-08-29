@@ -4,7 +4,6 @@ import pprint
 from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import create_basket_session, create_checkout_session
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -78,25 +77,16 @@ class CartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        cart_id = request.session.get("cart_id", None)
-        if cart_id and Cart.objects.filter(id=cart_id).exists():
-            cart = Cart.objects.get(id=cart_id)
-            purchaser = EmailUser.objects.get(id=cart.user)
-            cart_items = CartItem.objects.filter(cart=cart)
-            objects = []
-            for cart_item in cart_items:
-                item = CartUtils.get_serialized_object_by_id_and_content_type(
-                    cart_item.object_id, cart_item.content_type.id
-                )
-                item.purchaser_email = purchaser.email
-                item.purchaser_first_name = purchaser.first_name
-                item.purchaser_last_name = purchaser.last_name
-                item["cart_item_id"] = cart_item.id
-                objects.append(item)
-            return Response(objects)
-        else:
-            # Todo: Raise exception or redirect to homepage here?
-            return Response([])
+        cart = Cart.get_or_create_cart(request)
+        objects = []
+        for cart_item in cart.items.all():
+            item = CartUtils.get_serialized_object_by_id_and_content_type(
+                cart_item.object_id, cart_item.content_type.id
+            )
+            item["cart_item_id"] = cart_item.id
+            item["cart_id"] = cart.id
+            objects.append(item)
+        return Response(objects)
 
 
 class LedgerCheckoutView(APIView):
@@ -122,10 +112,8 @@ class LedgerCheckoutView(APIView):
 
     # Todo: Change this to post once it's working.
     def get(self, request, format=None):
-        cart_id = request.session.get("cart_id", None)
-        if cart_id and Cart.objects.filter(id=cart_id).exists():
-            cart = Cart.objects.get(id=cart_id)
-
+        cart = Cart.get_or_create_cart(request)
+        if cart.items.all().exists():
             ledger_order_lines = self.get_ledger_order_lines(cart)
             is_no_payment = self.request.POST.get("no_payment", "false")
             basket_parameters = CartUtils.get_basket_parameters(
@@ -147,6 +135,7 @@ class LedgerCheckoutView(APIView):
 
             return redirect(reverse("ledgergw-payment-details"))
 
+        # Return the user to the empty cart page
         return redirect(reverse("cart"))
 
 
