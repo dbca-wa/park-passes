@@ -2,9 +2,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic.base import TemplateView
 
-from parkpasses.components.cart.models import Cart
 from parkpasses.forms import LoginForm
-from parkpasses.helpers import is_customer, is_internal
+from parkpasses.helpers import is_internal
 
 
 class CartView(LoginRequiredMixin, TemplateView):
@@ -14,10 +13,7 @@ class CartView(LoginRequiredMixin, TemplateView):
         if self.request.user.is_authenticated:
             if is_internal(self.request):
                 return redirect("internal")
-            if is_customer(self.request):
-                cart = Cart.get_or_create_cart(self.request)
-                if not cart.user:
-                    cart.set_user_for_cart_and_items(self.request.user.id)
+
         kwargs["form"] = LoginForm
         return super().get(*args, **kwargs)
 
