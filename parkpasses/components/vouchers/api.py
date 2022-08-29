@@ -52,13 +52,9 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
             voucher = serializer.save(purchaser=self.request.user.id)
         else:
             voucher = serializer.save()
-        cart_id = self.request.session.get("cart_id", None)
-        if cart_id and Cart.objects.filter(id=cart_id).exists():
-            cart = Cart.objects.get(id=cart_id)
-        else:
-            cart = Cart()
-            cart.save()
-            self.request.session["cart_id"] = cart.id
+
+        cart = Cart.get_or_create_cart(self.request)
+
         content_type = ContentType.objects.get_for_model(voucher)
         cart_item = CartItem(cart=cart, object_id=voucher.id, content_type=content_type)
         cart_item.save()
