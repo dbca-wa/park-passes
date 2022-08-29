@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -18,6 +19,8 @@ from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from org_model_logs.utils import UserActionViewSet
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
+from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeUsage
+from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
 from parkpasses.components.passes.models import (
     Pass,
     PassTemplate,
@@ -26,7 +29,12 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.passes.serializers import (
-    ExternalCreatePassSerializer,
+    ExternalCreateAllParksPassSerializer,
+    ExternalCreateAnnualLocalPassSerializer,
+    ExternalCreateDayEntryPassSerializer,
+    ExternalCreateGoldStarPassSerializer,
+    ExternalCreateHolidayPassSerializer,
+    ExternalCreatePinjarOffRoadPassSerializer,
     ExternalPassSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
@@ -39,6 +47,7 @@ from parkpasses.components.passes.serializers import (
     PassTypeSerializer,
 )
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
+from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.helpers import belongs_to, is_customer, is_internal
 from parkpasses.permissions import IsInternal, IsRetailer
 
@@ -236,12 +245,41 @@ class ExternalPassViewSet(
 
     def get_serializer_class(self):
         if "create" == self.action:
-            return ExternalCreatePassSerializer
-        else:
-            return ExternalPassSerializer
+            if "pass_type_name" in self.request.data:
+                pass_type_name = self.request.data["pass_type_name"]
+                if pass_type_name:
+                    if settings.HOLIDAY_PASS == pass_type_name:
+                        return ExternalCreateHolidayPassSerializer
+                    if settings.ANNUAL_LOCAL_PASS == pass_type_name:
+                        return ExternalCreateAnnualLocalPassSerializer
+                    if settings.ALL_PARKS_PASS == pass_type_name:
+                        return ExternalCreateAllParksPassSerializer
+                    if settings.GOLD_STAR_PASS == pass_type_name:
+                        return ExternalCreateGoldStarPassSerializer
+                    if settings.DAY_ENTRY_PASS == pass_type_name:
+                        return ExternalCreateDayEntryPassSerializer
+                    if (
+                        settings.PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS
+                        == pass_type_name
+                    ):
+                        return ExternalCreatePinjarOffRoadPassSerializer
+
+                    error = "ERROR: No valid pass type name found in POST."
+                    raise NoValidPassTypeFoundInPost(error)
+                    logger.error(error)
+
+        return ExternalPassSerializer
 
     def perform_create(self, serializer):
         logger.debug("perform create -------------\n\n")
+        logger.debug("serializer data = " + str(serializer.validated_data))
+
+        # Pop these values out so they don't mess with the model serializer
+        discount_code = serializer.validated_data.pop("discount_code", None)
+        voucher_code = serializer.validated_data.pop("voucher_code", None)
+        voucher_pin = serializer.validated_data.pop("voucher_pin", None)
+        # concession_id = serializer.validated_data.pop("concession_id", None)
+
         if is_customer(self.request):
             park_pass = serializer.save(user=self.request.user.id)
         else:
@@ -262,6 +300,33 @@ class ExternalPassViewSet(
         cart_item = CartItem(
             cart=cart, object_id=park_pass.id, content_type=content_type
         )
+        discount_amount = Decimal.from_float(0.00)
+        if discount_code:
+            pass_type_id = park_pass.option.pricing_window.pass_type.id
+            if DiscountCode.is_valid(discount_code, self.request.user.id, pass_type_id):
+                discount_code = DiscountCode.objects.get(code=discount_code)
+                cart_item.discount_code = discount_code
+                # Creating a discount usage record will decrease the remaining uses for the discount code by 1
+                # This will also be deleted in the CartItem delete_attached_object method
+                DiscountCodeUsage.objects.create(
+                    discount_code=discount_code, park_pass=park_pass
+                )
+                discount_amount = discount_code.discount_as_amount(
+                    park_pass.option.price
+                )
+        price_after_discounts = park_pass.option.price - discount_amount
+        if voucher_code:
+            if Voucher.is_valid(voucher_code, voucher_pin):
+                voucher = Voucher.objects.get(code=voucher_code, pin=voucher_pin)
+                cart_item.voucher = voucher
+                # This will also be deleted in the CartItem delete_attached_object method
+                VoucherTransaction.objects.create(
+                    voucher=voucher,
+                    park_pass=park_pass,
+                    debit=voucher.balance_available_for_purchase(price_after_discounts),
+                    credit=Decimal(0.00),
+                )
+
         cart_item.save()
         if is_customer(self.request):
             CartUtils.increment_cart_item_count(self.request)

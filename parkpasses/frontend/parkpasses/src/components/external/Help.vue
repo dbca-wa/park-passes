@@ -73,6 +73,7 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.faqs = data.results
+                console.log(vm.faqs)
             })
             .catch(error => {
                 this.systemErrorMessage = "ERROR: Please try again in an hour.";

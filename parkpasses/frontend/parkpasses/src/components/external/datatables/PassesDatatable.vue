@@ -20,9 +20,6 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-6 text-end">
-                    <button class="dt-button buttons-csv buttons-html5 btn licensing-btn-primary">Upload Personnel Passes</button>
-                </div>
             </div>
             <div class="row mb-3">
                 <div class="col-md-3">
@@ -60,7 +57,6 @@
             </div>
         </div>
     </div>
-    <PassCancellationModal @cancelSuccess="cancelSuccess" :pass="selectedPass" />
 </template>
 
 <script>
@@ -68,7 +64,6 @@ import Datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { apiEndpoints } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
-import PassCancellationModal from '@/components/internal/modals/PassCancellationModal.vue'
 
 
 export default {
@@ -140,7 +135,6 @@ export default {
     components:{
         Datatable,
         CollapsibleFilters,
-        PassCancellationModal,
     },
     watch: {
         filterPassType: function() {
@@ -201,7 +195,6 @@ export default {
                 'Vehicle 2',
                 'Status',
                 'Pass',
-                'Sold Via',
                 'Action'
             ]
         },
@@ -315,15 +308,6 @@ export default {
                 }
             }
         },
-        columnSoldVia: function(){
-            return {
-                data: "sold_via_name",
-                visible: true,
-                orderable: false,
-                searchable: false,
-                name: 'sold_via_name'
-            }
-        },
         columnAction: function(){
             let vm = this
             return {
@@ -377,7 +361,6 @@ export default {
                 vm.columnVehicleRegistration2,
                 vm.columnProcessingStatus,
                 vm.columnParkPassPdf,
-                vm.columnSoldVia,
                 vm.columnAction,
             ]
             search = true
@@ -396,7 +379,7 @@ export default {
                 serverSide: true,
                 searching: true,
                 ajax: {
-                    "url": apiEndpoints.passesList + '?format=datatables',
+                    "url": apiEndpoints.passesListExternal + '?format=datatables',
                     "dataSrc": 'data',
 
                     // adding extra GET params for Custom filtering

@@ -1,5 +1,11 @@
+import logging
+
 from rest_framework import serializers
 
+from parkpasses.components.discount_codes.serializers import (
+    ExternalDiscountCodeSerializer,
+)
+from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.models import (
     Pass,
     PassCancellation,
@@ -9,6 +15,9 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.retailers.models import RetailerGroup
+from parkpasses.components.vouchers.serializers import ExternalVoucherSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class PassTypeSerializer(serializers.ModelSerializer):
@@ -78,8 +87,59 @@ class PassTemplateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ExternalCreatePassSerializer(serializers.ModelSerializer):
+class PassModelCreateSerializer(serializers.ModelSerializer):
+    """A base model serializer for passes that allows additonal fields to be submitted for processing"""
+
+    discount_code = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
+    voucher_code = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
+    voucher_pin = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
+    concession_id = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
+
     class Meta:
+        fields = [
+            "discount_code",
+            "voucher_code",
+            "voucher_pin",
+            "concession_id",
+        ]
+
+
+class ExternalCreateHolidayPassSerializer(
+    PassModelCreateSerializer
+):  # user = serializers.IntegerField(write_only=True, required=False, allow_blank=True)
+    class Meta(PassModelCreateSerializer.Meta):
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ] + PassModelCreateSerializer.Meta.fields
+
+
+class ExternalCreateAnnualLocalPassSerializer(PassModelCreateSerializer):
+    park_group = serializers.PrimaryKeyRelatedField(
+        queryset=ParkGroup.objects.all(), many=False
+    )
+
+    class Meta(PassModelCreateSerializer.Meta):
         model = Pass
         fields = [
             "id",
@@ -91,18 +151,108 @@ class ExternalCreatePassSerializer(serializers.ModelSerializer):
             "vehicle_registration_1",
             "vehicle_registration_2",
             "park_group",
+            "postcode",
             "renew_automatically",
             "datetime_start",
             "processing_status",
             "datetime_created",
             "datetime_updated",
-        ]
+        ] + PassModelCreateSerializer.Meta.fields
+
+
+class ExternalCreateAllParksPassSerializer(PassModelCreateSerializer):
+    class Meta(PassModelCreateSerializer.Meta):
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ] + PassModelCreateSerializer.Meta.fields
+
+
+class ExternalCreateGoldStarPassSerializer(PassModelCreateSerializer):
+    class Meta(PassModelCreateSerializer.Meta):
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ] + PassModelCreateSerializer.Meta.fields
+
+
+class ExternalCreateDayEntryPassSerializer(PassModelCreateSerializer):
+    class Meta(PassModelCreateSerializer.Meta):
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ] + PassModelCreateSerializer.Meta.fields
+
+
+class ExternalCreatePinjarOffRoadPassSerializer(PassModelCreateSerializer):
+    class Meta(PassModelCreateSerializer.Meta):
+        model = Pass
+        fields = [
+            "id",
+            "user",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "renew_automatically",
+            "datetime_start",
+            "processing_status",
+            "datetime_created",
+            "datetime_updated",
+        ] + PassModelCreateSerializer.Meta.fields
 
 
 class ExternalPassSerializer(serializers.ModelSerializer):
+    processing_status_display_name = serializers.CharField(
+        source="get_processing_status_display", read_only=True
+    )
     price = serializers.SerializerMethodField()
     duration = serializers.SerializerMethodField()
     pass_type = serializers.SerializerMethodField()
+    pass_type_name = serializers.SerializerMethodField()
+    park_group = serializers.CharField()
+    discount_code = serializers.SerializerMethodField()
+    price_after_discount_code_applied = serializers.SerializerMethodField()
+    voucher_transaction = serializers.SerializerMethodField()
+    price_after_voucher_transaction_applied = serializers.SerializerMethodField()
 
     class Meta:
         model = Pass
@@ -111,6 +261,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "pass_number",
             "option",
             "pass_type",
+            "pass_type_name",
             "price",
             "duration",
             "first_name",
@@ -119,25 +270,36 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "vehicle_registration_1",
             "vehicle_registration_2",
             "park_group",
+            "park_pass_pdf",
             "datetime_start",
             "datetime_expiry",
             "renew_automatically",
             "processing_status",
-            "processing_status",
+            "processing_status_display_name",
             "datetime_created",
             "datetime_updated",
+            "discount_code",
+            "voucher_transaction",
+            "price_after_discount_code_applied",
+            "price_after_voucher_transaction_applied",
         ]
         read_only_fields = [
             "id",
             "pass_number",
             "pass_type",
+            "pass_type_name",
             "price",
+            "voucher_transaction",
+            "price_after_discount_code_applied",
+            "price_after_voucher_transaction_applied",
             "park_group",
             "datetime_expiry",
             "park_pass_pdf",
             "processing_status",
+            "processing_status_display_name",
             "datetime_created",
             "datetime_updated",
+            "discount_code",
         ]
 
     def get_price(self, obj):
@@ -146,8 +308,44 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     def get_pass_type(self, obj):
         return obj.option.pricing_window.pass_type.display_name
 
+    def get_pass_type_name(self, obj):
+        return obj.option.pricing_window.pass_type.name
+
     def get_duration(self, obj):
         return f"{obj.option.duration} days"
+
+    def get_discount_code(self, obj):
+        if hasattr(obj, "discount_code_usage"):
+            discount_code = obj.discount_code_usage.discount_code
+            serializer = ExternalDiscountCodeSerializer(discount_code)
+            return serializer.data
+        return None
+
+    def get_price_after_discount_code_applied(self, obj):
+        if hasattr(obj, "discount_code_usage"):
+            discount_code = obj.discount_code_usage.discount_code
+            discount_amount = discount_code.discount_as_amount(obj.price)
+            logger.debug("obj.price = " + str(obj.price))
+            logger.debug("discount_amount = " + str(discount_amount))
+            return obj.price - (discount_code.discount_as_amount(obj.price))
+        return obj.price
+
+    def get_voucher_transaction(self, obj):
+        if hasattr(obj, "voucher_transaction"):
+            voucher = obj.voucher_transaction.voucher
+            serializer = ExternalVoucherSerializer(voucher)
+            return serializer.data
+        return None
+
+    def get_price_after_voucher_transaction_applied(self, obj):
+        if hasattr(obj, "voucher_transaction"):
+            voucher = obj.voucher_transaction.voucher
+            remaining_balance = voucher.remaining_balance
+            if remaining_balance >= obj.price_after_discount_code_applied:
+                return obj.price_after_discount_code_applied
+
+            return remaining_balance
+        return obj.price_after_discount_code_applied
 
 
 class ExternalUpdatePassSerializer(serializers.ModelSerializer):

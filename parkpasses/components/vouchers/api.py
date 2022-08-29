@@ -5,7 +5,6 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
@@ -23,7 +22,7 @@ from parkpasses.components.vouchers.serializers import (
     VoucherTransactionSerializer,
 )
 from parkpasses.helpers import is_customer, is_internal
-from parkpasses.permissions import IsInternal
+from parkpasses.permissions import IsInternal, IsInternalOrReadOnly
 
 from ..cart.utils import CartUtils
 
@@ -53,13 +52,9 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
             voucher = serializer.save(purchaser=self.request.user.id)
         else:
             voucher = serializer.save()
-        cart_id = self.request.session.get("cart_id", None)
-        if cart_id and Cart.objects.filter(id=cart_id).exists():
-            cart = Cart.objects.get(id=cart_id)
-        else:
-            cart = Cart()
-            cart.save()
-            self.request.session["cart_id"] = cart.id
+
+        cart = Cart.get_or_create_cart(self.request)
+
         content_type = ContentType.objects.get_for_model(voucher)
         cart_item = CartItem(cart=cart, object_id=voucher.id, content_type=content_type)
         cart_item.save()
@@ -115,7 +110,7 @@ class VoucherTransactionViewSet(viewsets.ModelViewSet):
     """
 
     model = VoucherTransaction
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsInternalOrReadOnly]
 
     def get_queryset(self):
         return VoucherTransaction.objects.all()

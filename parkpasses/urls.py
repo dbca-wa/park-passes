@@ -10,6 +10,9 @@ from parkpasses.admin import admin
 from parkpasses.components.cart.api import LedgerCheckoutView
 from parkpasses.components.cart.views import CartView, CheckoutSuccessView
 from parkpasses.components.help.views import ParkPassesHelpView
+from parkpasses.components.orders.views import ExternalOrdersView
+from parkpasses.components.passes.views import ExternalPassView
+from parkpasses.components.vouchers.views import ExternalVouchersView
 
 # API patterns
 router = routers.DefaultRouter()
@@ -23,6 +26,16 @@ urlpatterns = [
     # ========================================================================== External Public
     url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
     url(r"^help/", ParkPassesHelpView.as_view(), name="help"),
+    url(
+        r"^purchase-voucher/",
+        views.ParkPassesPurchaseVoucherView.as_view(),
+        name="purchase-voucher",
+    ),
+    url(
+        r"^purchase-pass/",
+        views.ParkPassesPurchasePassView.as_view(),
+        name="purchase-pass",
+    ),
     url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
     url(r"^faq/", views.ParkPassesFAQView.as_view(), name="faq"),
     url(
@@ -38,7 +51,9 @@ urlpatterns = [
         CheckoutSuccessView.as_view(),
         name="checkout-success",
     ),
-    url(r"^external/", views.ExternalView.as_view(), name="external"),
+    url(r"^your-park-passes/", ExternalPassView.as_view(), name="your-park-passes"),
+    url(r"^your-vouchers/", ExternalVouchersView.as_view(), name="your-vouchers"),
+    url(r"^your-orders/", ExternalOrdersView.as_view(), name="your-orders"),
     url(r"^account/$", views.ExternalView.as_view(), name="manage-account"),
     url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
     # ========================================================================== Internal

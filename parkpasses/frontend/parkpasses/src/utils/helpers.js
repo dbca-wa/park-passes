@@ -206,6 +206,11 @@ module.exports = {
         date = new Date(dateTime);
         return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
     },
+    getPrettyDateFromDatetime(dateTime){
+        var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        let formattedOrderDate = new Date(dateTime);
+        return formattedOrderDate.toLocaleDateString('en-US', options);
+    },
     escapeHtml(unsafe){
         return unsafe
              .replace(/&/g, "&amp;")

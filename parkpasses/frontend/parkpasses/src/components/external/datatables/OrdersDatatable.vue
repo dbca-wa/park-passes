@@ -4,30 +4,7 @@
             <div class="row mb-3">
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Pass Type</label>
-                        <select class="form-control" v-model="filterPassType">
-                            <option value="" selected="selected">All</option>
-                            <option v-for="passType in passTypesDistinct" :value="passType.code">{{ passType.description }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="">Status</label>
-                        <select class="form-control" v-model="filterProcessingStatus">
-                            <option value="">All</option>
-                            <option v-for="processingStatus in passProcessingStatusesDistinct" :value="processingStatus.code">{{ processingStatus.description }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6 text-end">
-                    <button class="dt-button buttons-csv buttons-html5 btn licensing-btn-primary">Upload Personnel Passes</button>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="">Start Date From</label>
+                        <label for="">Date From</label>
                         <div class="input-group date" ref="proposalDateFromPicker">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeStartFrom">
                             <!--
@@ -40,7 +17,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Start Date To</label>
+                        <label for="">Date To</label>
                         <div class="input-group date" ref="proposalDateToPicker">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeStartTo">
                         </div>
@@ -52,7 +29,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <Datatable v-if="passProcessingStatusesDistinct"
-                    ref="passDatatable"
+                    ref="ordersDatatable"
                     :id="dataTableId"
                     :dtOptions="dtOptions"
                     :dtHeaders="dtHeaders"
@@ -144,19 +121,19 @@ export default {
     },
     watch: {
         filterPassType: function() {
-            this.$refs.passDatatable.vmDataTable.columns.adjust().draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.ordersDatatable.vmDataTable.columns.adjust().draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterPassTypeCacheName, this.filterPassType);
         },
         filterProcessingStatus: function() {
-            this.$refs.passDatatable.vmDataTable.draw();
+            this.$refs.ordersDatatable.vmDataTable.draw();
             sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
         },
         filterDatetimeStartFrom: function() {
-            this.$refs.passDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.ordersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterDatetimeStartFromCacheName, this.filterDatetimeStartFrom);
         },
         filterDatetimeStartTo: function() {
-            this.$refs.passDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.ordersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterDatetimeStartToCacheName, this.filterDatetimeStartTo);
         },
         filterApplied: function() {
@@ -167,7 +144,7 @@ export default {
     },
     computed: {
         numberOfColumns: function() {
-            let num =  this.$refs.passDatatable.vmDataTable.columns(':visible').nodes().length;
+            let num =  this.$refs.ordersDatatable.vmDataTable.columns(':visible').nodes().length;
             return num
         },
         filterApplied: function(){
@@ -191,18 +168,11 @@ export default {
         dtHeaders: function(){
             return [
                 'id',
+                '',
                 'Number',
-                'First Name',
-                'Last Name',
-                'Pass Type',
-                'Start Date',
-                'Automatic Renewal',
-                'Vehicle 1',
-                'Vehicle 2',
-                'Status',
-                'Pass',
-                'Sold Via',
-                'Action'
+                'Date',
+                'Total',
+                'Invoice'
             ]
         },
         columnId: function(){
@@ -219,125 +189,66 @@ export default {
                 }
             }
         },
-        columnPassNumber: function(){
+        columnDtControl: function() {
             return {
-                data: "pass_number",
-                visible: true,
-                name: 'pass_number',
-                orderable: true,
-            }
-        },
-        columnFirstName: function(){
-            return {
-                data: "first_name",
-                visible: true,
-                searchable: true,
-                orderable: true,
-                name: 'first_name',
-            }
-        },
-        columnLastName: function(){
-            return {
-                data: "last_name",
-                visible: true,
-                name: 'last_name',
-            }
-        },
-        columnPassType: function(){
-            return {
-                data: "pass_type",
-                visible: true,
+                targets: 'no-sort',
+                className: 'dt-control',
+                orderable: false,
                 searchable: false,
-                name: 'option.pricing_window.pass_type.display_name'
+                data: null,
+                defaultContent: '',
             }
         },
-        columnDatetimeStart: function(){
+        columnOrderNumber: function(){
             return {
-                data: "datetime_start",
+                data: "order_number",
                 visible: true,
-                name: 'datetime_start',
+                name: 'order_number',
+                orderable: true,
+            }
+        },
+        columnDatetimeCreated: function(){
+            return {
+                data: "datetime_created",
+                visible: true,
+                name: 'datetime_created',
                 'render': function(row, type, full){
-                    const date = new Date(full.datetime_start);
+                    const date = new Date(full.datetime_created);
                     return date.toLocaleDateString();
                 }
             }
         },
-        columnRenewAutomatically: function(){
+        columnTotal: function(){
             return {
-                data: "renew_automatically",
-                visible: true,
-                className: 'text-center',
-                name: 'renew_automatically',
-                'render': function(row, type, full){
-                    if(full.renew_automatically){
-                        return '<i class="fa fa-check" aria-hidden="true" style="color:green;"></i>';
-                    } else {
-                        return '<i class="fa fa-times" aria-hidden="true" style="color:red;"></i>';
-                    }
-                }
-
-            }
-        },
-        columnVehicleRegistration1: function(){
-            let vm = this
-            return {
-                data: "vehicle_registration_1",
+                data: "total",
                 visible: true,
                 searchable: true,
-                name: 'vehicle_registration_1',
-            }
-        },
-        columnVehicleRegistration2: function(){
-            let vm = this
-            return {
-                data: "vehicle_registration_2",
-                visible: true,
-                searchable: true,
-                name: 'vehicle_registration_2',
-            }
-        },
-        columnProcessingStatus: function(){
-            let vm = this;
-            return {
-                data: "processing_status_display_name",
-                visible: true,
-                name: 'processing_status',
-            }
-        },
-        columnParkPassPdf: function(){
-            return {
-                data: "park_pass_pdf",
-                visible: true,
-                orderable: false,
-                name: 'park_pass_pdf',
+                orderable: true,
+                name: 'total',
                 'render': function(row, type, full){
-                    return `<a href="${apiEndpoints.internalParkPassPdf(full.id)}" target="blank">ParkPass.pdf</a>`
+                    return `$${full.total.toFixed(2)}`;
                 }
             }
         },
-        columnSoldVia: function(){
+        columnInvoice: function(){
             return {
-                data: "sold_via_name",
+                data: 'id',
                 visible: true,
-                orderable: false,
                 searchable: false,
-                name: 'sold_via_name'
+                orderable: false,
+                'render': function(row, type, full){
+                    return '<a href="">View Invoice</a>'
+                }
             }
         },
-        columnAction: function(){
-            let vm = this
+        columnItems: function(){
             return {
-                // 8. Action
-                data: "id",
-                orderable: false,
+                data: 'items',
+                visible: false,
                 searchable: false,
-                visible: true,
+                orderable: false,
                 'render': function(row, type, full){
-                    let links = '';
-                    links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
-                    return links;
+                    return 'Items'
                 }
             }
         },
@@ -367,19 +278,14 @@ export default {
 
             columns = [
                 vm.columnId,
-                vm.columnPassNumber,
-                vm.columnFirstName,
-                vm.columnLastName,
-                vm.columnPassType,
-                vm.columnDatetimeStart,
-                vm.columnRenewAutomatically,
-                vm.columnVehicleRegistration1,
-                vm.columnVehicleRegistration2,
-                vm.columnProcessingStatus,
-                vm.columnParkPassPdf,
-                vm.columnSoldVia,
-                vm.columnAction,
+                vm.columnDtControl,
+                vm.columnOrderNumber,
+                vm.columnDatetimeCreated,
+                vm.columnTotal,
+                vm.columnInvoice,
+                vm.columnItems,
             ]
+
             search = true
 
             return {
@@ -396,7 +302,7 @@ export default {
                 serverSide: true,
                 searching: true,
                 ajax: {
-                    "url": apiEndpoints.passesList + '?format=datatables',
+                    "url": apiEndpoints.ordersListExternal + '?format=datatables',
                     "dataSrc": 'data',
 
                     // adding extra GET params for Custom filtering
@@ -411,7 +317,7 @@ export default {
                      "<'row'<'col-sm-12'tr>>" +
                      "<'d-flex align-items-center'<'me-auto'i>p>",
                 buttons: buttons,
-                order: [[1, 'desc']],
+                order: [[2, 'desc']],
 
                 columns: columns,
                 processing: true,
@@ -423,8 +329,8 @@ export default {
     },
     methods: {
         adjustTableWidth: function(){
-            this.$refs.passDatatable.vmDataTable.columns.adjust()
-            this.$refs.passDatatable.vmDataTable.responsive.recalc()
+            this.$refs.ordersDatatable.vmDataTable.columns.adjust()
+            this.$refs.ordersDatatable.vmDataTable.responsive.recalc()
         },
         collapsibleComponentMounted: function(){
             this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
@@ -475,27 +381,33 @@ export default {
                 console.error("There was an error!", error);
             });
         },
+        formatChildRow: function(rowData) {
+            let childRowHtml = '<table class="table table-sm table-child-row">';
+            childRowHtml += '<tr><th>Description</th><th>Amount</th></tr>';
+            rowData.items.forEach(item => {
+                childRowHtml += '<tr>';
+                childRowHtml += '   <td>' + item.description + '</td>';
+                childRowHtml += '   <td>$' + Number.parseFloat(item.amount).toFixed(2) + '</td>';
+                childRowHtml += '<tr>';
+            });
+            childRowHtml += '</table>'
+            return childRowHtml
+        },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="edit"]', function(e) {
-                e.preventDefault();
-                let action = $(this).data('action');
-                let id = $(this).data('item-id');
-                console.log(action + id);
-                vm.$router.push(`/internal/passes/${id}`)
-            });
-            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="cancel"]', function(e) {
-                e.preventDefault();
-                let id = $(this).data('item-id');
-                let name = $(this).data('name');
-                vm.cancelPass({id, name})
-            });
-            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="view-payment-details"]', function(e) {
-                e.preventDefault();
-                let action = $(this).data('action');
-                let id = $(this).data('item-id');
-                // call
-                console.log(action + id);
+            vm.$refs.ordersDatatable.vmDataTable.on('click', 'td.dt-control', function(e) {
+                var tr = $(this).closest('tr');
+                var row = vm.$refs.ordersDatatable.vmDataTable.row(tr);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                } else {
+                    // Open this row
+                    row.child(vm.formatChildRow(row.data())).show();
+                    tr.addClass('shown');
+                }
             });
         },
     },
@@ -510,12 +422,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-    i.fa-check {
-        color:green;
-    }
-    i.fa-cross {
-        color:red;
-    }
-</style>

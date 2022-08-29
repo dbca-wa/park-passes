@@ -17,7 +17,9 @@ router.register(
     r"internal/vouchers", InternalVoucherViewSet, basename="internal-vouchers"
 )
 router.register(
-    r"voucher-transactions", VoucherTransactionViewSet, basename="voucher-transactions"
+    r"internal/voucher-transactions",
+    VoucherTransactionViewSet,
+    basename="internal-voucher-transactions",
 )
 
 urlpatterns = [

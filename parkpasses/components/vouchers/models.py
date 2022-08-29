@@ -5,14 +5,15 @@
     vouchers to retain a positive balance so they can be used to pay
     for multiple seperate transactions.
 """
-import datetime
 import logging
 import random
 import uuid
+from decimal import Decimal
 
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from parkpasses import settings
 from parkpasses.components.passes.models import Pass
@@ -77,7 +78,7 @@ class Voucher(models.Model):
 
     @property
     def has_expired(self):
-        if datetime.datetime.now() >= self.expiry:
+        if timezone.now() >= self.expiry:
             return True
         return False
 
@@ -105,6 +106,18 @@ class Voucher(models.Model):
             raise RemainingVoucherBalanceLessThanZeroException(exception_message)
         return remaining_balance
 
+    def balance_available_for_purchase(self, park_pass_price):
+        if self.has_expired:
+            return Decimal(0.00)
+
+        if Decimal(0.00) >= self.remaining_balance:
+            return Decimal(0.00)
+
+        if self.remaining_balance >= park_pass_price:
+            return park_pass_price
+
+        return self.remaining_balance
+
     @classmethod
     def get_new_voucher_code(self):
         is_voucher_code_unique = False
@@ -118,13 +131,40 @@ class Voucher(models.Model):
     def get_new_pin(self):
         return f"{random.randint(0,999999):06d}"
 
+    @classmethod
+    def is_valid(self, code, pin):
+        """To return True the voucher must:
+
+        - have a code of length 8
+        - have a pin of length 6
+        - exist
+        - have not expired yet
+        - have a non zero balance
+
+        """
+        if 8 != len(code):
+            return False
+        if 6 != len(pin):
+            return False
+        if not Voucher.objects.filter(code=code, pin=pin).exists():
+            return False
+
+        discount_code = Voucher.objects.get(code=code, pin=pin)
+        if discount_code.has_expired:
+            return False
+
+        if 0.00 >= discount_code.remaining_balance:
+            return False
+
+        return True
+
     def save(self, *args, **kwargs):
         if not self.code:
             self.code = self.get_new_voucher_code()
         if not self.pin:
             self.pin = self.get_new_pin()
         if not self.expiry:
-            self.expiry = datetime.datetime.now() + datetime.timedelta(
+            self.expiry = timezone.now() + timezone.timedelta(
                 days=settings.PARKPASSES_VOUCHER_EXPIRY_IN_DAYS
             )
         super().save(*args, **kwargs)
@@ -153,7 +193,12 @@ class VoucherTransaction(models.Model):
         Voucher, related_name="transactions", on_delete=models.PROTECT
     )
     park_pass = models.OneToOneField(
-        Pass, on_delete=models.PROTECT, primary_key=True, null=False, blank=False
+        Pass,
+        on_delete=models.PROTECT,
+        related_name="voucher_transaction",
+        primary_key=True,
+        null=False,
+        blank=False,
     )
     credit = models.DecimalField(
         max_digits=7, decimal_places=2, blank=False, null=False

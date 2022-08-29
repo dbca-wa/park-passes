@@ -10,6 +10,7 @@
 import logging
 import math
 import os
+from decimal import Decimal
 
 import qrcode
 from ckeditor.fields import RichTextField
@@ -398,6 +399,7 @@ class Pass(models.Model):
     first_name = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
+    postcode = models.CharField(max_length=4, null=True, blank=True)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
     drivers_licence_number = models.CharField(max_length=11, null=True, blank=True)
@@ -449,6 +451,15 @@ class Pass(models.Model):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def price_after_discount_code_applied(self):
+        if hasattr(self, "discount_code_usage"):
+            discount_code = self.discount_code_usage.discount_code
+            discount_amount = discount_code.discount_as_amount(self.price)
+            price_after_discount = self.price - discount_amount
+            return price_after_discount
+        return Decimal(0.00)
 
     def generate_qrcode(self):
         qr = qrcode.QRCode()
@@ -518,14 +529,16 @@ class Pass(models.Model):
         )
         self.set_processing_status()
 
-        email_user = self.email_user
-        self.first_name = email_user.first_name
-        self.last_name = email_user.last_name
-        self.email = email_user.email
+        if self.user:
+            email_user = self.email_user
+            self.first_name = email_user.first_name
+            self.last_name = email_user.last_name
+            self.email = email_user.email
 
         """ Consider: Running generate_park_pass_pdf() with a message queue would be much better """
         super().save(*args, **kwargs)
-        self.generate_park_pass_pdf()
+        if not self.in_cart:
+            self.generate_park_pass_pdf()
         if not self.pass_number:
             self.pass_number = f"PP{self.pk:06d}"
         logger.debug("pass_number = " + self.pass_number)

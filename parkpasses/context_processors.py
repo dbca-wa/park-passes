@@ -6,7 +6,7 @@ from parkpasses.settings import (
 )
 
 
-def parkpasses_template_url(request):
+def parkpasses_url(request):
     return {
         "KMI_SERVER_URL": KMI_SERVER_URL,
         "template_group": template_group,

@@ -124,7 +124,12 @@
                     &nbsp;
                 </div>
                 <div class="col-auto">
-                    <button class="btn licensing-btn-primary px-5" type="submit">Next</button>
+                    <button v-if="!isLoading" class="btn licensing-btn-primary px-5" type="submit">Next</button>
+                    <button v-else class="btn licensing-btn-primary px-5">
+                        <div class="spinner-border text-light" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </button>
                 </div>
             </div>
             </form>
@@ -147,6 +152,7 @@ export default {
             },
             confirmRecipientEmail: '',
             store: useStore(),
+            isLoading: false,
         };
     },
     components: {
@@ -179,6 +185,7 @@ export default {
         },
         submitForm: function () {
             let vm = this;
+            vm.isLoading = true;
             vm.voucher.datetime_to_email = new Date(vm.voucher.datetimeToEmail);
             vm.voucher.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
             const requestOptions = {

@@ -18,6 +18,15 @@ class OrderListItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    total = serializers.ReadOnlyField()
+    items = OrderItemSerializer(many=True, read_only=True)
+
     class Meta:
         model = Order
-        fields = "__all__"
+        fields = [
+            "id",
+            "order_number",
+            "datetime_created",
+            "total",
+            "items",
+        ]

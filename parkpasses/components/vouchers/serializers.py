@@ -98,6 +98,20 @@ class VoucherTransactionSerializer(serializers.ModelSerializer):
 
 
 class InternalVoucherTransactionSerializer(serializers.ModelSerializer):
+    original_amount = serializers.DecimalField(
+        source="voucher.amount", max_digits=8, decimal_places=2
+    )
+    voucher_code = serializers.CharField(source="voucher.code")
+    remaining_balance = serializers.DecimalField(
+        source="voucher.remaining_balance", max_digits=8, decimal_places=2
+    )
+
     class Meta:
         model = VoucherTransaction
-        fields = "__all__"
+        fields = [
+            "credit",
+            "debit",
+            "voucher_code",
+            "original_amount",
+            "remaining_balance",
+        ]

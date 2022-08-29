@@ -128,7 +128,7 @@ if DEV_STATIC and not DEV_STATIC_URL:
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 TEMPLATES[0]["OPTIONS"]["context_processors"].append(
-    "parkpasses.context_processors.parkpasses_template_url"
+    "parkpasses.context_processors.parkpasses_url"
 )
 
 # Department details
@@ -272,6 +272,7 @@ ANNUAL_LOCAL_PASS = "ANNUAL_LOCAL_PASS"
 ALL_PARKS_PASS = "ALL_PARKS_PASS"
 GOLD_STAR_PASS = "GOLD_STAR_PASS"
 DAY_ENTRY_PASS = "DAY_ENTRY_PASS"
+PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS = "PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS"
 
 PASS_TYPES = [
     (HOLIDAY_PASS, "Holiday Pass"),
@@ -283,6 +284,7 @@ PASS_TYPES = [
 
 PRICING_WINDOW_DEFAULT_NAME = "Default"
 
+UNLIMITED_USES = 999999999
 UNLIMITED_USES_TEXT = "Unlimited"
 
 """ ==================== USER ACTIONS ======================== """

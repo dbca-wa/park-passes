@@ -16,7 +16,8 @@ module.exports = {
 
     /* ========================= Passes =================================================*/
 
-    passesPaginatedList:                '/api/passes/internal/passes/',
+    passesList:                         '/api/passes/internal/passes/',
+    passesListExternal:                 '/api/passes/external/passes/',
     retailerPassesList:                 '/api/passes/retailer/passes/',
     internalPass: function (passId) {
         return                          `/api/passes/internal/passes/${passId}`
@@ -75,7 +76,7 @@ module.exports = {
 
     /* ========================= Cart Items =============================================*/
 
-    cart:                           '/api/cart/cart/?format=json',
+    cart:                               '/api/cart/cart/?format=json',
     deleteCartItem: function (id) {
         return                          `/api/cart/cart-items/${id}/`;
     },
@@ -91,4 +92,11 @@ module.exports = {
     /* ========================= FAQs ===================================================*/
 
     faqsList:                           '/api/help/faqs/',
+
+    /* ========================= Orders =================================================*/
+
+    ordersListExternal:                 '/api/orders/external/orders',
+    orderRetrieveExternal: function (uuid) {
+        return                          `/api/orders/external/order-by-uuid/${uuid}/`;
+    },
 }
