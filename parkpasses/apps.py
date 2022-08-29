@@ -10,8 +10,6 @@ class ParkPassesConfig(AppConfig):
 
     def ready(self):
         if not self.run_once:
-            # from parkpasses.components.organisations import signals
-            # from parkpasses.components.proposals import signals
-            pass
+            from parkpasses.components.users import signals  # noqa: F401
 
         self.run_once = True
