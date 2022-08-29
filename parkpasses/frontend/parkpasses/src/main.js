@@ -22,11 +22,11 @@ import "sweetalert2/dist/sweetalert2.css";
 
 extendMoment(moment);
 
-import '@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css';
-import '@/../node_modules/select2/dist/css/select2.min.css';
-import '@/../node_modules/select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.min.css';
-import '@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css';
-import '@/../node_modules/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'select2/dist/css/select2.min.css';
+import 'select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.min.css';
+import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css';
+import 'datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css';
 
 // Add CSRF Token to every request
 const customHeaders = new Headers({
