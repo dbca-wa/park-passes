@@ -325,7 +325,7 @@ PARKPASSES_DEFAULT_SOLD_VIA = "DBCA Website"
 
 DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")
 
-LOGIN_URL = "/ssologin/"
+LOGIN_URL = "/ssologin"
 
 PARKPASSES_PAYMENT_SYSTEM_ID = env("PARKPASSES_PAYMENT_SYSTEM_ID", "S385")
 
