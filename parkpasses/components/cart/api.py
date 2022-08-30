@@ -103,7 +103,7 @@ class LedgerCheckoutView(APIView):
                 "ledger_description": order_item.description,
                 "quantity": 1,
                 "price_incl_tax": str(order_item.amount),
-                "oracle_code": CartUtils.get_oracle_code(),
+                "oracle_code": CartUtils.get_oracle_code(self.request, order_item),
                 "line_status": line_status,
             }
             ledger_order_lines.append(ledger_order_line)
@@ -113,6 +113,7 @@ class LedgerCheckoutView(APIView):
     # Todo: Change this to post once it's working.
     def get(self, request, format=None):
         cart = Cart.get_or_create_cart(request)
+        logger.debug("cart = " + str(cart))
         if cart.items.all().exists():
             ledger_order_lines = self.get_ledger_order_lines(cart)
             is_no_payment = self.request.POST.get("no_payment", "false")
