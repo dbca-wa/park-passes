@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.passes.serializers import ExternalPassSerializer
+from parkpasses.components.retailers.models import RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher
 from parkpasses.components.vouchers.serializers import ExternalListVoucherSerializer
 from parkpasses.helpers import is_retailer
@@ -63,10 +64,27 @@ class CartUtils:
         }
 
     @classmethod
-    def get_oracle_code(self):
+    def get_oracle_code(self, request, order_item):
         # Check if the request user belongs to retailer group and if so assign their oracle code
-
+        if is_retailer(request):
+            user = request.user
+            retailer_group_user = RetailerGroupUser.objects.filter(
+                emailuser=user
+            ).first()
+            retailer_group = retailer_group_user.retailer_group
+            if retailer_group.oracle_code:
+                return retailer_group.oracle_code
         # If not, assign the oracle code for the pass type
+        pass_content_type = ContentType.objects.get(
+            app_label="parkpasses", model="pass"
+        )
+        logger.debug("pass_content_type = " + str(pass_content_type))
+        logger.debug("order_item.content_type = " + str(order_item.content_type))
+        if pass_content_type == order_item.content_type:
+            park_pass = Pass.objects.get(id=order_item.object_id)
+            pass_type = park_pass.option.pricing_window.pass_type
+            if pass_type.oracle_code:
+                return pass_type.oracle_code
 
         # If not then just fall back to the default code from settings.
         return settings.PARKPASSES_ORACLE_CODE
