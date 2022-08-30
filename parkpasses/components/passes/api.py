@@ -36,6 +36,7 @@ from parkpasses.components.passes.serializers import (
     ExternalCreateHolidayPassSerializer,
     ExternalCreatePinjarOffRoadPassSerializer,
     ExternalPassSerializer,
+    InternalCreatePricingWindowSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
     InternalPassRetrieveSerializer,
@@ -146,11 +147,17 @@ class InternalPricingWindowViewSet(viewsets.ModelViewSet):
     pagination_class = DatatablesPageNumberPagination
     queryset = PassTypePricingWindow.objects.all()
     permission_classes = [IsInternal]
-    serializer_class = InternalPricingWindowSerializer
     filter_backends = (
         SearchFilter,
         DatatablesFilterBackend,
     )
+
+    def get_serializer_class(self):
+        logger.debug("self.action = " + str(self.action))
+        logger.debug("self.request.data = " + str(self.request.data))
+        if "create" == self.action:
+            return InternalCreatePricingWindowSerializer
+        return InternalPricingWindowSerializer
 
 
 class CurrentOptionsForPassType(generics.ListAPIView):
@@ -165,6 +172,25 @@ class CurrentOptionsForPassType(generics.ListAPIView):
         )
         if options:
             return options
+        return PassTypePricingWindowOption.objects.none()
+
+    @method_decorator(cache_page(60 * 60 * 2))
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
+
+class DefaultOptionsForPassType(generics.ListAPIView):
+    """Updated docstring"""
+
+    permission_classes = [IsInternal]
+    serializer_class = OptionSerializer
+
+    def get_queryset(self):
+        pass_type_id = self.request.query_params.get("pass_type_id")
+        if pass_type_id.isnumeric():
+            return PassTypePricingWindowOption.get_default_options_by_pass_type_id(
+                pass_type_id
+            )
         return PassTypePricingWindowOption.objects.none()
 
     @method_decorator(cache_page(60 * 60 * 2))
