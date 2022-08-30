@@ -42,8 +42,11 @@ module.exports = {
 
     /* ========================= Pass Options ===========================================*/
 
-    passOptions: function (id) {
-        return                          `/api/passes/pass-options-by-pass-type-id?pass_type_id=${id}`;
+    passOptions: function (passTypeId) {
+        return                          `/api/passes/pass-options-by-pass-type-id?pass_type_id=${passTypeId}}`;
+    },
+    defaultPassOptions: function (passTypeId) {
+        return                          `/api/passes/default-pass-options-by-pass-type-id?pass_type_id=${passTypeId}`;
     },
 
     /* ========================= Discount Codes =========================================*/
