@@ -157,6 +157,7 @@ admin.site.register(PassTypePricingWindow, PassTypePricingWindowAdmin)
 class PassTemplateAdmin(admin.ModelAdmin):
     model = PassTemplate
     list_display = (
+        "id",
         "template_secure",
         "version",
     )
