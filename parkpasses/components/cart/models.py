@@ -61,6 +61,10 @@ class Cart(models.Model):
                 if anon_cart.items.all().exists():
                     anon_cart.items.all().update(cart=cart)
                     anon_cart.delete()
+            else:
+                if not cart.user:
+                    cart.user = request.user.id
+                    cart.save()
         else:
             if Cart.objects.filter(user=request.user.id).exists():
                 cart = (
@@ -68,8 +72,6 @@ class Cart(models.Model):
                     .order_by("user", "-datetime_created")
                     .first()
                 )
-            elif cart_id and Cart.objects.filter(id=cart_id).exists():
-                cart = Cart.objects.get(id=cart_id)
             else:
                 cart = Cart.objects.create()
         request.session["cart_item_count"] = CartItem.objects.filter(cart=cart).count()
