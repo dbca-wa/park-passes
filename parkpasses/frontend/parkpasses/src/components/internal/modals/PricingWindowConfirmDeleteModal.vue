@@ -10,12 +10,9 @@
                     <div class="m-3">
                         Are you sure you want to delete the following pricing window?
                     </div>
-                    <table v-if="pricingWindow" class="table table-striped">
+                    <table v-if="pricingWindow" class="table table-sm">
                         <tbody>
-                            <tr><th>Pass Type</th><td>{{pricingWindow.pass_type_display_name}}</td></tr>
                             <tr><th>Name</th><td>{{pricingWindow.name}}</td></tr>
-                            <tr><th>Date Start</th><td>{{pricingWindow.date_start}}</td></tr>
-                            <tr><th>Date End</th><td>{{pricingWindow.date_expiry}}</td></tr>
                         </tbody>
                     </table>
                 </div>
