@@ -223,7 +223,7 @@ class PassTypePricingWindowOption(models.Model):
     objects = PassTypePricingWindowOptionManager()
 
     pricing_window = models.ForeignKey(
-        PassTypePricingWindow, on_delete=models.PROTECT, related_name="options"
+        PassTypePricingWindow, on_delete=models.CASCADE, related_name="options"
     )
     name = models.CharField(max_length=50)  # i.e. '5 days'
     duration = models.SmallIntegerField()  # in days i.e. 5, 14, 28, 365
@@ -313,6 +313,14 @@ class PassTypePricingWindowOption(models.Model):
                 )
 
         return PassTypePricingWindowOption.objects.filter(pricing_window=pricing_window)
+
+    @classmethod
+    def get_default_options_by_pass_type_id(self, pass_type_id):
+        return PassTypePricingWindowOption.objects.filter(
+            pricing_window__name=settings.PRICING_WINDOW_DEFAULT_NAME,
+            pricing_window__date_expiry__isnull=True,
+            pricing_window__pass_type__id=pass_type_id,
+        )
 
 
 def pass_template_file_path(instance, filename):
