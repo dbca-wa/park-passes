@@ -47,8 +47,67 @@ class InternalPassTypeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class OptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PassTypePricingWindowOption
+        fields = ["id", "name", "duration", "price"]
+
+
+class InternalOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PassTypePricingWindowOption
+        fields = "__all__"
+
+
+class InternalCreatePricingWindowSerializer(serializers.ModelSerializer):
+    pricing_options = serializers.ListField(write_only=True)
+
+    class Meta:
+        model = PassTypePricingWindow
+        fields = [
+            "name",
+            "pass_type",
+            "date_start",
+            "date_expiry",
+            "pricing_options",
+        ]
+
+    def validate(self, data):
+        logger.debug(str(data))
+        pass_type = data["pass_type"]
+        default_options = (
+            PassTypePricingWindowOption.get_default_options_by_pass_type_id(
+                pass_type.id
+            )
+        )
+        if len(data["pricing_options"]) != len(default_options):
+            raise serializers.ValidationError(
+                "A price must be provided for each of the default options."
+            )
+        logger.debug(str(data))
+        return data
+
+    def create(self, validated_data):
+        options = validated_data.pop("pricing_options")
+        logger.debug(str(validated_data))
+        pricing_window = PassTypePricingWindow.objects.create(**validated_data)
+        default_options = (
+            PassTypePricingWindowOption.get_default_options_by_pass_type_id(
+                pricing_window.pass_type.id
+            )
+        )
+        for index, default_option in enumerate(default_options):
+            PassTypePricingWindowOption.objects.create(
+                name=default_option.name,
+                duration=default_option.duration,
+                price=options[index],
+                pricing_window=pricing_window,
+            )
+        return pricing_window
+
+
 class InternalPricingWindowSerializer(serializers.ModelSerializer):
-    pass_type = serializers.PrimaryKeyRelatedField(queryset=PassType.objects.all())
+    options = InternalOptionSerializer(many=True)
     pass_type_display_name = serializers.ReadOnlyField(source="pass_type.display_name")
 
     class Meta:
@@ -60,25 +119,18 @@ class InternalPricingWindowSerializer(serializers.ModelSerializer):
             "pass_type",
             "date_start",
             "date_expiry",
+            "options",
         ]
         read_only_fields = [
             "pass_type_display_name",
         ]
+        datatables_always_serialize = [
+            "id",
+            "options",
+        ]
 
     # def get_pass_type_display_name(self, obj):
     #    return obj.pass_type.display_name
-
-
-class OptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PassTypePricingWindowOption
-        fields = ["id", "name", "duration", "price"]
-
-
-class InternalOptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PassTypePricingWindowOption
-        fields = "__all__"
 
 
 class PassTemplateSerializer(serializers.ModelSerializer):
