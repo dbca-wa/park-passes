@@ -8,7 +8,9 @@ import subprocess
 from pathlib import Path
 
 from django.conf import settings
+from django.utils import timezone
 from django.utils.dateformat import DateFormat
+from django.utils.text import slugify
 from docx.shared import Mm
 from docxtpl import DocxTemplate, InlineImage
 
@@ -79,7 +81,16 @@ class PassUtils:
 
         park_pass_pdf_file_name = "ParkPass.pdf"
         park_pass_pdf_path = park_pass_file_path + park_pass_pdf_file_name
-        park_pass.park_pass_pdf.name = park_pass_pdf_path
+
+        timestamp_slug = slugify(timezone.now())
+        park_pass_pdf_file_name_timestamp = f"ParkPass-{timestamp_slug}.pdf"
+        new_path = park_pass_file_path + park_pass_pdf_file_name_timestamp
+        os.rename(
+            settings.PROTECTED_MEDIA_ROOT + "/" + park_pass_pdf_path,
+            settings.PROTECTED_MEDIA_ROOT + "/" + new_path,
+        )
+
+        park_pass.park_pass_pdf.name = new_path
 
         # Clean up unused files
         os.remove(park_pass_docx_full_file_path)
