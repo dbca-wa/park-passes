@@ -17,7 +17,7 @@
                 <div class="col-auto">
                     <input type="number" id="amount" name="amount" v-model="voucher.amount" class="form-control" ref="amount" min="5" step="5" required="required" autofocus>
                     <div class="invalid-feedback">
-                        Please enter a valid voucher amount.
+                        Please enter the voucher amount.
                     </div>
                 </div>
             </div>
@@ -146,7 +146,7 @@ export default {
     data: function () {
         return {
             voucher: {
-                amount: 5,
+                amount: 0,
                 datetimeToEmail: this.startDate(),
                 recipient_email: ''
             },
