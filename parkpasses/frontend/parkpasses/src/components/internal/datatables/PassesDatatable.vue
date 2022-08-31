@@ -311,7 +311,7 @@ export default {
                 orderable: false,
                 name: 'park_pass_pdf',
                 'render': function(row, type, full){
-                    return `<a href="${apiEndpoints.internalParkPassPdf(full.id)}" target="blank">ParkPass.pdf</a>`
+                    return `<a href="${apiEndpoints.internalParkPassPdf(full.id)}" target="blank">${full.park_pass_pdf}</a>`
                 }
             }
         },
