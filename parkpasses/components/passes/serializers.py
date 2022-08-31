@@ -431,7 +431,7 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
         required=False,
     )
     voucher_transaction_amount = serializers.CharField(
-        source="vouchertransaction.voucher.amount"
+        source="voucher_transaction.voucher.amount"
     )
     concession_type = serializers.CharField(
         source="concessionusage.concession.concession_type",
