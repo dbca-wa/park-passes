@@ -5,7 +5,7 @@
                 <Loader v-if="loading" isLoading="loading" />
                 <form v-else @submit.prevent="validateForm" @keydown.enter="$event.preventDefault()" class="needs-validation" novalidate>
                     <div class="modal-header">
-                        <h5 v-if="discount_code_batch.discount_code_batch_number" class="modal-title" id="discountCodeBatchModalLabel">Update Discount Code Batch {{discount_code_batch.discount_code_batch_number}}</h5>
+                        <h5 v-if="discountCodeBatch.discountCodeBatch_number" class="modal-title" id="discountCodeBatchModalLabel">Update Discount Code Batch {{discountCodeBatch.discountCodeBatch_number}}</h5>
                         <h5 v-else class="modal-title" id="discountCodeBatchModalLabel">Create New Discount Code Batch</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -16,7 +16,7 @@
                                     <label for="datetimeStart" class="col-form-label">Valid From</label>
                                     <input type="datetime-local" class="form-control"
                                         :class="errors.datetime_start ? 'is-invalid' : ''" id="datetimeStart"
-                                        name="datetimeStart" v-model="discount_code_batch.datetime_start" required="required"
+                                        name="datetimeStart" v-model="discountCodeBatch.datetime_start" required="required"
                                         :min="startDate()" aria-describedby="validationServerDateStartFeedback">
                                     <div v-if="errors.datetime_start"  id="validationServerDateStartFeedback" class="invalid-feedback">
                                         <p v-for="(error, index) in errors.datetime_start" :key="index">{{ error }}</p>
@@ -29,7 +29,7 @@
                                     <label for="datetimeExpiry" class="col-form-label">Valid To</label>
                                     <input type="datetime-local" class="form-control"
                                         :class="errors.datetime_expiry ? 'is-invalid' : ''" id="datetimeExpiry"
-                                        name="datetimeExpiry" v-model="discount_code_batch.datetime_expiry" required="required"
+                                        name="datetimeExpiry" v-model="discountCodeBatch.datetime_expiry" required="required"
                                         :min="minEndDate" aria-describedby="validationServerDateExpiryFeedback">
                                     <div v-if="errors.datetime_expiry"  id="validationServerDateExpiryFeedback" class="invalid-feedback">
                                         <p v-for="(error, index) in errors.datetime_expiry" :key="index">{{ error }}</p>
@@ -45,13 +45,13 @@
                                     <div>
                                         <div class="form-check form-check-inline">
                                             <input @change="discountTypeChanged" type="radio" class="form-check-input"
-                                                id="discountTypePercentage" name="discountType" v-model="discount_code_batch.discount_type" value="percentage"
+                                                id="discountTypePercentage" name="discountType" v-model="discountCodeBatch.discount_type" value="percentage"
                                                 aria-describedby="validationServerDiscountTypeFeedback" required />
                                             <label for="discountTypePercentage" class="col-form-label">Percentage</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input @change="discountTypeChanged" type="radio" class="form-check-input"
-                                                id="discountTypeAmount" name="discountType" v-model="discount_code_batch.discount_type" value="amount"
+                                                id="discountTypeAmount" name="discountType" v-model="discountCodeBatch.discount_type" value="amount"
                                                 aria-describedby="validationServerDiscountTypeFeedback" required />
                                             <label for="discountTypeAmount" class="col-form-label">Amount</label>
                                         </div>
@@ -60,11 +60,11 @@
                                 <div class="col-md-8">
                                     <label for="discountPercentage" class="col-form-label">&nbsp;</label>
                                     <div>
-                                        <input v-if="'percentage'==discount_code_batch.discount_type" type="number" class="form-control" :class="errors.discount_percentage ? 'is-invalid' : ''" id="discountPercentage"
-                                            name="discountPercentage" placeholder="Percentage" v-model="discount_code_batch.discount_percentage"
+                                        <input v-if="'percentage'==discountCodeBatch.discount_type" type="number" class="form-control" :class="errors.discount_percentage ? 'is-invalid' : ''" id="discountPercentage"
+                                            name="discountPercentage" placeholder="Percentage" v-model="discountCodeBatch.discount_percentage"
                                             aria-describedby="validationServerNameFeedback" min="1" max="100" required />
-                                        <input v-if="'amount'==discount_code_batch.discount_type" type="number" class="form-control" :class="errors.discount_amount ? 'is-invalid' : ''" id="discountAmount"
-                                            name="discountAmount" placeholder="Amount" v-model="discount_code_batch.discount_amount"
+                                        <input v-if="'amount'==discountCodeBatch.discount_type" type="number" class="form-control" :class="errors.discount_amount ? 'is-invalid' : ''" id="discountAmount"
+                                            name="discountAmount" placeholder="Amount" v-model="discountCodeBatch.discount_amount"
                                             aria-describedby="validationServerNameFeedback" min="1" required />
                                         <div v-if="errors.discount_amount" id="validationServerDiscountTypeFeedback" class="invalid-feedback">
                                             <p v-for="(error, index) in errors.discount_amount" :key="index">{{ error }}</p>
@@ -76,10 +76,10 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div v-if="discount_code_batch.discount_codes" class="col">
+                                <div v-if="discountCodeBatch.discount_codes" class="col">
                                     <label for="" class="col-form-label">Discount Codes:</label>
                                     <div>
-                                        <template v-for="discount_code in discount_code_batch.discount_codes">
+                                        <template v-for="discount_code in discountCodeBatch.discount_codes">
                                             <span class="badge org-badge-primary">{{ discount_code.code }}</span>&nbsp;
                                         </template>
                                     </div>
@@ -89,7 +89,7 @@
                                 <div class="col">
                                     <label for="uses" class="col-form-label">Number of times each code can be used:</label>
                                     <input type="number" class="form-control" :class="errors.name ? 'is-invalid' : ''" id="uses"
-                                        name="uses" placeholder="Unlimited" v-model="discount_code_batch.times_each_code_can_be_used"
+                                        name="uses" placeholder="Unlimited" v-model="discountCodeBatch.times_each_code_can_be_used"
                                         aria-describedby="validationServerNameFeedback" min="1" />
                                     <div v-if="errors.times_each_code_can_be_used" id="validationServerNameFeedback" class="invalid-feedback">
                                         <p v-for="(error, index) in errors.times_each_code_can_be_used" :key="index">{{ error }}</p>
@@ -98,7 +98,7 @@
                                 <div class="col">
                                     <label for="codesToGenerate" class="col-form-label">Number of codes to be created:</label>
                                     <input type="number" class="form-control" :class="errors.codes_to_generate ? 'is-invalid' : ''" id="codesToGenerate"
-                                        name="codesToGenerate" v-model="discount_code_batch.codes_to_generate"
+                                        name="codesToGenerate" v-model="discountCodeBatch.codes_to_generate"
                                         aria-describedby="validationServerCodesToGenerateFeedback" min="1" required />
                                     <div v-if="errors.codes_to_generate" id="validationServerCodesToGenerateFeedback" class="invalid-feedback">
                                         <p v-for="(error, index) in errors.codes_to_generate" :key="index">{{ error }}</p>
@@ -111,7 +111,7 @@
                             <div v-if="passTypes" class="mb-3">
                                 <label for="validPassTypes" class="col-form-label">Valid for pass type(s):</label>
 
-                                <select class="form-select" id="validPassTypes" name="validPassTypes" ref="validPassTypes" placeholder="All Pass Types" v-model="discount_code_batch.valid_pass_types"
+                                <select class="form-select" id="validPassTypes" name="validPassTypes" ref="validPassTypes" placeholder="All Pass Types" v-model="discountCodeBatch.valid_pass_types"
                                     aria-describedby="validationServervalidPassTypesFeedback" multiple>
                                     <option v-for="passType in passTypes" :key="passType.id" :value="passType.id">{{ passType.display_name }}</option>
                                 </select>
@@ -126,7 +126,7 @@
                             <div class="mb-3">
                                 <label for="validUsers" class="col-form-label">Valid for user(s):</label>
 
-                                <select class="form-select" id="validUsers" name="validUsers" ref="validUsers" placeholder="All Users" v-model="discount_code_batch.valid_users"
+                                <select class="form-select" id="validUsers" name="validUsers" ref="validUsers" placeholder="All Users" v-model="discountCodeBatch.valid_users"
                                     aria-describedby="validationServerValidUsersFeedback" multiple>
                                 </select>
 
@@ -139,14 +139,14 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="reason" class="col-form-label">Reason for <span v-if="discount_code_batch.id">Updating {{ discount_code_batch.discount_code_batch_number }}</span><span v-else>Creating Discount Code Batch</span>:</label>
-                                <textarea class="form-control" :class="errors.reason ? 'is-invalid' : ''" id="reason" name="reason" v-model="discount_code_batch.reason" aria-describedby="validationServerReasonFeedback" required></textarea>
+                                <label for="reason" class="col-form-label">Reason for <span v-if="discountCodeBatch.id">Updating {{ discountCodeBatch.discountCodeBatch_number }}</span><span v-else>Creating Discount Code Batch</span>:</label>
+                                <textarea class="form-control" :class="errors.reason ? 'is-invalid' : ''" id="reason" name="reason" v-model="discountCodeBatch.reason" aria-describedby="validationServerReasonFeedback" required></textarea>
                                 <div v-if="errors.reason" id="validationServerReasonFeedback" class="invalid-feedback">
                                     <p v-for="(error, index) in errors.reason" :key="index">{{ error }}</p>
                                 </div>
                                 <div v-else id="validationServerReasonFeedback" class="invalid-feedback">
                                     Please enter the reason this discount code batch is being
-                                    <span v-if="discount_code_batch.id">Updated</span>
+                                    <span v-if="discountCodeBatch.id">Updated</span>
                                     <span v-else>Created</span>.
                                 </div>
                             </div>
@@ -164,7 +164,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button v-if="discount_code_batch.discount_code_batch_number" type="submit" class="btn licensing-btn-primary">Update</button>
+                        <button v-if="discountCodeBatch.discountCodeBatch_number" type="submit" class="btn licensing-btn-primary">Update</button>
                         <button v-else type="submit" class="btn licensing-btn-primary">Create</button>
                     </div>
                 </form>
@@ -189,7 +189,7 @@ export default {
     },
     data() {
         return {
-            discount_code_batch: this.getDiscountCodeBatchInitialState(),
+            discountCodeBatch: this.getDiscountCodeBatchInitialState(),
             passTypes: null,
             errors: {},
             loading: false,
@@ -202,7 +202,7 @@ export default {
             if (newValue) {
                 this.fetchDiscountCodeBatch(newValue);
             } else {
-                this.discount_code_batch = this.getDiscountCodeBatchInitialState();
+                this.discountCodeBatch = this.getDiscountCodeBatchInitialState();
             }
         }
     },
@@ -211,7 +211,7 @@ export default {
     },
     computed: {
         minEndDate: function () {
-            let endDate = new Date(this.discount_code_batch.datetime_start);
+            let endDate = new Date(this.discountCodeBatch.datetime_start);
             endDate.setDate(endDate.getDate() + 1);
             return endDate.toISOString();
         }
@@ -223,13 +223,10 @@ export default {
         },
         discountTypeChanged: function (event) {
             if('percentage'==event.target.value) {
-                this.discount_code_batch.discount_amount = '';
+                this.discountCodeBatch.discount_amount = '';
             } else {
-                this.discount_code_batch.discount_percentage = '';
+                this.discountCodeBatch.discount_percentage = '';
             }
-        },
-        fetchDefaultOptionsForPassType: function () {
-
         },
         getDiscountCodeBatchInitialState() {
             return {
@@ -246,6 +243,23 @@ export default {
                 datetime_expiry: this.minEndDate,
             }
         },
+        initialiseValidUsersSelect2: function() {
+            let vm = this;
+            var dropdownParentEl = $('#discountCodeBatchModal > .modal-dialog > .modal-content')
+            $(vm.$refs.validUsers).select2({
+                ajax: {
+                    url: apiEndpoints.select2Customers,
+                    dataType: 'json'
+                },
+                dropdownParent: dropdownParentEl,
+                "theme": "bootstrap-5",
+                multiple: true,
+                placeholder: "All Users",
+            }).on('change', function() {
+                console.log($(this).val());
+                vm.discountCodeBatch.valid_users = $(this).val();
+            });
+        },
         fetchDiscountCodeBatch: function (id) {
             let vm = this;
             vm.loading = true;
@@ -257,31 +271,38 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                vm.discount_code_batch = Object.assign({}, data);
-                if(vm.discount_code_batch.discount_percentage) {
-                    vm.discount_code_batch.discount_type = 'percentage';
+                vm.discountCodeBatch = Object.assign({}, data);
+                if(vm.discountCodeBatch.discount_percentage) {
+                    vm.discountCodeBatch.discount_type = 'percentage';
                 } else {
-                    vm.discount_code_batch.discount_type = 'amount';
+                    vm.discountCodeBatch.discount_type = 'amount';
                 }
-                vm.discount_code_batch.valid_pass_types =
-                vm.discount_code_batch.valid_pass_types.map(({pass_type_id}) => pass_type_id);
+                console.log("valid_pass_types = " + JSON.stringify(vm.discountCodeBatch.valid_pass_types));
 
-                vm.discount_code_batch.valid_users.forEach(function(validUser){
+                vm.discountCodeBatch.valid_pass_types =
+                vm.discountCodeBatch.valid_pass_types.map(({pass_type_id}) => pass_type_id);
+
+                vm.initialiseValidUsersSelect2();
+
+                vm.discountCodeBatch.valid_users.forEach(function(validUser){
                     console.log("validUser.display_name = " + validUser.display_name);
                     var option = new Option(
-                        helpers.escapeHtml(validUser.display_name),
-                        helpers.escapeHtml(validUser.user),
+                        validUser.display_name,
+                        validUser.user.toString(),
                         true,
                         true
                     );
+                    console.log(JSON.stringify(option))
                     $(vm.$refs.validUsers).append(option);
                 });
-                $(vm.$refs.validUsers).trigger('change');
-                vm.discount_code_batch.valid_users =
-                vm.discount_code_batch.valid_users.map(({pass_type_id}) => pass_type_id);
-                console.log("valid_users = " + vm.discount_code_batch.valid_users);
 
-                //console.log("vm.discount_code_batch = " + JSON.stringify(vm.discount_code_batch));
+                $(vm.$refs.validUsers).trigger('change');
+                vm.discountCodeBatch.valid_users =
+                vm.discountCodeBatch.valid_users.map(({user}) => user);
+
+                console.log("valid_users = " + JSON.stringify(vm.discountCodeBatch.valid_users));
+
+                //console.log("vm.discountCodeBatch = " + JSON.stringify(vm.discountCodeBatch));
                 if(vm.valid_pass_types) {
                     var validPassTypes = vm.valid_pass_types.split(',');
                     $(".select2").select2().val(validPassTypes).trigger('change');
@@ -319,21 +340,21 @@ export default {
                         placeholder: "All Pass Types",
                     }).on('change', function() {
                         console.log($(this).val());
-                        vm.discount_code_batch.valid_pass_types = $(this).val();
+                        vm.discountCodeBatch.valid_pass_types = $(this).val();
                     });
                 });
             });
         },
         submitForm: function () {
             let vm = this;
-            vm.discount_code_batch.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
-            console.log(vm.discount_code_batch);
+            vm.discountCodeBatch.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
+            console.log(vm.discountCodeBatch);
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(vm.discount_code_batch)
+                body: JSON.stringify(vm.discountCodeBatch)
             };
-            fetch(apiEndpoints.saveDiscountCodeBatch, requestOptions)
+            fetch(apiEndpoints.createDiscountCodeBatch, requestOptions)
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {
@@ -347,7 +368,7 @@ export default {
                         }
                     );
                     $('#successMessageAlert').show();
-                    vm.discount_code_batch = vm.getDiscountCodeBatchInitialState();
+                    vm.discountCodeBatch = vm.getDiscountCodeBatchInitialState();
                     var discountCodeBatchModal = bootstrap.Modal.getInstance(document.getElementById('discountCodeBatchModal'));
                     discountCodeBatchModal.hide();
                 })
@@ -376,21 +397,7 @@ export default {
         this.fetchPassTypes();
     },
     mounted: function () {
-        let vm = this;
-        var dropdownParentEl = $('#discountCodeBatchModal > .modal-dialog > .modal-content')
-        $(vm.$refs.validUsers).select2({
-            ajax: {
-                url: apiEndpoints.select2Customers,
-                dataType: 'json'
-            },
-            dropdownParent: dropdownParentEl,
-            "theme": "bootstrap-5",
-            multiple: true,
-            placeholder: "All Users",
-        }).on('change', function() {
-            console.log($(this).val());
-            vm.discount_code_batch.valid_users = $(this).val();
-        });
+        this.initialiseValidUsersSelect2();
     }
 }
 </script>
