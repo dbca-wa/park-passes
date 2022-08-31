@@ -422,7 +422,7 @@ class Pass(models.Model):
         null=False, blank=False, default=False
     )
     park_pass_pdf = models.FileField(
-        storage=upload_protected_files_storage, null=True, blank=True
+        storage=upload_protected_files_storage, null=True, blank=True, max_length=500
     )
     processing_status = models.CharField(
         max_length=2, choices=PROCESSING_STATUS_CHOICES, null=True, blank=True
