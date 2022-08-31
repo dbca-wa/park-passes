@@ -63,7 +63,9 @@ def is_retailer(request):
     user = request.user
     try:
         system_group = SystemGroup.objects.get(name=GROUP_NAME_PARK_PASSES_RETAILER)
-        in_retailer_group = RetailerGroupUser.objects.filter(emailuser=user).count()
+        in_retailer_group = RetailerGroupUser.objects.filter(
+            emailuser_id=user.id
+        ).count()
         if user.id not in system_group.get_system_group_member_ids():
             return False
         if in_retailer_group:
