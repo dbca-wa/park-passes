@@ -318,8 +318,12 @@ export default {
                     let links = '';
                     let today = new Date();
                     let expiryDate = new Date(full.datetime_expiry);
+                    let editLink = vm.$router.resolve({
+                        name: 'internal-discount-code-batch-form',
+                        params: { discountCodeBatchId: full.id }
+                    });
                     if (today < expiryDate) {
-                        links += `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a> | `;
+                        links += `<a href="${editLink.href}">Edit</a> | `;
                         links += `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="invalidate" data-discount-code-batch-number="${full.discount_code_batch_number}">Invalidate</a>`;
                     }
                     return links;
