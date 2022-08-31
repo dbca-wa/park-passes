@@ -333,8 +333,13 @@ export default {
                 searchable: false,
                 visible: true,
                 'render': function(row, type, full){
+                    let editLink = vm.$router.resolve({
+                        name: 'internal-pass-form',
+                        params: { passId: full.id }
+                    });
                     let links = '';
-                    links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
+
+                    links +=  `<a href="${editLink.href}">Edit</a>`;
                     links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
                     links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
                     return links;
@@ -476,14 +481,6 @@ export default {
             });
         },
         addEventListeners: function(){
-            let vm = this
-            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="edit"]', function(e) {
-                e.preventDefault();
-                let action = $(this).data('action');
-                let id = $(this).data('item-id');
-                console.log(action + id);
-                vm.$router.push(`/internal/passes/${id}`)
-            });
             vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="cancel"]', function(e) {
                 e.preventDefault();
                 let id = $(this).data('item-id');
