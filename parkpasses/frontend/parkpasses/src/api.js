@@ -54,7 +54,10 @@ module.exports = {
     discountCodeBatch: function (id) {
         return                          `/api/discount-codes/internal/discount-code-batches/${id}/`;
     },
-    saveDiscountCodeBatch:              '/api/discount-codes/internal/discount-code-batches/',
+    updateDiscountCodeBatch: function (id) {
+        return                          `/api/discount-codes/internal/discount-code-batches/${id}/`;
+    },
+    createDiscountCodeBatch:             '/api/discount-codes/internal/discount-code-batches/',
     isDiscountCodeValid: function (email, code, pass_type_id) {
         return                          `/api/discount-codes/validate-discount-code?email=${email}&code=${code}&pass_type_id=${pass_type_id}`;
     },
