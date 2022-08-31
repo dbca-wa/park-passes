@@ -202,6 +202,9 @@ module.exports = {
             let popover = new bootstrap.Popover(popoverTriggerEl)
         })
     },
+    getDatetimeLocalFormat() {
+        return 'yyyy-MM-DDTHH:mm:ss.SSS';
+    },
     getDateFromDatetime(dateTime) {
         date = new Date(dateTime);
         return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
