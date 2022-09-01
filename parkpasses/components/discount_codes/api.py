@@ -1,7 +1,6 @@
 import logging
 
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from drf_excel.mixins import XLSXFileMixin
 from drf_excel.renderers import XLSXRenderer
@@ -14,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from org_model_logs.models import UserAction
+from org_model_logs.utils import UserActionViewSet
 from parkpasses.components.discount_codes.models import (
     DiscountCode,
     DiscountCodeBatch,
@@ -74,7 +73,7 @@ class DiscountCodeViewSet(viewsets.ModelViewSet):
     serializer_class = InternalDiscountCodeSerializer
 
 
-class InternalDiscountCodeBatchViewSet(viewsets.ModelViewSet):
+class InternalDiscountCodeBatchViewSet(UserActionViewSet):
     model = DiscountCodeBatch
     pagination_class = DatatablesPageNumberPagination
     queryset = DiscountCodeBatch.objects.all()
@@ -89,10 +88,7 @@ class InternalDiscountCodeBatchViewSet(viewsets.ModelViewSet):
     ]
 
     def perform_create(self, serializer):
-        logger.debug("self.request.data = " + str(self.request.data))
         new_discount_code_batch = serializer.save(created_by=self.request.user.id)
-        content_type = ContentType.objects.get_for_model(new_discount_code_batch)
-        reason = self.request.data.get("reason")
         valid_pass_types = self.request.data.get("valid_pass_types")
 
         for valid_pass_type in valid_pass_types:
@@ -107,15 +103,9 @@ class InternalDiscountCodeBatchViewSet(viewsets.ModelViewSet):
                 discount_code_batch_id=new_discount_code_batch.id, user=valid_user
             )
 
-        logger.debug("reason = " + str(reason))
-        user_action = UserAction.objects.log_action(
-            object_id=new_discount_code_batch.id,
-            content_type=content_type,
-            who=self.request.user.id,
-            what="Create Discount Code Batch " + str(new_discount_code_batch.id),
-            why=reason,
-        )
-        user_action.save()
+    def perform_update(self, serializer):
+        logger.debug("update self.request.data = " + str(self.request.data))
+        return super().perform_update(serializer)
 
 
 class DiscountCodeBatchCommentViewSet(viewsets.ModelViewSet):
