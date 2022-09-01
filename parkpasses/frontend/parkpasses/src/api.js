@@ -105,4 +105,8 @@ module.exports = {
     orderRetrieveExternal: function (uuid) {
         return                          `/api/orders/external/order-by-uuid/${uuid}/`;
     },
+
+    /* ========================= Org Model Documents ====================================*/
+
+    uploadOrgModelDocuments:            '/api/org_model_documents/upload-documents',
 }
