@@ -5,7 +5,7 @@ module.exports = {
 
     userData:                           '/api/users/user-data/?format=json',
     select2Customers:                   '/api/users/users/get_customers',
-    allUsers:                              '/api/users/users/',
+    allUsers:                           '/api/users/users/',
 
     /* ========================= Concessions ============================================*/
 
@@ -43,7 +43,7 @@ module.exports = {
     /* ========================= Pass Options ===========================================*/
 
     passOptions: function (passTypeId) {
-        return                          `/api/passes/pass-options-by-pass-type-id?pass_type_id=${passTypeId}}`;
+        return                          `/api/passes/pass-options-by-pass-type-id?pass_type_id=${passTypeId}`;
     },
     defaultPassOptions: function (passTypeId) {
         return                          `/api/passes/default-pass-options-by-pass-type-id?pass_type_id=${passTypeId}`;
@@ -108,5 +108,11 @@ module.exports = {
 
     /* ========================= Org Model Documents ====================================*/
 
-    uploadOrgModelDocuments:            '/api/org_model_documents/upload-documents',
+    uploadOrgModelDocuments:            '/api/org-model-documents/upload-documents',
+
+    /* ========================= Org Model Logs ====================================*/
+
+    userActionLog: function (appLabel, model) {
+        return                          `/api/org-model-logs/?app_label=${appLabel}&model=${model}`;
+    }
 }
