@@ -481,6 +481,7 @@ export default {
             });
         },
         addEventListeners: function(){
+            let vm = this;
             vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="cancel"]', function(e) {
                 e.preventDefault();
                 let id = $(this).data('item-id');
