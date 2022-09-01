@@ -13,19 +13,9 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <h1>
-                    Help
-                </h1>
-                <p class="m-4">
-                    Help documentation for the user will be here.
-                </p>
-                <p class="m-4">
-                    Do we want the general help content to be dynamic?
-                </p>
-            </div>
-        </div>
+    <div class="container-fluid" id="vue-root">
+        {% block vue-component %}
+        <div id="app"></div>
+        {% endblock %}
     </div>
 {% endblock %}
