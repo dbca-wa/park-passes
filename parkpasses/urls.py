@@ -76,6 +76,8 @@ urlpatterns = [
     url(r"api/help/", include("parkpasses.components.help.urls")),
     url(r"api/orders/", include("parkpasses.components.orders.urls")),
     url(r"api/users/", include("parkpasses.components.users.urls")),
+    # ========================================================================== Org Model Documents end-points
+    url(r"api/org_model_documents/", include("org_model_documents.urls")),
     # ========================================================================== Management Commands
     url(
         r"^mgt-commands/$", views.ManagementCommandsView.as_view(), name="mgt-commands"
