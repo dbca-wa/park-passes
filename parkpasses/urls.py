@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.urls import path
+from django.views.decorators.cache import cache_page
 from ledger_api_client.urls import urlpatterns as ledger_patterns
 from rest_framework import routers
 
@@ -24,7 +25,7 @@ api_patterns = [
 # URL Patterns
 urlpatterns = [
     # ========================================================================== External Public
-    url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
+    url(r"^$", cache_page(60 * 15)(views.ParkPassesRoutingView.as_view()), name="home"),
     url(r"^help/", ParkPassesHelpView.as_view(), name="help"),
     url(
         r"^purchase-voucher/",
@@ -36,12 +37,12 @@ urlpatterns = [
         views.ParkPassesPurchasePassView.as_view(),
         name="purchase-pass",
     ),
-    url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
+    url(r"^contact/", views.ParkPassesContactView.as_view(), name="contact"),
     url(r"^faq/", views.ParkPassesFAQView.as_view(), name="faq"),
     url(
         r"^further_info/",
         views.ParkPassesFurtherInformationView.as_view(),
-        name="ds_further_info",
+        name="further_information",
     ),
     # ========================================================================== External Authenticated
     url(r"^cart/", CartView.as_view(), name="cart"),
@@ -77,7 +78,9 @@ urlpatterns = [
     url(r"api/orders/", include("parkpasses.components.orders.urls")),
     url(r"api/users/", include("parkpasses.components.users.urls")),
     # ========================================================================== Org Model Documents end-points
-    url(r"api/org_model_documents/", include("org_model_documents.urls")),
+    url(r"api/org-model-documents/", include("org_model_documents.urls")),
+    # ========================================================================== Org Model Logs
+    url(r"api/org-model-logs/", include("org_model_logs.urls")),
     # ========================================================================== Management Commands
     url(
         r"^mgt-commands/$", views.ManagementCommandsView.as_view(), name="mgt-commands"
