@@ -416,9 +416,8 @@ export default {
         };
     },
     components: {
-        apiEndpoints,
-        constants,
-    },
+
+},
     computed: {
         totalPrice() {
             let totalPrice = 0.00;
@@ -440,7 +439,7 @@ export default {
             if(!this.passType){
                 return false;
             }
-            return ('HOLIDAY_PASS'==this.passType.name ? true : false)
+            return (constants.HOLIDAY_PASS_NAME==this.passType.name ? true : false)
         },
         isAnnualLocalPass() {
             if(!this.passType){

@@ -81,7 +81,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, helpers, constants } from '@/utils/hooks'
 
 export default {
     name: "CartItem",
@@ -108,7 +108,7 @@ export default {
             if(!cartItem){
                 return false;
             }
-            return ('HOLIDAY_PASS'==cartItem.pass_type_name ? true : false)
+            return (constants.HOLIDAY_PASS_NAME==cartItem.pass_type_name ? true : false)
         },
         discountAmount(cartItem) {
             if(!cartItem){

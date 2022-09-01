@@ -74,7 +74,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div v-if="pass.vehicle_registration_2" class="row mb-1">
+                            <div v-if="!isHolidayPass" class="row mb-1">
                                 <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
@@ -153,7 +153,14 @@
         </div>
 
     </div>
-    <div v-else>
+    <footer class="fixed-bottom mt-auto py-3 bg-light">
+        <div class="container d-flex flex-row-reverse">
+            <button @click="validateForm(false)" class="btn licensing-btn-primary ms-2">Save and Continue Editing</button>
+            <button @click="validateForm(true)" class="btn licensing-btn-primary ms-2">Save and Exit</button>
+            <button @click="returnToPassesDash" class="btn licensing-btn-primary">Cancel</button>
+        </div>
+    </footer>
+    <div v-if="!pass">
         <loader isLoading="true" />
     </div>
 </template>
@@ -175,11 +182,18 @@ export default {
         return {
             passId: null,
             pass: null,
+            logsUrl: apiEndpoints.userActionLog(
+                constants.PARKPASSES_APP_LABEL,
+                constants.PARKPASSES_MODELS_PASS,
+            ),
         }
     },
     computed: {
         showDiscountsPanel: function() {
             return this.pass.concession_type || this.pass.voucher_number || this.pass.discount_code_used;
+        },
+        isHolidayPass: function () {
+            return constants.HOLIDAY_PASS_NAME==this.pass.pass_type_name ? true : false
         }
     },
     components: {
@@ -188,6 +202,9 @@ export default {
         Loader
     },
     methods: {
+        returnToPassesDash: function() {
+            this.$router.push({name: 'internal-dash'});
+        },
         fetchPass: function (passId) {
             let vm = this;
             fetch(apiEndpoints.internalPass(passId))
