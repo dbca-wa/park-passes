@@ -329,7 +329,6 @@ export default {
                 ]
             },
             commsTable : null,
-
         }
     },
     components:{
@@ -346,14 +345,11 @@ export default {
             myDefaultAllowList.table = []
 
             let vm = this;
-            // let commsLogId = 'comms-log-table' + vm_uid;
-            // let popover_name = 'popover-'+ vm._uid+'-comms';
             let commsLogId = 'comms-log-table' + vm.uuid;
             let popover_name = 'popover-' + vm.uuid + '-comms';
             let popover_elem = $(vm.$refs.showCommsBtn)[0]
             let my_content = '<table id="' + commsLogId + '" class="hover table table-striped table-bordered dt-responsive" cellspacing="0" width="100%"></table>'
             let my_template = '<div class="popover ' + popover_name +'" role="tooltip"><div class="popover-arrow" style="top:110px;"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-            //let my_template = `<div class="popover ${popover_name}" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>`
 
             new bootstrap.Popover(popover_elem, {
                 sanitize: false,
@@ -363,14 +359,12 @@ export default {
                 title: 'Communication logs',
                 container: 'body',
                 placement: 'right',
-                // trigger: "click focus",
                 trigger: "click",
             })
             popover_elem.addEventListener('inserted.bs.popover', () => {
                 // when the popover template has been added to the DOM
                 vm.commsTable = $('#' + commsLogId).DataTable(vm.commsDtOptions);
 
-                //vm.commsTable.on('draw.dt', function () {
                 vm.commsTable.on('draw', function () { // Draw event - fired once the table has completed a draw.
 
                     var popoverTriggerList = [].slice.call(document.querySelectorAll('#' + commsLogId + ' [data-bs-toggle="popover"]'))
@@ -396,8 +390,6 @@ export default {
             myDefaultAllowList.table = []
 
             let vm = this;
-            //let actionLogId = 'actions-log-table' + vm_uid;
-            //let popover_name = 'popover-'+ vm_uid + '-logs';
             let actionLogId = 'actions-log-table' + vm.uuid;
             let popover_name = 'popover-'+ vm.uuid + '-logs';
             let popover_elem = $(vm.$refs.showActionBtn)[0]
@@ -411,24 +403,12 @@ export default {
                 title: 'Action logs',
                 container: 'body',
                 placement: 'right',
-                // trigger: "click focus",
                 trigger: "click",
             })
             popover_elem.addEventListener('inserted.bs.popover', () => {
                 // when the popover template has been added to the DOM
                 vm.actionsTable = $('#' + actionLogId).DataTable(this.actionsDtOptions);
-
-                //vm.actionsTable.on('draw.dt', function () {
                 vm.actionsTable.on('draw', function () {
-                    //var $tablePopover = $(this).find('[data-bs-toggle="popover"]');
-                    //if ($tablePopover.length > 0) {
-                    //    $tablePopover.popover();
-                    //    // the next line prevents from scrolling up to the top after clicking on the popover.
-                    //    $($tablePopover).on('click', function (e) {
-                    //        e.preventDefault();
-                    //        return true;
-                    //    });
-                    //}
                     var popoverTriggerList = [].slice.call(document.querySelectorAll('#' + actionLogId + ' [data-bs-toggle="popover"]'))
                     var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
                         return new bootstrap.Popover(popoverTriggerEl)
