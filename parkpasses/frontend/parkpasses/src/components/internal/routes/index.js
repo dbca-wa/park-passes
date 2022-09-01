@@ -14,8 +14,9 @@ export default {
     component: RouterView,
     children: [
         {
-            path: '/internal',
-            component: InternalDashboard
+            path: '/internal/',
+            component: InternalDashboard,
+            name: 'internal-dash'
         },
         {
             path: '/internal/pricing-windows',
