@@ -5,26 +5,32 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework.viewsets import ModelViewSet
 
 from org_model_logs.models import UserAction
+from org_model_logs.serializers import UserActionSerializer
 
 logger = logging.getLogger(__name__)
 
 
 class UserActionViewSet(ModelViewSet):
-    def log_user_action(self, object_id, action):
+    def log_user_action(self, object_id, action, why=None):
         model = self.model
         content_type = ContentType.objects.get_for_model(model)
-        user_action = UserAction(
+        user_action = UserAction.objects.log_action(
             object_id=object_id,
             content_type=content_type,
             who=self.request.user.id,
             what=action.format(model._meta.model.__name__, object_id),
+            why=why,
         )
-        user_action.save()
+        return user_action
 
     def create(self, request, *args, **kwargs):
+        why = self.request.data.get("why", None)
         response = super().create(request, *args, **kwargs)
         instance = response.data
-        self.log_user_action(instance["id"], settings.ACTION_CREATE)
+        user_action = self.log_user_action(
+            instance["id"], settings.ACTION_CREATE, why=why
+        )
+        response.data["user_action"] = UserActionSerializer(user_action).data
         return response
 
     def retrieve(self, request, *args, **kwargs):
@@ -34,19 +40,31 @@ class UserActionViewSet(ModelViewSet):
         return response
 
     def update(self, request, *args, **kwargs):
+        why = self.request.data.get("why", None)
         response = super().update(request, *args, **kwargs)
         instance = response.data
-        self.log_user_action(instance["id"], settings.ACTION_UPDATE)
+        user_action = self.log_user_action(
+            instance["id"], settings.ACTION_UPDATE, why=why
+        )
+        response.data["user_action"] = UserActionSerializer(user_action).data
         return response
 
     def partial_update(self, request, *args, **kwargs):
+        why = self.request.data.get("why", None)
         response = super().partial_update(request, *args, **kwargs)
         instance = response.data
-        self.log_user_action(instance["id"], settings.ACTION_PARTIAL_UPDATE)
+        user_action = self.log_user_action(
+            instance["id"], settings.ACTION_PARTIAL_UPDATE, why=why
+        )
+        response.data["user_action"] = UserActionSerializer(user_action).data
         return response
 
     def destroy(self, request, *args, **kwargs):
+        why = self.request.data.get("why", None)
         response = super().destroy(request, *args, **kwargs)
         instance = response.data
-        self.log_user_action(instance["id"], settings.ACTION_DESTROY)
+        user_action = self.log_user_action(
+            instance["id"], settings.ACTION_DESTROY, why=why
+        )
+        response.data["user_action"] = UserActionSerializer(user_action).data
         return response
