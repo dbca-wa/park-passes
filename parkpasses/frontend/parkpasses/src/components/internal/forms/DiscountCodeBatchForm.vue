@@ -162,11 +162,11 @@
 
                             <div class="mb-3">
                                 <label for="reason" class="col-form-label">Reason for <span v-if="discountCodeBatch.id">Updating {{ discountCodeBatch.discount_code_batch_number }}</span><span v-else>Creating Discount Code Batch</span>:</label>
-                                <textarea class="form-control" :class="errors.reason ? 'is-invalid' : ''" id="reason" name="reason" v-model="discountCodeBatch.reason" aria-describedby="validationServerReasonFeedback" required></textarea>
+                                <textarea class="form-control" :class="errors.reason ? 'is-invalid' : ''" id="reason" name="reason" v-model="discountCodeBatch.why" aria-describedby="validationServerReasonFeedback" required></textarea>
                                 <div v-if="errors.reason" id="validationServerReasonFeedback" class="invalid-feedback">
                                     <p v-for="(error, index) in errors.reason" :key="index">{{ error }}</p>
                                 </div>
-                                <div v-else id="validationServerReasonFeedback" class="invalid-feedback">
+                                <div v-else id="validationReasonFeedback" class="invalid-feedback">
                                     Please enter the reason this discount code batch is being
                                     <span v-if="discountCodeBatch.id">updated</span>
                                     <span v-else>created</span>.
@@ -174,13 +174,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="reasonFiles" class="col-form-label">Files</label>
-                                <input @change="processReasonFiles($event.target.name, $event.target.files)" class="form-control" type="file" id="reasonFiles" name="reasonFiles" multiple>
-                                <div v-if="errors.date_start"  id="validationServerReasonFilesFeedback" class="invalid-feedback">
-                                    <p v-for="(error, index) in errors.date_start" :key="index">{{ error }}</p>
-                                </div>
-                                <div v-else id="validationServerReasonFilesFeedback" class="invalid-feedback">
-                                    Please enter a valid start date.
-                                </div>
+                                <input class="form-control" type="file" id="reasonFiles" name="reasonFiles" multiple>
                             </div>
                         </div>
 
@@ -212,9 +206,8 @@
 </template>
 
 <script>
-import { apiEndpoints, constants, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers, utils } from '@/utils/hooks'
 import Loader from '@/utils/vue/Loader.vue'
-
 import SectionToggle from '@/components/forms/SectionToggle.vue'
 import CommsLog from '@/components/common/CommsLog.vue'
 
@@ -360,14 +353,6 @@ export default {
                 vm.initialiseValidPassTypesSelect2();
             });
         },
-        processReasonFiles: function (name, files) {
-            console.log('name = ' + name);
-            console.log('files.length = ' + files.length);
-            console.log('files = ' + files);
-            for(i=0;i<file.length;i++) {
-                apiEndpoints.processF(vm.discountCodeBatch.id)
-            }
-        },
         submitForm: function (exitAfter) {
             let vm = this;
             vm.discountCodeBatch.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
@@ -385,6 +370,10 @@ export default {
                         this.errors = data;
                         return Promise.reject(error);
                     }
+
+                    console.log(data);
+                    let files = $('#reasonFiles')[0].files;
+                    utils.uploadOrgModelDocuments(data.user_action.user_action_content_type_id, data.user_action.id, files);
                     Swal.fire({
                         title: 'Success',
                         text: 'Discount Code Batch updated successfully.',
@@ -398,7 +387,8 @@ export default {
                     Array.prototype.slice.call(forms).forEach(function (form) {
                         form.classList.remove('was-validated');
                     });
-                    vm.discountCodeBatch.reason = '';
+                    vm.discountCodeBatch.why = '';
+                    $('#reasonFiles').val('');
                 })
                 .catch(error => {
                     this.systemErrorMessage = "ERROR: Please try again in an hour.";
