@@ -414,6 +414,9 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     pass_type = serializers.CharField(
         source="option.pricing_window.pass_type", read_only=True
     )
+    pass_type_name = serializers.CharField(
+        source="option.pricing_window.pass_type.name", read_only=True
+    )
     pricing_window = serializers.CharField(source="option.pricing_window")
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
     sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
@@ -461,7 +464,13 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pass
         fields = "__all__"
-        read_only_fields = ["pass_type", "pricing_window", "sold_via", "sold_via_name"]
+        read_only_fields = [
+            "pass_type",
+            "pricing_window",
+            "sold_via",
+            "sold_via_name",
+            "pass_type_name",
+        ]
 
 
 class InternalPassSerializer(serializers.ModelSerializer):
