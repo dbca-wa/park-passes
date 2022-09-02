@@ -418,6 +418,7 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
         source="option.pricing_window.pass_type.name", read_only=True
     )
     pricing_window = serializers.CharField(source="option.pricing_window")
+    park_pass_pdf = serializers.SerializerMethodField()
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
     sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
     processing_status_display_name = serializers.CharField(
@@ -460,6 +461,9 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
             )
             return f"{discount}% Off"
         return None
+
+    def get_park_pass_pdf(self, obj):
+        return os.path.basename(obj.park_pass_pdf.name)
 
     class Meta:
         model = Pass
