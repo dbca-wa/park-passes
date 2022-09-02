@@ -25,6 +25,9 @@ module.exports = {
 
     passProcessingStatusesDistinct:     '/api/passes/pass-processing-statuses-distinct?format=json',
     createPass:                         '/api/passes/external/passes/',
+    updatePass: function (id) {
+        return                          `/api/passes/internal/passes/${id}/`;
+    },
     internalParkPassPdf: function (passId) {
         return                          `/api/passes/internal/passes/${passId}/retrieve-park-pass-pdf`
     },
@@ -112,7 +115,7 @@ module.exports = {
 
     /* ========================= Org Model Logs ====================================*/
 
-    userActionLog: function (appLabel, model) {
-        return                          `/api/org-model-logs/?app_label=${appLabel}&model=${model}`;
+    userActionLog: function (appLabel, model, object_id) {
+        return                          `/api/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&object_id=${object_id}&format=datatables`;
     }
 }
