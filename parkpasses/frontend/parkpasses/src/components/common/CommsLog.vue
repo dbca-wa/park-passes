@@ -58,7 +58,7 @@ export default {
         },
         disableAddEntry: {
             type: Boolean,
-            default: true
+            default: false
         }
     },
     data() {
@@ -75,17 +75,17 @@ export default {
                 responsive: true,
                 deferRender: true,
                 autowidth: true,
-                order: [[3, 'desc']], // order the non-formatted date as a hidden column
+                order: [[4, 'desc']], // order the non-formatted date as a hidden column
                 dom:
                     "<'row'<'col-sm-4'l><'col-sm-8'f>>" +
                     "<'row'<'col-sm-12'tr>>" +
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 processing: true,
+                serverSide: true,
                 ajax: {
                     "url": vm.logsUrl,
-                    "dataSrc": '',
+                    "dataSrc": 'data',
                 },
-                order: [],
                 columns:[
                     {
                         title: 'Who',
@@ -102,12 +102,26 @@ export default {
                         data:"when",
                         orderable: false,
                         mRender:function(data,type,full){
-                            //return moment(data).format(vm.DATE_TIME_FORMAT)
                             return moment(data).format(vm.dateFormat);
                         }
                     },
                     {
-                        title: 'Created',
+                        title: 'Documents',
+                        data: "documents",
+                        orderable: false,
+                        mRender:function(data,type,full){
+                            if(1>full.documents.length){
+                                let documentsHtml = '';
+                                for(let i=1;i<full.documents.length;i++){
+                                    documentsHtml += `<a href="">${file[i]._file}</a><br />`;
+                                }
+                                return documentsHtml;
+                            } else {
+                                return 'No Files'
+                            }
+                        }
+                    },
+                    {
                         data: 'when',
                         visible: false
                     }
@@ -423,6 +437,7 @@ export default {
                 var diff = el_bounding_top - popover_bounding_top;
                 var x = diff + 5;
                 $('.'+popover_name).children('.arrow').css('top', x + 'px');
+                $('#to').focus();
             })
 
         },
