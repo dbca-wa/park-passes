@@ -299,18 +299,6 @@ ACTION_DESTROY = "Destroy {} {}"
 ACTION_CANCEL = "Cancel {} {}"
 
 
-COMMUNICATIONS_LOG_ENTRY_CHOICES = [
-    ("email", "Email"),
-    ("phone", "Phone Call"),
-    ("mail", "Mail"),
-    ("person", "In Person"),
-    ("onhold", "On Hold"),
-    ("onhold_remove", "Remove On Hold"),
-    ("with_qaofficer", "With QA Officer"),
-    ("with_qaofficer_completed", "QA Officer Completed"),
-    ("referral_complete", "Referral Completed"),
-]
-
 PARKPASSES_VOUCHER_EXPIRY_IN_DAYS = 365 * 2
 
 PARKPASSES_VALID_CART_CONTENT_TYPES = [
