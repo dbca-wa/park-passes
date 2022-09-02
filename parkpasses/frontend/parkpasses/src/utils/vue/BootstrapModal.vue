@@ -3,31 +3,24 @@
         <div class="modal" @click.self="clickMask">
             <div class="modal-dialog" :class="modalClass" role="document">
                 <div class="modal-content">
-                    <!--Header-->
                     <slot name="header">
                         <div class="modal-header">
-<!--
-                            <a type="button" class="close" @click="cancel">x</a>
--->
                             <h4 class="modal-title"><slot name="title">{{title}}</slot></h4>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="cancel"></button>
                         </div>
                     </slot>
-                    <!--Container-->
                     <div class="modal-body">
                         <slot></slot>
                     </div>
-                    <!--Footer-->
                     <div class="modal-footer">
                         <slot name="footer">
-                            <button id="okBtn" type="button" :class="okClass" @click="ok">{{okText}}</button>
-                            <button type="button" :class="cancelClass" @click="cancel">{{cancelText}}</button>
+                            <button type="button" class="btn btn-secondary" @click="cancel">{{cancelText}}</button>
+                            <button id="okBtn" type="button" class="btn licensing-btn-primary" @click="ok">{{okText}}</button>
                         </slot>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop in"></div>
     </div>
 </template>
 
@@ -154,16 +147,14 @@
         border-top-left-radius: .3rem;
         border-top-right-radius: .3rem;
     }
+    .modal-body {
+        background-color: #efefef;
+    }
     .modal-footer{
         border-bottom-left-radius: .3rem;
         border-bottom-right-radius: .3rem;
     }
-    .modal-body, .modal-footer, .modal-header {
-        /*background-color: #F5F5F5;
-        color: #333333;*/
-        background-color: #efefef;
-        color: #333333;
-    }
+
     .modal-transition {
         transition: all .6s ease;
     }
