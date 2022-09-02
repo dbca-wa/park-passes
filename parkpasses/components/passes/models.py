@@ -408,6 +408,7 @@ class Pass(models.Model):
     first_name = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
+    mobile = models.CharField(max_length=10, null=False, blank=False, default="")
     postcode = models.CharField(max_length=4, null=True, blank=True)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
@@ -537,6 +538,8 @@ class Pass(models.Model):
             days=self.option.duration
         )
         self.set_processing_status()
+
+        logger.debug("datetime_start = " + str(self.datetime_start))
 
         if self.user:
             email_user = self.email_user
