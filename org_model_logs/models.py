@@ -5,8 +5,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from parkpasses import settings
-
 
 class UserActionManager(models.Manager):
     """This manager adds convenience methods for querying User Actions"""
@@ -64,6 +62,18 @@ class UserAction(models.Model):
         indexes = (models.Index(fields=["content_type", "object_id"]),)
 
 
+class EntryType(models.Model):
+    type = models.CharField(max_length=100, null=False, blank=False)
+
+    class Meta:
+        verbose_name = "Entry Type"
+        verbose_name_plural = "Entry Types"
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.type
+
+
 class CommunicationsLogEntryManager(models.Manager):
     """This manager adds convenience methods for querying Communication Event Logs."""
 
@@ -97,17 +107,12 @@ class CommunicationsLogEntry(models.Model):
         help_text="Content type of the model.",
     )
 
-    DEFAULT_TYPE = settings.COMMUNICATIONS_LOG_ENTRY_CHOICES[0][0]
-
     to = models.TextField(blank=True, verbose_name="To")
     fromm = models.CharField(max_length=200, blank=True, verbose_name="From")
     cc = models.TextField(blank=True, verbose_name="cc")
 
-    type = models.CharField(
-        max_length=35,
-        choices=settings.COMMUNICATIONS_LOG_ENTRY_CHOICES,
-        default=DEFAULT_TYPE,
-    )
+    entry_type = models.ForeignKey(EntryType, on_delete=models.PROTECT, default=None)
+
     reference = models.CharField(max_length=100, blank=True)
     subject = models.CharField(
         max_length=200, blank=True, verbose_name="Subject / Description"
