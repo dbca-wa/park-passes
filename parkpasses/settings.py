@@ -340,6 +340,15 @@ PARKPASSES_VOUCHER_CODE_REDEEMED_DESCRIPTION = "Voucher Code Redeemed:"
 PARKPASSES_ORACLE_CODE = "FN46V9L80"
 
 
+LEDGER_UI_ACCOUNTS_MANAGEMENT = [
+    {"first_name": {"options": {"view": True, "edit": True}}},
+    {"last_name": {"options": {"view": True, "edit": True}}},
+    {"residential_address": {"options": {"view": True, "edit": True}}},
+    {"phone_number": {"options": {"view": True, "edit": True}}},
+    {"mobile_number": {"options": {"view": True, "edit": True}}},
+]
+
+
 """ ==================== CKEDITOR CONFIGS ======================== """
 
 CKEDITOR_CONFIGS = {
