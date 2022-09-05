@@ -26,14 +26,23 @@ class CartUtils:
             return ExternalPassSerializer(park_pass).data
 
     @classmethod
-    def get_basket_parameters(self, lines, vouchers=[], is_no_payment=False):
-        logger.debug("vouchers = " + vouchers)
+    def get_basket_parameters(
+        self,
+        lines,
+        booking_reference,
+        booking_reference_link=None,
+        vouchers=[],
+        is_no_payment=False,
+    ):
         return {
             "products": lines,
             "vouchers": [],
             "system": settings.PARKPASSES_PAYMENT_SYSTEM_PREFIX,
             "custom_basket": True,
             "no_payment": is_no_payment,
+            "booking_reference": booking_reference,
+            # Optional: Used to keep a link between bookings that are related such as autorenewal
+            "booking_reference_link": booking_reference_link,
         }
 
     @classmethod

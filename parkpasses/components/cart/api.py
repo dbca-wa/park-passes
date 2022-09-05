@@ -118,7 +118,7 @@ class LedgerCheckoutView(APIView):
             ledger_order_lines = self.get_ledger_order_lines(cart)
             is_no_payment = self.request.POST.get("no_payment", "false")
             basket_parameters = CartUtils.get_basket_parameters(
-                ledger_order_lines, is_no_payment
+                ledger_order_lines, cart.uuid, is_no_payment
             )
             logger.debug("\nbasket_parameters = " + str(basket_parameters))
 
@@ -169,6 +169,6 @@ class SuccessView(APIView):
 
         request.session["cart_item_count"] = 0
         logger.debug("FFS =====================>")
-        # If there is no uuid to identify the cart then sent a bad request status back in case ledger can
+        # If there is no uuid to identify the cart then send a bad request status back in case ledger can
         # do something with this in future
         return Response(status=status.HTTP_400_BAD_REQUEST)

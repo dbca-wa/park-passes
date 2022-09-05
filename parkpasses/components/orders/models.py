@@ -27,7 +27,8 @@ class Order(models.Model):
         max_length=36,
         null=False,
         blank=False,
-        help_text="This is copied from the cart to the order before the cart is deleted.",
+        help_text="This is copied from the cart to the order before the cart is deleted. \
+            It is also stored in ledger as the booking reference of the basket.",
     )
     invoice_reference = models.CharField(
         max_length=50,
