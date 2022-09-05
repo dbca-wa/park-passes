@@ -43,8 +43,8 @@
                     <tr v-if="cartItem.park_group && cartItem.park_group.length"><th>Park Group</th><td>{{cartItem.park_group}}</td></tr>
                     <tr><th>Duration</th><td>{{cartItem.duration}}</td></tr>
                     <tr v-if="cartItem.renew_automatically"><th>Automatically Renew</th><td><i class="fa fa-check" style="color:green;" aria-hidden="true"></i></td></tr>
-                    <tr><th>Pass Start Date</th><td>{{formatDate(cartItem.datetime_start)}}</td></tr>
-                    <tr><th>Pass Expiry Date</th><td>{{formatDate(cartItem.datetime_expiry)}}</td></tr>
+                    <tr><th>Pass Start Date</th><td>{{formatDate(cartItem.date_start)}}</td></tr>
+                    <tr><th>Pass Expiry Date</th><td>{{formatDate(cartItem.date_expiry)}}</td></tr>
                     <tr v-if="cartItem.vehicle_registration_1"><th>Vehicle Registration <span v-if="cartItem.vehicle_registration_2">1</span></th><td>{{cartItem.vehicle_registration_1}}</td></tr>
                     <tr v-if="cartItem.vehicle_registration_2"><th>Vehicle Registration <span v-if="cartItem.vehicle_registration_1">2</span></th><td>{{cartItem.vehicle_registration_2}}</td></tr>
                     <tr><th>Your First Name</th><td>{{cartItem.first_name}}</td></tr>

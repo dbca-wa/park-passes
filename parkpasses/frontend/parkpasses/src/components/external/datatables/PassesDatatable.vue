@@ -246,11 +246,11 @@ export default {
         },
         columnDatetimeStart: function(){
             return {
-                data: "datetime_start",
+                data: "date_start",
                 visible: true,
-                name: 'datetime_start',
+                name: 'date_start',
                 'render': function(row, type, full){
-                    const date = new Date(full.datetime_start);
+                    const date = new Date(full.date_start);
                     return date.toLocaleDateString();
                 }
             }

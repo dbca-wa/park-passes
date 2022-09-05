@@ -399,10 +399,10 @@ class PassFilterBackend(DatatablesFilterBackend):
             queryset = queryset.filter(processing_status=processing_status)
 
         if start_date_from:
-            queryset = queryset.filter(datetime_start__gte=start_date_from)
+            queryset = queryset.filter(date_start__gte=start_date_from)
 
         if start_date_to:
-            queryset = queryset.filter(datetime_start__lte=start_date_to)
+            queryset = queryset.filter(date_start__lte=start_date_to)
 
         fields = self.get_fields(request)
         ordering = self.get_ordering(request, view, fields)

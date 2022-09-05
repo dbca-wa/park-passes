@@ -58,7 +58,7 @@
                                 <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="startDate" type="date" v-model="pass.datetime_start">
+                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start">
                                     </span>
                                 </div>
                             </div>
@@ -66,7 +66,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">End Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="date" v-model="pass.datetime_expiry">
+                                        <input class="form-control" name="endDate" type="date" v-model="pass.date_expiry">
                                     </span>
                                 </div>
                             </div>
@@ -243,8 +243,8 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.pass = data
-                vm.pass.datetime_start = helpers.getDateFromDatetime(vm.pass.datetime_start);
-                vm.pass.datetime_expiry = helpers.getDateFromDatetime(vm.pass.datetime_expiry);
+                vm.pass.date_start = helpers.getDateFromDatetime(vm.pass.date_start);
+                vm.pass.date_expiry = helpers.getDateFromDatetime(vm.pass.date_expiry);
                 console.log(vm.pass);
                 console.log('date_start = ' + vm.pass.date_start);
 
@@ -265,8 +265,8 @@ export default {
             vm.loading = true;
             vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
             console.log(vm.pass);
-            vm.pass.datetime_start  = new Date(vm.pass.datetime_start).toLocaleString();
-            vm.pass.datetime_expiry  = new Date(vm.pass.datetime_expiry).toLocaleString();
+            vm.pass.date_start  = new Date(vm.pass.date_start).toLocaleString();
+            vm.pass.date_expiry  = new Date(vm.pass.date_expiry).toLocaleString();
             const requestOptions = {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },

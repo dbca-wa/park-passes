@@ -37,8 +37,8 @@ class PassAdmin(admin.ModelAdmin):
         "vehicle_registration_1",
         "vehicle_registration_2",
         "prevent_further_vehicle_updates",
-        "datetime_start",
-        "datetime_expiry",
+        "date_start",
+        "date_expiry",
         "renew_automatically",
         "datetime_created",
         "datetime_updated",
@@ -54,7 +54,7 @@ class PassAdmin(admin.ModelAdmin):
         "full_name",
         "vehicle_registration_1",
         "vehicle_registration_2",
-        "datetime_start",
+        "date_start",
     )
     autocomplete_fields = ("sold_via",)
     readonly_fields = [
@@ -62,7 +62,7 @@ class PassAdmin(admin.ModelAdmin):
         "first_name",
         "last_name",
         "email",
-        "datetime_expiry",
+        "date_expiry",
         "datetime_created",
         "datetime_updated",
     ]

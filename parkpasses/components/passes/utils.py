@@ -30,11 +30,11 @@ class PassUtils:
             park_pass_docx, image_descriptor=qr_code_path, width=Mm(60)
         )
 
-        date_format = DateFormat(park_pass.datetime_start)
-        datetime_start = date_format.format("jS F Y")
+        date_format = DateFormat(park_pass.date_start)
+        date_start = date_format.format("jS F Y")
 
-        date_format = DateFormat(park_pass.datetime_expiry)
-        datetime_expiry = date_format.format("jS F Y")
+        date_format = DateFormat(park_pass.date_expiry)
+        date_expiry = date_format.format("jS F Y")
 
         date_format = DateFormat(park_pass.datetime_created)
         datetime_created = date_format.format("jS F Y")
@@ -42,8 +42,8 @@ class PassUtils:
         context = {
             "pass_qr_code": qr_image,
             "pass_type": park_pass.option.pricing_window.pass_type.display_name,
-            "pass_start": datetime_start,
-            "pass_expiry": datetime_expiry,
+            "pass_start": date_start,
+            "pass_expiry": date_expiry,
             "pass_vehicle_registration_1": park_pass.vehicle_registration_1,
             "pass_vehicle_registration_2": park_pass.vehicle_registration_2,
             "pass_purchase_date": datetime_created,

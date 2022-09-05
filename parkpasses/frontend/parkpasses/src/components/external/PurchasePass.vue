@@ -203,7 +203,7 @@
                                 <label for="startDate" class="col-form-label">Start Date for Pass</label>
                             </div>
                             <div class="col-auto">
-                                <input type="date" id="startDate" name="startDate" v-model="pass.datetime_start_formatted" class="form-control" required="required" :min="startDate()">
+                                <input type="date" id="startDate" name="startDate" v-model="pass.date_start" class="form-control" required :min="startDate()">
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
@@ -377,7 +377,7 @@ export default {
                 email: '',
                 confirmEmail: '',
                 concession_type: 0,
-                datetime_start_formatted: this.startDate(),
+                date_start: this.startDate(),
                 discount_code: '',
                 voucher_code: '',
                 voucher_pin: '',
@@ -500,8 +500,7 @@ export default {
     },
     methods: {
         startDate: function () {
-            const today = new Date();
-            return today.toISOString().split('T')[0];
+            return  new Date();
         },
         fetchConcessions: function () {
             let vm = this;
@@ -821,8 +820,7 @@ export default {
             let vm = this;
             vm.isLoading = true;
             vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
-            let start_date = new Date(vm.pass.datetime_start_formatted)
-            vm.pass.datetime_start = start_date.toISOString();
+            console.log('vm.pass.date_start = ' + vm.pass.date_start);
             if(vm.pass.park_group_id){
                vm.pass.park_group = vm.pass.park_group_id;
             } else {

@@ -187,10 +187,7 @@ class PassTypePricingWindow(models.Model):
         return default_pricing_window
 
     def is_valid(self):
-        if (
-            not self.datetime_expiry
-            and settings.PRICING_WINDOW_DEFAULT_NAME == self.name
-        ):
+        if not self.date_expiry and settings.PRICING_WINDOW_DEFAULT_NAME == self.name:
             """The default pricing window is always valid as it forms the template that other pricing windows
             must follow"""
             return True
@@ -416,8 +413,8 @@ class Pass(models.Model):
     park_group = models.ForeignKey(
         ParkGroup, on_delete=models.PROTECT, null=True, blank=True
     )
-    datetime_start = models.DateTimeField(null=False, blank=False)
-    datetime_expiry = models.DateTimeField(null=False, blank=False)
+    date_start = models.DateField(null=False, blank=False)
+    date_expiry = models.DateField(null=False, blank=False)
     renew_automatically = models.BooleanField(null=False, blank=False, default=False)
     prevent_further_vehicle_updates = models.BooleanField(
         null=False, blank=False, default=False
@@ -505,7 +502,7 @@ class Pass(models.Model):
         return json_pass_data
 
     def can_cancel_automatic_renewal(self):
-        return self.datetime_expiry > timezone.now() + timezone.timedelta(days=1)
+        return self.date_expiry > timezone.now() + timezone.timedelta(days=1)
 
     def cancel_automatic_renewal(self):
         if not self.renew_automatically:
@@ -526,20 +523,20 @@ class Pass(models.Model):
     def set_processing_status(self):
         if PassCancellation.objects.filter(park_pass=self).count():
             self.processing_status = Pass.CANCELLED
-        elif self.datetime_start > timezone.now():
+        elif self.date_start > timezone.now().date():
             self.processing_status = Pass.FUTURE
-        elif self.datetime_expiry < timezone.now():
+        elif self.date_expiry < timezone.now().date():
             self.processing_status = Pass.EXPIRED
         else:
             self.processing_status = Pass.CURRENT
 
     def save(self, *args, **kwargs):
-        self.datetime_expiry = self.datetime_start + timezone.timedelta(
+        self.date_expiry = self.date_start + timezone.timedelta(
             days=self.option.duration
         )
         self.set_processing_status()
 
-        logger.debug("datetime_start = " + str(self.datetime_start))
+        logger.debug("date_start = " + str(self.date_start))
 
         if self.user:
             email_user = self.email_user
