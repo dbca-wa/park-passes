@@ -16,6 +16,7 @@ class HelpText(models.Model):
         return f"Help Text Item for {self.label} (Version: {self.version})"
 
     class Meta:
+        unique_together = (("label", "version"),)
         app_label = "parkpasses"
         verbose_name = "Help Text"
         verbose_name_plural = "Help Text"

@@ -1,6 +1,6 @@
 import logging
 
-from rest_framework import mixins, viewsets
+from rest_framework import generics, mixins, viewsets
 
 from parkpasses.components.help.models import FAQ, HelpText
 from parkpasses.components.help.serializers import (
@@ -12,6 +12,12 @@ from parkpasses.helpers import is_internal
 from parkpasses.permissions import IsInternalOrReadOnly
 
 logger = logging.getLogger(__name__)
+
+
+class HelpDetailView(generics.RetrieveAPIView):
+    lookup_field = "label"
+    queryset = HelpText.objects.all()
+    serializer_class = HelpTextSerializer
 
 
 class HelpTextViewSet(viewsets.ModelViewSet):
