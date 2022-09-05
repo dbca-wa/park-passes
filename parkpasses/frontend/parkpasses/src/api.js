@@ -102,6 +102,12 @@ module.exports = {
 
     faqsList:                           '/api/help/faqs/',
 
+    /* ========================= Help ===================================================*/
+
+    helpDetailByLabel: function (label) {
+        return                          `/api/help/help-detail/${label}/`;
+    },
+
     /* ========================= Orders =================================================*/
 
     ordersListExternal:                 '/api/orders/external/orders',
