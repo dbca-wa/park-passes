@@ -500,7 +500,8 @@ export default {
     },
     methods: {
         startDate: function () {
-            return  new Date();
+            let today = new Date();
+            return today.toISOString().split('T')[0];
         },
         fetchConcessions: function () {
             let vm = this;
