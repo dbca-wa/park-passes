@@ -10,17 +10,21 @@ logger = logging.getLogger(__name__)
 
 
 class ExternalVoucherSerializer(serializers.ModelSerializer):
+    remaining_balance = serializers.CharField()
+
     class Meta:
         model = Voucher
         exclude = ["purchaser"]
         read_only_fields = [
             "id",
+            "amount",
             "voucher_number",
             "expiry",
             "code",
             "datetime_purchased",
             "datetime_updated",
             "processing_status",
+            "remaining_balance",
         ]
 
 
