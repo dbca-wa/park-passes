@@ -3,6 +3,7 @@ import os
 
 from rest_framework import serializers
 
+from parkpasses.components.concessions.serializers import InternalConcessionSerializer
 from parkpasses.components.discount_codes.serializers import (
     ExternalDiscountCodeSerializer,
 )
@@ -155,6 +156,9 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
     concession_id = serializers.CharField(
         write_only=True, required=False, allow_blank=True
     )
+    concession_card_number = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
 
     class Meta:
         fields = [
@@ -162,6 +166,7 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
             "voucher_code",
             "voucher_pin",
             "concession_id",
+            "concession_card_number",
         ]
 
 
@@ -302,10 +307,12 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     pass_type = serializers.SerializerMethodField()
     pass_type_name = serializers.SerializerMethodField()
     park_group = serializers.CharField()
+    concession = serializers.SerializerMethodField()
+    price_after_concession_applied = serializers.CharField()
     discount_code = serializers.SerializerMethodField()
-    price_after_discount_code_applied = serializers.SerializerMethodField()
-    voucher_transaction = serializers.SerializerMethodField()
-    price_after_voucher_transaction_applied = serializers.SerializerMethodField()
+    price_after_discount_code_applied = serializers.CharField()
+    voucher = serializers.SerializerMethodField()
+    price_after_voucher_applied = serializers.CharField()
 
     class Meta:
         model = Pass
@@ -331,10 +338,12 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "processing_status_display_name",
             "datetime_created",
             "datetime_updated",
+            "concession",
+            "price_after_concession_applied",
             "discount_code",
-            "voucher_transaction",
             "price_after_discount_code_applied",
-            "price_after_voucher_transaction_applied",
+            "voucher",
+            "price_after_voucher_applied",
         ]
         read_only_fields = [
             "id",
@@ -342,9 +351,6 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "pass_type",
             "pass_type_name",
             "price",
-            "voucher_transaction",
-            "price_after_discount_code_applied",
-            "price_after_voucher_transaction_applied",
             "park_group",
             "date_expiry",
             "park_pass_pdf",
@@ -352,7 +358,12 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "processing_status_display_name",
             "datetime_created",
             "datetime_updated",
+            "concession",
+            "price_after_concession_applied",
             "discount_code",
+            "price_after_discount_code_applied",
+            "voucher",
+            "price_after_voucher_applied",
         ]
 
     def get_price(self, obj):
@@ -367,6 +378,13 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     def get_duration(self, obj):
         return f"{obj.option.duration} days"
 
+    def get_concession(self, obj):
+        if hasattr(obj, "concession_usage"):
+            concession = obj.concession_usage.concession
+            serializer = InternalConcessionSerializer(concession)
+            return serializer.data
+        return None
+
     def get_discount_code(self, obj):
         if hasattr(obj, "discount_code_usage"):
             discount_code = obj.discount_code_usage.discount_code
@@ -374,31 +392,12 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             return serializer.data
         return None
 
-    def get_price_after_discount_code_applied(self, obj):
-        if hasattr(obj, "discount_code_usage"):
-            discount_code = obj.discount_code_usage.discount_code
-            discount_amount = discount_code.discount_as_amount(obj.price)
-            logger.debug("obj.price = " + str(obj.price))
-            logger.debug("discount_amount = " + str(discount_amount))
-            return obj.price - (discount_code.discount_as_amount(obj.price))
-        return obj.price
-
-    def get_voucher_transaction(self, obj):
+    def get_voucher(self, obj):
         if hasattr(obj, "voucher_transaction"):
             voucher = obj.voucher_transaction.voucher
             serializer = ExternalVoucherSerializer(voucher)
             return serializer.data
         return None
-
-    def get_price_after_voucher_transaction_applied(self, obj):
-        if hasattr(obj, "voucher_transaction"):
-            voucher = obj.voucher_transaction.voucher
-            remaining_balance = voucher.remaining_balance
-            if remaining_balance >= obj.price_after_discount_code_applied:
-                return obj.price_after_discount_code_applied
-
-            return remaining_balance
-        return obj.price_after_discount_code_applied
 
 
 class ExternalUpdatePassSerializer(serializers.ModelSerializer):
@@ -424,6 +423,16 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     processing_status_display_name = serializers.CharField(
         source="get_processing_status_display", read_only=True
     )
+    concession_type = serializers.CharField(
+        source="concessionusage.concession.concession_type",
+        read_only=True,
+        required=False,
+    )
+    concession_discount_percentage = serializers.CharField(
+        source="concessionusage.concession.discount_percentage",
+        read_only=True,
+        required=False,
+    )
     discount_code_used = serializers.CharField(
         source="discountcodeusage.discount_code.code", required=False
     )
@@ -437,16 +446,6 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     )
     voucher_transaction_amount = serializers.CharField(
         source="voucher_transaction.voucher.amount"
-    )
-    concession_type = serializers.CharField(
-        source="concessionusage.concession.concession_type",
-        read_only=True,
-        required=False,
-    )
-    concession_discount_percentage = serializers.CharField(
-        source="concessionusage.concession.discount_percentage",
-        read_only=True,
-        required=False,
     )
 
     def get_discount_code_discount(self, obj):
