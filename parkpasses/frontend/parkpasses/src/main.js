@@ -18,6 +18,7 @@ import 'datatables.net-buttons/js/dataTables.buttons.js';
 import 'datatables.net-buttons/js/buttons.html5.js';
 
 import "select2";
+import "currency.js";
 import "sweetalert2/dist/sweetalert2.css";
 
 extendMoment(moment);
