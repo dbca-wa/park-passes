@@ -77,6 +77,34 @@ class EntryType(models.Model):
 class CommunicationsLogEntryManager(models.Manager):
     """This manager adds convenience methods for querying Communication Event Logs."""
 
+    def log_communication(
+        self,
+        content_type,
+        object_id,
+        to,
+        fromm,
+        cc,
+        entry_type,
+        reference,
+        subject,
+        text,
+        customer,
+        staff,
+    ):
+        return self.model.objects.create(
+            content_type=content_type,
+            object_id=str(object_id),
+            to=to,
+            fromm=fromm,
+            cc=cc,
+            entry_type=entry_type,
+            reference=reference,
+            subject=subject,
+            text=text,
+            customer=customer,
+            staff=staff,
+        )
+
     def get_for_model(self, model):
         content_type = ContentType.objects.get(model._meta.model)
         return self.filter(content_type=content_type)
