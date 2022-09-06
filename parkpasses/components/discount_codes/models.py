@@ -325,9 +325,7 @@ class DiscountCodeUsage(models.Model):
     """A class to represent a discount code
 
     Every time a discount code is used a discount code usage record will be created
-    to show which park pass the discount code was used for
-
-    """
+    to show which park pass the discount code was used for"""
 
     discount_code = models.ForeignKey(
         DiscountCode,
@@ -340,7 +338,6 @@ class DiscountCodeUsage(models.Model):
         Pass,
         on_delete=models.PROTECT,
         related_name="discount_code_usage",
-        primary_key=True,
         null=False,
         blank=False,
     )

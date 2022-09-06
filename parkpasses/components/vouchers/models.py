@@ -185,8 +185,6 @@ class VoucherTransactionManager(models.Manager):
 
 
 class VoucherTransaction(models.Model):
-    """A class to represent a voucher transaction"""
-
     objects = VoucherTransactionManager()
 
     voucher = models.ForeignKey(
@@ -196,7 +194,6 @@ class VoucherTransaction(models.Model):
         Pass,
         on_delete=models.PROTECT,
         related_name="voucher_transaction",
-        primary_key=True,
         null=False,
         blank=False,
     )

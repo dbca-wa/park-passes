@@ -1,6 +1,8 @@
 """
     This module contains the models for implimenting concessions.
 """
+from decimal import Decimal
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -30,6 +32,15 @@ class Concession(models.Model):
     class Meta:
         app_label = "parkpasses"
 
+    def discount_as_amount(self, pass_price):
+        discount_percentage = self.discount_percentage / 100
+        discount_amount = pass_price * discount_percentage
+        if Decimal(0.00) >= discount_amount:
+            return Decimal(0.00)
+        if discount_amount >= pass_price:
+            return pass_price
+        return discount_amount
+
 
 class ConcessionUsageManager(models.Manager):
     def get_queryset(self):
@@ -47,8 +58,7 @@ class ConcessionUsage(models.Model):
 
     This is needed as a user may be eligible for concession at one point in time
     and then later on they are no longer eligible. So we can't rely on just the user
-    information alone and must store this information explicitly.
-    """
+    information alone and must store this information explicitly."""
 
     objects = ConcessionUsageManager()
 
@@ -57,7 +67,15 @@ class ConcessionUsage(models.Model):
     )
 
     park_pass = models.OneToOneField(
-        Pass, on_delete=models.PROTECT, primary_key=True, null=False, blank=False
+        Pass,
+        on_delete=models.PROTECT,
+        related_name="concession_usage",
+        null=False,
+        blank=False,
+    )
+
+    concession_card_number = models.CharField(
+        unique=True, max_length=50, null=False, blank=False, default=""
     )
 
     def __str__(self):
