@@ -156,6 +156,7 @@ MEDIA_APP_DIR = env("MEDIA_APP_DIR", "cols")
 ADMIN_GROUP = env("ADMIN_GROUP", "Park Passes Admin")
 CRON_RUN_AT_TIMES = env("CRON_RUN_AT_TIMES", "04:05")
 CRON_EMAIL = env("CRON_EMAIL", "cron@" + SITE_DOMAIN).lower()
+NO_REPLY_EMAIL = env("NO_REPLY_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 # for ORACLE Job Notification - override settings_base.py
 EMAIL_FROM = DEFAULT_FROM_EMAIL
 OTHER_PAYMENT_ALLOWED = env("OTHER_PAYMENT_ALLOWED", False)  # Cash/Cheque
