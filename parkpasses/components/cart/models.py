@@ -189,7 +189,7 @@ class Cart(models.Model):
                         order_item.order = order
                         order_item.description = (
                             CartUtils.get_discount_code_description(
-                                cart_item.discount_code.code
+                                cart_item.discount_code_usage.discount_code.code
                             )
                         )
                         # The ledger checkout doesn't round a negative balance to zero so in order to avoid
@@ -214,7 +214,7 @@ class Cart(models.Model):
                         order_item = OrderItem()
                         order_item.order = order
                         order_item.description = CartUtils.get_voucher_code_description(
-                            cart_item.voucher.code
+                            cart_item.voucher_transaction.voucher.code
                         )
                         order_item.amount = -abs(
                             voucher_discount.quantize(Decimal("0.01"))
@@ -369,9 +369,9 @@ class CartItem(models.Model):
     def get_concession_discount_as_amount(self):
         if not self.concession_usage:
             return Decimal(0.00)
-        concession = self.concession_usage.concesssion
+        concession = self.concession_usage.concession
         total_price = self.get_price_before_discounts()
-        return Decimal(total_price * (concession.concession_percentage / 100))
+        return Decimal(total_price * (concession.discount_percentage / 100))
 
     def get_discount_code_discount_as_amount(self):
         if not self.discount_code_usage:
@@ -379,7 +379,9 @@ class CartItem(models.Model):
         price_before_discounts = self.get_price_before_discounts()
         discount_code_batch = self.discount_code_usage.discount_code.discount_code_batch
         if discount_code_batch.discount_amount:
-            return self.discount_code.discount_code_batch.discount_amount
+            return (
+                self.discount_code_usage.discount_code.discount_code_batch.discount_amount
+            )
         else:
             return price_before_discounts * (
                 discount_code_batch.discount_percentage / 100
