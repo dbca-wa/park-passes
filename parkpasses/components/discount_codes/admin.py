@@ -81,7 +81,7 @@ admin.site.register(DiscountCode, DiscountCodeAdmin)
 
 class DiscountCodeUsageAdmin(admin.ModelAdmin):
     model = DiscountCodeUsage
-    raw_id_fields = ["park_pass"]
+    raw_id_fields = ["discount_code", "park_pass"]
 
 
 admin.site.register(DiscountCodeUsage, DiscountCodeUsageAdmin)
