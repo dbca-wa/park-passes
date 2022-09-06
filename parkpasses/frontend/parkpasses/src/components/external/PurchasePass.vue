@@ -180,7 +180,7 @@
                                 <label for="postcode" class="col-form-label">Concession Type</label>
                             </div>
                             <div class="col-auto">
-                                <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" v-model="pass.concession_type" class="form-select" aria-label="Concession Type" required="required">
+                                <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" v-model="pass.concession_id" class="form-select" aria-label="Concession Type" required="required">
                                     <option disabled value="0" selected>Select Your Concession Type</option>
                                     <option v-for="concession in concessions" :value="concession.id" :key="concession.id">{{concession.concession_type}} ({{concession.discount_percentage}}% Discount)</option>
                                 </select>
@@ -191,7 +191,7 @@
                                 <label for="concessionCardNumber" class="col-form-label">Concession Card Number</label>
                             </div>
                             <div class="col-auto">
-                                <input type="text" id="concessionCardNumber" name="concessionCardNumber" class="form-control" required="required">
+                                <input type="text" id="concessionCardNumber" name="concessionCardNumber" v-model="pass.concession_card_number" class="form-control" required="required">
                                 <div class="invalid-feedback">
                                     Please enter a concession card number.
                                 </div>
@@ -376,7 +376,7 @@ export default {
                 last_name: '',
                 email: '',
                 confirmEmail: '',
-                concession_type: 0,
+                concession_id: 0,
                 date_start: this.startDate(),
                 discount_code: '',
                 voucher_code: '',
@@ -832,7 +832,7 @@ export default {
             vm.pass.option = vm.pass.option_id;
             vm.pass.pass_type_name = vm.passType.name;
             console.log('vm.pass = ' + JSON.stringify(vm.pass));
-            //alert('vm.pass = ' + JSON.stringify(vm.pass));
+            alert('vm.pass = ' + JSON.stringify(vm.pass));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
