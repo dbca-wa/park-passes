@@ -460,13 +460,43 @@ class Pass(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     @property
+    def price_after_concession_applied(self):
+        if hasattr(self, "concession_usage"):
+            concession = self.concession_usage.concession
+            discount_amount = concession.discount_as_amount(self.price)
+            price_after_discount = self.price - discount_amount
+            return price_after_discount
+        return self.price
+
+    @property
     def price_after_discount_code_applied(self):
         if hasattr(self, "discount_code_usage"):
             discount_code = self.discount_code_usage.discount_code
             discount_amount = discount_code.discount_as_amount(self.price)
             price_after_discount = self.price - discount_amount
             return price_after_discount
-        return Decimal(0.00)
+        return self.price_after_concession_applied
+
+    @property
+    def price_after_voucher_applied(self):
+        if hasattr(self, "voucher_transaction"):
+            logger.debug(" this pass has a voucher transaction")
+            voucher = self.voucher_transaction.voucher
+            remaining_balance = voucher.remaining_balance
+            if remaining_balance >= self.price_after_discount_code_applied:
+                return Decimal(0.00)
+
+            return remaining_balance
+        logger.debug(
+            "self.price_after_voucher_applied = "
+            + str(self.price_after_discount_code_applied)
+        )
+        return self.price_after_discount_code_applied
+
+    @property
+    def price_after_all_discounts(self):
+        """Convenience method that makes more descriptive sense"""
+        return self.price_after_concession_applied
 
     def generate_qrcode(self):
         qr = qrcode.QRCode()
