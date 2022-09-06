@@ -58,9 +58,6 @@ class CartItemViewSet(viewsets.ModelViewSet):
             return CartItem.objects.none()
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        logger.debug("cart_item = " + str(instance))
-        instance.delete_attached_object()  # will delete the voucher or pass attached to the cart item
         CartUtils.decrement_cart_item_count(request)
         return super().destroy(request, *args, **kwargs)
 
