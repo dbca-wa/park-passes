@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from parkpasses.components.concessions.models import Concession
 from parkpasses.components.concessions.serializers import (
-    ConcessionSerializer,
+    ExternalConcessionSerializer,
     InternalConcessionSerializer,
 )
 from parkpasses.helpers import is_internal
@@ -30,7 +30,7 @@ class ConcessionViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return InternalConcessionSerializer
         else:
-            return ConcessionSerializer
+            return ExternalConcessionSerializer
 
     @method_decorator(cache_page(60 * 60 * 2))
     def retrieve(self, request, pk=None):
