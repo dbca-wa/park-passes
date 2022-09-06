@@ -107,15 +107,8 @@ class CartUtils:
         return f"{settings.PARKPASSES_PASS_PURCHASE_DESCRIPTION} {pass_number}"
 
     @classmethod
-    def get_concession_discount_description(self, user_information):
-        concession_discount_description = (
-            settings.PARKPASSES_CONCESSION_DESCRIPTION + " "
-        )
-        concession_discount_description += (
-            user_information.concession.concession_type + " "
-        )
-        concession_discount_description += user_information.concession_card_number
-        return concession_discount_description
+    def get_concession_description(self, concession_type):
+        return f"{settings.PARKPASSES_CONCESSION_APPLIED_DESCRIPTION} {concession_type}"
 
     @classmethod
     def get_discount_code_description(self, code):
