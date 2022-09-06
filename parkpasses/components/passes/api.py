@@ -19,6 +19,7 @@ from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from org_model_logs.utils import UserActionViewSet
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
+from parkpasses.components.concessions.models import Concession, ConcessionUsage
 from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeUsage
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
 from parkpasses.components.passes.models import (
@@ -304,7 +305,10 @@ class ExternalPassViewSet(
         discount_code = serializer.validated_data.pop("discount_code", None)
         voucher_code = serializer.validated_data.pop("voucher_code", None)
         voucher_pin = serializer.validated_data.pop("voucher_pin", None)
-        # concession_id = serializer.validated_data.pop("concession_id", None)
+        concession_id = serializer.validated_data.pop("concession_id", None)
+        concession_card_number = serializer.validated_data.pop(
+            "concession_card_number", None
+        )
 
         if is_customer(self.request):
             park_pass = serializer.save(user=self.request.user.id)
@@ -326,34 +330,44 @@ class ExternalPassViewSet(
         cart_item = CartItem(
             cart=cart, object_id=park_pass.id, content_type=content_type
         )
-        discount_amount = Decimal.from_float(0.00)
+
+        """ If the user deletes a cart item, any objects that can be attached to a cart item
+        (concession usage, discount code and voucher transaction) are deleted in the cart item's delete method  """
+        if concession_id and concession_card_number:
+            if Concession.objects.filter(id=concession_id).exists():
+                concession = Concession.objects.get(id=concession_id)
+                concession_usage = ConcessionUsage.objects.create(
+                    concession=concession,
+                    park_pass=park_pass,
+                    concession_card_number=concession_card_number,
+                )
+                cart_item.concession_usage = concession_usage
+
         if discount_code:
             pass_type_id = park_pass.option.pricing_window.pass_type.id
             if DiscountCode.is_valid(discount_code, self.request.user.id, pass_type_id):
                 discount_code = DiscountCode.objects.get(code=discount_code)
-                cart_item.discount_code = discount_code
-                # Creating a discount usage record will decrease the remaining uses for the discount code by 1
-                # This will also be deleted in the CartItem delete_attached_object method
-                DiscountCodeUsage.objects.create(
+                discount_code_usage = DiscountCodeUsage.objects.create(
                     discount_code=discount_code, park_pass=park_pass
                 )
-                discount_amount = discount_code.discount_as_amount(
-                    park_pass.option.price
-                )
-        price_after_discounts = park_pass.option.price - discount_amount
+                cart_item.discount_code_usage = discount_code_usage
+
         if voucher_code:
             if Voucher.is_valid(voucher_code, voucher_pin):
                 voucher = Voucher.objects.get(code=voucher_code, pin=voucher_pin)
-                cart_item.voucher = voucher
-                # This will also be deleted in the CartItem delete_attached_object method
-                VoucherTransaction.objects.create(
+                voucher_transaction = VoucherTransaction.objects.create(
                     voucher=voucher,
                     park_pass=park_pass,
-                    debit=voucher.balance_available_for_purchase(price_after_discounts),
+                    debit=voucher.balance_available_for_purchase(
+                        park_pass.price_after_discount_code_applied
+                    ),
                     credit=Decimal(0.00),
                 )
+                cart_item.voucher_transaction = voucher_transaction
 
+        # Save to apply any concession usages, discount code usages or voucher transactions to the cart item
         cart_item.save()
+
         if is_customer(self.request):
             CartUtils.increment_cart_item_count(self.request)
 
