@@ -483,7 +483,7 @@ export default {
             if (0.00>=this.voucherBalanceRemaining) {
                 return null;
             }
-            if(this.voucherBalanceRemaining >= this.totalPriceAfterDiscounts){
+            if(Number(this.voucherBalanceRemaining) >= this.totalPriceAfterDiscounts){
                 return Math.max(this.totalPriceAfterDiscounts, 0.00).toFixed(2);
             } else {
                 return Math.max(this.voucherBalanceRemaining, 0.00).toFixed(2);;
@@ -671,6 +671,7 @@ export default {
             console.log('this.pass.voucher_code.length = ' + this.pass.voucher_code.length)
             if(this.pass.voucher_code.length && 8!=this.pass.voucher_code.length){
                 console.log('voucher code is invalid')
+                this.voucherBalanceRemaining = 0.00;
                 this.$refs.voucherCode.setCustomValidity("Invalid field.");
                 return false;
             } else {
@@ -803,6 +804,7 @@ export default {
                 const isVoucherCodeValid = data.is_voucher_code_valid;
                 console.log('isVoucherCodeValid = ' + isVoucherCodeValid)
                 if(!isVoucherCodeValid){
+                    this.voucherBalanceRemaining = 0.00;
                     this.$refs.voucherCode.setCustomValidity("Invalid field.");
                     return false;
                 } else {
