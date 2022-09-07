@@ -17,7 +17,10 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindowOption,
 )
 from parkpasses.components.retailers.models import RetailerGroup
-from parkpasses.components.vouchers.serializers import ExternalVoucherSerializer
+from parkpasses.components.vouchers.serializers import (
+    ExternalVoucherSerializer,
+    ExternalVoucherTransactionSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -312,6 +315,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     discount_code = serializers.SerializerMethodField()
     price_after_discount_code_applied = serializers.CharField()
     voucher = serializers.SerializerMethodField()
+    voucher_transaction = ExternalVoucherTransactionSerializer()
     price_after_voucher_applied = serializers.CharField()
 
     class Meta:
@@ -343,6 +347,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "discount_code",
             "price_after_discount_code_applied",
             "voucher",
+            "voucher_transaction",
             "price_after_voucher_applied",
         ]
         read_only_fields = [
@@ -363,6 +368,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "discount_code",
             "price_after_discount_code_applied",
             "voucher",
+            "voucher_transaction",
             "price_after_voucher_applied",
         ]
 
