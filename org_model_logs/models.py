@@ -63,7 +63,7 @@ class UserAction(models.Model):
 
 
 class EntryType(models.Model):
-    type = models.CharField(max_length=100, null=False, blank=False)
+    entry_type = models.CharField(max_length=100, null=False, blank=False)
 
     class Meta:
         verbose_name = "Entry Type"
@@ -71,7 +71,7 @@ class EntryType(models.Model):
         ordering = ["id"]
 
     def __str__(self):
-        return self.type
+        return self.entry_type
 
 
 class CommunicationsLogEntryManager(models.Manager):
@@ -83,13 +83,13 @@ class CommunicationsLogEntryManager(models.Manager):
         object_id,
         to,
         fromm,
-        cc,
         entry_type,
-        reference,
         subject,
         text,
-        customer,
-        staff,
+        customer=None,
+        staff=None,
+        cc="",
+        reference="",
     ):
         return self.model.objects.create(
             content_type=content_type,
@@ -146,7 +146,8 @@ class CommunicationsLogEntry(models.Model):
         max_length=200, blank=True, verbose_name="Subject / Description"
     )
     text = models.TextField(blank=True)
-    customer = models.IntegerField()  # EmailUserRO
+    # Allowing null for cases such as sending emails to voucher recipients who are not in our customer database
+    customer = models.IntegerField(null=True)  # EmailUserRO
     staff = models.IntegerField()  # EmailUserRO
 
     created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
