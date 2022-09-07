@@ -11,3 +11,7 @@ class RemainingBalanceExceedsVoucherAmountException(Exception):
 
 class RemainingVoucherBalanceLessThanZeroException(Exception):
     """The exception to be thrown if the remaining balance of a voucher is less than zero"""
+
+
+class SendVoucherEmailFailed(Exception):
+    """The exeption to be thrown if any exceptions occur during the send_voucher_email method."""
