@@ -95,10 +95,10 @@ class InternalVoucherSerializer(serializers.ModelSerializer):
         return obj.get_processing_status_display()
 
 
-class VoucherTransactionSerializer(serializers.ModelSerializer):
+class ExternalVoucherTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoucherTransaction
-        fields = ["id", "voucher_number"]
+        fields = "__all__"
 
 
 class InternalVoucherTransactionSerializer(serializers.ModelSerializer):
