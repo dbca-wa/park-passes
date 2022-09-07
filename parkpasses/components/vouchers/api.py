@@ -132,10 +132,18 @@ class ValidateVoucherView(APIView):
 
         if email and code and pin:
             if Voucher.objects.filter(
-                in_cart=False, recipient_email=email, code=code, pin=pin
+                in_cart=False,
+                recipient_email=email,
+                code=code,
+                pin=pin,
+                processing_status=Voucher.DELIVERED,
             ).exists():
                 voucher = Voucher.objects.get(
-                    in_cart=False, recipient_email=email, code=code, pin=pin
+                    in_cart=False,
+                    recipient_email=email,
+                    code=code,
+                    pin=pin,
+                    processing_status=Voucher.DELIVERED,
                 )
                 logger.debug(
                     "voucher.remaining_balance = " + str(voucher.remaining_balance)
