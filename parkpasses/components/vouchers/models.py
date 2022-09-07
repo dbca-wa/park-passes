@@ -10,16 +10,18 @@ import random
 import uuid
 from decimal import Decimal
 
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
 from parkpasses import settings
 from parkpasses.components.passes.models import Pass
+from parkpasses.components.vouchers.emails import VoucherEmails
 from parkpasses.components.vouchers.exceptions import (
     RemainingBalanceExceedsVoucherAmountException,
     RemainingVoucherBalanceLessThanZeroException,
+    SendVoucherRecipientEmailNotificationFailed,
 )
 from parkpasses.ledger_api_utils import retrieve_email_user
 
@@ -85,11 +87,11 @@ class Voucher(models.Model):
     @property
     def remaining_balance(self):
         remaining_balance = self.amount
-        for transaction in self.transactions.all():
-            if transaction.credit > 0.00:
-                remaining_balance += transaction.credit
-            if transaction.debit > 0.00:
-                remaining_balance -= transaction.debit
+        for voucher_transaction in self.transactions.all():
+            if voucher_transaction.credit > 0.00:
+                remaining_balance += voucher_transaction.credit
+            if voucher_transaction.debit > 0.00:
+                remaining_balance -= voucher_transaction.debit
         if remaining_balance > self.amount:
             exception_message = (
                 f"The remaining balance of {remaining_balance} for voucher with id"
@@ -169,6 +171,39 @@ class Voucher(models.Model):
             )
         super().save(*args, **kwargs)
 
+    def send_voucher_purchase_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += "send_voucher_purchase_notification_email for Voucher with id {} at {}. Exception {}"
+        with transaction.atomic():
+            try:
+                VoucherEmails.send_voucher_purchase_notification_email(self)
+                self.processing_status = Voucher.DELIVERED
+                if not settings.DEBUG:  # handy for testing
+                    self.save()
+            except Exception as e:
+                self.processing_status = Voucher.NOT_DELIVERED
+                self.save()
+                SendVoucherRecipientEmailNotificationFailed(
+                    error_message.format(self.id, timezone.now(), e)
+                )
+
+    def send_voucher_recipient_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += "send_voucher_purchase_notification_email for Voucher with id {} at {}. Exception {}"
+        with transaction.atomic():
+            try:
+                VoucherEmails.send_voucher_recipient_notification_email(self)
+                self.processing_status = Voucher.DELIVERED
+                if not settings.DEBUG:
+                    self.save()
+            except Exception as e:
+                self.processing_status = Voucher.NOT_DELIVERED
+                self.save()
+                SendVoucherRecipientEmailNotificationFailed(
+                    error_message.format(self.id, timezone.now(), e)
+                )
+                logger.exception(error_message.format(self.id, timezone.now(), e))
+
 
 # Update the voucher_number field after saving
 @receiver(post_save, sender=Voucher, dispatch_uid="update_voucher_number")
@@ -208,4 +243,17 @@ class VoucherTransaction(models.Model):
         app_label = "parkpasses"
 
     def __str__(self):
-        return f"Credit: {self.credit} | Debit:{self.debit}"
+        return (
+            "Voucher Code "
+            + self.voucher.code
+            + " used to purchase Park Pass "
+            + self.park_pass.pass_number
+        )
+
+    def remaining_balance_excluding_this_transaction(self):
+        this_transaction_balance = self.credit - self.debit
+        if Decimal(0.00) == this_transaction_balance:
+            return Decimal(0.00)
+        if Decimal(0.00) > this_transaction_balance:
+            return self.voucher.remaining_balance - this_transaction_balance
+        return self.voucher.remaining_balance + this_transaction_balance
