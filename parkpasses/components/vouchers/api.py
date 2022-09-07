@@ -17,9 +17,9 @@ from parkpasses.components.vouchers.serializers import (
     ExternalCreateVoucherSerializer,
     ExternalUpdateVoucherSerializer,
     ExternalVoucherSerializer,
+    ExternalVoucherTransactionSerializer,
     InternalVoucherSerializer,
     InternalVoucherTransactionSerializer,
-    VoucherTransactionSerializer,
 )
 from parkpasses.helpers import is_customer, is_internal
 from parkpasses.permissions import IsInternal, IsInternalOrReadOnly
@@ -119,7 +119,7 @@ class VoucherTransactionViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return InternalVoucherTransactionSerializer
         else:
-            return VoucherTransactionSerializer
+            return ExternalVoucherTransactionSerializer
 
 
 class ValidateVoucherView(APIView):
