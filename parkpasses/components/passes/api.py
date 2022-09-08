@@ -37,6 +37,7 @@ from parkpasses.components.passes.serializers import (
     ExternalCreateHolidayPassSerializer,
     ExternalCreatePinjarOffRoadPassSerializer,
     ExternalPassSerializer,
+    ExternalUpdatePassSerializer,
     InternalCreatePricingWindowSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
@@ -256,6 +257,12 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
         raise Http404
 
 
+class SmallResultSetPagination(DatatablesPageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 1000
+
+
 class ExternalPassViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -263,14 +270,21 @@ class ExternalPassViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
+    pagination_class = SmallResultSetPagination
     model = Pass
-    pagination_class = DatatablesPageNumberPagination
-    page_size = 10
 
     def get_queryset(self):
-        return Pass.objects.filter(user=self.request.user.id)
+        return (
+            Pass.objects.exclude(user__isnull=True)
+            .exclude(processing_status=["CA"])
+            .exclude(in_cart=True)
+            .filter(user=self.request.user.id)
+            .order_by("-date_start")
+        )
 
     def get_serializer_class(self):
+        if self.action in ["update", "partial_update"]:
+            return ExternalUpdatePassSerializer
         if "create" == self.action:
             if "pass_type_name" in self.request.data:
                 pass_type_name = self.request.data["pass_type_name"]
@@ -292,8 +306,8 @@ class ExternalPassViewSet(
                         return ExternalCreatePinjarOffRoadPassSerializer
 
                     error = "ERROR: No valid pass type name found in POST."
-                    raise NoValidPassTypeFoundInPost(error)
                     logger.error(error)
+                    raise NoValidPassTypeFoundInPost(error)
 
         return ExternalPassSerializer
 
