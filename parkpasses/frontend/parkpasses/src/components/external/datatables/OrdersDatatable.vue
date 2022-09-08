@@ -232,12 +232,12 @@ export default {
         },
         columnInvoice: function(){
             return {
-                data: 'id',
+                data: 'invoice_reference_link',
                 visible: true,
                 searchable: false,
                 orderable: false,
                 'render': function(row, type, full){
-                    return '<a href="">View Invoice</a>'
+                    return `<a target="blank" href="${full.invoice_link}">View Invoice</a>`;
                 }
             }
         },
