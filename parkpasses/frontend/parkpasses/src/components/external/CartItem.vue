@@ -56,24 +56,44 @@
             </div>
         </div>
 
+        <div v-if="cartItem.concession" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
+            <div class="col text-secondary border-bottom">
+                Concession Applied: {{ cartItem.concession.concession_type }}
+                <span>({{ cartItem.concession.discount_percentage }}% OFF)</span>
+            </div>
+            <div class="col-md-auto text-success border-bottom">
+                -${{ concessionAmount }}
+            </div>
+        </div>
+
         <div v-if="cartItem.discount_code" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
             <div class="col text-secondary border-bottom">
-                Discount Code Applied {{ cartItem.discount_code.code }}
+                Discount Code Applied: {{ cartItem.discount_code.code }}
                 <span v-if="'percentage'==cartItem.discount_code.discount_type">({{ cartItem.discount_code.discount }}% OFF)</span>
                 <span v-else>(${{ cartItem.discount_code.discount }} OFF)</span>
             </div>
             <div class="col-md-auto text-success border-bottom">
-                -${{ discountAmount(cartItem) }}
+                -${{ discountAmount }}
             </div>
         </div>
-        <div v-if="cartItem.discount_code" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
+
+        <div v-if="cartItem.voucher" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
+            <div class="col text-secondary border-bottom">
+                Voucher Redemption: {{ cartItem.voucher.code }}
+                (If you proceed with this transaction your voucher will have a balance of ${{ cartItem.voucher.remaining_balance }} remaining)
+            </div>
+            <div class="col-md-auto text-success border-bottom">
+                -${{ voucherTransactionAmount }}
+            </div>
+        </div>
+
+        <div v-if="showSubTotal" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
             <div class="col text-secondary">
                 Sub total
             </div>
             <div class="col-md-auto">
                 ${{ subTotal }}
             </div>
-
         </div>
 
     </div>
@@ -82,7 +102,7 @@
 
 <script>
 import { apiEndpoints, helpers, constants } from '@/utils/hooks'
-
+import currency from 'currency.js'
 export default {
     name: "CartItem",
     props: {
@@ -99,18 +119,23 @@ export default {
         helpers
     },
     computed: {
-        subTotal() {
+        priceAfterDiscountCodeApplied() {
             return Math.max(this.cartItem.price_after_discount_code_applied, 0.00).toFixed(2);
         },
-    },
-    methods: {
-        isHolidayPass(cartItem) {
-            if(!cartItem){
-                return false;
-            }
-            return (constants.HOLIDAY_PASS_NAME==cartItem.pass_type_name ? true : false)
+        subTotal() {
+            return Math.max(this.cartItem.price_after_voucher_applied, 0.00).toFixed(2);
         },
-        discountAmount(cartItem) {
+        showSubTotal() {
+            if(null!==this.cartItem.concession){return true}
+            if(null!==this.cartItem.discount_code){return true}
+            if(null!==this.cartItem.voucher){return true}
+            return false;
+        },
+        concessionAmount() {
+            return currency(this.cartItem.price - this.cartItem.price_after_concession_applied);
+        },
+        discountAmount() {
+            let cartItem = this.cartItem;
             if(!cartItem){
                 return 0.00;
             }
@@ -123,15 +148,36 @@ export default {
                 const discount = cartItem.discount_code.discount;
                 const percentage = discount / 100;
                 const price = priceBeforeDiscount * percentage;
-                return parseFloat(price).toFixed(2);
+                return currency(price);
             } else {
-                let discountAmount = parseFloat(cartItem.discount_code.discount).toFixed(2);
+                let discountAmount = currency(cartItem.discount_code.discount);
                 if (discountAmount >= cartItem.price) {
-                    return parseFloat(cartItem.price).toFixed(2);
+                    return currency(cartItem.price);
                 }
+                return discountAmount;
             }
         },
-
+        voucherTransactionAmount() {
+            return currency(this.priceAfterDiscountCodeApplied - this.cartItem.price_after_voucher_applied);
+        },
+        projectedRemainingVoucherBalance() {
+            if(!this.cartItem.voucher){
+                return null;
+            }
+            if(0.00>=this.cartItem.voucher.remaining_balance){
+                return 0.00
+            }
+            const projectedRemainingVoucherBalance = this.cartItem.voucher.remaining_balance - this.voucherTransactionAmount;
+            return Math.max(projectedRemainingVoucherBalance, 0.00).toFixed(2);
+        },
+    },
+    methods: {
+        isHolidayPass(cartItem) {
+            if(!cartItem){
+                return false;
+            }
+            return (constants.HOLIDAY_PASS_NAME==cartItem.pass_type_name ? true : false)
+        },
         formatDate(dateString) {
             const date = new Date(dateString);
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
