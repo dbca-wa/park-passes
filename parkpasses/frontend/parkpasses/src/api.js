@@ -28,6 +28,9 @@ module.exports = {
     updatePass: function (id) {
         return                          `/api/passes/internal/passes/${id}/`;
     },
+    updatePassExternal: function (id) {
+        return                          `/api/passes/external/passes/${id}/`;
+    },
     internalParkPassPdf: function (passId) {
         return                          `/api/passes/internal/passes/${passId}/retrieve-park-pass-pdf`
     },
