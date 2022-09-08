@@ -10,7 +10,28 @@
 
         <div class="home-options">
 
-          <div @click="redirectToSSoLogin()" class="card login-card mb-5">
+          <div v-if="store.userData && store.userData.is_authenticated" @click="redirectToSSOLogout()" class="card login-card mb-5">
+            <div class="row g-0">
+              <div class="col-md-3 offset-md-1">
+                <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Logout"></i>
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <h5 class="card-title">Log Out</h5>
+
+                  <p class="card-text">
+                      <ul>
+                        <li><a href="/your-park-passes">View and download your current park pass</a></li>
+                        <li>Update the vehicle details for your pass</li>
+                        <li><a href="/ledger-ui/accounts">Update your account details</a></li>
+                      </ul>
+                    </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else @click="redirectToSSOLogin()" class="card login-card mb-5">
             <div class="row g-0">
               <div class="col-md-3 offset-md-1">
                 <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Login"></i>
@@ -23,7 +44,7 @@
                       <ul>
                         <li>View and download your current park pass</li>
                         <li>Update the vehicle details for your pass</li>
-                        <li>Update your other details</li>
+                        <li>Update your account details</li>
                       </ul>
                     </p>
                 </div>
@@ -64,11 +85,13 @@
 </template>
 
 <script>
+import { useStore } from '@/stores/state'
+
 export default {
     name: "HomeContent",
     data: function () {
         return {
-
+            store: useStore(),
         };
     },
     methods: {
@@ -78,8 +101,11 @@ export default {
         redirectToHelp: function() {
             window.location.href = '/help/';
         },
-        redirectToSSoLogin: function() {
+        redirectToSSOLogin: function() {
             window.location.href = '/ssologin';
+        },
+        redirectToSSOLogout: function() {
+            window.location.href = '/logout';
         }
     },
 };
@@ -94,9 +120,10 @@ export default {
 .card {
   opacity: 1;
   border:0;
+  cursor:pointer;
 }
 
-.card:hover {
+.card i:hover {
   cursor: pointer;
   opacity: 0.8;
 }
