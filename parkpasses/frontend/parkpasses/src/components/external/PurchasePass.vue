@@ -316,6 +316,14 @@
                         </div>
                         <div v-if="voucherRedemptionAmount" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
+                                Voucher Balance
+                            </div>
+                            <div class="col-auto">
+                                <strong class="text-success">${{ voucherBalanceRemaining }}</strong>
+                            </div>
+                        </div>
+                        <div v-if="voucherRedemptionAmount" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
                                 Voucher Redemption
                             </div>
                             <div class="col-auto">
@@ -417,7 +425,7 @@ export default {
     },
     components: {
 
-},
+    },
     computed: {
         totalPrice() {
             let totalPrice = 0.00;
@@ -736,6 +744,7 @@ export default {
             }
         },
         validateVoucherPin: function () {
+
             console.log('this.pass.voucher_pin.length = ' + this.pass.voucher_pin.length)
             if(6!=this.pass.voucher_pin.length){
                 console.log('Pin is not valid.')
@@ -819,6 +828,51 @@ export default {
                 console.error("There was an error!", error);
             });
         },
+        validateForm: async function () {
+            let vm = this;
+            var forms = document.querySelectorAll('.needs-validation')
+
+            console.log("validating form -- >")
+
+            if(vm.isEmailValid){
+                console.log("email is valid -- >")
+
+                this.validateDiscountCode();
+                this.validateConfirmEmail();
+                if(vm.showVoucherCodeField){
+                    console.log("vm.showVoucherCodeField -- >")
+                    let voucherCodeValid = this.validateVoucherCode();
+                    let voucherPinValid = false;
+                    if(this.pass.voucher_code.length && voucherCodeValid){
+                        console.log("voucherCodeValid valid -- >")
+                        voucherPinValid = this.validateVoucherPin();
+                    }
+                    if (typeof voucherPinValid !== 'undefined'){
+                        return false;
+                    }
+                    console.log("voucherPinValid = " + voucherPinValid)
+                    if(voucherCodeValid && voucherPinValid){
+                        console.log("Is this happening -- >")
+                        this.validateVoucherCodeBackend();
+                    }
+                }
+            }
+
+            Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                if(form.checkValidity()){
+                    vm.submitForm();
+                } else {
+                    form.classList.add('was-validated');
+                    console.log($(".invalid-feedback:first"));
+                    $(".invalid-feedback:visible:first").siblings('input').focus();
+                }
+
+            });
+
+            console.log(this.pass);
+            return false;
+        },
         submitForm: function() {
             let vm = this;
             vm.isLoading = true;
@@ -834,7 +888,7 @@ export default {
             vm.pass.option = vm.pass.option_id;
             vm.pass.pass_type_name = vm.passType.name;
             console.log('vm.pass = ' + JSON.stringify(vm.pass));
-            alert('vm.pass = ' + JSON.stringify(vm.pass));
+            //alert('vm.pass = ' + JSON.stringify(vm.pass));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -857,50 +911,6 @@ export default {
             });
             console.log(this.voucher);
             return false;
-        },
-        validateForm: async function () {
-            let vm = this;
-            var forms = document.querySelectorAll('.needs-validation')
-
-            console.log("validating form -- >")
-
-            if(vm.isEmailValid){
-                console.log("email is valid -- >")
-
-                this.validateDiscountCode();
-                this.validateConfirmEmail();
-                if(vm.showVoucherCodeField){
-                    console.log("vm.showVoucherCodeField -- >")
-                    let voucherCodeValid = this.validateVoucherCode();
-                    let voucherPinValid = false;
-                    if(this.pass.voucher_code.length && voucherCodeValid){
-                        console.log("voucherCodeValid valid -- >")
-                        voucherPinValid = this.validateVoucherPin();
-
-                    }
-                    console.log("voucherPinValid = " + voucherPinValid)
-                    if(voucherCodeValid && voucherPinValid){
-                        console.log("Is this happening -- >")
-                        this.validateVoucherCodeBackend();
-                    }
-                }
-
-            }
-
-            Array.prototype.slice.call(forms)
-            .forEach(function (form) {
-                if(form.checkValidity()){
-                    vm.submitForm();
-                } else {
-                    form.classList.add('was-validated');
-                    console.log($(".invalid-feedback:first"));
-                    $(".invalid-feedback:visible:first").siblings('input').focus();
-                }
-
-            });
-
-            console.log(this.pass);
-            return false;
         }
     },
     created: function () {
@@ -909,7 +919,7 @@ export default {
         this.fetchPassOptions();
     },
     mounted: function () {
-        if(this.store.userData.user){
+        if(this.store.userData){
             this.pass.email = this.store.userData.user.email
             this.pass.first_name = this.store.userData.user.first_name
             this.pass.last_name = this.store.userData.user.last_name
