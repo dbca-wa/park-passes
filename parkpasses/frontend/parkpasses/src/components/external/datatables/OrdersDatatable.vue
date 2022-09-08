@@ -232,7 +232,7 @@ export default {
         },
         columnInvoice: function(){
             return {
-                data: 'invoice_reference_link',
+                data: 'invoice_link',
                 visible: true,
                 searchable: false,
                 orderable: false,
