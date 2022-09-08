@@ -31,6 +31,9 @@ module.exports = {
     internalParkPassPdf: function (passId) {
         return                          `/api/passes/internal/passes/${passId}/retrieve-park-pass-pdf`
     },
+    externalParkPassPdf: function (passId) {
+        return                          `/api/passes/external/passes/${passId}/retrieve-park-pass-pdf`
+    },
     retailerParkPassPdf: function (passId) {
         return                          `/api/passes/retailer/passes/${passId}/retrieve-park-pass-pdf`
     },
