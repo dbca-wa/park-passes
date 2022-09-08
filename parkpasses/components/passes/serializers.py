@@ -309,6 +309,9 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     duration = serializers.SerializerMethodField()
     pass_type = serializers.SerializerMethodField()
     pass_type_name = serializers.SerializerMethodField()
+    pass_type_image = serializers.CharField(
+        source="option.pricing_window.pass_type.image.url"
+    )
     park_group = serializers.CharField()
     concession = serializers.SerializerMethodField()
     price_after_concession_applied = serializers.CharField()
@@ -326,6 +329,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "option",
             "pass_type",
             "pass_type_name",
+            "pass_type_image",
             "price",
             "duration",
             "first_name",
