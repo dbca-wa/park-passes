@@ -10,7 +10,6 @@
 import logging
 import math
 import os
-from decimal import Decimal
 
 import qrcode
 from ckeditor.fields import RichTextField
@@ -472,8 +471,10 @@ class Pass(models.Model):
     def price_after_discount_code_applied(self):
         if hasattr(self, "discount_code_usage"):
             discount_code = self.discount_code_usage.discount_code
-            discount_amount = discount_code.discount_as_amount(self.price)
-            price_after_discount = self.price - discount_amount
+            discount_amount = discount_code.discount_as_amount(
+                self.price_after_concession_applied
+            )
+            price_after_discount = self.price_after_concession_applied - discount_amount
             return price_after_discount
         return self.price_after_concession_applied
 
@@ -481,14 +482,10 @@ class Pass(models.Model):
     def price_after_voucher_applied(self):
         if hasattr(self, "voucher_transaction"):
             logger.debug(" this pass has a voucher transaction")
-            voucher = self.voucher_transaction.voucher
-            remaining_balance = voucher.remaining_balance
-            if remaining_balance >= self.price_after_discount_code_applied:
-                return Decimal(0.00)
-
-            return remaining_balance
+            voucher_transaction_balance = self.voucher_transaction.balance()
+            return self.price_after_discount_code_applied + voucher_transaction_balance
         logger.debug(
-            "self.price_after_voucher_applied = "
+            "self.price_after_discount_code_applied = "
             + str(self.price_after_discount_code_applied)
         )
         return self.price_after_discount_code_applied
@@ -496,7 +493,7 @@ class Pass(models.Model):
     @property
     def price_after_all_discounts(self):
         """Convenience method that makes more descriptive sense"""
-        return self.price_after_concession_applied
+        return self.price_after_voucher_applied
 
     def generate_qrcode(self):
         qr = qrcode.QRCode()
