@@ -68,6 +68,7 @@
 
 <script>
 import { apiEndpoints, helpers } from '@/utils/hooks'
+import currency from 'currency.js'
 import CartItem from '@/components/external/CartItem.vue'
 
 export default {
@@ -92,9 +93,9 @@ export default {
                 } else if (1 == this.cartItems.length) {
                     let price = 0.00;
                     if (this.cartItems[0].hasOwnProperty('voucher_number')) {
-                        price = parseFloat(this.cartItems[0].amount);
+                        price = currency(this.cartItems[0].amount);
                     } else {
-                        price = parseFloat(this.cartItems[0].price_after_discount_code_applied);
+                        price = currency(this.cartItems[0].price_after_voucher_applied);
                     }
                     console.log('price = ' + price);
                     console.log('Math.max(price, 0.00) = ' + Math.max(price, 0.00));
@@ -103,20 +104,20 @@ export default {
                     }
                     return Math.max(price, 0.00).toFixed(2);
                 } else {
-                    let total = 0.00;
+                    let total = currency(0.00);
                     this.cartItems.forEach(function (cartItem, index) {
                         if (cartItem.hasOwnProperty('voucher_number')) {
-                            total += parseFloat(cartItem.amount);
+                            total = currency(total).add(cartItem.amount);
                         } else {
-                            total += parseFloat(cartItem.price_after_discount_code_applied);
+                            console.log('cartItem.price_after_voucher_applied = ' + cartItem.price_after_voucher_applied);
+                            total = currency(total).add(cartItem.price_after_voucher_applied);
                         }
                         console.log('total = ' + total);
-                        if(0.00 > total){
-                            return 0.00;
+                        if(0.00 >= total){
+                            return currency(0.00);
                         }
                     });
-
-                    return Math.max(total, 0.00).toFixed(2);
+                    return total;
                 }
             }
         },
@@ -142,7 +143,6 @@ export default {
                         console.log(error);
                         return Promise.reject(error);
                     }
-                    // Do something after adding the voucher to the database and the users cart
                     vm.cartItems = data
                     $("#cart-item-count").text(` ${vm.cartItems.length} `)
                 })
