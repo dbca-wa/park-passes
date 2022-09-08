@@ -101,10 +101,10 @@ class Cart(models.Model):
 
     @property
     def grand_total(self):
-        grand_total = 0.00
+        grand_total = Decimal(0.00)
         for item in self.items.all():
-            grand_total += float(item.get_total_price())
-        return grand_total
+            grand_total += Decimal(item.get_total_price())
+        return grand_total.quantize(Decimal("0.01"))
 
     def create_order(
         self, save_order_to_db_and_delete_cart=False, uuid=None, invoice_reference=None
@@ -208,21 +208,20 @@ class Cart(models.Model):
 
                 if cart_item.voucher_transaction:
                     # A voucher is being used for this pass purchase
-                    voucher = cart_item.voucher_transaction.voucher
-                    voucher_discount = cart_item.get_voucher_discount_as_amount()
-                    if 0.00 < voucher_discount:
-                        order_item = OrderItem()
-                        order_item.order = order
-                        order_item.description = CartUtils.get_voucher_code_description(
-                            cart_item.voucher_transaction.voucher.code
-                        )
-                        order_item.amount = -abs(
-                            voucher_discount.quantize(Decimal("0.01"))
-                        )
-                        order_item.amount = -abs(voucher_discount)
-                        order_items.append(order_item)
-                        if save_order_to_db_and_delete_cart:
-                            order_item.save()
+                    voucher_transaction_balance = (
+                        cart_item.voucher_transaction.balance()
+                    )
+                    order_item = OrderItem()
+                    order_item.order = order
+                    order_item.description = CartUtils.get_voucher_code_description(
+                        cart_item.voucher_transaction.voucher.code
+                    )
+                    order_item.amount = voucher_transaction_balance.quantize(
+                        Decimal("0.01")
+                    )
+                    order_items.append(order_item)
+                    if save_order_to_db_and_delete_cart:
+                        order_item.save()
 
         if save_order_to_db_and_delete_cart:
             self.delete()
@@ -287,11 +286,13 @@ class CartItem(models.Model):
     voucher_transaction = models.ForeignKey(
         VoucherTransaction, on_delete=models.PROTECT, null=True, blank=True
     )
+    datetime_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         app_label = "parkpasses"
         unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
+        ordering = ["datetime_created", "object_id"]
 
     def __str__(self):
         return f"Content Type: {self.content_type} | Object ID: {self.object_id} Total Price: {self.get_total_price()}"
@@ -390,7 +391,7 @@ class CartItem(models.Model):
     def get_voucher_discount_as_amount(self):
         if not self.voucher_transaction.voucher:
             return Decimal(0.00)
-        if 0.00 >= self.voucher_transaction.voucher.amount:
+        if Decimal(0.00) >= self.voucher_transaction.voucher.amount:
             return Decimal(0.00)
         price_before_discounts = self.get_price_before_discounts()
         concession_discount_amount = self.get_concession_discount_as_amount()
