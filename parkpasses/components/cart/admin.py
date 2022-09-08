@@ -5,6 +5,9 @@ from parkpasses.components.cart.models import Cart, CartItem
 
 class CartItemInline(admin.TabularInline):
     model = CartItem
+    readonly_fields = [
+        "datetime_created",
+    ]
     raw_id_fields = [
         "voucher_transaction",
         "discount_code_usage",
@@ -24,6 +27,7 @@ class CartAdmin(admin.ModelAdmin):
         "datetime_created",
         "datetime_first_added_to",
         "datetime_last_added_to",
+        "grand_total",
     ]
     ordering = ("-datetime_created",)
     inlines = [CartItemInline]
