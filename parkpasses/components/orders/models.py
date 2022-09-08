@@ -3,6 +3,7 @@
 """
 import logging
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Sum
@@ -61,6 +62,16 @@ class Order(models.Model):
     @property
     def email_user(self):
         return retrieve_email_user(self.user)
+
+    @property
+    def invoice_link(self):
+        return (
+            settings.LEDGER_API_URL
+            + "/ledgergw/invoice-pdf/"
+            + settings.LEDGER_API_KEY
+            + "/"
+            + self.invoice_reference
+        )
 
 
 class OrderItemManager(models.Manager):
