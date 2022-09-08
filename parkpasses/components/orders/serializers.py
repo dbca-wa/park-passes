@@ -20,12 +20,26 @@ class OrderListItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     total = serializers.ReadOnlyField()
     items = OrderItemSerializer(many=True, read_only=True)
+    invoice_link = serializers.CharField()
 
     class Meta:
         model = Order
         fields = [
             "id",
             "order_number",
+            "uuid",
+            "invoice_reference",
+            "invoice_link",
+            "datetime_created",
+            "total",
+            "items",
+        ]
+        read_only_fields = [
+            "id",
+            "order_number",
+            "uuid",
+            "invoice_reference",
+            "invoice_link",
             "datetime_created",
             "total",
             "items",
