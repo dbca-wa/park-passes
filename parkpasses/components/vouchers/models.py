@@ -257,3 +257,6 @@ class VoucherTransaction(models.Model):
         if Decimal(0.00) > this_transaction_balance:
             return self.voucher.remaining_balance - this_transaction_balance
         return self.voucher.remaining_balance + this_transaction_balance
+
+    def balance(self):
+        return self.credit - self.debit
