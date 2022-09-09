@@ -84,7 +84,7 @@ class ExternalUpdateVoucherSerializer(serializers.ModelSerializer):
 
 
 class InternalVoucherSerializer(serializers.ModelSerializer):
-    remaining_balance = serializers.ReadOnlyField()
+    remaining_balance = serializers.DecimalField(max_digits=8, decimal_places=2)
     processing_status = serializers.SerializerMethodField()
 
     class Meta:
