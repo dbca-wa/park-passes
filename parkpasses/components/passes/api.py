@@ -348,7 +348,8 @@ class ExternalPassViewSet(
         )
 
         """ If the user deletes a cart item, any objects that can be attached to a cart item
-        (concession usage, discount code and voucher transaction) are deleted in the cart item's delete method  """
+        (concession usage, discount code usage and voucher transaction)
+        are deleted in the cart item's delete method  """
         if concession_id and concession_card_number:
             if Concession.objects.filter(id=concession_id).exists():
                 concession = Concession.objects.get(id=concession_id)
