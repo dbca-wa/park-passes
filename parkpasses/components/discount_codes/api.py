@@ -5,7 +5,6 @@ from django.utils import timezone
 from drf_excel.mixins import XLSXFileMixin
 from drf_excel.renderers import XLSXRenderer
 from rest_framework import viewsets
-from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
@@ -73,19 +72,58 @@ class DiscountCodeViewSet(viewsets.ModelViewSet):
     serializer_class = InternalDiscountCodeSerializer
 
 
+class DiscountCodeBatchFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        status = request.GET.get("status")
+
+        datetime_start_from = request.GET.get("datetime_start_from")
+        datetime_start_to = request.GET.get("datetime_start_to")
+
+        datetime_expiry_from = request.GET.get("datetime_expiry_from")
+        datetime_expiry_to = request.GET.get("datetime_expiry_to")
+
+        if "Expired" == status:
+            queryset = queryset.filter(datetime_expiry__lte=timezone.now())
+        if "Current" == status:
+            queryset = queryset.filter(
+                datetime_start__lte=timezone.now(), datetime_expiry__gte=timezone.now()
+            )
+        if "Future" == status:
+            queryset = queryset.filter(datetime_start__gt=timezone.now())
+
+        if datetime_start_from:
+            queryset = queryset.filter(datetime_start__gte=datetime_start_from)
+
+        if datetime_start_to:
+            queryset = queryset.filter(datetime_start__lte=datetime_start_to)
+
+        if datetime_expiry_from:
+            queryset = queryset.filter(datetime_expiry__gte=datetime_expiry_from)
+
+        if datetime_expiry_to:
+            queryset = queryset.filter(datetime_expiry__lte=datetime_expiry_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class InternalDiscountCodeBatchViewSet(UserActionViewSet):
     model = DiscountCodeBatch
     pagination_class = DatatablesPageNumberPagination
     queryset = DiscountCodeBatch.objects.all()
     permission_classes = [IsInternal]
     serializer_class = InternalDiscountCodeBatchSerializer
-    filter_backends = (
-        SearchFilter,
-        DatatablesFilterBackend,
-    )
-    filterset_fields = [
-        "times_each_code_can_be_used",
-    ]
+    filter_backends = (DiscountCodeBatchFilterBackend,)
 
     def perform_create(self, serializer):
         new_discount_code_batch = serializer.save(created_by=self.request.user.id)
