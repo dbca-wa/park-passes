@@ -10,7 +10,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -142,6 +141,45 @@ class PassTypeViewSet(viewsets.ModelViewSet):
         return super().list(request, pk=pk)
 
 
+class PricingWindowFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        pass_type = request.GET.get("pass_type")
+
+        start_date_from = request.GET.get("start_date_from")
+        start_date_to = request.GET.get("start_date_to")
+
+        expiry_date_from = request.GET.get("expiry_date_from")
+        expiry_date_to = request.GET.get("expiry_date_to")
+
+        if pass_type:
+            queryset = queryset.filter(pass_type__id=pass_type)
+
+        if start_date_from:
+            queryset = queryset.filter(date_start__gte=start_date_from)
+
+        if start_date_to:
+            queryset = queryset.filter(date_start__lte=start_date_to)
+
+        if expiry_date_from:
+            queryset = queryset.filter(date_expiry__gte=expiry_date_from)
+
+        if expiry_date_to:
+            queryset = queryset.filter(date_expiry__lte=expiry_date_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class InternalPricingWindowViewSet(viewsets.ModelViewSet):
     search_fields = [
         # "pass_type_display_name",
@@ -151,10 +189,7 @@ class InternalPricingWindowViewSet(viewsets.ModelViewSet):
     pagination_class = DatatablesPageNumberPagination
     queryset = PassTypePricingWindow.objects.all()
     permission_classes = [IsInternal]
-    filter_backends = (
-        SearchFilter,
-        DatatablesFilterBackend,
-    )
+    filter_backends = (PricingWindowFilterBackend,)
 
     def get_serializer_class(self):
         logger.debug("self.action = " + str(self.action))
