@@ -2,7 +2,7 @@
     <div class="modal fade" id="discountCodeBatchModal" aria-labelledby="discountCodeBatchModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <Loader v-if="loading" isLoading="loading" />
+                <BootstrapSpinner v-if="loading" isLoading="loading" />
                 <form v-else @submit.prevent="validateForm" @keydown.enter="$event.preventDefault()" class="needs-validation" novalidate>
                     <div class="modal-header">
                         <h5 v-if="discountCodeBatch.discountCodeBatch_number" class="modal-title" id="discountCodeBatchModalLabel">Update Discount Code Batch {{discountCodeBatch.discountCodeBatch_number}}</h5>
@@ -175,7 +175,7 @@
 
 <script>
 import { apiEndpoints, helpers } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import { forEach } from 'jszip';
 
 export default {
@@ -207,7 +207,7 @@ export default {
         }
     },
     components: {
-        Loader
+        BootstrapSpinner
     },
     computed: {
         minEndDate: function () {

@@ -53,10 +53,12 @@
         </div>
     </div>
 
-    <div v-if="loading" class="d-flex justify-content-center mt-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
+    <div v-if="loading || loadingMore">
+        <BootstrapSpinner isLoading="true" />
+    </div>
+
+    <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
+        {{ systemErrorMessage }}
     </div>
 
   </div>
@@ -64,6 +66,8 @@
 
 <script>
 import { apiEndpoints, helpers } from '@/utils/hooks'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
+
 import Swal from 'sweetalert2'
 
 export default {
@@ -76,10 +80,11 @@ export default {
         passes: null,
         pageIndex: 0,
         count: null,
+        systemErrorMessage: null,
     }
   },
   components: {
-
+      BootstrapSpinner
   },
   computed: {
       allResultsLoaded() {

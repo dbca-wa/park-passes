@@ -11,7 +11,7 @@
 
 <script>
 export default {
-    name: 'MultiFileUploader',
+    name: 'MultiFileUpBootstrapSpinner',
     inheritAttrs: false,
     props: {
         label: {

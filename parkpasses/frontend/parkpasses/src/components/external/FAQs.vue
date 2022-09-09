@@ -39,7 +39,7 @@
 
                 </div>
                 <div v-else>
-                    <loader isLoading="true" />
+                    <BootstrapSpinner isLoading="true" />
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
 
 <script>
 import { apiEndpoints } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 
 export default {
     name: "FAQs",
@@ -59,7 +59,7 @@ export default {
         };
     },
     components: {
-        Loader
+        BootstrapSpinner
     },
     methods: {
         fetchFAQs: function () {

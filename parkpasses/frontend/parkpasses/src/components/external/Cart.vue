@@ -9,13 +9,7 @@
 
             <div class="col">
 
-                <div v-if="loading" class="d-flex justify-content-center mt-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-
-                <div v-else>
+                <div v-if="cartItems">
                     <div class="accordion" id="checkoutAccordion">
                         <template v-if="cartItems && cartItems.length">
                             <CartItem v-for="cartItem in cartItems" @deleteCartItem="deleteCartItem"
@@ -41,11 +35,7 @@
                                 <div class="d-flex flex-row-reverse">
                                     <div class="col-auto align-right">
                                         <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5" type="button">Checkout</button>
-                                        <button v-else class="btn licensing-btn-primary px-5">
-                                            <div class="spinner-border text-light" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                        </button>
+                                        <BootstrapButtonSpinner v-else class="btn licensing-btn-primary px-5" />
                                     </div>
                                 </div>
                             </div>
@@ -58,9 +48,17 @@
                                 </div>
                             </div>
                         </template>
-
                     </div>
                 </div>
+
+                <div v-else>
+                    <BootstrapSpinner isLoading="true" />
+                </div>
+
+                <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
+                    {{ systemErrorMessage }}
+                </div>
+
             </div>
         </div>
     </div>
@@ -68,6 +66,8 @@
 
 <script>
 import { apiEndpoints, helpers } from '@/utils/hooks'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
+import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
 import currency from 'currency.js'
 import CartItem from '@/components/external/CartItem.vue'
 
@@ -75,15 +75,18 @@ export default {
     name: "Cart",
     data: function () {
         return {
-            cartItems: [],
+            cartItems: null,
             loading: false,
             isRedirecting: false,
+            systemErrorMessage: null,
         };
     },
     components: {
         apiEndpoints,
         helpers,
-        CartItem
+        CartItem,
+        BootstrapSpinner,
+        BootstrapButtonSpinner,
     },
     computed: {
         totalPrice() {

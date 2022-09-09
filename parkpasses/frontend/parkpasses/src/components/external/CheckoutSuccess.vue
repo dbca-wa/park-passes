@@ -55,7 +55,6 @@
 
 <script>
 import { apiEndpoints, helpers } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
 
 export default {
     name: "CheckoutSuccess",
@@ -67,7 +66,7 @@ export default {
         };
     },
     components: {
-        Loader
+
     },
     methods: {
         fetchOrder: function (uuid) {

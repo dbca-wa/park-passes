@@ -201,13 +201,13 @@
         </div>
     </footer>
     <div v-if="!discountCodeBatch">
-        <loader isLoading="true" />
+        <BootstrapSpinner isLoading="true" />
     </div>
 </template>
 
 <script>
 import { apiEndpoints, constants, helpers, utils } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import SectionToggle from '@/components/forms/SectionToggle.vue'
 import CommsLog from '@/components/common/CommsLog.vue'
 
@@ -243,7 +243,7 @@ export default {
     components: {
         SectionToggle,
         CommsLog,
-        Loader
+        BootstrapSpinner
     },
     methods: {
         returnToDiscountCodeBatchDash: function() {

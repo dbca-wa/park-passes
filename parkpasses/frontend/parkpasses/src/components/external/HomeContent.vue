@@ -22,7 +22,7 @@
                   <p class="card-text">
                       <ul>
                         <li><a href="/your-park-passes">View and download your current park pass</a></li>
-                        <li>Update the vehicle details for your pass</li>
+                        <li><a href="/your-park-passes">Update the vehicle details for your pass</a></li>
                         <li><a href="/ledger-ui/accounts">Update your account details</a></li>
                       </ul>
                     </p>
@@ -105,7 +105,7 @@ export default {
             window.location.href = '/ssologin';
         },
         redirectToSSOLogout: function() {
-            window.location.href = '/logout';
+            window.location.href = '/logout/?next=/';
         }
     },
 };

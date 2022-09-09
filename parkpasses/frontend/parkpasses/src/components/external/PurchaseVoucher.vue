@@ -125,11 +125,7 @@
                 </div>
                 <div class="col-auto">
                     <button v-if="!isLoading" class="btn licensing-btn-primary px-5" type="submit">Next</button>
-                    <button v-else class="btn licensing-btn-primary px-5">
-                        <div class="spinner-border text-light" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </button>
+                    <BootstrapButtonSpinner v-else class="btn licensing-btn-primary px-5" />
                 </div>
             </div>
             </form>
@@ -139,6 +135,7 @@
 
 <script>
 import { apiEndpoints, helpers } from '@/utils/hooks'
+import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
 import { useStore } from '@/stores/state'
 
 export default {
@@ -157,7 +154,8 @@ export default {
     },
     components: {
         apiEndpoints,
-        helpers
+        helpers,
+        BootstrapButtonSpinner,
     },
     computed: {
 

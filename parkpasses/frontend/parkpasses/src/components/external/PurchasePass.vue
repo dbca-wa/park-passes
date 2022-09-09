@@ -1,16 +1,6 @@
 <template>
         <div>
-            <div v-if="!passType" class="d-flex justify-content-center mt-5">
-                <div v-show="!passType" class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-
-            <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
-                {{ systemErrorMessage }}
-            </div>
-
-            <div v-show="passType && !systemErrorMessage">
+            <div v-if="passType">
                 <div v-if="passType">
                     <h1>Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
                 </div>
@@ -352,21 +342,28 @@
                             </div>
                             <div class="col-auto">
                                 <button v-if="!isLoading" class="btn licensing-btn-primary px-5" type="submit">Next</button>
-                                <button v-else class="btn licensing-btn-primary px-5">
-                                    <div class="spinner-border text-light" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                </button>
+                                <BootstrapButtonSpinner v-else class="btn licensing-btn-primary px-5" />
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
+
+            <div v-else>
+                <BootstrapSpinner isLoading="true" />
+            </div>
+
+            <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
+                {{ systemErrorMessage }}
+            </div>
+
         </div>
 </template>
 
 <script>
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
+import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
 import { useStore } from '@/stores/state'
 
 export default {
@@ -424,9 +421,13 @@ export default {
         };
     },
     components: {
-
+        BootstrapButtonSpinner,
+        BootstrapSpinner,
     },
     computed: {
+        loaded() {
+            return this.passType && this.passOptions && this.concessions;
+        },
         totalPrice() {
             let totalPrice = 0.00;
             if(!this.eligibleForConcession){
@@ -919,12 +920,12 @@ export default {
         this.fetchPassOptions();
     },
     mounted: function () {
-        if(this.store.userData){
+        /*if(this.store.userData){
             this.pass.email = this.store.userData.user.email
             this.pass.first_name = this.store.userData.user.first_name
             this.pass.last_name = this.store.userData.user.last_name
             this.$refs.confirmEmail.focus();
-        }
+        }*/
     }
 };
 </script>

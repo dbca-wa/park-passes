@@ -10,15 +10,14 @@
                 <div v-if="generalHelp" v-html="generalHelp.content" id="generalHelp">
                 </div>
 
+                <div v-else>
+                    <BootstrapSpinner isLoading="true" />
+                </div>
+
                 <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
                     {{ systemErrorMessage }}
                 </div>
 
-                <div v-if="loading" class="d-flex justify-content-center mt-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -27,24 +26,22 @@
 
 <script>
 import { apiEndpoints } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 
 export default {
     name: "Help",
     data: function () {
         return {
             generalHelp: null,
-            loading: false,
             systemErrorMessage: null,
         };
     },
     components: {
-        Loader
+        BootstrapSpinner
     },
     methods: {
         fetchGeneralHelp: function () {
             let vm = this;
-            vm.loading = true;
             fetch(apiEndpoints.helpDetailByLabel('general'))
             .then(async response => {
                 const data = await response.json();
@@ -54,7 +51,6 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.generalHelp = data;
-                vm.loading = false;
             })
             .catch(error => {
                 this.systemErrorMessage = "ERROR: Please try again in an hour.";

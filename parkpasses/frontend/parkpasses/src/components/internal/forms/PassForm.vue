@@ -174,14 +174,14 @@
         </div>
     </footer>
     <div v-if="!pass">
-        <loader isLoading="true" />
+        <BootstrapSpinner isLoading="true" />
     </div>
 </template>
 
 <script>
 import { useRoute } from 'vue-router'
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 
 import Swal from 'sweetalert2'
 
@@ -225,7 +225,7 @@ export default {
     components: {
         SectionToggle,
         CommsLog,
-        Loader,
+        BootstrapSpinner,
         StatusPanel,
     },
     methods: {
