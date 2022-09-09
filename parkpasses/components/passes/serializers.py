@@ -1,14 +1,12 @@
 import logging
 import os
 
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
 from parkpasses.components.concessions.serializers import InternalConcessionSerializer
 from parkpasses.components.discount_codes.serializers import (
     ExternalDiscountCodeSerializer,
 )
-from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.models import (
     Pass,
@@ -322,7 +320,6 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     voucher = serializers.SerializerMethodField()
     voucher_transaction = ExternalVoucherTransactionSerializer()
     price_after_voucher_applied = serializers.CharField()
-    invoice_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Pass
@@ -356,7 +353,6 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "voucher",
             "voucher_transaction",
             "price_after_voucher_applied",
-            "invoice_link",
         ]
         read_only_fields = [
             "id",
@@ -378,7 +374,6 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "voucher",
             "voucher_transaction",
             "price_after_voucher_applied",
-            "invoice_link",
         ]
 
     def get_price(self, obj):
@@ -412,19 +407,6 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             voucher = obj.voucher_transaction.voucher
             serializer = ExternalVoucherSerializer(voucher)
             return serializer.data
-        return None
-
-    def get_invoice_link(self, obj):
-        content_type = ContentType.objects.get_for_model(Pass)
-        if OrderItem.objects.filter(
-            object_id=obj.id, content_type=content_type
-        ).exists():
-            order_item = OrderItem.objects.get(
-                object_id=obj.id, content_type=content_type
-            )
-            if order_item.order.invoice_link:
-                return order_item.order.invoice_link
-
         return None
 
 
