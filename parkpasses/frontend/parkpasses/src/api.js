@@ -37,6 +37,9 @@ module.exports = {
     externalParkPassPdf: function (passId) {
         return                          `/api/passes/external/passes/${passId}/retrieve-park-pass-pdf`
     },
+    externalParkPassInvoice: function (passId) {
+        return                          `/api/passes/external/passes/${passId}/retrieve-invoice`
+    },
     retailerParkPassPdf: function (passId) {
         return                          `/api/passes/retailer/passes/${passId}/retrieve-park-pass-pdf`
     },
@@ -120,7 +123,9 @@ module.exports = {
     orderRetrieveExternal: function (uuid) {
         return                          `/api/orders/external/order-by-uuid/${uuid}/`;
     },
-
+    externalOrderInvoice: function (passId) {
+        return                          `/api/orders/external/orders/${passId}/retrieve-invoice`
+    },
     /* ========================= Org Model Documents ====================================*/
 
     uploadOrgModelDocuments:            '/api/org-model-documents/upload-documents',
