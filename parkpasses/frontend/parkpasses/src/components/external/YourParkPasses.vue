@@ -27,8 +27,7 @@
             <div v-else></div>
             <div v-if="passCurrentOrFuture(pass)" class="link"><a :href="passURL(pass.id)" target="blank">Download Pass PDF</a> <i class="fa-solid fa-file-pdf fa-lg ps-1"></i></div>
             <div v-else></div>
-            <div v-if="pass.invoice_link" class="link"><a target="blank" :href="pass.invoice_link">Download Invoice</a> <i class="fa-solid fa-file-invoice fa-lg ps-1"></i></div>
-            <div v-else></div>
+            <div class="link"><a target="_blank" rel="noopener" :href="invoiceURL(pass.id)">Download Invoice</a> <i class="fa-solid fa-file-invoice fa-lg ps-1"></i></div>
 
           </div>
           <div v-if="canUpdateVehicleDetails(pass)" :id="'updateVehicleRego'+pass.id" class="showUpdateVehicleRego collapse">
@@ -99,7 +98,10 @@ export default {
       }
     },
     passURL: function(passId) {
-      return apiEndpoints.externalParkPassPdf(passId);
+        return apiEndpoints.externalParkPassPdf(passId);
+    },
+    invoiceURL: function(passId) {
+        return apiEndpoints.externalParkPassInvoice(passId);
     },
     showUpdateVehicleRego: function(passId) {
       console.log('showUpdateVehicleRego');

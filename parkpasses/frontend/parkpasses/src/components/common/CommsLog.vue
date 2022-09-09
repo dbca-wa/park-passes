@@ -37,7 +37,8 @@
 import AddCommLog from './AddCommLog.vue'
 import {
     apiEndpoints,
-    helpers
+    helpers,
+    constants,
 }from '@/utils/hooks'
 import { v4 as uuid } from 'uuid';
 
@@ -70,7 +71,7 @@ export default {
             popoversInitialised: false,
             actionsDtOptions:{
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
+                    processing: constants.DATATABLE_PROCESSING_HTML
                 },
                 responsive: true,
                 deferRender: true,
