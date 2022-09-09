@@ -72,7 +72,7 @@ import PassCancellationModal from '@/components/internal/modals/PassCancellation
 
 
 export default {
-    name: 'TablePasses',
+    name: 'PassesDatatable',
     props: {
         level:{
             type: String,

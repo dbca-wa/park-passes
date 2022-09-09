@@ -80,7 +80,6 @@ import { apiEndpoints, constants } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import PricingWindowFormModal from '@/components/internal/modals/PricingWindowFormModal.vue'
 import PricingWindowConfirmDeleteModal from '@/components/internal/modals/PricingWindowConfirmDeleteModal.vue'
-import BootstrapModalVue from '../../../utils/vue/BootstrapModal.vue';
 
 export default {
     name: 'PricingWindowsDatatable',
@@ -130,7 +129,6 @@ export default {
             datatable_id: 'pricing-window-datatable-' + uuid(),
 
             filterPassType: sessionStorage.getItem(vm.filterPassTypeCacheName) ? sessionStorage.getItem(vm.filterPassTypeCacheName) : '',
-            filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
             filterDateStartFrom: sessionStorage.getItem(vm.filterDateStartFromCacheName) ? sessionStorage.getItem(vm.filterDateStartFromCacheName) : '',
             filterDateStartTo: sessionStorage.getItem(vm.filterDateStartToCacheName) ? sessionStorage.getItem(vm.filterDateStartToCacheName) : '',
             filterDateExpiryFrom: sessionStorage.getItem(vm.filterDateExpiryFromCacheName) ? sessionStorage.getItem(vm.filterDateExpiryFromCacheName) : '',
@@ -143,7 +141,6 @@ export default {
 
             // filtering options
             passTypesDistinct: [],
-            processingStatusesDistinct: [],
 
             dateFormat: 'DD/MM/YYYY',
             datepickerOptions:{
@@ -170,10 +167,6 @@ export default {
         filterPassType: function() {
             this.$refs.pricingWindowDatatable.vmDataTable.draw();
             sessionStorage.setItem(this.filterPassTypeCacheName, this.filterPassType);
-        },
-        filterProcessingStatus: function() {
-            this.$refs.pricingWindowDatatable.vmDataTable.draw();
-            sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
         },
         filterDateStartFrom: function() {
             this.$refs.pricingWindowDatatable.vmDataTable.draw();
@@ -205,8 +198,7 @@ export default {
         filterApplied: function(){
             let filter_applied = true
             if(
-                this.filterProcessingStatus.toLowerCase() === '' &&
-                this.filterPassType.toLowerCase() === '' &&
+                this.filterPassType === '' &&
                 this.filterDateStartFrom.toLowerCase() === '' &&
                 this.filterDateStartTo.toLowerCase() === '' &&
                 this.filterDateExpiryFrom.toLowerCase() === '' &&
@@ -289,7 +281,6 @@ export default {
                     } else {
                         return '';
                     }
-
                 }
             }
         },
@@ -314,8 +305,6 @@ export default {
                     } else {
                         return 'No options specified. This is bad.';
                     }
-
-
                 }
             }
         },
@@ -388,11 +377,10 @@ export default {
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
                         d.pass_type = vm.filterPassType
-                        d.processing_status = vm.filterProcessingStatus
                         d.start_date_from = vm.filterDateStartFrom
                         d.start_date_to = vm.filterDateStartTo
-                        d.date_expiry_from = vm.filterDateExpiryFrom
-                        d.date_expiry_to = vm.filterDateExpiryTo
+                        d.expiry_date_from = vm.filterDateExpiryFrom
+                        d.expiry_date_to = vm.filterDateExpiryTo
                     }
                 },
                 dom: "<'d-flex align-items-center'<'me-auto'l>fB>" +
@@ -457,21 +445,6 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.passTypesDistinct = data
-            })
-            .catch(error => {
-                //this.errorMessage = error;
-                console.error("There was an error!", error);
-            });
-
-            // Pass Processing Statuses
-            fetch(apiEndpoints.passProcessingStatusesDistinct)
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    return Promise.reject(error);
-                }
-                vm.processingStatusesDistinct = data
             })
             .catch(error => {
                 //this.errorMessage = error;
