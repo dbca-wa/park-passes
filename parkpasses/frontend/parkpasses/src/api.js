@@ -82,6 +82,9 @@ module.exports = {
     isVoucherValid: function (email, code, pin) {
         return                          `/api/vouchers/validate-voucher?email=${email}&code=${code}&pin=${pin}`;
     },
+    internalVoucherInvoice: function (voucherId) {
+        return                          `/api/vouchers/internal/vouchers/${voucherId}/retrieve-invoice`
+    },
     saveVoucher:                        '/api/vouchers/external/vouchers/',
 
     /* ========================= Postcodes ===============================================*/
