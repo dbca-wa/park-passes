@@ -52,3 +52,7 @@
 .fa-cart-shopping:hover {
     color:#286090;;
 }
+
+div.dataTables_processing div:last-child div {
+    display: none;
+  }
