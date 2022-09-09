@@ -1,17 +1,20 @@
 import logging
 
+import requests
 from django.contrib.contenttypes.models import ContentType
+from django.http import FileResponse, Http404
 from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
-from rest_framework.filters import SearchFilter
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
-from rest_framework_datatables.django_filters.backends import DatatablesFilterBackend
 from rest_framework_datatables.django_filters.filterset import DatatablesFilterSet
+from rest_framework_datatables.filters import DatatablesFilterBackend
 
 from parkpasses.components.cart.models import Cart, CartItem
+from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.components.vouchers.serializers import (
     ExternalCreateVoucherSerializer,
@@ -90,6 +93,36 @@ class VoucherFilter(DatatablesFilterSet):
         fields = "__all__"
 
 
+class VoucherFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        processing_status = request.GET.get("processing_status")
+
+        datetime_to_email_from = request.GET.get("datetime_to_email_from")
+        datetime_to_email_to = request.GET.get("datetime_to_email_to")
+
+        if processing_status:
+            queryset = queryset.filter(processing_status=processing_status)
+
+        if datetime_to_email_from:
+            queryset = queryset.filter(datetime_to_email__gte=datetime_to_email_from)
+
+        if datetime_to_email_to:
+            queryset = queryset.filter(datetime_to_email__lte=datetime_to_email_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class InternalVoucherViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for internal users to perform actions on vouchers.
@@ -100,8 +133,25 @@ class InternalVoucherViewSet(viewsets.ModelViewSet):
     model = Voucher
     permission_classes = [IsInternal]
     serializer_class = InternalVoucherSerializer
-    filter_backends = [SearchFilter, DatatablesFilterBackend]
+    filter_backends = (VoucherFilterBackend,)
     filterset_class = VoucherFilter
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
+    def retrieve_invoice(self, request, *args, **kwargs):
+        voucher = self.get_object()
+        content_type = ContentType.objects.get_for_model(Voucher)
+        if OrderItem.objects.filter(
+            object_id=voucher.id, content_type=content_type
+        ).exists():
+            order_item = OrderItem.objects.get(
+                object_id=voucher.id, content_type=content_type
+            )
+            invoice_url = order_item.order.invoice_link
+            if invoice_url:
+                response = requests.get(invoice_url)
+                return FileResponse(response, content_type="application/pdf")
+
+        raise Http404
 
 
 class VoucherTransactionViewSet(viewsets.ModelViewSet):
