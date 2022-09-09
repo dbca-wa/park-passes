@@ -1,6 +1,7 @@
 import logging
 from decimal import Decimal
 
+import requests
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import FileResponse, Http404
@@ -21,6 +22,7 @@ from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.concessions.models import Concession, ConcessionUsage
 from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeUsage
+from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
 from parkpasses.components.passes.models import (
     Pass,
@@ -404,6 +406,24 @@ class ExternalPassViewSet(
         if park_pass.user == self.request.user.id:
             if park_pass.park_pass_pdf:
                 return FileResponse(park_pass.park_pass_pdf)
+        raise Http404
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
+    def retrieve_invoice(self, request, *args, **kwargs):
+        park_pass = self.get_object()
+        logger.debug("user = " + str(self.request.user.id))
+        content_type = ContentType.objects.get_for_model(Pass)
+        if OrderItem.objects.filter(
+            object_id=park_pass.id, content_type=content_type
+        ).exists():
+            order_item = OrderItem.objects.get(
+                object_id=park_pass.id, content_type=content_type
+            )
+            invoice_url = order_item.order.invoice_link
+            if invoice_url:
+                response = requests.get(invoice_url)
+                return FileResponse(response, content_type="application/pdf")
+
         raise Http404
 
 
