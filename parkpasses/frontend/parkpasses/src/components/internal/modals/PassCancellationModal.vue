@@ -10,19 +10,19 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="pass-type" class="col-form-label">Cancellation Reason:</label>
-                            <textarea id="cancellationReason" class="form-control" required></textarea>
+                            <textarea id="cancellationReason" class="form-control" v-model="cancellation.cancellation_reason" required></textarea>
                             <div id="validationServerPassTypeFeedback" class="invalid-feedback">
                                 Please enter a cancellation reason.
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="pass-type" class="col-form-label">Files:</label>
-                            <div><a href="#">Attach File</a></div>
+                            <input class="form-control" type="file" id="reasonFiles" name="reasonFiles" multiple>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn licensing-btn-primary">Submit</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Exit</button>
+                        <button type="submit" class="btn licensing-btn-primary">Submit Cancellation</button>
                     </div>
                 </form>
             </div>
@@ -31,7 +31,8 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, helpers, utils } from '@/utils/hooks'
+import Swal from 'sweetalert2'
 
 export default {
     name: 'PassCancellationModal',
@@ -44,7 +45,7 @@ export default {
     },
     data() {
         return {
-
+            cancellation: {}
         }
     },
     computed: {
@@ -53,13 +54,15 @@ export default {
     methods: {
         submitForm: function () {
             let vm = this;
-            vm.pricing_window.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
+            vm.cancellation.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
+            vm.cancellation.park_pass = vm.pass.id
+            alert(JSON.stringify(vm.cancellation));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(vm.pricing_window)
+                body: JSON.stringify(vm.cancellation)
             };
-            fetch(apiEndpoints.savePricingWindow, requestOptions)
+            fetch(apiEndpoints.cancelPass, requestOptions)
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {
@@ -67,16 +70,22 @@ export default {
                         this.errors = data;
                         return Promise.reject(error);
                     }
-                    console.log('data = ' + JSON.stringify(data));
-                    this.$emit("saveSuccess", {
-                            message: 'Pricing Window created successfully.',
-                            pricingWindow: data,
-                        }
-                    );
-                    $('#successMessageAlert').show();
-                    vm.pricing_window = vm.getPricingWindowInitialState();
-                    var PricingWindowFormModalModal = bootstrap.Modal.getInstance(document.getElementById('passCancellationModal'));
-                    PricingWindowFormModalModal.hide();
+
+                    console.log(data);
+                    let files = $('#reasonFiles')[0].files;
+                    utils.uploadOrgModelDocuments(data.user_action.user_action_content_type_id, data.user_action.id, files);
+
+                    vm.$emit('cancelSuccess')
+
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Park Pass cancelled successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+
+                    var passCancellationFormModalModal = bootstrap.Modal.getInstance(document.getElementById('passCancellationModal'));
+                    passCancellationFormModalModal.hide();
                 })
                 .catch(error => {
                     this.systemErrorMessage = "ERROR: Please try again in an hour.";
