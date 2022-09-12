@@ -111,10 +111,11 @@ export default {
                         data: "documents",
                         orderable: false,
                         mRender:function(data,type,full){
-                            if(1>full.documents.length){
+                            if(full.documents && 1<full.documents.length){
+                                console.log(full.documents)
                                 let documentsHtml = '';
-                                for(let i=1;i<full.documents.length;i++){
-                                    documentsHtml += `<a href="">${file[i]._file}</a><br />`;
+                                for(let i=0;i<full.documents.length;i++){
+                                    documentsHtml += `<a href="">${full.documents[i].file_name}</a><br />`;
                                 }
                                 return documentsHtml;
                             } else {
