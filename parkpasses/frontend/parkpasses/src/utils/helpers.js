@@ -209,6 +209,15 @@ module.exports = {
         date = new Date(dateTime);
         return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
     },
+    getShortDate(date) {
+        var options = {
+            weekday: "short",
+            year: "numeric",
+            month: "2-digit",
+            day: "numeric"
+        };
+        return new Date(date).toLocaleDateString('en-AU', options)
+    },
     getPrettyDateFromDatetime(dateTime){
         var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         let formattedOrderDate = new Date(dateTime);
