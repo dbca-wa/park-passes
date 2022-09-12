@@ -10,7 +10,7 @@ from parkpasses import views
 from parkpasses.admin import admin
 from parkpasses.components.cart.api import LedgerCheckoutView
 from parkpasses.components.cart.views import CartView, CheckoutSuccessView
-from parkpasses.components.help.views import ParkPassesHelpView
+from parkpasses.components.help.views import ParkPassesFAQView, ParkPassesHelpView
 from parkpasses.components.main.api import DocumentCreateView, UserActionList
 from parkpasses.components.orders.views import ExternalOrdersView
 from parkpasses.components.passes.views import ExternalPassView
@@ -39,7 +39,7 @@ urlpatterns = [
         name="purchase-pass",
     ),
     url(r"^contact/", views.ParkPassesContactView.as_view(), name="contact"),
-    url(r"^faq/", views.ParkPassesFAQView.as_view(), name="faq"),
+    url(r"^faq/", ParkPassesFAQView.as_view(), name="faq"),
     url(
         r"^further_info/",
         views.ParkPassesFurtherInformationView.as_view(),

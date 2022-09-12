@@ -79,10 +79,6 @@ class ParkPassesContactView(TemplateView):
     template_name = "parkpasses/contact.html"
 
 
-class ParkPassesFAQView(TemplateView):
-    template_name = "parkpasses/index.html"
-
-
 class ParkPassesFurtherInformationView(TemplateView):
     template_name = "parkpasses/further_info.html"
 

@@ -16,7 +16,7 @@
                 <div class="border-bottom ps-1">{{ formatDate(pass.date_expiry) }}</div>
                 <label v-if="passCurrentOrFuture(pass)" class="orm-check-label mt-2">Renew Automatically</label>
                 <div v-if="passCurrentOrFuture(pass)" class="form-check form-switch mt-2 mx-auto">
-                  <input @change="updatePass(pass)" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" v-model="pass.renew_automatically">
+                  <input @change="updatePass(pass)" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" v-model="pass.renew_automatically" :disabled="loadingUpdatePass">
                 </div>
               </p>
             </div>
@@ -34,10 +34,10 @@
 
             <div class="row">
               <div class="col">
-                <input type="text" class="form-control form-control-sm m-3" placeholder="Vehicle 1 Registration" aria-label="Vehicle Registration 1" v-model="pass.vehicle_registration_1" maxlength="10">
+                <input type="text" class="form-control form-control-sm m-3" placeholder="Vehicle 1 Registration" aria-label="Vehicle Registration 1" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="loadingUpdatePass">
               </div>
               <div v-if="showSecondVehicleRego(pass)" class="col">
-                <input type="text" class="form-control form-control-sm m-3" placeholder="Vehicle 2 Registration" aria-label="Vehicle Registration 2" v-model="pass.vehicle_registration_2" maxlength="10">
+                <input type="text" class="form-control form-control-sm m-3" placeholder="Vehicle 2 Registration" aria-label="Vehicle Registration 2" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="loadingUpdatePass">
               </div>
               <div class="col">
                 <button v-if="!loadingUpdatePass" @click="updatePass(pass)" class="btn btn-sm licensing-btn-primary float-end m-3 px-5">Update</button>
@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    <div v-if="loading || loadingMore">
+    <div v-if="loading || loadingMore || loadingUpdatePass">
         <BootstrapSpinner isLoading="true" />
     </div>
 
