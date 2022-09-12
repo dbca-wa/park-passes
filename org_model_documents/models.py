@@ -4,6 +4,7 @@
 """
 import os
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
@@ -27,6 +28,11 @@ def org_model_document_path(instance, filename):
 
     based on the content type and object_id
     """
+    if settings.ORG_MODEL_DOCUMENTS_MEDIA_ROOT:
+        return (
+            f"{settings.ORG_MODEL_DOCUMENTS_MEDIA_ROOT}"
+            + f"/org_model_documents/{instance.content_type}/{instance.object_id}/{filename}"
+        )
     return (
         f"org_model_documents/{instance.content_type}/{instance.object_id}/{filename}"
     )
