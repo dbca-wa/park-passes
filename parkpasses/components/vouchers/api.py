@@ -129,7 +129,7 @@ class InternalVoucherViewSet(viewsets.ModelViewSet):
     """
 
     search_fields = ["recipient_name", "recipient_email"]
-    queryset = Voucher.objects.all()
+    queryset = Voucher.objects.exclude(in_cart=True)
     model = Voucher
     permission_classes = [IsInternal]
     serializer_class = InternalVoucherSerializer

@@ -16,7 +16,8 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from org_model_logs.utils import UserActionViewSet
+from org_model_logs.models import UserAction
+from org_model_logs.utils import UserActionSerializer, UserActionViewSet
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.concessions.models import Concession, ConcessionUsage
@@ -313,7 +314,7 @@ class ExternalPassViewSet(
     def get_queryset(self):
         return (
             Pass.objects.exclude(user__isnull=True)
-            .exclude(processing_status=["CA"])
+            .exclude(processing_status="CA")
             .exclude(in_cart=True)
             .filter(user=self.request.user.id)
             .order_by("-date_start")
@@ -552,7 +553,7 @@ class InternalPassViewSet(UserActionViewSet):
     ]
     model = Pass
     pagination_class = DatatablesPageNumberPagination
-    queryset = Pass.objects.all()
+    queryset = Pass.objects.exclude(in_cart=True)
     permission_classes = [IsInternal]
     filter_backends = (PassFilterBackend,)
 
@@ -576,5 +577,20 @@ class CancelPass(APIView):
         serializer = InternalPassCancellationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user_action = settings.ACTION_CANCEL
+            object_id = serializer.data["park_pass"]
+            content_type = ContentType.objects.get_for_model(Pass)
+            user_action = UserAction.objects.log_action(
+                object_id=object_id,
+                content_type=content_type,
+                who=request.user.id,
+                what=user_action.format(Pass._meta.model.__name__, object_id),
+                why=serializer.data["cancellation_reason"],
+            )
+            extended_serializer = {
+                "user_action": UserActionSerializer(user_action).data
+            }
+            extended_serializer.update(serializer.data)
+            return Response(extended_serializer, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
