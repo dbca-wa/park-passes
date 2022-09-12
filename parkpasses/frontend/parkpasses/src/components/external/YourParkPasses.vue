@@ -11,9 +11,9 @@
               <h5 class="card-title">{{ pass.pass_type }}</h5>
               <p class="card-text mt-3 rounded-bottom-0">
                 <div class="border-bottom">{{  passCurrentOrFuture(pass) ? 'Start Date' : 'Started' }}:</div>
-                <div class="border-bottom ps-1">{{ pass.date_start }}</div>
+                <div class="border-bottom ps-1">{{ formatDate(pass.date_start) }}</div>
                 <div class="border-bottom">{{  passCurrentOrFuture(pass) ? 'Expiry Date' : 'Expired' }}:</div>
-                <div class="border-bottom ps-1">{{ pass.date_expiry }}</div>
+                <div class="border-bottom ps-1">{{ formatDate(pass.date_expiry) }}</div>
                 <label v-if="passCurrentOrFuture(pass)" class="orm-check-label mt-2">Renew Automatically</label>
                 <div v-if="passCurrentOrFuture(pass)" class="form-check form-switch mt-2 mx-auto">
                   <input @change="updatePass(pass)" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" v-model="pass.renew_automatically">
@@ -36,7 +36,7 @@
               <div class="col">
                 <input type="text" class="form-control form-control-sm m-3" placeholder="Vehicle 1 Registration" aria-label="Vehicle Registration 1" v-model="pass.vehicle_registration_1" maxlength="10">
               </div>
-              <div class="col">
+              <div v-if="showSecondVehicleRego(pass)" class="col">
                 <input type="text" class="form-control form-control-sm m-3" placeholder="Vehicle 2 Registration" aria-label="Vehicle Registration 2" v-model="pass.vehicle_registration_2" maxlength="10">
               </div>
               <div class="col">
@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 
 import Swal from 'sweetalert2'
@@ -92,6 +92,9 @@ export default {
       }
   },
   methods: {
+    formatDate: function(date){
+      return helpers.getShortDate(date);
+    },
     statusClass: function (pass) {
       switch (pass.processing_status) {
         case 'CU':
@@ -102,15 +105,15 @@ export default {
           return 'bg-danger';
       }
     },
+    showSecondVehicleRego: function (pass) {
+        console.log(pass);
+        return constants.HOLIDAY_PASS_NAME==pass.pass_type_name ? false : true
+    },
     passURL: function(passId) {
         return apiEndpoints.externalParkPassPdf(passId);
     },
     invoiceURL: function(passId) {
         return apiEndpoints.externalParkPassInvoice(passId);
-    },
-    showUpdateVehicleRego: function(passId) {
-      console.log('showUpdateVehicleRego');
-      $(`#updateVehicleRego${passId}`).slideDown();
     },
     passCurrentOrFuture: function (pass) {
       switch (pass.processing_status) {
@@ -123,7 +126,13 @@ export default {
       }
     },
     canUpdateVehicleDetails: function (pass) {
-      return this.passCurrentOrFuture(pass) && !pass.prevent_further_vehicle_updates;
+      if(constants.PINJAR_PASS_NAME==pass.pass_type_name){
+          return false;
+      }
+      if(pass.prevent_further_vehicle_updates){
+        return false;
+      }
+      return this.passCurrentOrFuture(pass);
     },
     fetchPasses: function () {
       let vm = this;
