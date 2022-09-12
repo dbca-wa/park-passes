@@ -2,6 +2,7 @@ import logging
 
 from org_model_documents.api import DocumentCreateView, DocumentViewSet
 from org_model_logs.api import UserActionList, UserActionViewSet
+from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
@@ -20,12 +21,13 @@ class DocumentViewSet(DocumentViewSet):
 
 
 class UserActionList(UserActionList):
-    """The permission classes belong to park passes so can't be included in the org_model_documents app"""
+    """The permission classes belong to park passes so can't be included in the org_model_logs app"""
 
+    serializer_class = UserActionSerializer
     permission_classes = [IsInternal]
 
 
 class UserActionViewSet(UserActionViewSet):
-    """The permission classes belong to park passes so can't be included in the org_model_documents app"""
+    """The permission classes belong to park passes so can't be included in the org_model_logs app"""
 
     permission_classes = [IsInternal]
