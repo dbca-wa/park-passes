@@ -614,3 +614,11 @@ class PassCancellation(models.Model):
         super().save(*args, **kwargs)
         self.park_pass.processing_status = Pass.CANCELLED
         self.park_pass.save()
+
+    def delete(self, *args, **kwargs):
+        """If the pass cancellation is deleted we automatically recalculate the status"""
+        park_pass = self.park_pass
+        deleted = super().delete()
+        park_pass.set_processing_status()
+        park_pass.save()
+        return deleted
