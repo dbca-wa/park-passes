@@ -337,6 +337,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "email",
             "vehicle_registration_1",
             "vehicle_registration_2",
+            "prevent_further_vehicle_updates",
             "park_group",
             "park_pass_pdf",
             "date_start",
@@ -417,7 +418,20 @@ class ExternalUpdatePassSerializer(serializers.ModelSerializer):
             "renew_automatically",
             "vehicle_registration_1",
             "vehicle_registration_2",
+            "prevent_further_vehicle_updates",
         ]
+
+    def validate(self, data):
+        if data["prevent_further_vehicle_updates"]:
+            if data["vehicle_registration_1"]:
+                raise serializers.ValidationError(
+                    "Updating vehicle registration has been prevented for this pass."
+                )
+            if data["vehicle_registration_2"]:
+                raise serializers.ValidationError(
+                    "Updating vehicle registration has been prevented for this pass."
+                )
+        return data
 
 
 class InternalPassRetrieveSerializer(serializers.ModelSerializer):
@@ -428,6 +442,7 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
         source="option.pricing_window.pass_type.name", read_only=True
     )
     pricing_window = serializers.CharField(source="option.pricing_window")
+    duration = serializers.CharField(source="option.name")
     park_pass_pdf = serializers.SerializerMethodField()
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
     sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
