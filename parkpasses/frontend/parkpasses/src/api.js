@@ -28,6 +28,7 @@ module.exports = {
     updatePass: function (id) {
         return                          `/api/passes/internal/passes/${id}/`;
     },
+    cancelPass:                         `/api/passes/external/passes/cancel-pass`,
     updatePassExternal: function (id) {
         return                          `/api/passes/external/passes/${id}/`;
     },
