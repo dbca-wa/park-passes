@@ -16,8 +16,23 @@
 
                     </div>
                     <div class="col-md-8">
-                        <SectionToggle :label="'Park Pass - ' + pass.pass_type">
+                        <SectionToggle :label="pass.pass_number + ' - ' + pass.pass_type">
                             <form @submit.prevent="validateForm" class="needs-validation" novalidate>
+                            <div v-if="isPassCancelled" class="row">
+                                <div class="col">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                        </symbol>
+                                    </svg>
+                                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                                        <div>
+                                            This pass has been cancelled and can't be modified.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Pass Holder</label>
                                 <div class="col-sm-6">
@@ -42,7 +57,7 @@
                                     <span class="form-text">{{ formattedMobile }}</span>
                                 </div>
                             </div>
-                            <div v-if="postcode" class="row mb-1">
+                            <div v-if="pass.postcode" class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Postcode</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">{{ pass.postcode }}</span>
@@ -51,14 +66,14 @@
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Duration</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">14 Days</span>
+                                    <span class="form-text">{{ pass.duration }}</span>
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start">
+                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start" :disabled="isPassCancelled">
                                     </span>
                                 </div>
                             </div>
@@ -66,23 +81,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">End Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="date" v-model="pass.date_expiry">
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="row mb-1">
-                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration <span v-if="pass.vehicle_registration_2">1</span></label>
-                                <div class="col-sm-8">
-                                    <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1">
-                                    </span>
-                                </div>
-                            </div>
-                            <div v-if="!isHolidayPass" class="row mb-1">
-                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
-                                <div class="col-sm-8">
-                                    <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2">
+                                        <input class="form-control" name="endDate" type="date" v-model="pass.date_expiry" disabled>
                                     </span>
                                 </div>
                             </div>
@@ -90,10 +89,27 @@
                                 <label for="preventFurtherVehicleUpdates" class="col-sm-4 col-form-label">Prevent Further Vehicle Updates</label>
                                 <div class="col-sm-8">
                                     <div class="form-switch">
-                                        <input class="form-check-input org-form-switch-primary" type="checkbox" id="preventFurtherVehicleUpdates" v-model="pass.prevent_further_vehicle_updates">
+                                        <input class="form-check-input org-form-switch-primary" type="checkbox" id="preventFurtherVehicleUpdates" v-model="pass.prevent_further_vehicle_updates" :disabled="isPassCancelled">
                                     </div>
                                 </div>
                             </div>
+                            <div v-if="!pass.prevent_further_vehicle_updates" class="row mb-1">
+                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration <span v-if="pass.vehicle_registration_2">1</span></label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1" :disabled="isPassCancelled">
+                                    </span>
+                                </div>
+                            </div>
+                            <div v-if="showSecondVehicleRego" class="row mb-1">
+                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2" :disabled="isPassCancelled">
+                                    </span>
+                                </div>
+                            </div>
+
                             </form>
                         </SectionToggle>
                         <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher and Discount">
@@ -157,12 +173,12 @@
         </div>
 
     </div>
-    <footer class="fixed-bottom mt-auto py-3 bg-light">
+    <footer v-if="pass" class="fixed-bottom mt-auto py-3 bg-light">
         <div class="container d-flex justify-content-end">
             <template v-if="!loading">
-                <button @click="returnToPassesDash" class="btn licensing-btn-primary me-2">Cancel</button>
-                <button @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
-                <button @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
+                <button @click="returnToPassesDash" class="btn licensing-btn-primary me-2">Exit</button>
+                <button v-if="!isPassCancelled" @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
+                <button v-if="!isPassCancelled" @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
             </template>
             <template v-else>
                 <button class="btn licensing-btn-primary px-4 ms-2">
@@ -209,7 +225,19 @@ export default {
             return this.pass.concession_type || this.pass.voucher_number || this.pass.discount_code_used;
         },
         isHolidayPass: function () {
-            return constants.HOLIDAY_PASS_NAME==this.pass.pass_type_name ? true : false
+            return constants.HOLIDAY_PASS_NAME==this.pass.pass_type_name ? true : false;
+        },
+        isPassCancelled: function () {
+            return (constants.PASS_STATUS_CANCELLED==this.pass.processing_status) ? true : false;
+        },
+        showSecondVehicleRego: function () {
+            if(this.isHolidayPass){
+                return false;
+            }
+            if(this.pass.prevent_further_vehicle_updates){
+                return false;
+            }
+            return true;
         },
         formattedMobile: function () {
             if(!this.pass){
@@ -243,8 +271,8 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.pass = data
-                vm.pass.date_start = helpers.getDateFromDatetime(vm.pass.date_start);
-                vm.pass.date_expiry = helpers.getDateFromDatetime(vm.pass.date_expiry);
+                //vm.pass.date_start = helpers.getDateFromDatetime(vm.pass.date_start);
+                //vm.pass.date_expiry = helpers.getDateFromDatetime(vm.pass.date_expiry);
                 console.log(vm.pass);
                 console.log('date_start = ' + vm.pass.date_start);
 
@@ -265,8 +293,8 @@ export default {
             vm.loading = true;
             vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
             console.log(vm.pass);
-            vm.pass.date_start  = new Date(vm.pass.date_start).toLocaleString();
-            vm.pass.date_expiry  = new Date(vm.pass.date_expiry).toLocaleString();
+            // vm.pass.date_start  = new Date(vm.pass.date_start).toLocaleString();
+            // vm.pass.date_expiry  = new Date(vm.pass.date_expiry).toLocaleString();
             const requestOptions = {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -281,8 +309,6 @@ export default {
                         return Promise.reject(error);
                     }
 
-                    console.log(data);
-
                     Swal.fire({
                         title: 'Success',
                         text: 'Park Pass updated successfully.',
@@ -292,6 +318,7 @@ export default {
                     if(exitAfter) {
                         vm.$router.push({name: 'internal-dash'});
                     }
+                    vm.pass.date_expiry = data.date_expiry
                     var forms = document.querySelectorAll('.needs-validation');
                     Array.prototype.slice.call(forms).forEach(function (form) {
                         form.classList.remove('was-validated');
