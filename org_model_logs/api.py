@@ -2,13 +2,11 @@ import logging
 
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import generics, viewsets
-from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
 from org_model_logs.models import UserAction
 from org_model_logs.serializers import UserActionSerializer
-from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +15,8 @@ class UserActionList(generics.ListAPIView):
     search_fields = ["what", "why"]
     model = UserAction
     serializer_class = UserActionSerializer
-    permission_classes = [IsInternal]
     pagination_class = DatatablesPageNumberPagination
-    filter_backends = (
-        SearchFilter,
-        OrderingFilter,
-        DatatablesFilterBackend,
-    )
+    filter_backends = (DatatablesFilterBackend,)
     ordering = ("-when",)
 
     def get_queryset(self):
@@ -58,4 +51,3 @@ class UserActionList(generics.ListAPIView):
 class UserActionViewSet(viewsets.ModelViewSet):
     model = UserAction
     serializer_class = UserActionSerializer
-    permission_classes = [IsInternal]
