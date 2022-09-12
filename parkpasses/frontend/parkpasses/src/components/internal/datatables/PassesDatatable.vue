@@ -339,8 +339,13 @@ export default {
                     });
                     let links = '';
 
-                    links +=  `<a href="${editLink.href}">Edit</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
+                    if('CA'!=full.processing_status){
+                        links +=  `<a href="${editLink.href}">Edit</a>`;
+                        links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
+                    } else {
+                        links +=  `<a href="${editLink.href}">View</a>`;
+
+                    }
                     links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
                     return links;
                 }
@@ -445,7 +450,7 @@ export default {
 
         },
         cancelSuccess: function() {
-
+            this.$refs.passDatatable.vmDataTable.draw();
         },
         fetchFilterLists: function(){
             let vm = this;
