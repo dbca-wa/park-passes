@@ -4,6 +4,9 @@ module.exports = {
     PARKPASSES_MODELS_PASS:             'pass',
 
     HOLIDAY_PASS_NAME: 'HOLIDAY_PASS',
+    PINJAR_PASS_NAME: 'PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS',
+
+    PASS_STATUS_CANCELLED: 'CA',
 
     DATATABLE_PROCESSING_HTML: '<div class="spinner-border org-primary align-items-center" style="width: 3rem; height: 3rem; margin-top:45px;" role="status"><span class="visually-hidden">Loading...</span></div>',
 
