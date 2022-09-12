@@ -2,6 +2,7 @@ from django.conf.urls import url
 from rest_framework import routers
 
 from parkpasses.components.passes.api import (
+    CancelPass,
     CurrentOptionsForPassType,
     DefaultOptionsForPassType,
     ExternalPassViewSet,
@@ -35,6 +36,7 @@ urlpatterns = [
     url(r"pass-processing-statuses-distinct", PassProcessingStatusesDistinct.as_view()),
     url(r"default-pass-options-by-pass-type-id", DefaultOptionsForPassType.as_view()),
     url(r"pass-options-by-pass-type-id", CurrentOptionsForPassType.as_view()),
+    url(r"cancel-pass", CancelPass.as_view()),
 ]
 
 urlpatterns += router.urls
