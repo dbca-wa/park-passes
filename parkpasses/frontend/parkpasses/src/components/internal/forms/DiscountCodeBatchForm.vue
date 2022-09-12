@@ -194,10 +194,10 @@
 
     </div>
     <footer class="fixed-bottom mt-auto py-3 bg-light">
-        <div class="container d-flex flex-row-reverse">
-            <button @click="validateForm(false)" class="btn licensing-btn-primary ms-2">Save and Continue Editing</button>
-            <button @click="validateForm(true)" class="btn licensing-btn-primary ms-2">Save and Exit</button>
-            <button @click="returnToDiscountCodeBatchDash" class="btn licensing-btn-primary">Cancel</button>
+        <div class="container d-flex justify-content-end">
+            <button @click="returnToDiscountCodeBatchDash" class="btn licensing-btn-primary me-2">Exit</button>
+            <button @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
+            <button @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
         </div>
     </footer>
     <div v-if="!discountCodeBatch">

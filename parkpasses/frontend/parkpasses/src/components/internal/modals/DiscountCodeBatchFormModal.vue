@@ -163,7 +163,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Exit</button>
                         <button v-if="discountCodeBatch.discountCodeBatch_number" type="submit" class="btn licensing-btn-primary">Update</button>
                         <button v-else type="submit" class="btn licensing-btn-primary">Create</button>
                     </div>

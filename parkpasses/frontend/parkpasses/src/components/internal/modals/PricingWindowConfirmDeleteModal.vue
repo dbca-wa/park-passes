@@ -17,7 +17,7 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Exit</button>
                     <button @click="deletePricingWindow(pricingWindow.id)" type="button" class="btn btn-danger">Confirm</button>
                 </div>
             </div>
