@@ -1,41 +1,31 @@
 import logging
 
-from rest_framework import viewsets
-from rest_framework.response import Response
+from org_model_documents.api import DocumentCreateView, DocumentViewSet
+from org_model_logs.api import UserActionList, UserActionViewSet
+from parkpasses.permissions import IsInternal
 
-from parkpasses.components.main.models import MapLayer, Question, RequiredDocument
-from parkpasses.components.main.serializers import (
-    MapLayerSerializer,
-    QuestionSerializer,
-    RequiredDocumentSerializer,
-)
-from parkpasses.helpers import is_customer, is_internal
-
-logger = logging.getLogger("payment_checkout")
+logger = logging.getLogger(__name__)
 
 
-class RequiredDocumentViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = RequiredDocument.objects.all()
-    serializer_class = RequiredDocumentSerializer
+class DocumentCreateView(DocumentCreateView):
+    """The permission classes belong to park passes so can't be included in the org_model_documents app"""
+
+    permission_classes = [IsInternal]
 
 
-class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
+class DocumentViewSet(DocumentViewSet):
+    """The permission classes belong to park passes so can't be included in the org_model_documents app"""
+
+    permission_classes = [IsInternal]
 
 
-class MapLayerViewSet(viewsets.ModelViewSet):
-    queryset = MapLayer.objects.none()
-    serializer_class = MapLayerSerializer
+class UserActionList(UserActionList):
+    """The permission classes belong to park passes so can't be included in the org_model_documents app"""
 
-    def get_queryset(self):
-        if is_internal(self.request):
-            return MapLayer.objects.filter(option_for_internal=True)
-        elif is_customer(self.request):
-            return MapLayer.objects.filter(option_for_external=True)
-        return MapLayer.objects.none()
+    permission_classes = [IsInternal]
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+
+class UserActionViewSet(UserActionViewSet):
+    """The permission classes belong to park passes so can't be included in the org_model_documents app"""
+
+    permission_classes = [IsInternal]
