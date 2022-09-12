@@ -11,6 +11,7 @@ from parkpasses.admin import admin
 from parkpasses.components.cart.api import LedgerCheckoutView
 from parkpasses.components.cart.views import CartView, CheckoutSuccessView
 from parkpasses.components.help.views import ParkPassesHelpView
+from parkpasses.components.main.api import DocumentCreateView, UserActionList
 from parkpasses.components.orders.views import ExternalOrdersView
 from parkpasses.components.passes.views import ExternalPassView
 from parkpasses.components.vouchers.views import ExternalVouchersView
@@ -78,9 +79,17 @@ urlpatterns = [
     url(r"api/orders/", include("parkpasses.components.orders.urls")),
     url(r"api/users/", include("parkpasses.components.users.urls")),
     # ========================================================================== Org Model Documents end-points
-    url(r"api/org-model-documents/", include("org_model_documents.urls")),
+    url(
+        r"api/org-model-documents/upload-documents",
+        DocumentCreateView.as_view(),
+        name="upload-documents",
+    ),
     # ========================================================================== Org Model Logs
-    url(r"api/org-model-logs/", include("org_model_logs.urls")),
+    url(
+        r"api/org-model-logs/user-actions",
+        UserActionList.as_view(),
+        name="user-actions",
+    ),
     # ========================================================================== Management Commands
     url(
         r"^mgt-commands/$", views.ManagementCommandsView.as_view(), name="mgt-commands"
