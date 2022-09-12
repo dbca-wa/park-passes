@@ -264,8 +264,6 @@ export default {
                 visible: true,
                 'render': function(row, type, full){
                     let links = '';
-                    links +=  `<a href='/internal/voucher/${full.id}'>Edit</a> | `;
-                    links +=  `<a href='/internal/voucher/${full.id}/cancel/'>Cancel</a> | `;
                     links +=  `<a href='/internal/voucher/${full.id}/payment-details/'>View Payment Details</a><br/>`;
                     return links;
                 }
