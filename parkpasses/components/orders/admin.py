@@ -22,15 +22,19 @@ class OrderAdmin(admin.ModelAdmin):
         "uuid",
         "invoice_reference",
         "datetime_created",
+        "total_display",
     ]
     list_display = (
         "order_number",
         "user",
         "uuid",
+        "invoice_reference",
+        "total_display",
     )
     readonly_fields = [
         "order_number",
         "datetime_created",
+        "total_display",
     ]
     ordering = ("-datetime_created",)
     inlines = [OrderItemInline]
