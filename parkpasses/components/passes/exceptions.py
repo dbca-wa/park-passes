@@ -21,3 +21,23 @@ class NoDefaultPricingWindowExists(Exception):
 class NoValidPassTypeFoundInPost(APIException):
     """The exception to be thrown if the external POST request to create a pass does not
     specify a valid pass type name"""
+
+
+class SendPassAutoRenewNotificationEmailFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the pass autorenew
+    notification email"""
+
+
+class SendPassExpiryNotificationEmailFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the pass autorenew
+    notification email"""
+
+
+class SendPassPurchasedEmailNotificationFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the pass purchase email
+    notification"""
+
+
+class SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the pass purchase email
+    notification"""
