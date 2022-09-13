@@ -26,10 +26,15 @@ from django.utils import timezone
 from django_resized import ResizedImageField
 
 from parkpasses.components.parks.models import ParkGroup
+from parkpasses.components.passes.emails import PassEmails
 from parkpasses.components.passes.exceptions import (
     MultipleDefaultPricingWindowsExist,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
+    SendPassAutoRenewNotificationEmailFailed,
+    SendPassExpiryNotificationEmailFailed,
+    SendPassPurchasedEmailNotificationFailed,
+    SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed,
 )
 from parkpasses.components.passes.utils import PassUtils
 from parkpasses.components.retailers.models import RetailerGroup
@@ -599,6 +604,50 @@ class Pass(models.Model):
             self.pass_number = f"PP{self.pk:06d}"
         logger.debug("pass_number = " + self.pass_number)
         super().save(force_update=True)
+
+    def send_autorenew_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_autorenew_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_autorenew_notification_email(self)
+        except Exception as e:
+            SendPassAutoRenewNotificationEmailFailed(error_message.format(self.id, e))
+
+    def send_expiry_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_expiry_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_expiry_notification_email(self)
+        except Exception as e:
+            SendPassExpiryNotificationEmailFailed(error_message.format(self.id, e))
+
+    def send_purchased_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_purchased_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_purchased_notification_email(self)
+        except Exception as e:
+            SendPassPurchasedEmailNotificationFailed(error_message.format(self.id, e))
+
+    def send_vehicle_details_not_yet_provided_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_purchased_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_vehicle_details_not_yet_provided_notification_email(
+                self
+            )
+        except Exception as e:
+            SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(
+                error_message.format(self.id, e)
+            )
 
 
 class PassCancellationManager(models.Manager):
