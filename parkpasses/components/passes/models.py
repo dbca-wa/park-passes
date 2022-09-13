@@ -392,11 +392,13 @@ class Pass(models.Model):
     CURRENT = "CU"
     EXPIRED = "EX"
     CANCELLED = "CA"
+    VALID = "VA"
     PROCESSING_STATUS_CHOICES = [
         (FUTURE, "Future"),
         (CURRENT, "Current"),
         (EXPIRED, "Expired"),
         (CANCELLED, "Cancelled"),
+        (VALID, "Valid"),
     ]
 
     user = models.IntegerField(null=True, blank=True)  # EmailUserRO
@@ -495,6 +497,23 @@ class Pass(models.Model):
     def price_after_all_discounts(self):
         """Convenience method that makes more descriptive sense"""
         return self.price_after_voucher_applied
+
+    @property
+    def status(self):
+        if self.isCancelled:
+            return Pass.CANCELLED
+        elif self.date_start > timezone.now().date():
+            return Pass.FUTURE
+        elif self.date_expiry <= timezone.now().date():
+            return Pass.EXPIRED
+        else:
+            return Pass.CURRENT
+
+    @property
+    def isCancelled(self):
+        if hasattr(self, "cancellation"):
+            return True
+        return False
 
     def generate_qrcode(self):
         qr = qrcode.QRCode()
