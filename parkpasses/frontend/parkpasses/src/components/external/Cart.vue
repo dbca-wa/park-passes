@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
 import currency from 'currency.js'
@@ -125,7 +125,7 @@ export default {
             }
         },
         gst() {
-            let gst = this.totalPrice / 10;
+            let gst = this.totalPrice / constants.GST;
             console.log(gst);
             return Math.max(gst, 0.00).toFixed(2);
         }
