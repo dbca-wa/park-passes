@@ -60,6 +60,14 @@ class Order(models.Model):
         return self.items.all().aggregate(Sum("amount"))["amount__sum"]
 
     @property
+    def total_display(self):
+        return f"${self.total}"
+
+    @property
+    def gst(self):
+        return self.total / settings.LEDGER_GST
+
+    @property
     def email_user(self):
         return retrieve_email_user(self.user)
 
