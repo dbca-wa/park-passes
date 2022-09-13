@@ -2,10 +2,10 @@
 
 {%  block content %}
 
-    {{first_name}} {{last_name}},
+    {{pass.first_name}} {{pass.last_name}},
 
-    You have not yet provided your vehicle registration details for your park pass valid from {{date_start}}.
+    You have not yet provided your vehicle registration details for your park pass valid from {{pass.date_start}}.
 
-    Log in to your account on {{url}} and enter the vehicle registration details for your park pass.
+    Log in to your account on {{site_url}} and enter the vehicle registration details for your park pass.
 
 {%  endblock %}

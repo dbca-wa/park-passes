@@ -2,10 +2,10 @@
 
 {%  block content %}
 
-    {{first_name}} {{last_name}},
+    {{pass.first_name}} {{pass.last_name}},
 
-    Your current {{pass_type}} is due to expire on {{datetime_expiry}}.
+    Your current {{pass.pass_type_display_name}} is due to expire on {{pass.date_expiry}}.
 
-    If you want to renew your park pass, log in to your account at {{url}} and renew your park pass.
+    If you want to renew your park pass, log in to your account at {{site_url}} and renew your park pass.
 
 {%  endblock %}

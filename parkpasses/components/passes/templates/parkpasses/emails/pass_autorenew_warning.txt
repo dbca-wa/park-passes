@@ -2,10 +2,10 @@
 
 {%  block content %}
 
-    {{first_name}} {{last_name}},
+    {{pass.first_name}} {{pass.last_name}},
 
-    Your current {{pass_type}} is due to renew automatically on {{datetime_expiry}}.
+    Your current {{pass.pass_type_display_name}} is due to renew automatically on {{pass.date_expiry}}.
 
-    If you do not want to renew your park pass, log in to your accoutn at {{url}} and cancel the automatic renewal of your park pass.
+    If you do not want to renew your park pass, log in to your accoutn at {{site_url}} and cancel the automatic renewal of your park pass.
 
 {%  endblock %}
