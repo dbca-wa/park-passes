@@ -9,8 +9,15 @@
             <div class="col-sm-12">
                 <div class="row">
                     <div class="col-md-3">
-                        <CommsLog commsUrl="" :logsUrl="logsUrl" commAddUrl="" />
-                        <StatusPanel :status="pass.processing_status_display_name" class="pt-3" />
+                        <CommsLog
+                            :commsUrl="listCommsUrl"
+                            :logsUrl="listUserActionsLogUrl"
+                            :commAddUrl="createCommUrl"
+                            :appLabel="appLabel"
+                            :model="model"
+                            :customerId="pass.user"
+                            :objectId="pass.id" />
+                        <StatusPanel :status="pass.processing_status_display_name" :badge=true class="pt-3" />
                     </div>
                     <div class="col-md-1">
 
@@ -215,8 +222,12 @@ export default {
         return {
             passId: null,
             pass: null,
-            logsUrl: null,
+            listUserActionsLogUrl: null,
+            listCommsUrl: null,
+            createCommUrl: apiEndpoints.createCommunicationsLogEntry,
             pdfUrl: null,
+            appLabel: constants.PARKPASSES_APP_LABEL,
+            model: constants.PARKPASSES_MODELS_PASS,
             loading: false,
         }
     },
@@ -275,8 +286,14 @@ export default {
                 //vm.pass.date_expiry = helpers.getDateFromDatetime(vm.pass.date_expiry);
                 console.log(vm.pass);
                 console.log('date_start = ' + vm.pass.date_start);
+                console.log('pass.user = ' + vm.pass.user)
 
-                vm.logsUrl = apiEndpoints.userActionLog(
+                vm.listUserActionsLogUrl = apiEndpoints.listUserActionsLog(
+                    constants.PARKPASSES_APP_LABEL,
+                    constants.PARKPASSES_MODELS_PASS,
+                    vm.pass.id
+                )
+                vm.listCommsUrl = apiEndpoints.listCommunicationsLogEntries(
                     constants.PARKPASSES_APP_LABEL,
                     constants.PARKPASSES_MODELS_PASS,
                     vm.pass.id

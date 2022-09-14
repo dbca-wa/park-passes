@@ -29,7 +29,7 @@
                 </div>
             </div>
         </div>
-        <AddCommLog ref="addComm" :url="commAddUrl"/>
+        <AddCommLog id="AddComms" ref="addComm" :url="commAddUrl" :appLabel="appLabel" :model="model" :objectId="objectId" :customerId="customerId" />
     </div>
 </template>
 
@@ -60,6 +60,22 @@ export default {
         disableAddEntry: {
             type: Boolean,
             default: false
+        },
+        appLabel: {
+            type: String,
+            required: true
+        },
+        model: {
+            type: String,
+            required: true
+        },
+        objectId: {
+            type: Number,
+            required: true
+        },
+        customerId: {
+            type: Number,
+            required: false,
         }
     },
     data() {
@@ -144,7 +160,7 @@ export default {
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 ajax: {
                     "url": vm.commsUrl,
-                    "dataSrc": '',
+                    "dataSrc": 'data',
                 },
                 columns:[
                     {
@@ -158,7 +174,7 @@ export default {
                     },
                     {
                         title: 'Type',
-                        data: 'type'
+                        data: 'entry_type_display_name'
                     },
                     /*{
                         title: 'Reference',
@@ -397,6 +413,7 @@ export default {
                 var diff = el_bounding_top - popover_bounding_top;
                 var x = diff + 5;
                 $('.'+popover_name).children('.arrow').css('top', x + 'px');
+
             })
 
         },
@@ -459,6 +476,11 @@ export default {
         let vm = this;
         this.$nextTick(() => {
             vm.initialisePopovers();
+        });
+        var addComms = document.getElementById('AddComms');
+        addComms.addEventListener('shown.bs.modal', function (event) {
+            alert('test');
+            $('#to').focus();
         });
     }
 }
