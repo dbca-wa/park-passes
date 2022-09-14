@@ -2,22 +2,10 @@ import pytz
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection
-from django.db.models import Q
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
 from org_model_logs.models import CommunicationsLogEntry, EntryType
-from parkpasses.components.main.serializers import EmailUserSerializerForReferral
-
-
-def retrieve_department_users():
-    dep_users = (
-        EmailUser.objects.filter(Q(email__endswith="@dbca.wa.gov.au"))
-        .exclude(Q(first_name=""), Q(last_name=""))
-        .order_by("first_name")
-    )
-    serialiser = EmailUserSerializerForReferral(dep_users, many=True)
-    return serialiser.data
 
 
 def handle_validation_error(e):
