@@ -136,7 +136,12 @@ module.exports = {
 
     /* ========================= Org Model Logs ====================================*/
 
-    userActionLog: function (appLabel, model, object_id) {
+    entryTypes:                         '/api/org-model-logs/entry-types',
+    listUserActionsLog: function (appLabel, model, object_id) {
         return                          `/api/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&object_id=${object_id}&format=datatables`;
-    }
+    },
+    createCommunicationsLogEntry:       '/api/org-model-logs/communications-log-entries',
+    listCommunicationsLogEntries: function (appLabel, model, object_id) {
+        return                          `/api/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${object_id}&format=datatables`;
+    },
 }
