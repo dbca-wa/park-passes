@@ -114,6 +114,7 @@ class InternalCreatePricingWindowSerializer(serializers.ModelSerializer):
 class InternalPricingWindowSerializer(serializers.ModelSerializer):
     options = InternalOptionSerializer(many=True)
     pass_type_display_name = serializers.ReadOnlyField(source="pass_type.display_name")
+    status = serializers.CharField()
 
     class Meta:
         model = PassTypePricingWindow
@@ -125,17 +126,16 @@ class InternalPricingWindowSerializer(serializers.ModelSerializer):
             "date_start",
             "date_expiry",
             "options",
+            "status",
         ]
         read_only_fields = [
             "pass_type_display_name",
+            "status",
         ]
         datatables_always_serialize = [
             "id",
             "options",
         ]
-
-    # def get_pass_type_display_name(self, obj):
-    #    return obj.pass_type.display_name
 
 
 class PassTemplateSerializer(serializers.ModelSerializer):

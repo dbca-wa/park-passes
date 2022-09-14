@@ -169,6 +169,17 @@ class PassTypePricingWindow(models.Model):
 
         super().save(*args, **kwargs)
 
+    @property
+    def status(self):
+        if not self.date_expiry:
+            return "Current"
+        if self.date_start >= timezone.now().date():
+            return "Future"
+        elif self.date_expiry < timezone.now().date():
+            return "Expired"
+        else:
+            return "Current"
+
     @classmethod
     def get_default_pricing_window_by_pass_type_id(self, pass_type_id):
         try:

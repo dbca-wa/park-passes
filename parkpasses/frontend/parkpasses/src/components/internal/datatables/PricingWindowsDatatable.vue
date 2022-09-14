@@ -76,7 +76,7 @@
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints, constants } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import PricingWindowFormModal from '@/components/internal/modals/PricingWindowFormModal.vue'
 import PricingWindowConfirmDeleteModal from '@/components/internal/modals/PricingWindowConfirmDeleteModal.vue'
@@ -222,6 +222,7 @@ export default {
                 'Start Date',
                 'End Date',
                 'Options',
+                'Status',
                 'Action'
             ]
         },
@@ -281,6 +282,18 @@ export default {
                     } else {
                         return '';
                     }
+                }
+            }
+        },
+        columnStatus: function () {
+            return {
+                data: "status",
+                visible: true,
+                orderable: false,
+                searchable: false,
+                name: 'status',
+                'render': function(row, type, full){
+                    return `<span class="badge ${helpers.getStatusBadgeClass(full.status)}">${full.status}</span>`;
                 }
             }
         },
@@ -358,6 +371,7 @@ export default {
                 vm.columnDateStart,
                 vm.columnDateExpiry,
                 vm.columnOptions,
+                vm.columnStatus,
                 vm.columnAction,
             ]
             search = true
