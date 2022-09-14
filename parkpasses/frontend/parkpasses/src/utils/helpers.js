@@ -231,4 +231,22 @@ module.exports = {
              .replace(/"/g, "&quot;")
              .replace(/'/g, "&#039;");
      },
+     getStatusBadgeClass(status){
+        switch(status) {
+            case 'Current':
+                return 'bg-success'
+                break;
+            case 'Future':
+                return 'bg-info';
+                break;
+            case 'Expired':
+                return 'bg-danger';
+                break;
+            case 'Cancelled':
+                return 'bg-danger';
+                break;
+            default:
+                return 'org-badge-primary';
+        }
+    }
 };
