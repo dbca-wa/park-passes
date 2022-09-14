@@ -66,7 +66,7 @@
 <script>
 import Datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints, constants } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import PassCancellationModal from '@/components/internal/modals/PassCancellationModal.vue'
 
@@ -302,6 +302,9 @@ export default {
                 data: "processing_status_display_name",
                 visible: true,
                 name: 'processing_status',
+                'render': function(row, type, full){
+                    return `<span class="badge ${helpers.getStatusBadgeClass(full.processing_status_display_name)}">${full.processing_status_display_name}</span>`;
+                }
             }
         },
         columnParkPassPdf: function(){

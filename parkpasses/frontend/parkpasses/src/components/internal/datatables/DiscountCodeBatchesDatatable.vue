@@ -77,7 +77,7 @@
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints, constants } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import DiscountCodeBatchFormModal from '@/components/internal/modals/DiscountCodeBatchFormModal.vue'
 
@@ -342,8 +342,10 @@ export default {
                 visible: true,
                 orderable: false,
                 searchable: false,
-                name: 'status'
-
+                name: 'status',
+                'render': function(row, type, full){
+                    return `<span class="badge ${helpers.getStatusBadgeClass(full.status)}">${full.status}</span>`;
+                }
             }
         },
         columnAction: function () {
