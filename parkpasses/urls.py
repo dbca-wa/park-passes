@@ -11,7 +11,12 @@ from parkpasses.admin import admin
 from parkpasses.components.cart.api import LedgerCheckoutView
 from parkpasses.components.cart.views import CartView, CheckoutSuccessView
 from parkpasses.components.help.views import ParkPassesFAQView, ParkPassesHelpView
-from parkpasses.components.main.api import DocumentCreateView, UserActionList
+from parkpasses.components.main.api import (
+    CreateCommunicationsLogEntry,
+    DocumentCreateView,
+    EntryTypeList,
+    UserActionList,
+)
 from parkpasses.components.orders.views import ExternalOrdersView
 from parkpasses.components.passes.views import ExternalPassView
 from parkpasses.components.vouchers.views import ExternalVouchersView
@@ -89,6 +94,16 @@ urlpatterns = [
         r"api/org-model-logs/user-actions",
         UserActionList.as_view(),
         name="user-actions",
+    ),
+    url(
+        r"api/org-model-logs/entry-types",
+        EntryTypeList.as_view(),
+        name="entry-types",
+    ),
+    url(
+        r"api/org-model-logs/communications-log-entries",
+        CreateCommunicationsLogEntry.as_view(),
+        name="create-communications-log-entry",
     ),
     # ========================================================================== Management Commands
     url(
