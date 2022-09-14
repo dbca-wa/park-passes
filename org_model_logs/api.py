@@ -2,13 +2,25 @@ import logging
 
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import generics, viewsets
+from rest_framework.serializers import ValidationError
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from org_model_logs.models import UserAction
-from org_model_logs.serializers import UserActionSerializer
+from org_model_logs.models import CommunicationsLogEntry, EntryType, UserAction
+from org_model_logs.serializers import (
+    CommunicationsLogEntrySerializer,
+    CreateCommunicationsLogEntrySerializer,
+    EntryTypeSerializer,
+    UserActionSerializer,
+)
 
 logger = logging.getLogger(__name__)
+
+
+class EntryTypeList(generics.ListAPIView):
+    model = EntryType
+    serializer_class = EntryTypeSerializer
+    queryset = EntryType.objects.all()
 
 
 class UserActionList(generics.ListAPIView):
@@ -51,3 +63,52 @@ class UserActionList(generics.ListAPIView):
 class UserActionViewSet(viewsets.ModelViewSet):
     model = UserAction
     serializer_class = UserActionSerializer
+
+
+class CreateCommunicationsLogEntry(generics.ListCreateAPIView):
+    model = CommunicationsLogEntry
+    filter_backends = (DatatablesFilterBackend,)
+    pagination_class = DatatablesPageNumberPagination
+
+    def get_serializer_class(self):
+        if "POST" == self.request.method:
+            return CreateCommunicationsLogEntrySerializer
+        return CommunicationsLogEntrySerializer
+
+    def get_queryset(self):
+        app_label = self.request.query_params.get("app_label", None)
+        model = self.request.query_params.get("model", None)
+        object_id = self.request.query_params.get("object_id", None)
+        if app_label and model and object_id:
+            if ContentType.objects.filter(app_label=app_label, model=model).exists():
+                content_type = ContentType.objects.get(app_label=app_label, model=model)
+                logger.debug("content_type = " + str(content_type))
+                if CommunicationsLogEntry.objects.filter(
+                    content_type=content_type, object_id=object_id
+                ).exists():
+                    return CommunicationsLogEntry.objects.filter(
+                        content_type=content_type, object_id=object_id
+                    )
+                CommunicationsLogEntry.objects.none()
+        if app_label and model:
+            if ContentType.objects.filter(app_label=app_label, model=model).exists():
+                content_type = ContentType.objects.get(app_label=app_label, model=model)
+                return CommunicationsLogEntry.objects.filter(content_type=content_type)
+        if app_label:
+            if ContentType.objects.filter(app_label=app_label, model=model).exists():
+                content_types = ContentType.objects.filter(app_label=app_label)
+                return CommunicationsLogEntry.objects.filter(
+                    content_type__in=content_types
+                )
+        return CommunicationsLogEntry.objects.all()
+
+    def perform_create(self, serializer):
+        app_label = serializer.validated_data.pop("app_label", None)
+        model = serializer.validated_data.pop("model", None)
+        logger.debug(str(serializer.validated_data))
+        if not ContentType.objects.filter(app_label=app_label, model=model).exists():
+            raise ValidationError(
+                f"There is no content_type with app_label={app_label} and model={model}"
+            )
+        content_type = ContentType.objects.get(app_label=app_label, model=model)
+        serializer.save(content_type=content_type, staff=self.request.user.id)
