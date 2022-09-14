@@ -115,6 +115,9 @@ class CommunicationsLogEntryManager(models.Manager):
     def get_for_object(self, obj, model_db=None):
         return self.get_for_object_reference(obj.__class__, obj.pk)
 
+    def get_queryset(self):
+        return super().get_queryset().select_related("entry_type")
+
 
 class CommunicationsLogEntry(models.Model):
     """A class to represent communication log entry.
@@ -156,3 +159,4 @@ class CommunicationsLogEntry(models.Model):
         indexes = (models.Index(fields=["content_type", "object_id"]),)
         verbose_name = "Communications Log Entry"
         verbose_name_plural = "Communications Log Entries"
+        ordering = ["-created"]
