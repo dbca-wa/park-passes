@@ -1,10 +1,10 @@
 import logging
 
+from django.apps import apps
 from django.conf import settings
 
 from parkpasses.components.emails.emails import TemplateEmailBase
 from parkpasses.components.main.utils import log_communication
-from parkpasses.components.passes.serializers import ExternalPassSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ class PassEmails:
     @classmethod
     def send_pass_autorenew_notification_email(self, park_pass):
         email = PassAutoRenewNotificationEmail()
+        ExternalPassSerializer = apps.get_model("parkpasses", "ExternalPassSerializer")
         serializer = ExternalPassSerializer(park_pass)
         context = {
             "pass": serializer.data,
@@ -52,6 +53,7 @@ class PassEmails:
     @classmethod
     def send_pass_expiry_notification_email(self, park_pass):
         email = PassExpiryNotificationEmail()
+        ExternalPassSerializer = apps.get_model("parkpasses", "ExternalPassSerializer")
         serializer = ExternalPassSerializer(park_pass)
         context = {
             "pass": serializer.data,
@@ -63,6 +65,7 @@ class PassEmails:
     @classmethod
     def send_pass_purchased_notification_email(self, park_pass):
         email = PassPurchasedNotificationEmail()
+        ExternalPassSerializer = apps.get_model("parkpasses", "ExternalPassSerializer")
         serializer = ExternalPassSerializer(park_pass)
         context = {
             "pass": serializer.data,
@@ -74,6 +77,7 @@ class PassEmails:
     @classmethod
     def send_pass_vehicle_details_not_yet_provided_notification_email(self, park_pass):
         email = PassVehicleDetailsNotYetProvidedNotificationEmail()
+        ExternalPassSerializer = apps.get_model("parkpasses", "ExternalPassSerializer")
         serializer = ExternalPassSerializer(park_pass)
         context = {
             "pass": serializer.data,
