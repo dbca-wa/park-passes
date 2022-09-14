@@ -1,7 +1,13 @@
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from org_model_logs.models import UserAction
+from org_model_logs.models import CommunicationsLogEntry, EntryType, UserAction
+
+
+class EntryTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntryType
+        fields = "__all__"
 
 
 class UserActionSerializer(serializers.ModelSerializer):
@@ -34,3 +40,25 @@ class UserActionSerializer(serializers.ModelSerializer):
 
     def get_user_action_content_type_id(self, obj):
         return ContentType.objects.get_for_model(UserAction).id
+
+
+class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
+    entry_type_display_name = serializers.CharField(source="entry_type.entry_type")
+
+    class Meta:
+        model = CommunicationsLogEntry
+        fields = "__all__"
+
+
+class CreateCommunicationsLogEntrySerializer(serializers.ModelSerializer):
+    app_label = serializers.CharField(required=False)
+    model = serializers.CharField(required=False)
+
+    class Meta:
+        model = CommunicationsLogEntry
+        fields = "__all__"
+        # We populate these in the perform_create method of the viewset
+        extra_kwargs = {
+            "staff": {"required": False},
+            "content_type": {"required": False},
+        }
