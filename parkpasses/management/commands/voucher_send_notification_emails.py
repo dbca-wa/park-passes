@@ -8,10 +8,8 @@ Usage: ./manage.sh send_voucher_recipient_notification_emails
 """
 import logging
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from parkpasses.components.vouchers.models import Voucher
 
@@ -29,9 +27,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        no_reply_email_user, created = EmailUser.objects.get_or_create(
-            email=settings.NO_REPLY_EMAIL, password=""
-        )
         today = timezone.now().date()
         vouchers = Voucher.objects.filter(
             datetime_to_email__date=today,
