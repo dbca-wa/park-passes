@@ -2,12 +2,7 @@
     <div>
         <div class="row mb-3">
             <div class="col">
-                <button class="btn licensing-btn-primary float-end" data-bs-toggle="modal" data-bs-target="#pricingWindowModal">Sell a Park Pass</button>
-            </div>
-        </div>
-        <div v-if="successMessage" class="row mx-1">
-            <div id="successMessageAlert" class="col alert alert-success show fade" role="alert">
-                {{ successMessage }}
+                <router-link class="btn licensing-btn-primary btn-lg float-end" tabindex="-1" role="button" to="sell-a-pass">Sell a Park Pass</router-link>
             </div>
         </div>
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
@@ -206,7 +201,6 @@ export default {
                 'Last Name',
                 'Pass Type',
                 'Start Date',
-                'Automatic Renewal',
                 'Vehicle 1',
                 'Vehicle 2',
                 'Status',
@@ -272,22 +266,6 @@ export default {
                 }
             }
         },
-        columnRenewAutomatically: function(){
-            return {
-                data: "renew_automatically",
-                visible: true,
-                className: 'text-center',
-                name: 'renew_automatically',
-                'render': function(row, type, full){
-                    if(full.renew_automatically){
-                        return '<i class="fa fa-check" aria-hidden="true" style="color:green;"></i>';
-                    } else {
-                        return '<i class="fa fa-times" aria-hidden="true" style="color:red;"></i>';
-                    }
-                }
-
-            }
-        },
         columnVehicleRegistration1: function(){
             let vm = this
             return {
@@ -321,7 +299,7 @@ export default {
                 orderable: false,
                 name: 'park_pass_pdf',
                 'render': function(row, type, full){
-                    return `<a href="${apiEndpoints.retailerParkPassPdf(full.id)}" target="blank">ParkPass.pdf</a>`
+                    return `<a href="${apiEndpoints.retailerParkPassPdf(full.id)}" target="blank">${full.park_pass_pdf}</a>`
                 }
             }
         },
@@ -382,7 +360,6 @@ export default {
                 vm.columnLastName,
                 vm.columnPassType,
                 vm.columnDatetimeStart,
-                vm.columnRenewAutomatically,
                 vm.columnVehicleRegistration1,
                 vm.columnVehicleRegistration2,
                 vm.columnProcessingStatus,
