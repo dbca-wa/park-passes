@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
+import { useLocalStorage } from '@vueuse/core'
 import { apiEndpoints } from '@/utils/hooks'
 
 export const useStore = defineStore('main', {
     state: () => ({
-        userData: null, /*{
+        userData: useLocalStorage("userData", {
             user: {
                 id: '',
                 firstName: '',
@@ -13,7 +14,7 @@ export const useStore = defineStore('main', {
             is_authenticated: false,
             authorisation_level: 'external',
             retailerGroups: []
-        }*/
+        })
     }),
     actions: {
         async fetchUserData() {
