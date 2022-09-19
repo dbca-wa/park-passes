@@ -11,7 +11,7 @@
       >
         <FormSection
           :formCollapse="false"
-          label="Park Passes"
+          label="Park Passes - Retail Sales"
           Index="passes"
         >
           <PassesDatatable
