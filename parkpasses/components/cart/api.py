@@ -14,7 +14,8 @@ from rest_framework.views import APIView
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.serializers import CartItemSerializer, CartSerializer
 from parkpasses.components.cart.utils import CartUtils
-from parkpasses.helpers import is_customer, is_internal
+from parkpasses.components.retailers.models import RetailerGroup
+from parkpasses.helpers import is_customer, is_internal, is_retailer
 
 logger = logging.getLogger(__name__)
 
@@ -108,14 +109,27 @@ class LedgerCheckoutView(APIView):
         return ledger_order_lines
 
     # Todo: Change this to post once it's working.
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         cart = Cart.get_or_create_cart(request)
         logger.debug("cart = " + str(cart))
         if cart.items.all().exists():
             ledger_order_lines = self.get_ledger_order_lines(cart)
-            is_no_payment = self.request.POST.get("no_payment", "false")
+
+            is_no_payment = False
+            if is_retailer(request):
+                if self.request.POST.get("no_payment", False):
+                    is_no_payment = True
+                retailer_group_id = self.request.POST.get("retailer_group_id", None)
+                if retailer_group_id:
+                    if RetailerGroup.objects.filter(id=retailer_group_id).exists():
+                        retailer_group = RetailerGroup.objects.get(id=retailer_group_id)
+                        cart.retailer_group = retailer_group
+                logger.debug("is_no_payment = " + str(is_no_payment))
+                cart.is_no_payment = is_no_payment
+                cart.save()
+
             basket_parameters = CartUtils.get_basket_parameters(
-                ledger_order_lines, cart.uuid, is_no_payment
+                ledger_order_lines, cart.uuid, is_no_payment=is_no_payment
             )
             logger.debug("\nbasket_parameters = " + str(basket_parameters))
 
@@ -164,8 +178,7 @@ class SuccessView(APIView):
             # a response body however we will return a status in case this is used on the ledger end in future
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        request.session["cart_item_count"] = 0
-        logger.debug("FFS =====================>")
+        CartUtils.reset_cart_item_count(request)
         # If there is no uuid to identify the cart then send a bad request status back in case ledger can
         # do something with this in future
         return Response(status=status.HTTP_400_BAD_REQUEST)
