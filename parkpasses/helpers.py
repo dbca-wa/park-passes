@@ -86,7 +86,7 @@ def get_retailer_groups_for_user(request):
         return False
 
     retailer_group_ids = list(
-        RetailerGroupUser.objects.filter(email_user=request.user)
+        RetailerGroupUser.objects.filter(emailuser=request.user)
         .values_list("retailer_group__id", flat=True)
         .order_by("id")
     )
