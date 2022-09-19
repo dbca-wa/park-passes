@@ -7,6 +7,8 @@ module.exports = {
     select2Customers:                   '/api/users/users/get_customers',
     allUsers:                           '/api/users/users/',
 
+    retailerGroupsForUser:              '/api/retailers/retailer-groups-for-user',
+
     /* ========================= Concessions ============================================*/
 
     concessions:                        '/api/concessions/concessions/?format=json',
@@ -86,6 +88,9 @@ module.exports = {
     internalVoucherInvoice: function (voucherId) {
         return                          `/api/vouchers/internal/vouchers/${voucherId}/retrieve-invoice`
     },
+    internalVoucherPaymentDetails: function (voucherId) {
+        return                          `/api/vouchers/internal/vouchers/${voucherId}/payment-details`
+    },
     saveVoucher:                        '/api/vouchers/external/vouchers/',
 
     /* ========================= Postcodes ===============================================*/
@@ -102,6 +107,7 @@ module.exports = {
     deleteCartItem: function (id) {
         return                          `/api/cart/cart-items/${id}/`;
     },
+    checkout:                           '/ledger-checkout/',
 
     /* ========================= Pricing Windows ========================================*/
 
