@@ -1,8 +1,10 @@
 import logging
 
 import requests
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import FileResponse, Http404
+from django.shortcuts import redirect
 from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
@@ -150,6 +152,25 @@ class InternalVoucherViewSet(viewsets.ModelViewSet):
             if invoice_url:
                 response = requests.get(invoice_url)
                 return FileResponse(response, content_type="application/pdf")
+
+        raise Http404
+
+    @action(methods=["GET"], detail=True, url_path="payment-details")
+    def payment_details(self, request, *args, **kwargs):
+        voucher = self.get_object()
+        content_type = ContentType.objects.get_for_model(Voucher)
+        if OrderItem.objects.filter(
+            object_id=voucher.id, content_type=content_type
+        ).exists():
+            order_item = OrderItem.objects.get(
+                object_id=voucher.id, content_type=content_type
+            )
+            invoice_reference = order_item.order.invoice_reference
+            return redirect(
+                settings.LEDGER_API_URL
+                + "/ledger/payments/invoice/payment?invoice="
+                + invoice_reference
+            )
 
         raise Http404
 
