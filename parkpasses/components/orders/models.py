@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Sum
 
+from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.ledger_api_utils import retrieve_email_user
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,14 @@ class Order(models.Model):
         null=False,
         blank=False,
         help_text="This links the order to the matching invoice in ledger.",
+    )
+    is_no_payment = models.BooleanField(blank=True, default=False)
+    retailer_group = models.ForeignKey(
+        RetailerGroup,
+        related_name="%(class)s_retailer_group",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
     user = models.IntegerField(null=False, blank=False)  # EmailUserRO
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
