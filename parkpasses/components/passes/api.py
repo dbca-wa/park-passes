@@ -362,12 +362,20 @@ class ExternalPassViewSet(
             "concession_card_number", None
         )
 
+        sold_via = serializer.validated_data.pop("sold_via", None)
+
         if is_customer(self.request):
             park_pass = serializer.save(user=self.request.user.id)
         else:
             park_pass = serializer.save()
 
-        park_pass.sold_via = RetailerGroup.get_dbca_retailer_group()
+        logger.debug("park_pass.sold_via = " + str(park_pass.sold_via))
+
+        if sold_via and RetailerGroup.objects.filter(id=sold_via).exists():
+            park_pass.sold_via = RetailerGroup.objects.get(id=sold_via)
+        else:
+            park_pass.sold_via = RetailerGroup.get_dbca_retailer_group()
+
         park_pass.save()
 
         cart_id = self.request.session.get("cart_id", None)
