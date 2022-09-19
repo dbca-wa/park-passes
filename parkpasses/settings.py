@@ -50,6 +50,7 @@ INSTALLED_APPS += [
     "parkpasses.components.users",
     "parkpasses.components.help",
     "parkpasses.components.emails",
+    "parkpasses.components.reports",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -252,7 +253,6 @@ DEV_APP_BUILD_URL = env(
 )  # URL of the Dev app.js served by webpack & express
 LOV_CACHE_TIMEOUT = 10800
 
-
 PROTECTED_MEDIA_ROOT = env(
     "PROTECTED_MEDIA_ROOT", os.path.join(BASE_DIR, "protected_media")
 )
@@ -271,6 +271,17 @@ GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
 
 template_title = "Park Passes"
 template_group = "parkswildlife"
+
+# Use git commit hash for purging cache in browser for deployment changes
+GIT_COMMIT_HASH = ""
+GIT_COMMIT_DATE = ""
+if os.path.isdir(BASE_DIR + "/.git/") is True:
+    GIT_COMMIT_DATE = os.popen("cd " + BASE_DIR + " ; git log -1 --format=%cd").read()
+    GIT_COMMIT_HASH = os.popen("cd  " + BASE_DIR + " ; git log -1 --format=%H").read()
+if len(GIT_COMMIT_HASH) == 0:
+    GIT_COMMIT_HASH = os.popen("cat /app/git_hash").read()
+    if len(GIT_COMMIT_HASH) == 0:
+        print("ERROR: No git hash provided")
 
 LEDGER_TEMPLATE = "bootstrap5"
 
