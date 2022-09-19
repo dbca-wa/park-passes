@@ -162,6 +162,7 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
     concession_card_number = serializers.CharField(
         write_only=True, required=False, allow_blank=True
     )
+    sold_via = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         fields = [
@@ -170,6 +171,7 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
             "voucher_pin",
             "concession_id",
             "concession_card_number",
+            "sold_via",
         ]
 
 
