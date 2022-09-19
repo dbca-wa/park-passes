@@ -16,6 +16,7 @@ from parkpasses.components.concessions.models import ConcessionUsage
 from parkpasses.components.discount_codes.models import DiscountCodeUsage
 from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.models import Pass
+from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.ledger_api_utils import retrieve_email_user
 
@@ -33,6 +34,14 @@ class Cart(models.Model):
     user = models.IntegerField(null=True, blank=True)  # EmailUserRO
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
     uuid = models.CharField(max_length=36, blank=True, null=True)
+    is_no_payment = models.BooleanField(blank=True, default=False)
+    retailer_group = models.ForeignKey(
+        RetailerGroup,
+        related_name="%(class)s_retailer_group",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     datetime_first_added_to = models.DateTimeField(null=True, blank=True)
     datetime_last_added_to = models.DateTimeField(null=True, blank=True)
 
@@ -48,7 +57,7 @@ class Cart(models.Model):
         if cart_id and Cart.objects.filter(id=cart_id).exists():
             cart = Cart.objects.get(id=cart_id)
             # There is an edge case here where a user has a cart in db but is browsing the site
-            # annonymously and adds one or more items to their cart. When they log in we need to move
+            # anonymously and adds one or more items to their cart. When they log in we need to move
             # the items from their anonymous cart to their already existing cart...
             if Cart.objects.filter(user=request.user.id).exclude(id=cart.id).exists():
                 anon_cart = copy(cart)
@@ -107,7 +116,10 @@ class Cart(models.Model):
         return grand_total.quantize(Decimal("0.01"))
 
     def create_order(
-        self, save_order_to_db_and_delete_cart=False, uuid=None, invoice_reference=None
+        self,
+        save_order_to_db_and_delete_cart=False,
+        uuid=None,
+        invoice_reference=None,
     ):
         """This method can create an order and order items from a cart (and cart items)
         By default it doesn't add this order to the database. This is so we can use the
@@ -124,6 +136,9 @@ class Cart(models.Model):
         if save_order_to_db_and_delete_cart:
             order.uuid = uuid
             order.invoice_reference = invoice_reference
+            order.is_no_payment = self.is_no_payment
+            if self.retailer_group:
+                order.retailer_group = self.retailer_group
             order.save()
         for cart_item in self.items.all():
             order_item = OrderItem()
