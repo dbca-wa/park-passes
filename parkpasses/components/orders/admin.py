@@ -23,6 +23,8 @@ class OrderAdmin(admin.ModelAdmin):
         "invoice_reference",
         "datetime_created",
         "total_display",
+        "retailer_group",
+        "is_no_payment",
     ]
     list_display = (
         "order_number",
