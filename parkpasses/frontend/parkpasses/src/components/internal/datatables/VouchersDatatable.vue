@@ -264,7 +264,7 @@ export default {
                 visible: true,
                 'render': function(row, type, full){
                     let links = '';
-                    links +=  `<a href='/internal/voucher/${full.id}/payment-details/'>View Payment Details</a><br/>`;
+                    links +=  `<a target="_blank" href='${apiEndpoints.internalVoucherPaymentDetails(full.id)}'>View Payment Details</a><br/>`;
                     return links;
                 }
             }
