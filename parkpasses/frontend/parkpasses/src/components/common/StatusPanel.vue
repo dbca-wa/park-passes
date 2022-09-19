@@ -9,7 +9,7 @@
                     <div class="col-sm-12">
                         <strong>Status</strong><br/>
                         <template v-if="badge">
-                            <span :class="'badge ' + helpers.getBadgeClass(status)">{{ status }}</span>
+                            <span :class="'badge ' + getBadgeClass(status)">{{ status }}</span>
                         </template>
                         <template v-else>
                             {{ status }}
@@ -38,24 +38,12 @@ export default {
             default: false,
         }
     },
+    components: {
+        helpers
+    },
     methods: {
-        getBadgeClass: function () {
-            switch(this.status) {
-                case 'Current':
-                    return 'bg-success'
-                    break;
-                case 'Future':
-                    return 'bg-info';
-                    break;
-                case 'Expired':
-                    return 'bg-danger';
-                    break;
-                case 'Cancelled':
-                    return 'bg-danger';
-                    break;
-                default:
-                    return 'org-badge-primary';
-            }
+        getBadgeClass: function (status) {
+            return helpers.getStatusBadgeClass(status)
         }
     }
 }
