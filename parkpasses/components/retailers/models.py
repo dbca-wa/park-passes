@@ -6,6 +6,7 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
@@ -14,12 +15,23 @@ from parkpasses.components.retailers.exceptions import (
     NoDBCARetailerGroupExists,
 )
 
+PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
+
+
 logger = logging.getLogger(__name__)
 
 
 class RetailerGroup(models.Model):
     name = models.CharField(max_length=150, unique=True)
     oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    commission_percentage = models.DecimalField(
+        max_digits=2,
+        decimal_places=0,
+        blank=False,
+        null=False,
+        validators=PERCENTAGE_VALIDATOR,
+        default=10,
+    )
 
     class Meta:
         app_label = "parkpasses"
