@@ -3,12 +3,16 @@
 """
 from django.db import models
 
+from parkpasses.components.retailers.models import RetailerGroup
+
 
 class Report(models.Model):
     """A class to represent a report (contains an invoice and a report pdf)"""
 
     report_number = models.CharField(max_length=10, null=True, blank=True)
-    concession_type = models.CharField(unique=True, max_length=50)
+    retailer_group = models.ForeignKey(
+        RetailerGroup, related_name="%(class)s_retailer_group", on_delete=models.PROTECT
+    )
     report = models.FileField(null=True, blank=True)
     invoice = models.FileField(null=True, blank=True)
     PAID = "p"
