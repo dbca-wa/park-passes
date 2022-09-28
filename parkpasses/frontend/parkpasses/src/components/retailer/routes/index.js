@@ -1,6 +1,7 @@
 import { RouterView } from 'vue-router'
 
 import RetailerDashboard from '@/components/retailer/Dashboard.vue'
+import RetailerReports from '@/components/retailer/Reports.vue'
 import SellPass from '@/components/retailer/SellPass.vue'
 
 export default {
@@ -20,8 +21,8 @@ export default {
         },
         {
             path: '/retailer/reports',
-            component: RetailerDashboard,
-            name: 'retailer-park-passes'
+            component: RetailerReports,
+            name: 'retailer-reports'
         },
         {
             path: '/retailer/sell-a-pass',
