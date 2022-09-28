@@ -84,6 +84,7 @@ urlpatterns = [
     url(r"api/orders/", include("parkpasses.components.orders.urls")),
     url(r"api/users/", include("parkpasses.components.users.urls")),
     url(r"api/retailers/", include("parkpasses.components.retailers.urls")),
+    url(r"api/reports/", include("parkpasses.components.reports.urls")),
     # ========================================================================== Org Model Documents end-points
     url(
         r"api/org-model-documents/upload-documents",
