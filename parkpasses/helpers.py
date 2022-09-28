@@ -79,17 +79,21 @@ def is_retailer(request):
         return False
 
 
+def get_retailer_group_ids_for_user(request):
+    return list(
+        RetailerGroupUser.objects.filter(emailuser=request.user)
+        .values_list("retailer_group__id", flat=True)
+        .order_by("id")
+    )
+
+
 def get_retailer_groups_for_user(request):
     if not request.user.is_authenticated:
         return False
     if not is_retailer(request):
         return False
 
-    retailer_group_ids = list(
-        RetailerGroupUser.objects.filter(emailuser=request.user)
-        .values_list("retailer_group__id", flat=True)
-        .order_by("id")
-    )
+    retailer_group_ids = get_retailer_group_ids_for_user(request)
 
     return RetailerGroup.objects.filter(id__in=retailer_group_ids)
 
