@@ -36,6 +36,7 @@ class RetailerGroup(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Retailer Group"
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
