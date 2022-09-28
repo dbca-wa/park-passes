@@ -14,8 +14,8 @@
                 <div class="border-bottom ps-1">{{ formatDate(pass.date_start) }}</div>
                 <div class="border-bottom">{{  passCurrentOrFuture(pass) ? 'Expiry Date' : 'Expired' }}:</div>
                 <div class="border-bottom ps-1">{{ formatDate(pass.date_expiry) }}</div>
-                <label v-if="passCurrentOrFuture(pass)" class="orm-check-label mt-2">Renew Automatically</label>
-                <div v-if="passCurrentOrFuture(pass)" class="form-check form-switch mt-2 mx-auto">
+                <label v-if="showAutoRenewalOption(pass)" class="orm-check-label mt-2">Renew Automatically</label>
+                <div v-if="showAutoRenewalOption(pass)" class="form-check form-switch mt-2 mx-auto">
                   <input @change="updatePass(pass)" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" v-model="pass.renew_automatically" :disabled="loadingUpdatePass">
                 </div>
               </p>
@@ -114,6 +114,16 @@ export default {
     },
     invoiceURL: function(passId) {
         return apiEndpoints.externalParkPassInvoice(passId);
+    },
+    showAutoRenewalOption: function(pass) {
+        if('EX' == pass.processing_status){
+            return false;
+        }
+        if('DAY_ENTRY_PASS' == pass.pass_type_name ||
+        'HOLIDAY_PASS' == pass.pass_type_name) {
+            return false;
+        }
+        return true;
     },
     passCurrentOrFuture: function (pass) {
       switch (pass.processing_status) {
