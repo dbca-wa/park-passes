@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from drf_excel.mixins import XLSXFileMixin
 from drf_excel.renderers import XLSXRenderer
+from org_model_logs.utils import UserActionViewSet
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -12,7 +13,6 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from org_model_logs.utils import UserActionViewSet
 from parkpasses.components.discount_codes.models import (
     DiscountCode,
     DiscountCodeBatch,

@@ -1,9 +1,9 @@
 from django.conf import settings
 from ledger_api_client.ledger_models import Address
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from org_model_logs.models import CommunicationsLogEntry
 from rest_framework import serializers
 
-from org_model_logs.models import CommunicationsLogEntry
 from parkpasses.components.main.models import Document
 from parkpasses.helpers import in_dbca_domain, is_parkpasses_admin
 

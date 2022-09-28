@@ -8,6 +8,7 @@ from django.http import FileResponse, Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from org_model_logs.models import UserAction
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -16,12 +17,12 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from org_model_logs.models import UserAction
-from org_model_logs.utils import UserActionSerializer, UserActionViewSet
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.concessions.models import Concession, ConcessionUsage
 from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeUsage
+from parkpasses.components.main.api import UserActionViewSet
+from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
 from parkpasses.components.passes.models import (

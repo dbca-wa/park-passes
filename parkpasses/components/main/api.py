@@ -8,6 +8,7 @@ from org_model_logs.api import (
     UserActionViewSet,
 )
 from org_model_logs.serializers import EntryTypeSerializer
+
 from parkpasses.components.main.serializers import (
     CommunicationsLogEntrySerializer,
     UserActionSerializer,
