@@ -390,6 +390,22 @@ Django = ">=2.2"
 tests = ["coverage"]
 
 [[package]]
+name = "django-org-model-documents"
+version = "1.0.0"
+description = "A Django app to allow attaching any number of documents to any model in a project."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "django-org-model-logs"
+version = "1.0.0"
+description = "A Django app to log actions and communications about models."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "django-phonenumber-field"
 version = "6.1.0"
 description = "An international phone number field for django models."
@@ -1301,7 +1317,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "d99cd6cdd638574cc93b1efb7b7be243b90def022aa3532dc0028f13e0446438"
+content-hash = "1dd586959ceeee44f6feaaa24149867d0ed8773715f979341b64d0fcb6c2bd61"
 
 [metadata.files]
 appnope = [
@@ -1435,6 +1451,8 @@ django-js-asset = [
     {file = "django_js_asset-2.0.0-py3-none-any.whl", hash = "sha256:86f9f300d682537ddaf0487dc2ab356581b8f50c069bdba91d334a46e449f923"},
     {file = "django_js_asset-2.0.0.tar.gz", hash = "sha256:adc1ee1efa853fad42054b540c02205344bb406c9bddf87c9e5377a41b7db90f"},
 ]
+django-org-model-documents = []
+django-org-model-logs = []
 django-phonenumber-field = [
     {file = "django-phonenumber-field-6.1.0.tar.gz", hash = "sha256:b1ff950f90a8911ff323ccf77c8f6fe4299a9f671fa61c8734a6994359f07446"},
     {file = "django_phonenumber_field-6.1.0-py3-none-any.whl", hash = "sha256:897b902a1654b0eb21f6268498a3359e2c4eb90af9585cb8693af186ede8c5bb"},
