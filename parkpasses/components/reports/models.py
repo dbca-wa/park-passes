@@ -27,16 +27,14 @@ class Report(models.Model):
     datetime_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.concession_type}"
+        return f"{self.report_number}"
 
     class Meta:
         app_label = "parkpasses"
+        ordering = ["-datetime_created", "retailer_group"]
 
     def save(self, *args, **kwargs):
-        if (
-            not self.pass_number
-            or "" == self.pass_number
-            or 0 == len(self.pass_number.strip())
-        ) and self.pk:
-            self.pass_number = f"PP{self.pk:06d}"
         super().save(*args, **kwargs)
+        if not self.report_number:
+            self.report_number = f"IMR{self.pk:06d}"
+            super().save(force_update=True)
