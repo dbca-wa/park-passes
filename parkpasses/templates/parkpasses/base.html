@@ -25,6 +25,7 @@
         {% endblock %}
         {% block extra_css %}
             <link rel="stylesheet" href="{% static 'parkpasses/css/global.css' %}?v={{build_tag}}">
+            <link rel="stylesheet" href="{% static 'parkpasses_vue/css/chunk-vendors.css' %}?v={{build_tag}}">
             <link rel="stylesheet" href="{% static 'parkpasses_vue/css/app.css' %}?v={{build_tag}}">
         {% endblock %}
         {% block custom_js %}
