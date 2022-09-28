@@ -136,11 +136,16 @@ module.exports = {
     externalOrderInvoice: function (passId) {
         return                          `/api/orders/external/orders/${passId}/retrieve-invoice`
     },
+
+    /* ========================= Reports =================================================*/
+
+    reportsListRetailer:                '/api/reports/retailer/reports',
+
     /* ========================= Org Model Documents ====================================*/
 
     uploadOrgModelDocuments:            '/api/org-model-documents/upload-documents',
 
-    /* ========================= Org Model Logs ====================================*/
+    /* ========================= Org Model Logs =========================================*/
 
     entryTypes:                         '/api/org-model-logs/entry-types',
     listUserActionsLog: function (appLabel, model, object_id) {
@@ -150,4 +155,6 @@ module.exports = {
     listCommunicationsLogEntries: function (appLabel, model, object_id) {
         return                          `/api/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${object_id}&format=datatables`;
     },
+
+
 }
