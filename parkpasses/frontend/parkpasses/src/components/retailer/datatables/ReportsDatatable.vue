@@ -2,30 +2,37 @@
     <div>
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
             <div class="row mb-3">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Status</label>
+                        <label for="">Retailer</label>
+                        <select class="form-control" v-model="filterRetailer">
+                            <option value="" selected="selected">All</option>
+                            <option v-for="status in statuses" :value="status.id">{{ status.value }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="">Invoice Payment Status</label>
                         <select class="form-control" v-model="filterProcessingStatus">
                             <option value="" selected="selected">All</option>
                             <option v-for="status in statuses" :value="status.id">{{ status.value }}</option>
                         </select>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Send Date From</label>
-                        <div class="input-group date" ref="filterDatetimeToEmailFrom">
-                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeToEmailFrom">
+                        <label for="">Date From</label>
+                        <div class="input-group date" ref="filterDatetimeCreatedFrom">
+                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeCreatedFrom">
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Send Date To</label>
-                        <div class="input-group date" ref="filterDatetimeToEmailTo">
-                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeToEmailTo">
+                        <label for="">Date To</label>
+                        <div class="input-group date" ref="filterDatetimeCreatedTo">
+                            <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeCreatedTo">
                         </div>
                     </div>
                 </div>
@@ -35,7 +42,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <datatable
-                    ref="voucherDatatable"
+                    ref="reportDatatable"
                     :id="datatableId"
                     :dtOptions="dtOptions"
                     :dtHeaders="dtHeaders"
@@ -52,7 +59,7 @@ import { apiEndpoints, constants } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 
 export default {
-    name: 'VouchersDatatable',
+    name: 'ReportsDatatable',
     props: {
         level:{
             type: String,
@@ -67,32 +74,31 @@ export default {
             required: false,
             default: 'filterProcessingStatus',
         },
-        filterDatetimeToEmailFromCacheName: {
+        filterDatetimeCreatedFromCacheName: {
             type: String,
             required: false,
-            default: 'filterDatetimeToEmailFrom',
+            default: 'filterDatetimeCreatedFrom',
         },
-        filterDatetimeToEmailToCacheName: {
+        filterDatetimeCreatedToCacheName: {
             type: String,
             required: false,
-            default: 'filterDatetimeToEmailTo',
+            default: 'filterDatetimeCreatedTo',
         },
     },
     data() {
         let vm = this;
         return {
-            datatableId: 'vouchers-datatable-' + uuid(),
+            datatableId: 'reports-datatable-' + uuid(),
 
             filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
-            filterDatetimeToEmailFrom: sessionStorage.getItem(vm.filterDatetimeToEmailFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeToEmailFromCacheName) : '',
-            filterDatetimeToEmailTo: sessionStorage.getItem(vm.filterDatetimeToEmailToCacheName) ? sessionStorage.getItem(vm.filterDatetimeToEmailToCacheName) : '',
+            filterDatetimeCreatedFrom: sessionStorage.getItem(vm.filterDatetimeCreatedFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeCreatedFromCacheName) : '',
+            filterDatetimeCreatedTo: sessionStorage.getItem(vm.filterDatetimeCreatedToCacheName) ? sessionStorage.getItem(vm.filterDatetimeCreatedToCacheName) : '',
 
             errorMessage: null,
 
             statuses: [
-                {id:'N', value:'New'},
-                {id:'D', value:'Delivered'},
-                {id:'ND', value:'Not Delivered'},
+                {id:'P', value:'Paid'},
+                {id:'U', value:'Unpaid'},
             ],
 
             dateFormat: 'DD/MM/YYYY',
@@ -116,16 +122,16 @@ export default {
     },
     watch: {
         filterProcessingStatus: function() {
-            this.$refs.voucherDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.reportDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
         },
-        filterDatetimeToEmailFrom: function() {
-            this.$refs.voucherDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterDatetimeToEmailFromCacheName, this.filterDatetimeToEmailFrom);
+        filterDatetimeCreatedFrom: function() {
+            this.$refs.reportDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            sessionStorage.setItem(this.filterDatetimeCreatedFromCacheName, this.filterDatetimeCreatedFrom);
         },
-        filterDatetimeToEmailTo: function() {
-            this.$refs.voucherDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterDatetimeToEmailToCacheName, this.filterDatetimeToEmailTo);
+        filterDatetimeCreatedTo: function() {
+            this.$refs.reportDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            sessionStorage.setItem(this.filterDatetimeCreatedToCacheName, this.filterDatetimeCreatedTo);
         },
         filterApplied: function() {
             if (this.$refs.CollapsibleFilters){
@@ -135,15 +141,15 @@ export default {
     },
     computed: {
         numberOfColumns: function() {
-            let num =  this.$refs.voucherDatatable.vmDataTable.columns(':visible').nodes().length;
+            let num =  this.$refs.reportDatatable.vmDataTable.columns(':visible').nodes().length;
             return num
         },
         filterApplied: function(){
             let filterApplied = true
             if(
                 this.filterProcessingStatus === '' &&
-                this.filterDatetimeToEmailFrom === '' &&
-                this.filterDatetimeToEmailTo === ''){
+                this.filterDatetimeCreatedFrom === '' &&
+                this.filterDatetimeCreatedTo === ''){
                 filterApplied = false
             }
             console.log('filter applied = ' + filterApplied);
@@ -159,13 +165,11 @@ export default {
             return [
                 'id',
                 'Number',
-                'Recipient',
-                'Purchaser',
-                'Send Date',
-                'Purchased Value',
-                'Remaining Balance',
-                'Status',
+                'Retailer',
+                'Monthly Report',
                 'Invoice',
+                'Payment Status',
+                'Date Generated',
                 'Action'
             ]
         },
@@ -182,58 +186,33 @@ export default {
                 }
             }
         },
-        columnVoucherNumber: function(){
+        columnReportNumber: function(){
             return {
-                data: "voucher_number",
+                data: "report_number",
                 visible: true,
-                name: 'voucher_number',
+                name: 'report_number',
                 orderable: true,
             }
         },
-        columnRecipientName: function(){
+        columnRetailerGroup: function(){
             return {
-                data: "recipient_name",
+                data: "retailer_group",
                 visible: true,
-                name: 'recipient_name',
+                name: 'retailer_group',
             }
         },
-        columnRecipientEmail: function(){
+        columnReport: function(){
             return {
-                data: "recipient_email",
+                data: "report",
                 visible: true,
-                name: 'recipient_email',
+                name: 'report',
             }
         },
-        columnDatetimeToEmail: function(){
+        columnInvoice: function(){
             return {
-                data: "datetime_to_email",
+                data: "invoice",
                 visible: true,
-                name: 'datetime_to_email',
-                'render': function(row, type, full){
-                    const date = new Date(full.datetime_to_email);
-                    return date.toLocaleDateString();
-                }
-            }
-        },
-        columnAmount: function(){
-            return {
-                data: "amount",
-                visible: true,
-                name: 'amount',
-                'render': function(row, type, full){
-                    return `$${full.amount}`
-                }
-            }
-        },
-        columnRemainingBalance: function(){
-            return {
-                data: "remaining_balance",
-                visible: true,
-                orderable: false,
-                name: 'remaining_balance',
-                'render': function(row, type, full){
-                    return `$${full.remaining_balance}`
-                }
+                name: 'invoice',
             }
         },
         columnProcessingStatus: function(){
@@ -243,16 +222,11 @@ export default {
                 name: 'processing_status'
             }
         },
-        columnInvoice: function(){
-            let vm = this
+        columnDatetimeCreated: function(){
             return {
-                data: "id",
-                orderable: false,
-                searchable: false,
+                data: "datetime_created",
                 visible: true,
-                'render': function(row, type, full){
-                    return `<a target="_blank" href='${apiEndpoints.internalVoucherInvoice(full.id)}'>Invoice</a>`;
-                }
+                name: 'datetime_created'
             }
         },
         columnAction: function(){
@@ -264,7 +238,7 @@ export default {
                 visible: true,
                 'render': function(row, type, full){
                     let links = '';
-                    links +=  `<a target="_blank" href='${apiEndpoints.internalVoucherPaymentDetails(full.id)}'>View Payment Details</a><br/>`;
+                    links +=  `<a target="_blank" href="">Test Action</a><br/>`;
                     return links;
                 }
             }
@@ -295,14 +269,12 @@ export default {
 
             columns = [
                 vm.columnId,
-                vm.columnVoucherNumber,
-                vm.columnRecipientName,
-                vm.columnRecipientEmail,
-                vm.columnDatetimeToEmail,
-                vm.columnAmount,
-                vm.columnRemainingBalance,
-                vm.columnProcessingStatus,
+                vm.columnReportNumber,
+                vm.columnRetailerGroup,
+                vm.columnReport,
                 vm.columnInvoice,
+                vm.columnProcessingStatus,
+                vm.columnDatetimeCreated,
                 vm.columnAction,
             ]
             search = true
@@ -312,23 +284,23 @@ export default {
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML
                 },
-                rowCallback: function (row, voucher){
+                rowCallback: function (row, report){
                     let row_jq = $(row)
-                    row_jq.attr('id', 'voucherId' + voucher.id)
+                    row_jq.attr('id', 'reportId' + report.id)
                     row_jq.children().first().addClass(vm.td_expand_class_name)
                 },
                 responsive: true,
                 serverSide: true,
                 searching: true,
                 ajax: {
-                    "url": apiEndpoints.vouchersInternalPaginatedList + '?format=datatables',
+                    "url": apiEndpoints.reportsListRetailer + '?format=datatables',
                     "dataSrc": 'data',
 
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
                         d.processing_status = vm.filterProcessingStatus
-                        d.datetime_to_email_from = vm.filterDatetimeToEmailFrom
-                        d.datetime_to_email_to = vm.filterDatetimeToEmailTo
+                        d.datetime_to_email_from = vm.filterDatetimeCreatedFrom
+                        d.datetime_to_email_to = vm.filterDatetimeCreatedTo
                     }
                 },
                 dom: "<'d-flex align-items-center'<'me-auto'l>fB>" +
@@ -347,22 +319,41 @@ export default {
     },
     methods: {
         adjustTableWidth: function(){
-            this.$refs.voucherDatatable.vmDataTable.columns.adjust()
-            this.$refs.voucherDatatable.vmDataTable.responsive.recalc()
+            this.$refs.reportDatatable.vmDataTable.columns.adjust()
+            this.$refs.reportDatatable.vmDataTable.responsive.recalc()
         },
         collapsibleComponentMounted: function(){
             this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
         },
+        fetchFilterLists: function(){
+            let vm = this;
+
+            // Pass Types
+            fetch(apiEndpoints.passTypesDistinct)
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    return Promise.reject(error);
+                }
+                vm.retailers = data
+            })
+            .catch(error => {
+                //this.errorMessage = error;
+                console.error("There was an error!", error);
+            });
+
+        },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.voucherDatatable.vmDataTable.on('click', 'a[data-discard-proposal]', function(e) {
+            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-discard-proposal]', function(e) {
                 e.preventDefault();
                 let id = $(this).attr('data-discard-proposal');
                 vm.discardProposal(id)
             });
 
             // Listener for the row
-            vm.$refs.voucherDatatable.vmDataTable.on('click', 'td', function(e) {
+            vm.$refs.reportDatatable.vmDataTable.on('click', 'td', function(e) {
                 let td_link = $(this)
 
                 if (!(td_link.hasClass(vm.td_expand_class_name) || td_link.hasClass(vm.td_collapse_class_name))){
@@ -375,7 +366,7 @@ export default {
 
                 // Retrieve id from the id of the <tr>
                 let tr_id = tr.attr('id')
-                let proposal_id = tr_id.replace('voucherId', '')
+                let proposal_id = tr_id.replace('reportId', '')
 
                 let first_td = tr.children().first()
                 if(first_td.hasClass(vm.td_expand_class_name)){
