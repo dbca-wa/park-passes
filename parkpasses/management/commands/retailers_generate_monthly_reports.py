@@ -8,9 +8,11 @@ Usage: ./manage.sh retailers_generate_monthly_reports_invoices
 import logging
 import os
 import subprocess
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -39,13 +41,27 @@ class Command(BaseCommand):
             "parkpasses/management/templates/RetailerGroupInvoiceTemplate.docx"
         )
 
-        today = timezone.now().date()
-        last_day_of_previous_month = today - timezone.timedelta(days=1)
-        first_day_of_previous_month = last_day_of_previous_month.replace()
+        today = timezone.make_aware(
+            datetime.combine(timezone.now(), datetime.min.time())
+        )
+        first_day_of_this_month = today.replace(day=1)
+        last_day_of_previous_month = first_day_of_this_month - timezone.timedelta(
+            days=1
+        )
+        first_day_of_previous_month = last_day_of_previous_month.replace(day=1)
+
+        if options["test"]:
+            first_day_of_previous_month = first_day_of_this_month
+            last_day_of_previous_month = first_day_of_this_month + relativedelta(day=31)
+
+        self.stdout.write(
+            f"\nGenerating Reports for date range: {first_day_of_previous_month} to {last_day_of_previous_month}\n\n"
+        )
 
         retailer_groups = RetailerGroup.objects.all()
 
         for retailer_group in retailer_groups:
+            self.stdout.write(f"\tGenerating Report and Invoice for {retailer_group}")
             if options["test"]:
                 # To make sure we have records when testing just select all no_payment_orders
                 # regardless of the date
@@ -60,29 +76,43 @@ class Command(BaseCommand):
                     datetime_created__gte=first_day_of_previous_month,
                     datetime_created__lte=last_day_of_previous_month,
                 )
-            if 0 == len(no_payment_orders):
+            no_payment_order_count = len(no_payment_orders)
+            self.stdout.write(
+                f"\t -- Found {no_payment_order_count} No Payment Orders.\n\n"
+            )
+
+            if 0 == no_payment_order_count:
                 continue
 
-            total_payable = Decimal(0.00)
+            total = Decimal(0.00)
             for order in no_payment_orders:
-                total_payable += order.total
+                total += order.total
+
+            commission_amount = Decimal(
+                total * (retailer_group.commission_percentage / 100)
+            ).quantize(Decimal("0.01"))
+
+            total_payable = Decimal(total - commission_amount).quantize(Decimal("0.01"))
 
             context = {
                 "organisation": organisation,
                 "retailer_group": retailer_group,
                 "orders": no_payment_orders,
                 "date": today,
+                "commission_percentage": f"{retailer_group.commission_percentage}%",
+                "commission_amount": f"${commission_amount}",
+                "total_sales": f"${total}",
                 "total_payable": f"${total_payable}",
             }
             invoice_template_docx.render(context)
-            invoice_filename = f"Park Passes Invoice - {retailer_group.name} - {first_day_of_previous_month} "
-            invoice_filename += f"{first_day_of_previous_month}.docx"
+            invoice_filename = f"Park Passes Invoice - {retailer_group.name} - {first_day_of_previous_month.date()} "
+            invoice_filename += f"{last_day_of_previous_month.date()}.docx"
             invoice_path = f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{retailer_group.id}/{invoice_filename}"
             Path(f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{retailer_group.id}").mkdir(
                 parents=True, exist_ok=True
             )
             invoice_template_docx.save(invoice_path)
-            output = subprocess.check_output(
+            subprocess.run(
                 [
                     "libreoffice",
                     "--convert-to",
@@ -92,14 +122,23 @@ class Command(BaseCommand):
                     f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{retailer_group.id}",
                 ]
             )
-            logger.debug("output = " + str(output))
-
-            report = Report.objects.create(retailer_group=retailer_group)
+            if Report.objects.filter(
+                retailer_group=retailer_group,
+                datetime_created__year=first_day_of_previous_month.year,
+                datetime_created__month=first_day_of_previous_month.month,
+            ).exists():
+                report = Report.objects.get(
+                    retailer_group=retailer_group,
+                    datetime_created__year=first_day_of_previous_month.year,
+                    datetime_created__month=first_day_of_previous_month.month,
+                )
+            else:
+                report = Report.objects.create(retailer_group=retailer_group)
             report.invoice.name = invoice_path.replace("docx", "pdf")
             report.save()
             os.remove(invoice_path)
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Generated Report: {os.path.basename(report.invoice.name)}"
+                    f"\tGenerated Report: {os.path.basename(report.invoice.name)}\n"
                 )
             )
