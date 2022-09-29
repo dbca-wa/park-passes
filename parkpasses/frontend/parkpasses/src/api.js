@@ -145,8 +145,14 @@ module.exports = {
 
     reportsListRetailer:                '/api/reports/retailer/reports',
     reportsListInternal:                '/api/reports/internal/reports',
-    reportUpdateInternal:  function (passId) {
-        return                          `/api/reports/internal/reports/${passId}/`;
+    reportUpdateInternal:  function (reportId) {
+        return                          `/api/reports/internal/reports/${reportId}/`;
+    },
+    retrieveReportInvoicePdfRetailer:   function (reportId) {
+        return                          `/api/reports/retailer/reports/${reportId}/retrieve-invoice-pdf/`;
+    },
+    retrieveReportInvoicePdfInternal:   function (reportId) {
+        return                          `/api/reports/internal/reports/${reportId}/retrieve-invoice-pdf/`;
     },
 
     /* ========================= Org Model Documents ====================================*/
