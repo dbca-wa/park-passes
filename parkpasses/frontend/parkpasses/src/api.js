@@ -20,7 +20,7 @@ module.exports = {
 
     passesList:                         '/api/passes/internal/passes/',
     passesListExternal:                 '/api/passes/external/passes/',
-    retailerPassesList:                 '/api/passes/retailer/passes/',
+    passesListRetailer:                 '/api/passes/retailer/passes/',
     internalPass: function (passId) {
         return                          `/api/passes/internal/passes/${passId}`
     },
@@ -137,9 +137,17 @@ module.exports = {
         return                          `/api/orders/external/orders/${passId}/retrieve-invoice`
     },
 
+    /* ========================= Retailers =================================================*/
+
+    retailerGroupListInternal:          '/api/retailers/internal/retailer-groups',
+
     /* ========================= Reports =================================================*/
 
     reportsListRetailer:                '/api/reports/retailer/reports',
+    reportsListInternal:                '/api/reports/internal/reports',
+    reportUpdateInternal:  function (passId) {
+        return                          `/api/reports/internal/reports/${passId}/`;
+    },
 
     /* ========================= Org Model Documents ====================================*/
 
