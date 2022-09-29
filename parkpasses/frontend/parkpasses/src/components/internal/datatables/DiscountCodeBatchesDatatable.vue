@@ -386,7 +386,7 @@ export default {
                     } else if (1 < full.discount_codes.length) {
                         return `<a data-id="${full.id}" data-action="view-discount-codes" href="${apiEndpoints.discountCodesXlsx(full.id)}">View ${full.discount_codes.length} Discount Codes</a>`;
                     } else {
-                        return '<span class="badge badge-danger">Error no codes were created</span>';
+                        return '<span class="badge bg-danger">Error no codes were created</span>';
                     }
                     return discountCodes;
                 }
