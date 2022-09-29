@@ -257,6 +257,10 @@ PROTECTED_MEDIA_ROOT = env(
     "PROTECTED_MEDIA_ROOT", os.path.join(BASE_DIR, "protected_media")
 )
 
+RETAILER_GROUP_INVOICE_ROOT = env(
+    "RETAILER_GROUP_INVOICE_ROOT", PROTECTED_MEDIA_ROOT + "/retailer_group_invoices"
+)
+
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
     "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", PROTECTED_MEDIA_ROOT
 )
@@ -284,6 +288,17 @@ if len(GIT_COMMIT_HASH) == 0:
         print("ERROR: No git hash provided")
 
 LEDGER_TEMPLATE = "bootstrap5"
+
+SESSION_COOKIE_NAME = "pp_sessionid"
+
+ORGANISATION = {
+    "name": "Department of Biodiversity, Conservation and Attractions",
+    "address_line_1": "17 Dick Perry Ave",
+    "address_line_2": "",
+    "suburb": "Kensington",
+    "state": "WA",
+    "postcode": "6151",
+}
 
 HOLIDAY_PASS = "HOLIDAY_PASS"
 ANNUAL_LOCAL_PASS = "ANNUAL_LOCAL_PASS"
