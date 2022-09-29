@@ -298,6 +298,7 @@ ORGANISATION = {
     "suburb": "Kensington",
     "state": "WA",
     "postcode": "6151",
+    "ABN": "38 052 249 024",
 }
 
 HOLIDAY_PASS = "HOLIDAY_PASS"
