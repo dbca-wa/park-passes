@@ -6,7 +6,11 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinLengthValidator,
+    MinValueValidator,
+)
 from django.db import models
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
@@ -22,7 +26,45 @@ logger = logging.getLogger(__name__)
 
 
 class RetailerGroup(models.Model):
-    name = models.CharField(max_length=150, unique=True)
+    NEW_SOUTH_WALES = "NSW"
+    VICTORIA = "VIC"
+    QUEENSLAND = "QLD"
+    WESTERN_AUSTRALIA = "WA"
+    SOUTH_AUSTRALIA = "SA"
+    TASMANIA = "TAS"
+    AUSTRALIAN_CAPITAL_TERRITORY = "ACT"
+    NORTHERN_TERRITORY = "NT"
+
+    STATE_CHOICES = [
+        (NEW_SOUTH_WALES, "Western Australia"),
+        (VICTORIA, "Victoria"),
+        (QUEENSLAND, "Queensland"),
+        (WESTERN_AUSTRALIA, "Western Australia"),
+        (SOUTH_AUSTRALIA, "South Australia"),
+        (TASMANIA, "Tasmania"),
+        (AUSTRALIAN_CAPITAL_TERRITORY, "Australian Capital Territory"),
+        (NORTHERN_TERRITORY, "Western Australia"),
+    ]
+
+    name = models.CharField(max_length=150, unique=True, blank=False)
+    address_line_1 = models.CharField(max_length=150, null=True, blank=False)
+    address_line_2 = models.CharField(max_length=150, null=True, blank=True)
+    suburb = models.CharField(max_length=50, null=True, blank=False)
+    state = models.CharField(
+        max_length=3,
+        choices=STATE_CHOICES,
+        default=WESTERN_AUSTRALIA,
+        null=True,
+        blank=False,
+    )
+    postcode = models.CharField(
+        max_length=4,
+        validators=[
+            MinLengthValidator(4, "Australian postcodes must contain 4 digits")
+        ],
+        null=True,
+        blank=False,
+    )
     oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     commission_percentage = models.DecimalField(
         max_digits=2,
