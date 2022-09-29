@@ -13,16 +13,20 @@ class Report(models.Model):
     retailer_group = models.ForeignKey(
         RetailerGroup, related_name="%(class)s_retailer_group", on_delete=models.PROTECT
     )
-    report = models.FileField(null=True, blank=True)
-    invoice = models.FileField(null=True, blank=True)
-    PAID = "p"
+    report = models.FileField(null=True, blank=True, max_length=500)
+    invoice = models.FileField(null=True, blank=True, max_length=500)
+    PAID = "P"
     UNPAID = "U"
     PROCESSING_STATUS_CHOICES = [
         (PAID, "Paid"),
         (UNPAID, "Unpaid"),
     ]
     processing_status = models.CharField(
-        max_length=2, choices=PROCESSING_STATUS_CHOICES, null=True, blank=True
+        max_length=2,
+        choices=PROCESSING_STATUS_CHOICES,
+        null=True,
+        blank=True,
+        default=UNPAID,
     )
     datetime_created = models.DateTimeField(auto_now_add=True)
 
