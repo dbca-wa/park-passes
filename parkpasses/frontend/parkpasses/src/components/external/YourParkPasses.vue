@@ -168,7 +168,7 @@ export default {
           vm.loadingMore = false;
         })
         .catch(error => {
-          this.systemErrorMessage = "ERROR: Please try again in an hour.";
+          this.systemErrorMessage = constants.ERRORS.NETWORK;
           console.error("There was an error!", error);
         });
     },
@@ -199,12 +199,13 @@ export default {
                 title: 'Success',
                 text: 'Park Pass updated successfully.',
                 icon: 'success',
-                confirmButtonText: 'OK'
+                showConfirmButton: false,
+                timer: 1500
             })
             vm.loadingUpdatePass = false;
         })
         .catch(error => {
-            this.systemErrorMessage = "ERROR: Please try again in an hour.";
+            this.systemErrorMessage = constants.ERRORS.NETWORK;
             console.error("There was an error!", error);
         });
     },

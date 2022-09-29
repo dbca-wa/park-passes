@@ -208,7 +208,7 @@ export default {
                     $("#cart-item-count").text(` ${vm.cartItems.length} `)
                 })
                 .catch(error => {
-                    vm.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    vm.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 }).finally(() => {
                     vm.loading = false;
@@ -229,7 +229,7 @@ export default {
                 console.log(vm.retailerGroupsForUser);
             })
             .catch(error => {
-                vm.systemErrorMessage = "ERROR: Please try again in an hour.";
+                vm.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             }).finally(() => {
                 vm.loading = false;

@@ -174,7 +174,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import { forEach } from 'jszip';
 
@@ -310,7 +310,7 @@ export default {
                 vm.loading = false;
             })
             .catch((error) => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
+                this.errorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             })
         },
@@ -327,7 +327,7 @@ export default {
                 vm.passTypes = data.results;
             })
             .catch((error) => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
+                this.errorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             })
             .finally(() => {
@@ -373,7 +373,7 @@ export default {
                     discountCodeBatchModal.hide();
                 })
                 .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 });
             return false;

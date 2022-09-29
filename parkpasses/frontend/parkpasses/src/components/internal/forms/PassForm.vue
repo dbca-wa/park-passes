@@ -301,7 +301,7 @@ export default {
                 vm.pdfUrl = apiEndpoints.internalParkPassPdf(vm.pass.id)
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -345,7 +345,7 @@ export default {
                     vm.loading = false;
                 })
                 .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 });
             return false;

@@ -298,7 +298,7 @@ export default {
                 vm.passTypes = data.results;
             })
             .catch((error) => {
-                this.errorMessage = "ERROR: Please try again in an hour.";
+                this.errorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -336,7 +336,7 @@ export default {
                 vm.loading = false;
             })
             .catch(error => {
-                vm.systemErrorMessage = "ERROR: Please try again in an hour.";
+                vm.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             }).finally(() =>{
                 vm.initialiseValidUsersSelect2();
@@ -391,7 +391,7 @@ export default {
                     $('#reasonFiles').val('');
                 })
                 .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 });
             return false;

@@ -197,7 +197,7 @@ export default {
                 });
             })
             .catch(error => {
-                vm.systemErrorMessage = "ERROR: Please try again in an hour.";
+                vm.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             }).finally(() => {
                 vm.loading = false;

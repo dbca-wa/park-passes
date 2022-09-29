@@ -98,7 +98,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 
 export default {
     name: 'PricingWindowFormModal',
@@ -155,7 +155,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -188,7 +188,7 @@ export default {
                     PricingWindowFormModalModal.hide();
                 })
                 .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 }).finally(() =>{
 

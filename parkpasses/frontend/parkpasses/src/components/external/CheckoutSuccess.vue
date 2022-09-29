@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 
 export default {
     name: "CheckoutSuccess",
@@ -86,7 +86,7 @@ export default {
                     console.log(vm.order)
                 })
                 .catch(error => {
-                    vm.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    vm.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 }).finally(() => {
                     vm.loading = false;

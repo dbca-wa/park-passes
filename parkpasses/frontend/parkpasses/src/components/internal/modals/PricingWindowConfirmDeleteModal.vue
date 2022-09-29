@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 
 export default {
     name: 'pricingWindowConfirmDeleteModal',
@@ -54,7 +54,7 @@ export default {
                     pricingWindowConfirmDeleteModalModal.hide();
                 })
                 .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 });
             return false;

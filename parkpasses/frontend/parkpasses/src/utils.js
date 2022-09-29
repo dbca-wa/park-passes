@@ -25,7 +25,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         }

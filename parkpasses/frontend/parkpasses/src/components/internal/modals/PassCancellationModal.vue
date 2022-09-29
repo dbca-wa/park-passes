@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers, utils } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers, utils } from '@/utils/hooks'
 import Swal from 'sweetalert2'
 
 export default {
@@ -88,7 +88,7 @@ export default {
                     passCancellationFormModalModal.hide();
                 })
                 .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 }).finally(() =>{
 

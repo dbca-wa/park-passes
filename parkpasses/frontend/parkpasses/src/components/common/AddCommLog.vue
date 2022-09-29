@@ -78,7 +78,7 @@
 
 import Modal from '@vue-utils/BootstrapModal.vue'
 import Alert from '@vue-utils/Alert.vue'
-import { helpers, apiEndpoints } from "@/utils/hooks.js"
+import { constants, helpers, apiEndpoints } from "@/utils/hooks.js"
 
 export default {
     name: 'AddCommLog',
@@ -203,7 +203,7 @@ export default {
                 vm.entryTypes = data.results
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -232,7 +232,7 @@ export default {
                 vm.close();
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },

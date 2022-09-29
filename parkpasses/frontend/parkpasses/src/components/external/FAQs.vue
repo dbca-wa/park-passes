@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { apiEndpoints } from '@/utils/hooks'
+import { apiEndpoints, constants } from '@/utils/hooks'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 
 export default {
@@ -75,7 +75,7 @@ export default {
                 vm.faqs = data.results
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
