@@ -383,7 +383,7 @@ export default {
                 serverSide: true,
                 searching: true,
                 ajax: {
-                    "url": apiEndpoints.retailerPassesList + '?format=datatables',
+                    "url": apiEndpoints.passesListRetailer + '?format=datatables',
                     "dataSrc": 'data',
 
                     // adding extra GET params for Custom filtering
