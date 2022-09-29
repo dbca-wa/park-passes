@@ -17,6 +17,7 @@ tmp/
 csv*/
 *.csv
 *.xls*
+*.docx#
 
 
 # Byte-compiled / optimized / DLL files
