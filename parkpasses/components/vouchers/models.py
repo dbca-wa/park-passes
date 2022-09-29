@@ -11,8 +11,6 @@ import uuid
 from decimal import Decimal
 
 from django.db import models, transaction
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils import timezone
 
 from parkpasses import settings
@@ -170,6 +168,9 @@ class Voucher(models.Model):
                 days=settings.PARKPASSES_VOUCHER_EXPIRY_IN_DAYS
             )
         super().save(*args, **kwargs)
+        if not self.voucher_number:
+            self.voucher_number = f"V{self.pk:06d}"
+        super().save(force_update=True)
 
     def send_voucher_purchase_notification_email(self):
         error_message = "An exception occured trying to run "
@@ -203,15 +204,6 @@ class Voucher(models.Model):
                     error_message.format(self.id, timezone.now(), e)
                 )
                 logger.exception(error_message.format(self.id, timezone.now(), e))
-
-
-# Update the voucher_number field after saving
-@receiver(post_save, sender=Voucher, dispatch_uid="update_voucher_number")
-def update_voucher_number(sender, instance, **kwargs):
-    if not instance.voucher_number:
-        voucher_number = f"V{instance.pk:06d}"
-        instance.voucher_number = voucher_number
-        instance.save()
 
 
 class VoucherTransactionManager(models.Manager):
