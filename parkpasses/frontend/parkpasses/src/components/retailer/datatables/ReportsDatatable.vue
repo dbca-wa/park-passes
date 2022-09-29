@@ -4,15 +4,6 @@
             <div class="row mb-3">
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Retailer</label>
-                        <select class="form-control" v-model="filterRetailer">
-                            <option value="" selected="selected">All</option>
-                            <option v-for="status in statuses" :value="status.id">{{ status.value }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
                         <label for="">Invoice Payment Status</label>
                         <select class="form-control" v-model="filterProcessingStatus">
                             <option value="" selected="selected">All</option>
@@ -57,6 +48,7 @@ import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { apiEndpoints, constants } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
+import Swal from 'sweetalert2'
 
 export default {
     name: 'ReportsDatatable',
@@ -170,7 +162,6 @@ export default {
                 'Invoice',
                 'Payment Status',
                 'Date Generated',
-                'Action'
             ]
         },
         columnId: function(){
@@ -210,16 +201,32 @@ export default {
         },
         columnInvoice: function(){
             return {
-                data: "invoice",
+                data: "invoice_filename",
                 visible: true,
-                name: 'invoice',
+                name: 'invoice_filename',
+                'render': function(row, type, full){
+                    let html = '';
+                    if(full.invoice_filename){
+                        html = `<a href="${apiEndpoints.retrieveReportInvoicePdfRetailer(full.id)}" target="_blank">Invoice.pdf</a>`;
+                    }
+                    return html;
+                }
             }
         },
-        columnProcessingStatus: function(){
+        columnProcessingStatusDisplay: function(){
             return {
-                data: "processing_status",
+                data: "processing_status_display",
                 visible: true,
-                name: 'processing_status'
+                name: 'processing_status_display',
+                'render': function(row, type, full){
+                    let html = '';
+                    if('Paid'==full.processing_status_display){
+                        html = `<span class="badge bg-success">Paid</span>`;
+                    } else {
+                        html = `<span class="badge bg-danger">Unpaid</span>`;
+                    }
+                    return html;
+                }
             }
         },
         columnDatetimeCreated: function(){
@@ -227,20 +234,6 @@ export default {
                 data: "datetime_created",
                 visible: true,
                 name: 'datetime_created'
-            }
-        },
-        columnAction: function(){
-            let vm = this
-            return {
-                data: "id",
-                orderable: false,
-                searchable: false,
-                visible: true,
-                'render': function(row, type, full){
-                    let links = '';
-                    links +=  `<a target="_blank" href="">Test Action</a><br/>`;
-                    return links;
-                }
             }
         },
         dtOptions: function(){
@@ -273,9 +266,8 @@ export default {
                 vm.columnRetailerGroup,
                 vm.columnReport,
                 vm.columnInvoice,
-                vm.columnProcessingStatus,
+                vm.columnProcessingStatusDisplay,
                 vm.columnDatetimeCreated,
-                vm.columnAction,
             ]
             search = true
 
@@ -298,9 +290,10 @@ export default {
 
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
+                        d.retailer_group = vm.filterRetailerGroups
                         d.processing_status = vm.filterProcessingStatus
-                        d.datetime_to_email_from = vm.filterDatetimeCreatedFrom
-                        d.datetime_to_email_to = vm.filterDatetimeCreatedTo
+                        d.datetime_created_from = vm.filterDatetimeCreatedFrom
+                        d.datetime_created_to = vm.filterDatetimeCreatedTo
                     }
                 },
                 dom: "<'d-flex align-items-center'<'me-auto'l>fB>" +
@@ -325,31 +318,80 @@ export default {
         collapsibleComponentMounted: function(){
             this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
         },
-        fetchFilterLists: function(){
+        updateProcessingStatus: function(id, reportNumber, processingStatus, action) {
             let vm = this;
-
-            // Pass Types
-            fetch(apiEndpoints.passTypesDistinct)
+            let report = {id:id, processing_status:processingStatus}
+            console.log('report = ' + report)
+            const requestOptions = {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(report)
+            };
+            fetch(apiEndpoints.reportUpdateInternal(id), requestOptions)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
                     const error = (data && data.message) || response.statusText;
+                    console.log(error);
                     return Promise.reject(error);
                 }
-                vm.retailers = data
+                vm.$refs.reportDatatable.vmDataTable.draw();
+                Swal.fire({
+                    title: 'Success',
+                    text: `Invoice ${reportNumber} marked as ${action}.`,
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             })
             .catch(error => {
-                //this.errorMessage = error;
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
-
+        },
+        markPaid: function (id, reportNumber) {
+            let vm = this;
+            Swal.fire({
+            title: `Mark Paid?`,
+            text: `Are you sure you want to mark invoice ${reportNumber} as paid?`,
+            confirmButtonText: 'Confirm',
+            confirmButtonColor: '#337ab7',
+            showCancelButton: true,
+            reverseButtons: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    vm.updateProcessingStatus(id, reportNumber, 'P', 'paid');
+                }
+            })
+        },
+        markUnPaid: function (id, reportNumber) {
+            let vm = this;
+            Swal.fire({
+            title: `Mark Unpaid?`,
+            text: `Are you sure you want to mark invoice ${reportNumber} as unpaid?`,
+            confirmButtonText: 'Confirm',
+            confirmButtonColor: '#337ab7',
+            showCancelButton: true,
+            reverseButtons: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    vm.updateProcessingStatus(id, reportNumber, 'U', 'unpaid');
+                }
+            })
         },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-discard-proposal]', function(e) {
+            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="mark-paid"]', function(e) {
                 e.preventDefault();
-                let id = $(this).attr('data-discard-proposal');
-                vm.discardProposal(id)
+                let id = $(this).attr('data-id');
+                let reportNumber = $(this).attr('data-number');
+                vm.markPaid(id, reportNumber)
+            });
+            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="mark-unpaid"]', function(e) {
+                e.preventDefault();
+                let id = $(this).attr('data-id');
+                let reportNumber = $(this).attr('data-number');
+                vm.markUnPaid(id, reportNumber)
             });
 
             // Listener for the row
@@ -403,3 +445,9 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.swal2-confirm {
+    background-color:#efefef;
+}
+</style>

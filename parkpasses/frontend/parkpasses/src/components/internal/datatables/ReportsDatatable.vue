@@ -227,7 +227,11 @@ export default {
                 visible: true,
                 name: 'invoice_filename',
                 'render': function(row, type, full){
-                    return `Add api call to protected media here`;
+                    let html = '';
+                    if(full.invoice_filename){
+                        html = `<a href="${apiEndpoints.retrieveReportInvoicePdfInternal(full.id)}" target="_blank">Invoice.pdf</a>`;
+                    }
+                    return html;
                 }
             }
         },
@@ -235,7 +239,16 @@ export default {
             return {
                 data: "processing_status_display",
                 visible: true,
-                name: 'processing_status_display'
+                name: 'processing_status_display',
+                'render': function(row, type, full){
+                    let html = '';
+                    if('Paid'==full.processing_status_display){
+                        html = `<span class="badge bg-success">Paid</span>`;
+                    } else {
+                        html = `<span class="badge bg-danger">Unpaid</span>`;
+                    }
+                    return html;
+                }
             }
         },
         columnDatetimeCreated: function(){
