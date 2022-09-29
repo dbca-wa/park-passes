@@ -2,6 +2,7 @@
     This module contains the models required for implimenting orders.
 """
 import logging
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -64,9 +65,7 @@ class Order(models.Model):
 
     @property
     def total(self):
-        logger.debug(" -- total --")
-        logger.debug(str(self.items.all()))
-        return self.items.all().aggregate(Sum("amount"))["amount__sum"]
+        return Decimal(self.items.all().aggregate(Sum("amount"))["amount__sum"])
 
     @property
     def total_display(self):
@@ -74,7 +73,11 @@ class Order(models.Model):
 
     @property
     def gst(self):
-        return self.total / settings.LEDGER_GST
+        return Decimal(self.total / settings.LEDGER_GST)
+
+    @property
+    def gst_display(self):
+        return f"${self.gst}"
 
     @property
     def email_user(self):
