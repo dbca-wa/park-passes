@@ -1,9 +1,15 @@
 """
     This module contains the models for implimenting invoices and montly reports.
 """
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 
 from parkpasses.components.retailers.models import RetailerGroup
+
+upload_protected_files_storage = FileSystemStorage(
+    location=settings.PROTECTED_MEDIA_ROOT, base_url="/protected_media"
+)
 
 
 class Report(models.Model):
@@ -13,8 +19,12 @@ class Report(models.Model):
     retailer_group = models.ForeignKey(
         RetailerGroup, related_name="%(class)s_retailer_group", on_delete=models.PROTECT
     )
-    report = models.FileField(null=True, blank=True, max_length=500)
-    invoice = models.FileField(null=True, blank=True, max_length=500)
+    report = models.FileField(
+        null=True, blank=True, max_length=500, storage=upload_protected_files_storage
+    )
+    invoice = models.FileField(
+        null=True, blank=True, max_length=500, storage=upload_protected_files_storage
+    )
     PAID = "P"
     UNPAID = "U"
     PROCESSING_STATUS_CHOICES = [
