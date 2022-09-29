@@ -8,6 +8,7 @@ from django.http import FileResponse, Http404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from org_model_logs.models import UserAction
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
@@ -54,7 +55,7 @@ from parkpasses.components.passes.serializers import (
 )
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
-from parkpasses.helpers import belongs_to, is_customer, is_internal
+from parkpasses.helpers import belongs_to, is_customer, is_internal, is_retailer
 from parkpasses.permissions import IsInternal, IsRetailer
 
 # from rest_framework_datatables.filters import DatatablesFilterBackend
@@ -365,7 +366,16 @@ class ExternalPassViewSet(
 
         sold_via = serializer.validated_data.pop("sold_via", None)
 
-        if is_customer(self.request):
+        if is_retailer(self.request):
+            # If the pass is being sold by a retailer, check if there is an existing email user
+            # with the email address assigned to the pass
+            email = serializer.validated_data["email"]
+            if EmailUser.objects.filter(email=email).exists():
+                email_user = EmailUser.objects.get(email=email)
+                park_pass = serializer.save(user=email_user.id)
+            else:
+                park_pass = serializer.save()
+        elif is_customer(self.request):
             park_pass = serializer.save(user=self.request.user.id)
         else:
             park_pass = serializer.save()
