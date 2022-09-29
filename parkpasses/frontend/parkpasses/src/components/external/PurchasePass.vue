@@ -2,10 +2,30 @@
         <div>
             <div v-if="passType">
                 <div v-if="passType">
-                    <h1>Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
+                    <h1 v-if="isRetailer">Sell a {{passType.display_name}}</h1>
+                    <h1 v-else>Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
                 </div>
 
-                <div v-if="passType" v-html="passType.description"></div>
+                <div v-if="isRetailer" class="pb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                        </symbol>
+                        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                        </symbol>
+                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                        </symbol>
+                        </svg>
+                        <div class="alert alert-primary d-flex align-items-center" role="alert">
+                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
+                            <div>
+                                <div>Enter the customer's details below and then click 'Next'</div>
+                            </div>
+                        </div>
+                    </div>
+                <div v-else v-html="passType.description"></div>
 
                 <div>
                     <form @submit.prevent="validateForm" @keydown.enter="$event.preventDefault()" class="needs-validation" novalidate>
@@ -171,7 +191,7 @@
                             </div>
                             <div class="col-auto">
                                 <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" v-model="pass.concession_id" class="form-select" aria-label="Concession Type" required="required">
-                                    <option disabled value="0" selected>Select Your Concession Type</option>
+                                    <option disabled value="0" selected>Select The Concession Type</option>
                                     <option v-for="concession in concessions" :value="concession.id" :key="concession.id">{{concession.concession_type}} ({{concession.discount_percentage}}% Discount)</option>
                                 </select>
                             </div>
@@ -196,7 +216,7 @@
                                 <input type="date" id="startDate" name="startDate" v-model="pass.date_start" class="form-control" required :min="startDate()">
                             </div>
                         </div>
-                        <div class="row g-1 align-top mb-2">
+                        <div v-if="showAutomaticRenewalOption" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="renewAutomatically" class="col-form-label">Automatically Renew at Expiry?</label>
                             </div>
@@ -223,10 +243,10 @@
                             <div class="col-auto">
                                 <input type="text" id="vehicleRegistration1" name="vehicleRegistration1" v-model="pass.vehicle_registration_1" class="form-control short-control" required="required" pattern="[a-zA-Z0-9]+" maxlength="9">
                                 <div class="invalid-feedback">
-                                    Please enter a valid vehicle registration .
+                                    Please enter a valid vehicle registration.
                                 </div>
                             </div>
-                            <div v-if="isHolidayPass" class="col-auto">
+                            <div v-if="!isHolidayPass" class="col-auto">
                                 <button @click="toggleExtraVehicle" class="btn licensing-btn-primary">{{extraVehicleText}}</button>
                             </div>
                         </div>
@@ -241,7 +261,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-if="isEmailValid" class="row g-1 align-top mb-2">
+                        <div v-if="showDiscountCodeField" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
                                 <label for="discountCode" class="col-form-label">Discount Code</label>
                             </div>
@@ -336,6 +356,21 @@
                                 <strong>${{ subTotal }}</strong>
                             </div>
                         </div>
+                        <div v-if="isRetailer && retailerGroupsForUser && retailerGroupsForUser.length" class="row g-1 align-top mb-2">
+                            <div class="col-md-4">
+                                Sold Via
+                            </div>
+                            <div class="col-auto">
+                                <template v-if="retailerGroupsForUser && retailerGroupsForUser.length>1">
+                                    <select class="form-select" name="retailer_group_id" v-model="pass.sold_via">
+                                        <option v-for="retailerGroup in retailerGroupsForUser" :value="retailerGroup.id">{{ retailerGroup.name }}</option>
+                                    </select>
+                                </template>
+                                <template v-else>
+                                    <span class="badge org-badge-primary">{{ retailerGroupsForUser[0].name }}</span>
+                                </template>
+                            </div>
+                        </div>
                         <div class="row g-1 mb-2">
                             <div class="col-md-4">
                                 &nbsp;
@@ -390,6 +425,9 @@ export default {
                 park_group: null,
                 park_group_id: null,
             },
+
+            isRetailer: false,
+
             passType: null,
             passOptions: null,
             passOptionsLength: null,
@@ -398,6 +436,7 @@ export default {
             loadingParkGroups: false,
             concessionDiscountPercentage: 0,
             concessions: [],
+            retailerGroupsForUser: null,
             confirmEmail: '',
             eligibleForConcession: false,
             vehicleRegistrationNumbersKnown: true,
@@ -427,6 +466,20 @@ export default {
     computed: {
         loaded() {
             return this.passType && this.passOptions && this.concessions;
+        },
+        showPassTypeDescription() {
+            console.log('this.isRetailer = ' + this.isRetailer)
+            return this.passType && !this.isRetailer;
+        },
+        showAutomaticRenewalOption() {
+            return this.passType && !this.isRetailer;
+        },
+        showDiscountCodeField() {
+            return !this.isRetailer && this.isEmailValid;
+        },
+        showVoucherCodeField() {
+            console.log('this.totalPriceAfterDiscounts = ' + this.totalPriceAfterDiscounts);
+            return (this.isEmailValid && (0.00 < this.totalPriceAfterDiscounts) && !this.isRetailer)
         },
         totalPrice() {
             let totalPrice = 0.00;
@@ -502,10 +555,7 @@ export default {
             let remaining = this.voucherBalanceRemaining - this.voucherRedemptionAmount;
             return Math.max(remaining, 0.00).toFixed(2);
         },
-        showVoucherCodeField() {
-            console.log('this.totalPriceAfterDiscounts = ' + this.totalPriceAfterDiscounts);
-            return (this.isEmailValid && (0.00 < this.totalPriceAfterDiscounts)) ? true : false;
-        }
+
     },
     methods: {
         startDate: function () {
@@ -525,7 +575,7 @@ export default {
                 vm.concessions = data.results
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -541,7 +591,7 @@ export default {
                 }
                 vm.passType = data
                 vm.$nextTick(() => {
-                    if(!vm.pass.first_name.length){
+                    if(!vm.pass.email.length){
                         vm.$refs.firstName.focus();
                     } else {
                         vm.$refs.confirmEmail.focus();
@@ -549,7 +599,7 @@ export default {
                 });
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -574,7 +624,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -607,9 +657,33 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             }).finally(() => (this.loadingParkGroups = false));
+        },
+        fetchRetailerGroupsForUser: function () {
+            let vm = this;
+            vm.loading = true;
+            fetch(apiEndpoints.retailerGroupsForUser)
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    console.log(error);
+                    return Promise.reject(error);
+                }
+                vm.retailerGroupsForUser = data
+                if(vm.retailerGroupsForUser && 1==vm.retailerGroupsForUser.length){
+                   vm.pass.sold_via =  vm.retailerGroupsForUser[0].id
+                }
+                console.log(vm.retailerGroupsForUser);
+            })
+            .catch(error => {
+                vm.systemErrorMessage = constants.ERRORS.NETWORK;
+                console.error("There was an error!", error);
+            }).finally(() => {
+                vm.loading = false;
+            });
         },
         updatePrice: function (event) {
             this.passPrice = this.passOptions[event.target.selectedIndex].price
@@ -727,7 +801,7 @@ export default {
                     return true;
                 })
                 .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 });
             } else {
@@ -797,7 +871,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -825,7 +899,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
@@ -837,24 +911,27 @@ export default {
 
             if(vm.isEmailValid){
                 console.log("email is valid -- >")
-
-                this.validateDiscountCode();
                 this.validateConfirmEmail();
-                if(vm.showVoucherCodeField){
-                    console.log("vm.showVoucherCodeField -- >")
-                    let voucherCodeValid = this.validateVoucherCode();
-                    let voucherPinValid = false;
-                    if(this.pass.voucher_code.length && voucherCodeValid){
-                        console.log("voucherCodeValid valid -- >")
-                        voucherPinValid = this.validateVoucherPin();
-                    }
-                    if (typeof voucherPinValid !== 'undefined'){
-                        return false;
-                    }
-                    console.log("voucherPinValid = " + voucherPinValid)
-                    if(voucherCodeValid && voucherPinValid){
-                        console.log("Is this happening -- >")
-                        this.validateVoucherCodeBackend();
+                if(!this.isRetailer){
+                    this.validateDiscountCode();
+                    if(vm.showVoucherCodeField){
+                        console.log("vm.showVoucherCodeField -- >")
+                        let voucherCodeValid = this.validateVoucherCode();
+                        let voucherPinValid = false;
+                        if(this.pass.voucher_code.length && voucherCodeValid){
+                            console.log("voucherCodeValid valid -- >")
+                            voucherPinValid = this.validateVoucherPin();
+                        }
+                        /* Todo: There are still issues with the validation process.
+                        if (typeof voucherPinValid !== 'undefined'){
+                            console.log("voucherPinValid is undefined returning false -- >")
+                            return false;
+                        }*/
+                        console.log("voucherPinValid = " + voucherPinValid)
+                        if(voucherCodeValid && voucherPinValid){
+                            console.log("Is this happening -- >")
+                            this.validateVoucherCodeBackend();
+                        }
                     }
                 }
             }
@@ -903,11 +980,10 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                // Do something after adding the voucher to the database and the users cart
                 window.location.href = '/cart/';
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
             console.log(this.voucher);
@@ -920,12 +996,19 @@ export default {
         this.fetchPassOptions();
     },
     mounted: function () {
-        /*if(this.store.userData){
-            this.pass.email = this.store.userData.user.email
-            this.pass.first_name = this.store.userData.user.first_name
-            this.pass.last_name = this.store.userData.user.last_name
-            this.$refs.confirmEmail.focus();
-        }*/
+        let vm = this;
+        if(vm.store.userData){
+            if(vm.store.userData.is_authenticated&&'external'==vm.store.userData.authorisation_level) {
+                vm.pass.first_name = vm.store.userData.user.first_name
+                vm.pass.last_name = vm.store.userData.user.last_name
+                vm.pass.email = vm.store.userData.user.email
+            }
+            if('retailer'==vm.store.userData.authorisation_level) {
+                vm.isRetailer = true;
+                vm.fetchRetailerGroupsForUser();
+            }
+            console.log('vm.isRetailer = ' + vm.isRetailer);
+        }
     }
 };
 </script>
