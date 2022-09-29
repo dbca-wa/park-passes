@@ -31,6 +31,7 @@ class OrderAdmin(admin.ModelAdmin):
         "user",
         "uuid",
         "invoice_reference",
+        "is_no_payment",
         "total_display",
     )
     readonly_fields = [
