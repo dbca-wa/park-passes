@@ -8,6 +8,7 @@ import InternalDiscountCodeBatchForm from '@/components/internal/forms/DiscountC
 
 import InternalVouchers from '@/components/internal/Vouchers.vue'
 import InternalDiscountCodes from '@/components/internal/DiscountCodes.vue'
+import InternalReports from '@/components/internal/Reports.vue'
 
 export default {
     path: '/internal',
@@ -37,6 +38,11 @@ export default {
             path: '/internal/discount-codes',
             component: InternalDiscountCodes,
             name: 'internal-discount-codes'
+        },
+        {
+            path: '/internal/reports',
+            component: InternalReports,
+            name: 'internal-reports'
         },
         {
             path: '/internal/discount-code-batch-form/:discountCodeBatchId',
