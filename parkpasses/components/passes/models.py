@@ -526,6 +526,17 @@ class Pass(models.Model):
             return Pass.CURRENT
 
     @property
+    def status_display(self):
+        if self.isCancelled:
+            return "Cancelled"
+        elif self.date_start > timezone.now().date():
+            return "Future"
+        elif self.date_expiry <= timezone.now().date():
+            return "Expired"
+        else:
+            return "Current"
+
+    @property
     def isCancelled(self):
         if hasattr(self, "cancellation"):
             return True
