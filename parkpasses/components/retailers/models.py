@@ -3,6 +3,7 @@
 """
 import json
 import logging
+import uuid
 
 from django.conf import settings
 from django.core.cache import cache
@@ -74,6 +75,8 @@ class RetailerGroup(models.Model):
         validators=PERCENTAGE_VALIDATOR,
         default=10,
     )
+    datetime_created = models.DateTimeField(auto_now_add=True)
+    datetime_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         app_label = "parkpasses"
@@ -142,9 +145,56 @@ class RetailerGroupUser(models.Model):
         EmailUser, on_delete=models.PROTECT, blank=True, null=True, db_constraint=False
     )
     active = models.BooleanField(default=True)
+    is_admin = models.BooleanField(default=False)
+    datetime_created = models.DateTimeField(auto_now_add=True)
+    datetime_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         app_label = "parkpasses"
 
     def __str__(self):
         return f"{self.retailer_group} {self.emailuser}"
+
+
+class RetailerGroupInvite(models.Model):
+    user = models.IntegerField(null=True, blank=True)  # EmailUserRO
+    email = models.EmailField(null=False, blank=False)
+    retailer_group = models.ForeignKey(
+        RetailerGroup, on_delete=models.PROTECT, null=False, blank=False
+    )
+    uuid = models.UUIDField(null=False, blank=False, default=uuid.uuid4, editable=False)
+    datetime_created = models.DateTimeField(auto_now_add=True)
+    datetime_updated = models.DateTimeField(auto_now=True)
+
+    NEW = "N"
+    SENT = "S"
+    USER_RESPONDED = "UR"
+    DENIED = "D"
+    APPROVED = "A"
+
+    STATUS_CHOICES = [
+        (NEW, "New"),
+        (SENT, "Sent"),
+        (USER_RESPONDED, "User Responded"),
+        (DENIED, "Denied"),
+        (APPROVED, "Approved"),
+    ]
+
+    status = models.CharField(max_length=3, choices=STATUS_CHOICES, default=NEW)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Retailer Group Invite"
+        ordering = ["-datetime_created"]
+
+    def __str__(self):
+        return f"{self.email} invited to join {self.retailer_group} [{self.get_status_display()}]"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if RetailerGroupInvite.NEW == self.status:
+            self.send_invite()
+
+    def send_invite(self):
+        # todo
+        pass
