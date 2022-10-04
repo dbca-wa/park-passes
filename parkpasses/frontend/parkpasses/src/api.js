@@ -137,7 +137,7 @@ module.exports = {
         return                          `/api/orders/external/orders/${passId}/retrieve-invoice`
     },
 
-    /* ========================= Retailers =================================================*/
+    /* ========================= Retailer Groups =========================================*/
 
     retailerGroupListInternal:          '/api/retailers/internal/retailer-groups/',
     retailerGroupRetrieveInternal: function (retailerGroupId) {
@@ -146,8 +146,12 @@ module.exports = {
     retailerGroupUserListInternal:      '/api/retailers/internal/retailer-group-users/',
     retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-reports/',
 
-    createRetailerGroupInvite:          '/api/retailers/internal/retailer-group-invites/',
+    /* ========================= Retailer Group Invites ===================================*/
 
+    createRetailerGroupInvite:          '/api/retailers/internal/retailer-group-invites/',
+    retailerGroupInviteRetrieveRetailer: function (uuid) {
+        return                          `/api/retailers/retailer/retailer-group-invites/${uuid}/`;
+    },
 
     /* ========================= Reports =================================================*/
 
