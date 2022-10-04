@@ -6,6 +6,7 @@ from parkpasses.components.reports.models import Report
 
 
 class RetailerReportSerializer(serializers.ModelSerializer):
+    report_filename = serializers.SerializerMethodField()
     invoice_filename = serializers.SerializerMethodField()
     processing_status_display = serializers.SerializerMethodField()
     datetime_created = serializers.SerializerMethodField()
@@ -17,6 +18,9 @@ class RetailerReportSerializer(serializers.ModelSerializer):
 
     def get_processing_status_display(self, obj):
         return obj.get_processing_status_display()
+
+    def get_report_filename(self, obj):
+        return os.path.basename(obj.report.name)
 
     def get_invoice_filename(self, obj):
         return os.path.basename(obj.invoice.name)
@@ -26,6 +30,7 @@ class RetailerReportSerializer(serializers.ModelSerializer):
 
 
 class InternalReportSerializer(serializers.ModelSerializer):
+    report_filename = serializers.SerializerMethodField()
     invoice_filename = serializers.SerializerMethodField()
     processing_status_display = serializers.SerializerMethodField()
     datetime_created = serializers.SerializerMethodField()
@@ -37,6 +42,9 @@ class InternalReportSerializer(serializers.ModelSerializer):
 
     def get_processing_status_display(self, obj):
         return obj.get_processing_status_display()
+
+    def get_report_filename(self, obj):
+        return os.path.basename(obj.report.name)
 
     def get_invoice_filename(self, obj):
         return os.path.basename(obj.invoice.name)
