@@ -17,4 +17,6 @@ class IsInternalOrReadOnly(BasePermission):
 
 class IsRetailer(BasePermission):
     def has_permission(self, request, view):
+        if is_internal(request):
+            return True
         return is_retailer(request)
