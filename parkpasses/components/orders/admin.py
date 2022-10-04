@@ -29,6 +29,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "order_number",
         "user",
+        "retailer_group",
         "uuid",
         "invoice_reference",
         "is_no_payment",
