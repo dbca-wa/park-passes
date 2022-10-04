@@ -18,7 +18,7 @@ csv*/
 *.csv
 *.xls*
 *.docx#
-
+*.dot
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
