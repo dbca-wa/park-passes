@@ -513,7 +513,7 @@ class InternalPassSerializer(serializers.ModelSerializer):
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
     sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
     processing_status_display_name = serializers.CharField(
-        source="get_processing_status_display", read_only=True
+        source="status_display", read_only=True
     )
 
     class Meta:
