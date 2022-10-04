@@ -240,7 +240,18 @@ export default {
             return {
                 data: "processing_status",
                 visible: true,
-                name: 'processing_status'
+                name: 'processing_status',
+                'render': function(row, type, full){
+                    let html = '';
+                    if('Delivered'==full.processing_status){
+                        html = `<span class="badge bg-success">${full.processing_status}</span>`;
+                    } else  if('New'==full.processing_status) {
+                        html = `<span class="badge org-badge-primary">${full.processing_status}</span>`;
+                    } else {
+                        html = `<span class="badge bg-danger">${full.processing_status}</span>`;
+                    }
+                    return html;
+                }
             }
         },
         columnInvoice: function(){
