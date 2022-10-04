@@ -73,7 +73,10 @@ class Order(models.Model):
 
     @property
     def gst(self):
-        return Decimal(self.total / settings.LEDGER_GST)
+        gst_calcuation = Decimal(100 / (100 + int(settings.LEDGER_GST)))
+        return Decimal(self.total - (self.total * gst_calcuation)).quantize(
+            Decimal("0.00")
+        )
 
     @property
     def gst_display(self):
