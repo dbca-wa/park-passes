@@ -51,7 +51,9 @@ class RetailerGroupUserSerializer(serializers.ModelSerializer):
 
 
 class RetailerGroupInviteSerializer(serializers.ModelSerializer):
-    retailer_group_name = serializers.CharField(source="retailer_group.name")
+    retailer_group_name = serializers.CharField(
+        source="retailer_group.name", read_only=True
+    )
     status_display = serializers.SerializerMethodField()
 
     class Meta:
