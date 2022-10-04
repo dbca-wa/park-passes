@@ -139,7 +139,15 @@ module.exports = {
 
     /* ========================= Retailers =================================================*/
 
-    retailerGroupListInternal:          '/api/retailers/internal/retailer-groups',
+    retailerGroupListInternal:          '/api/retailers/internal/retailer-groups/',
+    retailerGroupRetrieveInternal: function (retailerGroupId) {
+        `/api/retailers/internal/retailer-groups/${retailerGroupId}/`;
+    },
+    retailerGroupUserListInternal:      '/api/retailers/internal/retailer-group-users/',
+    retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-reports/',
+
+    createRetailerGroupInvite:          '/api/retailers/internal/retailer-group-invites/',
+
 
     /* ========================= Reports =================================================*/
 
@@ -153,6 +161,12 @@ module.exports = {
     },
     retrieveReportInvoicePdfInternal:   function (reportId) {
         return                          `/api/reports/internal/reports/${reportId}/retrieve-invoice-pdf/`;
+    },
+    retrieveReportPdfRetailer:   function (reportId) {
+        return                          `/api/reports/retailer/reports/${reportId}/retrieve-report-pdf/`;
+    },
+    retrieveReportPdfInternal:   function (reportId) {
+        return                          `/api/reports/internal/reports/${reportId}/retrieve-report-pdf/`;
     },
 
     /* ========================= Org Model Documents ====================================*/
