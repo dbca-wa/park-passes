@@ -216,9 +216,16 @@ export default {
         },
         columnReport: function(){
             return {
-                data: "report",
+                data: "report_filename",
                 visible: true,
-                name: 'report',
+                name: 'report_filename',
+                'render': function(row, type, full){
+                    let html = '';
+                    if(full.report_filename){
+                        html = `<a href="${apiEndpoints.retrieveReportPdfInternal(full.id)}" target="_blank">Report.pdf</a>`;
+                    }
+                    return html;
+                }
             }
         },
         columnInvoice: function(){
