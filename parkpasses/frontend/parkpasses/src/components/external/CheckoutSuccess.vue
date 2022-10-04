@@ -6,7 +6,19 @@
             </div>
         </div>
         <div class="row ms-4">
-            <div class="col-md-3">
+
+            <div v-if="isRetailer" class="col-md-3">
+                <div class="card">
+                    <h5 class="card-header">What Next?</h5>
+                    <div class="card-body">
+                        <p class="card-text"><a href="/retailer/sell-a-pass">Sell Another Pass</a></p>
+                        <p class="card-text"><a href="/">View Invoices &amp Reports</a></p>
+                        <p class="card-text"><a href="/">Return home</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="col-md-3">
                 <div class="card">
                     <h5 class="card-header">What Next?</h5>
                     <div class="card-body">
@@ -54,12 +66,15 @@
 </template>
 
 <script>
+import { useStore } from '@/stores/state'
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 
 export default {
     name: "CheckoutSuccess",
     data: function () {
         return {
+            store: useStore(),
+            isRetailer: false,
             orderUUID: null,
             order: null,
             formattedOrderDate: null,
@@ -96,6 +111,14 @@ export default {
     created: function() {
         this.orderUUID = this.$route.params.uuid;
         this.fetchOrder(this.orderUUID);
+    },
+    mounted: function() {
+        let vm = this;
+        if(vm.store.userData){
+            if(vm.store.userData.is_authenticated && 'retailer'==vm.store.userData.authorisation_level) {
+                vm.isRetailer = true;
+            }
+        }
     }
 };
 </script>
