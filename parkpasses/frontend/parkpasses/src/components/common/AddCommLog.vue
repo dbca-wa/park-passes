@@ -29,8 +29,6 @@
                                     <select class="form-control" id="type" name="type" v-model="comms.entry_type" required>
                                         <option value="" selected disabled>Select Type</option>
                                         <option v-for="entryType in entryTypes" :value="entryType.id">{{entryType.entry_type}}</option>
-                                        <option value="mail">Mail</option>
-                                        <option value="phone">Phone</option>
                                     </select>
                                     </template>
 
