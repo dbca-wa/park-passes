@@ -1,6 +1,10 @@
 from django.contrib import admin
 
-from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
+from parkpasses.components.retailers.models import (
+    RetailerGroup,
+    RetailerGroupInvite,
+    RetailerGroupUser,
+)
 
 
 class RetailerGroupUserInline(admin.TabularInline):
@@ -20,4 +24,18 @@ class RetailerGroupAdmin(admin.ModelAdmin):
     ordering = ["name"]
 
 
+class RetailerGroupInviteAdmin(admin.ModelAdmin):
+    model = RetailerGroupInvite
+    list_display = (
+        "email",
+        "retailer_group",
+        "uuid",
+        "status",
+        "datetime_created",
+        "datetime_updated",
+    )
+    readonly_fields = ["uuid"]
+
+
 admin.site.register(RetailerGroup, RetailerGroupAdmin)
+admin.site.register(RetailerGroupInvite, RetailerGroupInviteAdmin)
