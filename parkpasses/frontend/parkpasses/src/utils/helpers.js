@@ -248,5 +248,8 @@ module.exports = {
             default:
                 return 'org-badge-primary';
         }
+    },
+    getGstFromTotalIncludingGst(GstRate, totalIncludingGst){
+        return totalIncludingGst - (totalIncludingGst * (100 / (100 + GstRate)));
     }
 };
