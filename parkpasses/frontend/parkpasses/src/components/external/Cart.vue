@@ -48,9 +48,9 @@
                                         <div class="alert alert-primary d-flex align-items-center" role="alert">
                                             <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
                                             <div>
-                                                <div class="mb-2">This transaction will be processed as a 'No Payment' transaction.</div>
+                                                <div class="mb-2">This transaction will be processed as a 'No Payment' transaction which will bypass our payment gateway.</div>
                                                 <div class="mb-2">Please press 'Checkout' and then take payment from the customer before clicking the 'Complete Order' button.</div>
-                                                <div>You will be invoiced monthly for your sales minus your commission.</div>
+                                                <div>You will be invoiced monthly for your sales minus commission.</div>
                                             </div>
                                         </div>
                                     </div>
@@ -180,7 +180,7 @@ export default {
             }
         },
         gst() {
-            let gst = this.totalPrice / constants.GST;
+            let gst = currency(helpers.getGstFromTotalIncludingGst(constants.GST, this.totalPrice));
             console.log(gst);
             return Math.max(gst, 0.00).toFixed(2);
         }
