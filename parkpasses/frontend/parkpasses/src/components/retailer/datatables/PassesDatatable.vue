@@ -290,6 +290,17 @@ export default {
                 data: "processing_status_display_name",
                 visible: true,
                 name: 'processing_status',
+                'render': function(row, type, full){
+                    let html = '';
+                    if('Current'==full.processing_status_display_name){
+                        html = `<span class="badge bg-success">${full.processing_status_display_name}</span>`;
+                    } else  if('Future'==full.processing_status_display_name) {
+                        html = `<span class="badge bg-info">${full.processing_status_display_name}</span>`;
+                    } else {
+                        html = `<span class="badge bg-danger">${full.processing_status_display_name}</span>`;
+                    }
+                    return html;
+                }
             }
         },
         columnParkPassPdf: function(){
