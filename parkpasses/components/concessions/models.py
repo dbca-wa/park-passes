@@ -75,7 +75,7 @@ class ConcessionUsage(models.Model):
     )
 
     concession_card_number = models.CharField(
-        unique=True, max_length=50, null=False, blank=False, default=""
+        max_length=50, null=False, blank=False, default=""
     )
 
     def __str__(self):
