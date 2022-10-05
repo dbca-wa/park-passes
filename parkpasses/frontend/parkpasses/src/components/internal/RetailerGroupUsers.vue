@@ -11,12 +11,30 @@
       >
         <FormSection
           :formCollapse="false"
-          label="Retailer Group Users"
+          label="Retail Users"
           Index="retailer-group-users"
         >
           <RetailerGroupUsersDatatable
-            ref="retailerGropuUserDatatable"
+            ref="retailerGroupUserDatatable"
             level="internal"
+          />
+        </FormSection>
+      </div>
+      <div
+        class="tab-pane active"
+        id="pills-retailer-group-users"
+        role="tabpanel"
+        aria-labelledby="pills-retailer-group-users-tab"
+      >
+        <FormSection
+          :formCollapse="false"
+          label="Retail User Invites"
+          Index="retailer-group-user-invites"
+        >
+          <RetailerGroupUserInvitesDatatable
+            ref="retailerGroupUserInvitesDatatable"
+            level="internal"
+            @approvalProcessed="approvalProcessed"
           />
         </FormSection>
       </div>
@@ -27,6 +45,7 @@
 <script>
 import FormSection from "@/components/forms/SectionToggle.vue";
 import RetailerGroupUsersDatatable from "@/components/internal/datatables/RetailerGroupUsersDatatable";
+import RetailerGroupUserInvitesDatatable from "@/components/internal/datatables/RetailerGroupUserInvitesDatatable";
 
 export default {
   name: "RetailerGroupUsers",
@@ -39,6 +58,7 @@ export default {
   components: {
     FormSection,
     RetailerGroupUsersDatatable,
+    RetailerGroupUserInvitesDatatable,
   },
   watch: {},
   computed: {
@@ -56,21 +76,8 @@ export default {
     },
   },
   methods: {
-    tabClicked: function (param) {
-      if (param == "reports") {
-        this.$refs.retailerGropuUserDatatable.adjustTableWidth();
-      } else if (param === "competitive-processes") {
-        this.$refs.competitive_processes_table.adjustTableWidth();
-      }
-    },
-    mapTabClicked: function () {
-      this.$refs.component_map_with_filters.forceToRefreshMap();
-    },
-    set_active_tab: function (tab_href_name) {
-      let elem = $('#pills-tab a[href="#' + tab_href_name + '"]');
-      let tab = bootstrap.Tab.getInstance(elem);
-      if (!tab) tab = new bootstrap.Tab(elem);
-      tab.show();
+    approvalProcessed: function () {
+      this.$refs.retailerGroupUserDatatable.draw();
     },
   },
   mounted: async function () {
