@@ -47,7 +47,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <datatable
-                    ref="reportDatatable"
+                    ref="retailerGroupUsersDatatable"
                     :id="datatableId"
                     :dtOptions="dtOptions"
                     :dtHeaders="dtHeaders"
@@ -65,7 +65,7 @@ import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import Swal from 'sweetalert2'
 
 export default {
-    name: 'ReportsDatatable',
+    name: 'RetailerGroupUsersDatatable',
     props: {
         level:{
             type: String,
@@ -135,19 +135,19 @@ export default {
     },
     watch: {
         filterRetailerGroups: function() {
-            this.$refs.reportDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterRetailerGroupsCacheName, this.filterRetailerGroups);
         },
         filterProcessingStatus: function() {
-            this.$refs.reportDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
         },
         filterDatetimeCreatedFrom: function() {
-            this.$refs.reportDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterDatetimeCreatedFromCacheName, this.filterDatetimeCreatedFrom);
         },
         filterDatetimeCreatedTo: function() {
-            this.$refs.reportDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
+            this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterDatetimeCreatedToCacheName, this.filterDatetimeCreatedTo);
         },
         filterApplied: function() {
@@ -158,7 +158,7 @@ export default {
     },
     computed: {
         numberOfColumns: function() {
-            let num =  this.$refs.reportDatatable.vmDataTable.columns(':visible').nodes().length;
+            let num =  this.$refs.retailerGroupUsersDatatable.vmDataTable.columns(':visible').nodes().length;
             return num
         },
         filterApplied: function(){
@@ -339,9 +339,12 @@ export default {
         }
     },
     methods: {
+        draw: function () {
+            this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();
+        },
         adjustTableWidth: function(){
-            this.$refs.reportDatatable.vmDataTable.columns.adjust()
-            this.$refs.reportDatatable.vmDataTable.responsive.recalc()
+            this.$refs.retailerGroupUsersDatatable.vmDataTable.columns.adjust()
+            this.$refs.retailerGroupUsersDatatable.vmDataTable.responsive.recalc()
         },
         collapsibleComponentMounted: function(){
             this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
@@ -382,7 +385,7 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                vm.$refs.reportDatatable.vmDataTable.draw();
+                vm.$refs.retailerGroupUsersDatatable.vmDataTable.draw();
                 Swal.fire({
                     title: 'Success',
                     text: `Invoice ${reportNumber} marked as ${action}.`,
@@ -428,13 +431,13 @@ export default {
         },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="mark-paid"]', function(e) {
+            vm.$refs.retailerGroupUsersDatatable.vmDataTable.on('click', 'a[data-action="mark-paid"]', function(e) {
                 e.preventDefault();
                 let id = $(this).attr('data-id');
                 let reportNumber = $(this).attr('data-number');
                 vm.markPaid(id, reportNumber)
             });
-            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="mark-unpaid"]', function(e) {
+            vm.$refs.retailerGroupUsersDatatable.vmDataTable.on('click', 'a[data-action="mark-unpaid"]', function(e) {
                 e.preventDefault();
                 let id = $(this).attr('data-id');
                 let reportNumber = $(this).attr('data-number');
@@ -442,7 +445,7 @@ export default {
             });
 
             // Listener for the row
-            vm.$refs.reportDatatable.vmDataTable.on('click', 'td', function(e) {
+            vm.$refs.retailerGroupUsersDatatable.vmDataTable.on('click', 'td', function(e) {
                 let td_link = $(this)
 
                 if (!(td_link.hasClass(vm.td_expand_class_name) || td_link.hasClass(vm.td_collapse_class_name))){
@@ -489,7 +492,8 @@ export default {
         this.$nextTick(() => {
             vm.addEventListeners();
         });
-    }
+    },
+    expose: ['draw'],
 }
 </script>
 
