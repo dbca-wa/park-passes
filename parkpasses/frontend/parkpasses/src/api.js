@@ -148,9 +148,16 @@ module.exports = {
 
     /* ========================= Retailer Group Invites ===================================*/
 
+    retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-invites/',
     createRetailerGroupInvite:          '/api/retailers/internal/retailer-group-invites/',
-    retailerGroupInviteRetrieveRetailer: function (uuid) {
-        return                          `/api/retailers/retailer/retailer-group-invites/${uuid}/`;
+    retailerGroupInviteRetrieveExternal: function (uuid) {
+        return                          `/api/retailers/external/retailer-group-invites/${uuid}/`;
+    },
+    acceptRetailerGroupInvite: function (uuid) {
+        return                          `/api/retailers/external/retailer-group-invites/${uuid}/accept-retailer-group-user-invite/`;
+    },
+    processRetailerGroupInvite: function (id) {
+        return                          `/api/retailers/internal/retailer-group-invites/${id}/process-retailer-group-user-invite/`;
     },
 
     /* ========================= Reports =================================================*/
