@@ -13,9 +13,31 @@ class RespondToRetailUserInviteView(
     def test_func(self):
         if self.request.user.is_authenticated:
             uuid = self.kwargs["uuid"]
-            email = self.request.user.email
-            if RetailerGroupInvite.objects.filter(uuid=uuid, email=email).exists():
+            user = self.request.user
+            if RetailerGroupInvite.objects.filter(
+                uuid=uuid,
+                email=user.email,
+                status__in=[
+                    RetailerGroupInvite.SENT,
+                    RetailerGroupInvite.USER_LOGGED_IN,
+                    RetailerGroupInvite.USER_ACCEPTED,
+                ],
+            ).exists():
+                retailer_group_invite = RetailerGroupInvite.objects.get(
+                    uuid=uuid,
+                    email=user.email,
+                    status__in=[
+                        RetailerGroupInvite.SENT,
+                        RetailerGroupInvite.USER_LOGGED_IN,
+                        RetailerGroupInvite.USER_ACCEPTED,
+                    ],
+                )
+                if retailer_group_invite.status == RetailerGroupInvite.SENT:
+                    retailer_group_invite.user = user.id
+                    retailer_group_invite.status = RetailerGroupInvite.USER_LOGGED_IN
+                    retailer_group_invite.save()
                 return True
+
         return False
 
     def get_context_data(self, **kwargs):
