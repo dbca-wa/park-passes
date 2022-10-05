@@ -40,6 +40,11 @@ def is_retailer(context):
 
 
 @register.simple_tag(takes_context=True)
+def is_retailer_admin(context):
+    return parkpasses_helpers.is_retailer_admin(context["request"])
+
+
+@register.simple_tag(takes_context=True)
 def is_authenticated(context):
     request = context["request"]
     return parkpasses_helpers.is_authenticated(request)
