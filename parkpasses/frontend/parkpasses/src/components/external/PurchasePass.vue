@@ -305,7 +305,7 @@
                                 <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option_id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
                                     <option v-for="passOption in passOptions" :value="passOption.id" :key="passOption.id">{{passOption.name}}</option>
                                 </select>
-                                <span v-else>{{pass.option_name}}</span>
+                                <input v-else type="text" readonly class="form-control-plaintext" id="staticEmail" :value="pass.option_name">
                             </div>
                         </div>
                         <div v-if="totalPrice" class="row g-1 align-top mb-2">
@@ -313,7 +313,7 @@
                                 Price
                             </div>
                             <div class="col-auto">
-                                <strong>${{ totalPrice }}</strong>
+                                <input type="text" readonly class="form-control-plaintext fw-bold" id="staticEmail" :value="'$'+totalPrice">
                             </div>
                         </div>
                         <div v-if="discountCodeDiscount" class="row g-1 align-top mb-2">
@@ -367,11 +367,11 @@
                                     </select>
                                 </template>
                                 <template v-else>
-                                    <span class="badge org-badge-primary">{{ retailerGroupsForUser[0].name }}</span>
+                                    <div class="lead"><span class="badge org-badge-primary fw-bold">{{ retailerGroupsForUser[0].name }}</span></div>
                                 </template>
                             </div>
                         </div>
-                        <div class="row g-1 mb-2">
+                        <div class="row g-1 mb-2 mt-1">
                             <div class="col-md-4">
                                 &nbsp;
                             </div>
