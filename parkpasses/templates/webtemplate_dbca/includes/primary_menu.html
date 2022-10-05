@@ -3,6 +3,7 @@
 
 {% is_internal as is_internal_login %}
 {% is_retailer as is_retailer %}
+{% is_retailer_admin as is_retailer_admin %}
 {% is_authenticated as is_authenticated %}
 
 {% is_parkpasses_admin as is_parkpasses_admin_user %}
@@ -27,6 +28,9 @@
     <li class="nav-item"><a class="nav-link" href="/retailer/sell-a-pass">Sell a Pass</a></li>
     <li class="nav-item"><a class="nav-link" href="/retailer/parkpasses">Park Passes</a></li>
     <li class="nav-item"><a class="nav-link" href="/retailer/reports">Invoices &amp; Monthly Reports</a></li>
+    {% if is_retailer_admin %}
+    <li class="nav-item"><a class="nav-link" href="/retailer/invite-users">Invite Users</a></li>
+    {% endif %}
     {% elif is_authenticated %}
     <li class="nav-item"><a class="nav-link" href="/your-park-passes">Your Park Passes</a></li>
     <!-- <li class="nav-item"><a class="nav-link" href="/your-vouchers">Your Vouchers</a></li> -->
