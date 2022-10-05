@@ -168,14 +168,16 @@ class RetailerGroupInvite(models.Model):
 
     NEW = "N"
     SENT = "S"
-    USER_RESPONDED = "UR"
+    USER_LOGGED_IN = "ULI"
+    USER_ACCEPTED = "UA"
     DENIED = "D"
     APPROVED = "A"
 
     STATUS_CHOICES = [
         (NEW, "New"),
         (SENT, "Sent"),
-        (USER_RESPONDED, "User Responded"),
+        (USER_LOGGED_IN, "User Logged In"),
+        (USER_ACCEPTED, "User Accepted"),
         (DENIED, "Denied"),
         (APPROVED, "Approved"),
     ]
@@ -193,8 +195,22 @@ class RetailerGroupInvite(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if RetailerGroupInvite.NEW == self.status:
-            self.send_invite()
+            self.send_invite_notification()
+        if RetailerGroupInvite.USER_ACCEPTED == self.status:
+            self.send_invite_accepted_notification()
+        if RetailerGroupInvite.DENIED == self.status:
+            self.send_invite_denied_notification()
+        if RetailerGroupInvite.APPROVED == self.status:
+            self.send_invite_approved_notification()
 
-    def send_invite(self):
-        # todo
-        pass
+    def send_invite_notification(self):
+        logger.debug("send_invite_notification")
+
+    def send_invite_accepted_notification(self):
+        logger.debug("send_invite_accepted_notification")
+
+    def send_invite_denied_notification(self):
+        logger.debug("send_invite_denied_notification")
+
+    def send_invite_approved_notification(self):
+        logger.debug("send_invite_approved_notification")
