@@ -2,11 +2,11 @@ from django.conf.urls import url
 from rest_framework import routers
 
 from parkpasses.components.retailers.api import (
+    ExternalRetailerGroupInviteViewSet,
     InternalRetailerGroupInviteViewSet,
     InternalRetailerGroupUserViewSet,
     InternalRetailerGroupViewSet,
     RetailerGroupsForUser,
-    RetailerRetailerGroupInviteViewSet,
 )
 
 router = routers.SimpleRouter()
@@ -26,9 +26,9 @@ router.register(
     basename="retailer-group-invites-internal",
 )
 router.register(
-    r"retailer/retailer-group-invites",
-    RetailerRetailerGroupInviteViewSet,
-    basename="retailer-group-invites-retailer",
+    r"external/retailer-group-invites",
+    ExternalRetailerGroupInviteViewSet,
+    basename="retailer-group-invites-external",
 )
 
 
