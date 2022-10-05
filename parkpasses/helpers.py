@@ -79,6 +79,14 @@ def is_retailer(request):
         return False
 
 
+def is_retailer_admin(request):
+    if not is_retailer(request):
+        return False
+    return RetailerGroupUser.objects.filter(
+        is_admin=True, emailuser_id=request.user.id
+    ).exists()
+
+
 def get_retailer_group_ids_for_user(request):
     return list(
         RetailerGroupUser.objects.filter(emailuser=request.user)
