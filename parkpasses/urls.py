@@ -19,6 +19,7 @@ from parkpasses.components.main.api import (
 )
 from parkpasses.components.orders.views import ExternalOrdersView
 from parkpasses.components.passes.views import ExternalPassView
+from parkpasses.components.retailers.views import RespondToRetailUserInviteView
 from parkpasses.components.vouchers.views import ExternalVouchersView
 
 # API patterns
@@ -72,6 +73,11 @@ urlpatterns = [
         name="internal-discount-codes",
     ),
     # ========================================================================== Retailer
+    url(
+        r"^retailer/respond-to-invite/(?P<uuid>.+)/",
+        RespondToRetailUserInviteView.as_view(),
+        name="respond-to-invite",
+    ),
     url(r"^retailer/", views.RetailerView.as_view(), name="retailer"),
     # ========================================================================== Component API end-points
     url(r"api/passes/", include("parkpasses.components.passes.urls")),
