@@ -65,6 +65,11 @@ urlpatterns = [
     url(r"^account/$", views.ExternalView.as_view(), name="manage-account"),
     url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
     # ========================================================================== Internal
+    url(
+        r"^internal/retailer-group-users$",
+        views.InternalView.as_view(),
+        name="internal-retailer-group-users",
+    ),
     url(r"^internal/", views.InternalView.as_view(), name="internal"),
     url(r"^internal/vouchers/", views.InternalView.as_view(), name="internal-vouchers"),
     url(
