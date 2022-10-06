@@ -140,6 +140,7 @@ module.exports = {
     /* ========================= Retailer Groups =========================================*/
 
     retailerGroupListInternal:          '/api/retailers/internal/retailer-groups/',
+    activeRetailerGroupListInternal:    '/api/retailers/internal/retailer-groups/active-retailer-groups',
     retailerGroupRetrieveInternal: function (retailerGroupId) {
         `/api/retailers/internal/retailer-groups/${retailerGroupId}/`;
     },
