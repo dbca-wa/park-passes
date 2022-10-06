@@ -9,6 +9,8 @@ from parkpasses.components.retailers.models import (
 
 
 class RetailerGroupSerializer(serializers.ModelSerializer):
+    user_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = RetailerGroup
         fields = "__all__"
@@ -58,6 +60,7 @@ class RetailerGroupInviteSerializer(serializers.ModelSerializer):
     datetime_created = serializers.SerializerMethodField(read_only=True)
     datetime_updated = serializers.SerializerMethodField(read_only=True)
     is_admin = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    user_count_for_retailer_group = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = RetailerGroupInvite
@@ -68,13 +71,14 @@ class RetailerGroupInviteSerializer(serializers.ModelSerializer):
             "email",
             "retailer_group",
             "retailer_group_name",
+            "user_count_for_retailer_group",
             "status",
             "status_display",
             "is_admin",
             "datetime_created",
             "datetime_updated",
         ]
-        datatables_always_serialize = "status"
+        datatables_always_serialize = ["status", "user_count_for_retailer_group"]
 
     def create(self, validated_data):
         validated_data.pop("is_admin", None)
