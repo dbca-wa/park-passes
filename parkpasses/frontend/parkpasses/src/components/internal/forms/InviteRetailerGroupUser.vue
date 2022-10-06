@@ -1,5 +1,5 @@
 <template lang="html">
-    <div class="container" id="internalInviteRetailerGroupUser">
+    <div v-if="retailerGroups" class="container" id="internalInviteRetailerGroupUser">
         <div class="row px-4">
             <div class="col-sm-12 mb-4">
                 <strong>Invite a Retail User</strong>
@@ -97,9 +97,7 @@
         </div>
 
     </div>
-    <footer class="fixed-bottom mt-auto py-3 bg-light">
 
-    </footer>
     <div v-if="!retailerGroups">
         <BootstrapSpinner isLoading="true" />
     </div>
@@ -141,7 +139,7 @@ export default {
         },
         fetchRetailerGroups: function () {
             let vm = this;
-            fetch(apiEndpoints.retailerGroupListInternal)
+            fetch(apiEndpoints.activeRetailerGroupListInternal)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -149,7 +147,7 @@ export default {
                     console.log(error)
                     return Promise.reject(error);
                 }
-                vm.retailerGroups = data.results
+                vm.retailerGroups = data
             })
             .catch(error => {
                 this.systemErrorMessage = constants.ERRORS.NETWORK;
