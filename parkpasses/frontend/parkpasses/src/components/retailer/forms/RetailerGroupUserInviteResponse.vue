@@ -31,7 +31,7 @@
                             <form @submit.prevent="validateForm" class="needs-validation" novalidate>
                             <div class="row mb-3 mt-3 align-items-center">
                                 <div class="col">
-                                    The account with email:
+                                    Your account with email:
                                 </div>
                             </div>
                             <div class="row mb-3 align-items-center">
