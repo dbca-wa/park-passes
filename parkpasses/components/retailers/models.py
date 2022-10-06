@@ -75,6 +75,7 @@ class RetailerGroup(models.Model):
         validators=PERCENTAGE_VALIDATOR,
         default=10,
     )
+    active = models.BooleanField(default=True)
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
 
@@ -151,6 +152,7 @@ class RetailerGroupUser(models.Model):
 
     class Meta:
         app_label = "parkpasses"
+        verbose_name = "Retailer Group User"
 
     def __str__(self):
         return f"{self.retailer_group} {self.emailuser}"
