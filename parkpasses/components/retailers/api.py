@@ -1,5 +1,7 @@
 import logging
 
+from django.conf import settings
+from django.db.models import Case, Count, Q, Value, When
 from django.http import Http404
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import mixins, viewsets
@@ -79,11 +81,29 @@ class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
     """
 
     model = RetailerGroup
-    queryset = RetailerGroup.objects.all()
+    queryset = RetailerGroup.objects.annotate(user_count=Count("retailergroupuser"))
     permission_classes = [IsInternal]
     serializer_class = RetailerGroupSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerGroupFilterBackend,)
+
+    @action(methods=["GET"], detail=False, url_path="retailer-groups-excluding-dbca")
+    def retailer_groups_excluding_dbca(self, request, *args, **kwargs):
+        active_retailer_groups = self.get_queryset().exclude(
+            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+        )
+        serializer = self.get_serializer(active_retailer_groups, many=True)
+        return Response(serializer.data)
+
+    @action(methods=["GET"], detail=False, url_path="active-retailer-groups")
+    def active_retailer_groups(self, request, *args, **kwargs):
+        active_retailer_groups = (
+            self.get_queryset()
+            .filter(active=True)
+            .exclude(name=settings.PARKPASSES_DEFAULT_SOLD_VIA)
+        )
+        serializer = self.get_serializer(active_retailer_groups, many=True)
+        return Response(serializer.data)
 
 
 class InternalRetailerGroupUserViewSet(viewsets.ModelViewSet):
@@ -103,7 +123,11 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
     lookup_field = "uuid"
 
     def get_queryset(self):
-        return RetailerGroupInvite.objects.filter(email=self.request.user.email)
+        return RetailerGroupInvite.objects.filter(
+            email=self.request.user.email
+        ).annotate(
+            user_count_for_retailer_group=Count("retailer_group__retailergroupuser")
+        )
 
     @action(methods=["PUT"], detail=True, url_path="accept-retailer-group-user-invite")
     def accept_retailer_group_user_invite(self, request, *args, **kwargs):
@@ -118,7 +142,14 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
 
 class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
     model = RetailerGroupInvite
-    queryset = RetailerGroupInvite.objects.all()
+    queryset = RetailerGroupInvite.objects.annotate(
+        user_count_for_retailer_group=Count("retailer_group__retailergroupuser")
+    ).order_by(
+        Case(
+            When(status=RetailerGroupInvite.USER_ACCEPTED, then=Value(0)),
+            When(~Q(status=RetailerGroupInvite.USER_ACCEPTED), then=Value(1)),
+        )
+    )
     permission_classes = [IsInternal]
     serializer_class = RetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
