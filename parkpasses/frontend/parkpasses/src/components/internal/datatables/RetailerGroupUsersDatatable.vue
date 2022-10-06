@@ -170,7 +170,6 @@ export default {
                 this.filterDatetimeCreatedTo === ''){
                 filterApplied = false
             }
-            console.log('filter applied = ' + filterApplied);
             return filterApplied
         },
         debug: function(){
