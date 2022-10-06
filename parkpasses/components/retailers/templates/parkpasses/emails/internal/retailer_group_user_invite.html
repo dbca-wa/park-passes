@@ -1,0 +1,23 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{% block greetings %}
+            <p>
+                To whom it may concern,
+            </p>
+{% endblock %}
+
+{%  block content %}
+            <p>You have been invited to join the following Park Passes retailer group:</p>
+
+            <p><strong>{{retailer_group_user_invite.retailer_group_name}}</strong></p>
+
+            <p>Which will allow you to log in and sell retailer park passes.</p>
+
+            <p>To accept the invitiation please go to the following url in your web browser:</p>
+
+            <p>{% url 'respond-to-invite' uuid=retailer_group_user_invite.uuid %}</p>
+
+            <p>When you click the link, you will be prompted to log in or create a new user account.</p>
+
+            <p>You <strong>MUST</strong> create your park passes account using the email address we sent this email to.</p>
+{%  endblock %}
