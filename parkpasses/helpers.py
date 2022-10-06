@@ -2,12 +2,10 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroup, SystemGroupPermission
 
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
-from parkpasses.settings import GROUP_NAME_PARK_PASSES_RETAILER
 
 logger = logging.getLogger(__name__)
 
@@ -60,23 +58,9 @@ def is_retailer(request):
     if not request.user.is_authenticated:
         return False
 
-    user = request.user
-    try:
-        system_group = SystemGroup.objects.get(name=GROUP_NAME_PARK_PASSES_RETAILER)
-        in_retailer_group = RetailerGroupUser.objects.filter(
-            emailuser_id=user.id
-        ).count()
-        if user.id not in system_group.get_system_group_member_ids():
-            return False
-        if in_retailer_group:
-            return True
-
-    except ObjectDoesNotExist:
-        logger.critical(
-            f"The group {GROUP_NAME_PARK_PASSES_RETAILER} named in setting\
-                 GROUP_NAME_PARK_PASSES_RETAILER does not exist."
-        )
-        return False
+    return RetailerGroupUser.objects.filter(
+        active=True, retailer_group__active=True, emailuser_id=request.user.id
+    ).exists()
 
 
 def is_retailer_admin(request):
