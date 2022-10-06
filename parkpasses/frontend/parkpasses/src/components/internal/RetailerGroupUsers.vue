@@ -11,12 +11,13 @@
       >
         <FormSection
           :formCollapse="false"
-          label="Retail Users"
-          Index="retailer-group-users"
+          label="Retail User Invites"
+          Index="retailer-group-user-invites"
         >
-          <RetailerGroupUsersDatatable
-            ref="retailerGroupUserDatatable"
+          <RetailerGroupUserInvitesDatatable
+            ref="retailerGroupUserInvitesDatatable"
             level="internal"
+            @approvalProcessed="approvalProcessed"
           />
         </FormSection>
       </div>
@@ -28,16 +29,16 @@
       >
         <FormSection
           :formCollapse="false"
-          label="Retail User Invites"
-          Index="retailer-group-user-invites"
+          label="Retail Users"
+          Index="retailer-group-users"
         >
-          <RetailerGroupUserInvitesDatatable
-            ref="retailerGroupUserInvitesDatatable"
+          <RetailerGroupUsersDatatable
+            ref="retailerGroupUserDatatable"
             level="internal"
-            @approvalProcessed="approvalProcessed"
           />
         </FormSection>
       </div>
+
     </div>
   </div>
 </template>
