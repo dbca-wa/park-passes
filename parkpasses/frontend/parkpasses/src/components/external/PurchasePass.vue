@@ -299,7 +299,7 @@
                         </div>
                         <div v-if="passOptions" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
-                                Duration
+                                <label for="passOption" class="col-form-label">Duration</label>
                             </div>
                             <div class="col-auto">
                                 <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option_id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
@@ -310,10 +310,10 @@
                         </div>
                         <div v-if="totalPrice" class="row g-1 align-top mb-2">
                             <div class="col-md-4">
-                                Price
+                                <label for="price" class="col-form-label">Price</label>
                             </div>
                             <div class="col-auto">
-                                <input type="text" readonly class="form-control-plaintext fw-bold" id="staticEmail" :value="'$'+totalPrice">
+                                <input type="text" readonly class="form-control-plaintext fw-bold" id="price" name="price" :value="'$'+totalPrice">
                             </div>
                         </div>
                         <div v-if="discountCodeDiscount" class="row g-1 align-top mb-2">
