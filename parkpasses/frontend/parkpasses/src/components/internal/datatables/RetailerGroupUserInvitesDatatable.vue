@@ -50,7 +50,7 @@
             </div>
         </div>
     </div>
-    <RetailerGroupUserInviteApprovalModal @approvalProcessed="approvalProcessed" :retailerGroupUserInvite="selectedRetailerGroupUserInvite" />
+    <ProcessRetailerGroupUserInviteModal @approvalProcessed="approvalProcessed" :retailerGroupUserInvite="selectedRetailerGroupUserInvite" />
 </template>
 
 <script>
@@ -58,7 +58,7 @@ import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { apiEndpoints, constants } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
-import RetailerGroupUserInviteApprovalModal from '@/components/internal/modals/RetailerGroupUserInviteApprovalModal.vue'
+import ProcessRetailerGroupUserInviteModal from '@/components/internal/modals/ProcessRetailerGroupUserInviteModal.vue'
 
 import Swal from 'sweetalert2'
 
@@ -133,7 +133,7 @@ export default {
     components:{
         datatable,
         CollapsibleFilters,
-        RetailerGroupUserInviteApprovalModal,
+        ProcessRetailerGroupUserInviteModal,
     },
     watch: {
         filterRetailerGroups: function() {
@@ -172,7 +172,6 @@ export default {
                 this.filterDatetimeCreatedTo === ''){
                 filterApplied = false
             }
-            console.log('filter applied = ' + filterApplied);
             return filterApplied
         },
         debug: function(){
@@ -253,14 +252,13 @@ export default {
                 searchable: false,
                 visible: true,
                 'render': function(row, type, full){
-                    console.log(full.status)
                     let links = '';
                     if('N'==full.status){
                         links +=  `<a href="javascript:void(0)" data-id="${full.id}" data-action="reattempt-to-send-invite">Reattempt to Send Invite</a><br/>`;
                     } else if('S'==full.status) {
                         links +=  `<a href="javascript:void(0)" data-id="${full.id}" data-action="resend-invite">Resend Invite</a><br/>`;
                     } else if('UA'==full.status) {
-                        links +=  `<a href="javascript:void(0)" data-id="${full.id}" data-retailer-group-name="${full.retailer_group_name}" data-email="${full.email}" data-action="approve-invite">Approve Invite</a><br/>`;
+                        links +=  `<a href="javascript:void(0)" data-id="${full.id}" data-retailer-group-name="${full.retailer_group_name}" data-email="${full.email}" data-user-count-for-retailer-group="${full.user_count_for_retailer_group}" data-action="process-invite">Process Invite</a><br/>`;
                     }
                     return links;
                 }
@@ -305,10 +303,13 @@ export default {
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML
                 },
-                rowCallback: function (row, report){
+                rowCallback: function (row, data){
                     let row_jq = $(row)
-                    row_jq.attr('id', 'reportId' + report.id)
+                    row_jq.attr('id', 'retailerGroupUserInviteId' + data[0])
                     row_jq.children().first().addClass(vm.td_expand_class_name)
+                    if('UA'==data.status){
+                        vm.blink(row_jq.find('a'), 3, 400);
+                    }
                 },
                 responsive: true,
                 serverSide: true,
@@ -340,6 +341,11 @@ export default {
         }
     },
     methods: {
+        blink: function (selector, times, speed) {
+            for(let i=0;i<times;i++) {
+                $(selector).fadeOut(speed).fadeIn(speed);
+            }
+        },
         adjustTableWidth: function(){
             this.$refs.retailerGroupUserInvitesDatatable.vmDataTable.columns.adjust()
             this.$refs.retailerGroupUserInvitesDatatable.vmDataTable.responsive.recalc()
@@ -366,57 +372,26 @@ export default {
             });
 
         },
-        updateProcessingStatus: function(id, reportNumber, processingStatus, action) {
-            let vm = this;
-            let report = {id:id, processing_status:processingStatus}
-            console.log('report = ' + report)
-            const requestOptions = {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(report)
-            };
-            fetch(apiEndpoints.reportUpdateInternal(id), requestOptions)
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    console.log(error);
-                    return Promise.reject(error);
-                }
-                vm.$refs.retailerGroupUserInvitesDatatable.vmDataTable.draw();
-                Swal.fire({
-                    title: 'Success',
-                    text: `Invoice ${reportNumber} marked as ${action}.`,
-                    icon: 'success',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            })
-            .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
-                console.error("There was an error!", error);
-            });
-        },
         approvalProcessed: function () {
             this.$emit('approvalProcessed')
             this.$refs.retailerGroupUserInvitesDatatable.vmDataTable.draw();
         },
-        approveInvite: function (retailerGroupUserInvite) {
+        processInvite: function (retailerGroupUserInvite) {
             this.selectedRetailerGroupUserInvite = retailerGroupUserInvite;
-            let retailerUserGroupInviteApprovalModalElement = document.getElementById('retailerUserGroupInviteApprovalModal')
-            let retailerUserGroupInviteApprovalModal = new bootstrap.Modal(retailerUserGroupInviteApprovalModalElement, {});
-            retailerUserGroupInviteApprovalModal.show();
+            let processRetailerUserGroupInviteModalElement = document.getElementById('processRetailerUserGroupInviteModal')
+            let processRetailerUserGroupInviteModal = new bootstrap.Modal(processRetailerUserGroupInviteModalElement, {});
+            processRetailerUserGroupInviteModal.show();
         },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.retailerGroupUserInvitesDatatable.vmDataTable.on('click', 'a[data-action="approve-invite"]', function(e) {
+            vm.$refs.retailerGroupUserInvitesDatatable.vmDataTable.on('click', 'a[data-action="process-invite"]', function(e) {
                 e.preventDefault();
                 let id = $(this).attr('data-id');
                 let retailerGroupName = $(this).attr('data-retailer-group-name');
                 let email = $(this).attr('data-email');
-                vm.approveInvite({'id':id, 'retailer_group_name':retailerGroupName, 'email':email});
+                let userCountForRetailerGroup = $(this).attr('data-user-count-for-retailer-group');
+                vm.processInvite({'id':id, 'retailer_group_name':retailerGroupName, 'email':email, 'user_count_for_retailer_group':userCountForRetailerGroup});
             });
-
             // Listener for the row
             vm.$refs.retailerGroupUserInvitesDatatable.vmDataTable.on('click', 'td', function(e) {
                 let td_link = $(this)
@@ -459,6 +434,9 @@ export default {
     },
     created: function(){
         this.fetchFilterLists();
+        $(document).ready(function() {
+
+        });
     },
     mounted: function(){
         let vm = this;
