@@ -1,13 +1,13 @@
 {%  extends 'parkpasses/emails/base_email.txt' %}
 
+{% block greetings %}
+            Dear {{purchaser.first_name}} {{purchaser.last_name}},
+{% endblock %}
+
 {%  block content %}
+            Your voucher for a Western Australian park pass has been emailed to {{voucher.recipient_name}}.
 
-    {{purchaser.first_name}} {{purchaser.last_name}},
-
-    Your voucher for a Western Australian park pass has been emailed to {{voucher.recipient_name}}.
-
-    Voucher Value: {{voucher.amount}}
-    Voucher Code: {{voucher.code}}
-    Expiry Date: {{voucher.expiry}}
-
+            Voucher Value: {{voucher.amount}}
+            Voucher Code: {{voucher.code}}
+            Expiry Date: {{voucher.expiry}}
 {%  endblock %}

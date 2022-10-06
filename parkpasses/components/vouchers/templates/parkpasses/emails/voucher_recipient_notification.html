@@ -1,18 +1,24 @@
 {%  extends 'parkpasses/emails/base_email.html' %}
 
+{% block greetings %}
+            <p>
+                Dear {{voucher.recipient_name}},
+            </p>
+{% endblock %}
+
 {%  block content %}
+            <p>You have received a voucher for a Western Australian park pass from:</p>
 
-    {{voucher.first_name}} {{voucher.last_name}},
+            <p><strong>{{purchaser.first_name}} {{purchaser.last_name}}</strong></p>
 
-    You have received a voucher for a Western Australian park pass from  {{purchaser.first_name}} {{purchaser.last_name}}.
+            <p>"{{voucher.personal_message}}"</p>
 
-    {{voucher.personal_message}}
+            <p>You can buy a Western Australian park pass with your voucher at <a href="{{site_url}}">{{site_url}}</a></p>
 
-    You can buy a Western Australian park pass with your voucher at {{site_url}}
-
-    Voucher Value: {{voucher.amount}}
-    Voucher Code: {{voucher.code}}
-    Voucher Pin: {{voucher.pin}}
-    Expiry Date: {{voucher.expiry}}
-
+            <ul>
+                <li>Voucher Value: {{voucher.amount}}</li>
+                <li>Voucher Code: {{voucher.code}}</li>
+                <li>Voucher Pin: {{voucher.pin}}</li>
+                <li>Expiry Date: {{voucher.expiry}}</li>
+            </ul>
 {%  endblock %}
