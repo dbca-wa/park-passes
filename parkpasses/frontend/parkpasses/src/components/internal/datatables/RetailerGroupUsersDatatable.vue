@@ -1,10 +1,6 @@
 <template>
     <div>
-        <div class="row mb-3">
-            <div class="col">
-                <router-link class="btn licensing-btn-primary btn-lg float-end" tabindex="-1" role="button" to="invite-a-retail-user">Invite a Retail User</router-link>
-            </div>
-        </div>
+
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
             <div class="row mb-3">
                 <div class="col-md-3">
@@ -367,81 +363,8 @@ export default {
             });
 
         },
-        updateProcessingStatus: function(id, reportNumber, processingStatus, action) {
-            let vm = this;
-            let report = {id:id, processing_status:processingStatus}
-            console.log('report = ' + report)
-            const requestOptions = {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(report)
-            };
-            fetch(apiEndpoints.reportUpdateInternal(id), requestOptions)
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    console.log(error);
-                    return Promise.reject(error);
-                }
-                vm.$refs.retailerGroupUsersDatatable.vmDataTable.draw();
-                Swal.fire({
-                    title: 'Success',
-                    text: `Invoice ${reportNumber} marked as ${action}.`,
-                    icon: 'success',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            })
-            .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
-                console.error("There was an error!", error);
-            });
-        },
-        markPaid: function (id, reportNumber) {
-            let vm = this;
-            Swal.fire({
-            title: `Mark Paid?`,
-            text: `Are you sure you want to mark invoice ${reportNumber} as paid?`,
-            confirmButtonText: 'Confirm',
-            confirmButtonColor: '#337ab7',
-            showCancelButton: true,
-            reverseButtons: true,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    vm.updateProcessingStatus(id, reportNumber, 'P', 'paid');
-                }
-            })
-        },
-        markUnPaid: function (id, reportNumber) {
-            let vm = this;
-            Swal.fire({
-            title: `Mark Unpaid?`,
-            text: `Are you sure you want to mark invoice ${reportNumber} as unpaid?`,
-            confirmButtonText: 'Confirm',
-            confirmButtonColor: '#337ab7',
-            showCancelButton: true,
-            reverseButtons: true,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    vm.updateProcessingStatus(id, reportNumber, 'U', 'unpaid');
-                }
-            })
-        },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.retailerGroupUsersDatatable.vmDataTable.on('click', 'a[data-action="mark-paid"]', function(e) {
-                e.preventDefault();
-                let id = $(this).attr('data-id');
-                let reportNumber = $(this).attr('data-number');
-                vm.markPaid(id, reportNumber)
-            });
-            vm.$refs.retailerGroupUsersDatatable.vmDataTable.on('click', 'a[data-action="mark-unpaid"]', function(e) {
-                e.preventDefault();
-                let id = $(this).attr('data-id');
-                let reportNumber = $(this).attr('data-number');
-                vm.markUnPaid(id, reportNumber)
-            });
 
             // Listener for the row
             vm.$refs.retailerGroupUsersDatatable.vmDataTable.on('click', 'td', function(e) {

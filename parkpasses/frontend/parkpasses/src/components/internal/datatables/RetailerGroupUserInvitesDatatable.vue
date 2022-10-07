@@ -1,5 +1,10 @@
 <template>
     <div>
+        <div class="row mb-3">
+            <div class="col">
+                <router-link class="btn licensing-btn-primary btn-lg float-end" tabindex="-1" role="button" to="invite-a-retail-user">Invite a Retail User</router-link>
+            </div>
+        </div>
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
             <div class="row mb-3">
                 <div class="col-md-3">
@@ -254,7 +259,7 @@ export default {
                 'render': function(row, type, full){
                     let links = '';
                     if('N'==full.status){
-                        links +=  `<a href="javascript:void(0)" data-id="${full.id}" data-action="reattempt-to-send-invite">Reattempt to Send Invite</a><br/>`;
+                        links +=  `<a href="javascript:void(0)" data-id="${full.id}" data-action="resend-invite">Reattempt to Send Invite</a><br/>`;
                     } else if('S'==full.status) {
                         links +=  `<a href="javascript:void(0)" data-id="${full.id}" data-action="resend-invite">Resend Invite</a><br/>`;
                     } else if('UA'==full.status) {
@@ -356,7 +361,6 @@ export default {
         fetchFilterLists: function(){
             let vm = this;
 
-            // Pass Types
             fetch(apiEndpoints.retailerGroupListInternal)
             .then(async response => {
                 const data = await response.json();
@@ -365,6 +369,7 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.retailerGroups = data.results
+
             })
             .catch(error => {
                 //this.errorMessage = error;
@@ -375,6 +380,31 @@ export default {
         approvalProcessed: function () {
             this.$emit('approvalProcessed')
             this.$refs.retailerGroupUserInvitesDatatable.vmDataTable.draw();
+        },
+        resendInvite: function (id) {
+            const requestOptions = {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({'id':id})
+            };
+            fetch(apiEndpoints.resendRetailerGroupInvite(id), requestOptions)
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    return Promise.reject(error);
+                }
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Retail user invite resent successfully.',
+                    icon: 'success',
+                    showConfirmButton: true,
+                })
+                this.$refs.retailerGroupUserInvitesDatatable.vmDataTable.draw();
+            })
+            .catch(error => {
+                console.error("There was an error!", error);
+            });
         },
         processInvite: function (retailerGroupUserInvite) {
             this.selectedRetailerGroupUserInvite = retailerGroupUserInvite;
@@ -392,6 +422,12 @@ export default {
                 let userCountForRetailerGroup = $(this).attr('data-user-count-for-retailer-group');
                 vm.processInvite({'id':id, 'retailer_group_name':retailerGroupName, 'email':email, 'user_count_for_retailer_group':userCountForRetailerGroup});
             });
+            vm.$refs.retailerGroupUserInvitesDatatable.vmDataTable.on('click', 'a[data-action="resend-invite"]', function(e) {
+                e.preventDefault();
+                let id = $(this).attr('data-id');
+                vm.resendInvite(id);
+            });
+
             // Listener for the row
             vm.$refs.retailerGroupUserInvitesDatatable.vmDataTable.on('click', 'td', function(e) {
                 let td_link = $(this)
