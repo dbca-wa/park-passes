@@ -154,6 +154,7 @@ class RetailerGroupUser(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Retailer Group User"
+        unique_together = ("retailer_group", "emailuser")
 
     def __str__(self):
         return f"{self.retailer_group} {self.emailuser}"
@@ -170,7 +171,9 @@ class RetailerGroupInvite(models.Model):
     retailer_group = models.ForeignKey(
         RetailerGroup, on_delete=models.PROTECT, null=False, blank=False
     )
-    uuid = models.UUIDField(null=False, blank=False, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(
+        unique=True, null=False, blank=False, default=uuid.uuid4, editable=False
+    )
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
 
@@ -213,22 +216,18 @@ class RetailerGroupInvite(models.Model):
                 if message:
                     self.status = RetailerGroupInvite.SENT
                     super().save(update_fields=["status"])
-
         if RetailerGroupInvite.USER_ACCEPTED == self.status:
-            RetailerEmails.send_retailer_group_user_accepted_notification_email(self)
+            message = (
+                RetailerEmails.send_retailer_group_user_accepted_notification_email(
+                    self
+                )
+            )
         if RetailerGroupInvite.DENIED == self.status:
             RetailerEmails.send_retailer_group_user_denied_notification_email(self)
         if RetailerGroupInvite.APPROVED == self.status:
-            RetailerEmails.send_retailer_group_user_approved_notification_email(self)
-
-    def send_invite_notification(self):
-        logger.debug("send_invite_notification")
-
-    def send_invite_accepted_notification(self):
-        logger.debug("send_invite_accepted_notification")
-
-    def send_invite_denied_notification(self):
-        logger.debug("send_invite_denied_notification")
-
-    def send_invite_approved_notification(self):
-        logger.debug("send_invite_approved_notification")
+            is_admin = RetailerGroupUser.objects.values_list("is_admin").get(
+                retailer_group=self.retailer_group, emailuser=self.user
+            )
+            RetailerEmails.send_retailer_group_user_approved_notification_email(
+                self, is_admin
+            )
