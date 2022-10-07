@@ -55,7 +55,7 @@ from parkpasses.components.passes.serializers import (
 )
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
-from parkpasses.helpers import belongs_to, is_customer, is_internal, is_retailer
+from parkpasses.helpers import is_customer, is_internal, is_retailer
 from parkpasses.permissions import IsInternal, IsRetailer
 
 # from rest_framework_datatables.filters import DatatablesFilterBackend
@@ -105,7 +105,7 @@ class PassTypeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if is_internal(self.request):
             return PassType.objects.all().order_by("display_order")
-        elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
+        elif is_retailer(self.request):
             return PassType.objects.filter(display_retailer=True).order_by(
                 "display_order"
             )
@@ -117,7 +117,7 @@ class PassTypeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if is_internal(self.request):
             return InternalPassTypeSerializer
-        elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
+        elif is_retailer(self.request):
             return PassTypeSerializer
         else:
             return PassTypeSerializer
@@ -126,11 +126,11 @@ class PassTypeViewSet(viewsets.ModelViewSet):
         if is_internal(request):
             return True
         if is_customer(request):
-            if view.action in ["list", "retrieve", "create"]:
+            if view.action in ["list", "retrieve"]:
                 return True
             return False
-        if belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
-            if view.action in ["list", "retrieve", "create"]:
+        if is_retailer(self.request):
+            if view.action in ["list", "retrieve"]:
                 return True
             return False
         return False
@@ -254,7 +254,7 @@ class PassTypePricingWindowOptionViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if is_internal(self.request):
             return InternalOptionSerializer
-        elif belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
+        elif is_retailer(self.request):
             return OptionSerializer
         else:
             return OptionSerializer
@@ -262,7 +262,7 @@ class PassTypePricingWindowOptionViewSet(viewsets.ModelViewSet):
     def has_permission(self, request, view):
         if is_internal(request):
             return True
-        if belongs_to(self.request, settings.GROUP_NAME_PARK_PASSES_RETAILER):
+        if is_retailer(self.request):
             if view.action in [
                 "list",
                 "retrieve",
