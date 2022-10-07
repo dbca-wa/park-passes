@@ -6,6 +6,7 @@ from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from org_model_logs.models import CommunicationsLogEntry, EntryType
 
 from parkpasses.components.emails.emails import TemplateEmailBase
+from parkpasses.ledger_api_utils import retrieve_email_user
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +88,7 @@ class RetailerEmails:
             CommunicationsLogEntry.objects.log_communication(**communication_log_kwargs)
         return message
 
+    @classmethod
     def send_retailer_group_user_accepted_notification_email(
         self, retailer_group_user_invite
     ):
@@ -118,16 +120,20 @@ class RetailerEmails:
             CommunicationsLogEntry.objects.log_communication(**communication_log_kwargs)
         return message
 
+    @classmethod
     def send_retailer_group_user_approved_notification_email(
-        self, retailer_group_user_invite
+        self, retailer_group_user_invite, is_admin
     ):
         email = RetailerGroupUserApprovedNotificationEmail(
             settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group.name
         )
+        emailuser = retrieve_email_user(retailer_group_user_invite.user)
         context = {
+            "emailuser": emailuser,
             "SITE_URL": settings.SITE_URL,
             "SYSTEM_NAME": settings.SYSTEM_NAME,
             "retailer_group_user_invite": retailer_group_user_invite,
+            "is_admin": is_admin,
         }
         message = email.send(retailer_group_user_invite.email, context=context)
         if message:
@@ -146,15 +152,18 @@ class RetailerEmails:
                 "staff": staff.id,
             }
             CommunicationsLogEntry.objects.log_communication(**communication_log_kwargs)
-            return message
+        return message
 
+    @classmethod
     def send_retailer_group_user_denied_notification_email(
         self, retailer_group_user_invite
     ):
         email = RetailerGroupUserDeniedNotificationEmail(
             settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group.name
         )
+        emailuser = retrieve_email_user(retailer_group_user_invite.user)
         context = {
+            "emailuser": emailuser,
             "SITE_URL": settings.SITE_URL,
             "SYSTEM_NAME": settings.SYSTEM_NAME,
             "retailer_group_user_invite": retailer_group_user_invite,
