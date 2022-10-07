@@ -154,6 +154,9 @@ module.exports = {
     retailerGroupInviteRetrieveExternal: function (uuid) {
         return                          `/api/retailers/external/retailer-group-invites/${uuid}/`;
     },
+    resendRetailerGroupInvite: function (uuid) {
+        return                          `/api/retailers/internal/retailer-group-invites/${uuid}/resend-retailer-group-user-invite/`;
+    },
     acceptRetailerGroupInvite: function (uuid) {
         return                          `/api/retailers/external/retailer-group-invites/${uuid}/accept-retailer-group-user-invite/`;
     },
