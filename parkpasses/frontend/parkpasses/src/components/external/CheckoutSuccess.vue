@@ -12,7 +12,7 @@
                     <h5 class="card-header">What Next?</h5>
                     <div class="card-body">
                         <p class="card-text"><a href="/retailer/sell-a-pass">Sell Another Pass</a></p>
-                        <p class="card-text"><a href="/">View Invoices &amp Reports</a></p>
+                        <p class="card-text"><a href="/retailer/reports">View Invoices &amp Reports</a></p>
                         <p class="card-text"><a href="/">Return home</a></p>
                     </div>
                 </div>
