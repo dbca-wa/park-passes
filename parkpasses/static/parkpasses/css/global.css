@@ -1,4 +1,9 @@
 
+/* Bring app content inline with header logo and navbar */
+div#app .container{
+    padding:0 36px 0 36px;
+}
+
 .parks_bg_banner .col-lg-9 {
     display: flex;
     align-items: center;
