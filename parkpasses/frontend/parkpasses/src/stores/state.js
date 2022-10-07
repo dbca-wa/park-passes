@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import { useLocalStorage } from '@vueuse/core'
+import { useSessionStorage } from '@vueuse/core'
 import { apiEndpoints, constants } from '@/utils/hooks'
 
 export const useStore = defineStore('main', {
     state: () => ({
-        userData: useLocalStorage("userData", {
+        userData: useSessionStorage("userData", {
             user: {
                 id: '',
                 firstName: '',
