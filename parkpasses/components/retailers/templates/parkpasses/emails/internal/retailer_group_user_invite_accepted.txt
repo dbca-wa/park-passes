@@ -1,17 +1,17 @@
 {%  extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
-            Dear {{ ADMIN_GROUP }},
+            {{ ADMIN_GROUP }},
 {% endblock %}
 
 {%  block content %}
-            The retail user with the following email addrss:
+            The retail user with the following email address:
 
             {{retailer_group_user_invite.email}}
 
             Which you invited to join the following Retailer Group:
 
-            {{retailer_group_user_invite.retailer_group_name}}
+            {{retailer_group_user_invite.retailer_group.name}}
 
             On the {{retailer_group_user_invite.datetime_created:date:"jS 'of' F Y"}} at {{retailer_group_user_invite.datetime_created:date:'P'}}
 

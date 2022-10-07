@@ -1,0 +1,13 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{% block greetings %}
+            <p>Dear {{ emailuser.first_name|add:" "|add:emailuser.last_name }},</p>
+{% endblock %}
+
+{%  block content %}
+            <p>Your invite to the {{ SYSTEM_NAME }} Retailer Group:</p>
+
+            <p>{{retailer_group_user_invite.retailer_group.name}}</p>
+
+            <p>Has been denied.</p>
+{%  endblock %}
