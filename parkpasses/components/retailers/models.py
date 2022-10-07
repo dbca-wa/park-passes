@@ -12,9 +12,10 @@ from django.core.validators import (
     MinLengthValidator,
     MinValueValidator,
 )
-from django.db import models
+from django.db import models, transaction
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.exceptions import (
     MultipleDBCARetailerGroupsExist,
     NoDBCARetailerGroupExists,
@@ -158,6 +159,11 @@ class RetailerGroupUser(models.Model):
         return f"{self.retailer_group} {self.emailuser}"
 
 
+class RetailerGroupInviteManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("retailer_group")
+
+
 class RetailerGroupInvite(models.Model):
     user = models.IntegerField(null=True, blank=True)  # EmailUserRO
     email = models.EmailField(null=False, blank=False)
@@ -196,14 +202,24 @@ class RetailerGroupInvite(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        logger.debug("self.status -> " + str(self.status))
         if RetailerGroupInvite.NEW == self.status:
-            self.send_invite_notification()
+            with transaction.atomic():
+                message = (
+                    RetailerEmails.send_retailer_group_user_invite_notification_email(
+                        self
+                    )
+                )
+                if message:
+                    self.status = RetailerGroupInvite.SENT
+                    super().save(update_fields=["status"])
+
         if RetailerGroupInvite.USER_ACCEPTED == self.status:
-            self.send_invite_accepted_notification()
+            RetailerEmails.send_retailer_group_user_accepted_notification_email(self)
         if RetailerGroupInvite.DENIED == self.status:
-            self.send_invite_denied_notification()
+            RetailerEmails.send_retailer_group_user_denied_notification_email(self)
         if RetailerGroupInvite.APPROVED == self.status:
-            self.send_invite_approved_notification()
+            RetailerEmails.send_retailer_group_user_approved_notification_email(self)
 
     def send_invite_notification(self):
         logger.debug("send_invite_notification")
