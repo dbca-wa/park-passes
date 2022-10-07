@@ -62,9 +62,10 @@ class RetailerEmails:
         self, retailer_group_user_invite
     ):
         email = RetailerGroupUserInviteNotificationEmail(
-            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group__name
+            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group.name
         )
         context = {
+            "SITE_URL": settings.SITE_URL,
             "SYSTEM_NAME": settings.SYSTEM_NAME,
             "retailer_group_user_invite": retailer_group_user_invite,
         }
@@ -91,9 +92,10 @@ class RetailerEmails:
     ):
         email = RetailerGroupUserAcceptedNotificationEmail(
             retailer_group_user_invite.email,
-            retailer_group_user_invite.retailer_group__name,
+            retailer_group_user_invite.retailer_group.name,
         )
         context = {
+            "SITE_URL": settings.SITE_URL,
             "ADMIN_GROUP": settings.ADMIN_GROUP,
             "retailer_group_user_invite": retailer_group_user_invite,
         }
@@ -120,9 +122,10 @@ class RetailerEmails:
         self, retailer_group_user_invite
     ):
         email = RetailerGroupUserApprovedNotificationEmail(
-            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group__name
+            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group.name
         )
         context = {
+            "SITE_URL": settings.SITE_URL,
             "SYSTEM_NAME": settings.SYSTEM_NAME,
             "retailer_group_user_invite": retailer_group_user_invite,
         }
@@ -149,9 +152,10 @@ class RetailerEmails:
         self, retailer_group_user_invite
     ):
         email = RetailerGroupUserDeniedNotificationEmail(
-            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group__name
+            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group.name
         )
         context = {
+            "SITE_URL": settings.SITE_URL,
             "SYSTEM_NAME": settings.SYSTEM_NAME,
             "retailer_group_user_invite": retailer_group_user_invite,
         }
