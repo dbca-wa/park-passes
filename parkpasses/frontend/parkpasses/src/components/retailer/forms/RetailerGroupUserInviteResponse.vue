@@ -28,7 +28,7 @@
                                     </div>
                             </template>
                             <template v-else>
-                            <form @submit.prevent="validateForm" class="needs-validation" novalidate>
+                            <form @submit.prevent="submitForm" class="needs-validation" novalidate>
                             <div class="row mb-3 mt-3 align-items-center">
                                 <div class="col">
                                     Your account with email:
@@ -75,7 +75,7 @@
                                 </div>
                             </div>
                             <div class="container mt-3 d-flex justify-content-end">
-                                <button @click="validateForm()" class="btn licensing-btn-primary me-2">Accept Invite</button>
+                                <button type="submit" class="btn licensing-btn-primary me-2">Accept Invite</button>
                             </div>
                             </form>
                             </template>
@@ -174,20 +174,6 @@ export default {
                 });
             return false;
         },
-        validateForm: function () {
-            let vm = this;
-            var forms = document.querySelectorAll('.needs-validation');
-            Array.prototype.slice.call(forms)
-                .forEach(function (form) {
-                    if (form.checkValidity()) {
-                        vm.submitForm();
-                    } else {
-                        form.classList.add('was-validated');
-                        $(".invalid-feedback:visible:first").siblings('input').focus();
-                    }
-                });
-            return false;
-        }
     },
     created: function() {
         const route = useRoute();
