@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.db.models import Case, Count, Q, Value, When
+from django.db.models import Case, Count, Value, When
 from django.http import Http404
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import mixins, viewsets
@@ -13,6 +13,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.models import (
     RetailerGroup,
     RetailerGroupInvite,
@@ -131,28 +132,49 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
 
     @action(methods=["PUT"], detail=True, url_path="accept-retailer-group-user-invite")
     def accept_retailer_group_user_invite(self, request, *args, **kwargs):
-        retailer_group_invite = self.get_object()
-        if retailer_group_invite.user == request.user.id:
-            retailer_group_invite.status = RetailerGroupInvite.USER_ACCEPTED
-            retailer_group_invite.save()
-            serializer = self.get_serializer(retailer_group_invite)
+        retailer_group_user_invite = self.get_object()
+        if retailer_group_user_invite.user == request.user.id:
+            retailer_group_user_invite.status = RetailerGroupInvite.USER_ACCEPTED
+            retailer_group_user_invite.save()
+            serializer = self.get_serializer(retailer_group_user_invite)
             return Response(serializer.data)
         raise Http404
 
 
 class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
     model = RetailerGroupInvite
-    queryset = RetailerGroupInvite.objects.annotate(
-        user_count_for_retailer_group=Count("retailer_group__retailergroupuser")
-    ).order_by(
-        Case(
-            When(status=RetailerGroupInvite.USER_ACCEPTED, then=Value(0)),
-            When(~Q(status=RetailerGroupInvite.USER_ACCEPTED), then=Value(1)),
+    queryset = (
+        RetailerGroupInvite.objects.annotate(
+            user_count_for_retailer_group=Count("retailer_group__retailergroupuser")
+        )
+        .exclude(status__in=[RetailerGroupInvite.APPROVED, RetailerGroupInvite.DENIED])
+        .order_by(
+            Case(
+                When(status=RetailerGroupInvite.USER_ACCEPTED, then=Value(0)),
+                When(status=RetailerGroupInvite.NEW, then=Value(1)),
+                When(status=RetailerGroupInvite.SENT, then=Value(2)),
+                When(status=RetailerGroupInvite.USER_LOGGED_IN, then=Value(3)),
+            )
         )
     )
     permission_classes = [IsInternal]
     serializer_class = RetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
+
+    @action(methods=["PUT"], detail=True, url_path="resend-retailer-group-user-invite")
+    def resend_retailer_group_user_invite(self, request, *args, **kwargs):
+        retailer_group_invite = self.get_object()
+        if RetailerGroupInvite.NEW == retailer_group_invite.status:
+            retailer_group_invite.save()
+            serializer = self.get_serializer(retailer_group_invite)
+            return Response(serializer.data)
+        elif RetailerGroupInvite.SENT == retailer_group_invite.status:
+            RetailerEmails.send_retailer_group_user_invite_notification_email(
+                retailer_group_invite
+            )
+            serializer = self.get_serializer(retailer_group_invite)
+            return Response(serializer.data)
+        raise Http404
 
     @action(methods=["PUT"], detail=True, url_path="process-retailer-group-user-invite")
     def process_retailer_group_user_invite(self, request, *args, **kwargs):
