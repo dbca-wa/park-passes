@@ -152,7 +152,10 @@ DEP_NAME = env("DEP_NAME", "Department of Biodiversity, Conservation and Attract
 DEP_NAME_SHORT = env("DEP_NAME_SHORT", "DBCA")
 BRANCH_NAME = env("BRANCH_NAME", "Park Passes Branch")
 DEP_ADDRESS = env("DEP_ADDRESS", "17 Dick Perry Avenue, Kensington WA 6151")
-SITE_URL = env("SITE_URL", "https://" + SITE_PREFIX + "." + SITE_DOMAIN)
+if DEBUG is True:
+    SITE_URL = env("SITE_URL", "http://" + SITE_DOMAIN)
+else:
+    SITE_URL = env("SITE_URL", "https://" + SITE_PREFIX + "." + SITE_DOMAIN)
 PUBLIC_URL = env("PUBLIC_URL", SITE_URL)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 MEDIA_APP_DIR = env("MEDIA_APP_DIR", "cols")
