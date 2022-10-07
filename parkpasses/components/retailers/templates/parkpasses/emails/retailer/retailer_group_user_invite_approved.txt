@@ -15,11 +15,11 @@
 
             {{SITE_URL}}{% url 'retailer-home' %}
 
-            {% if retailer_group_user_invite.is_admin %}
+            {% if is_admin %}
             Admin Account
 
             Your account has been assigned administrator priveleges so you can invite other users to your
             retailer group by clicking the 'Invite Users' link once you log in or by clicking here:
-            {% url 'retailer-invite-users' %}
+            {{SITE_URL}}{% url 'retailer-invite-users' %}
             {% endif %}
 {%  endblock %}
