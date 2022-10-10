@@ -20,6 +20,6 @@
 
             Your account has been assigned administrator priveleges so you can invite other users to your
             retailer group by clicking the 'Invite Users' link once you log in or by clicking here:
-            {{SITE_URL}}{% url 'retailer-invite-users' %}
+            {{SITE_URL}}{% url 'retailer-users' %}
             {% endif %}
 {%  endblock %}
