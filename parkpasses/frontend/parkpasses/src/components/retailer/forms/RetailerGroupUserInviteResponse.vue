@@ -66,16 +66,21 @@
                                     <div class="alert alert-primary d-flex align-items-center" role="alert">
                                         <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
                                         <div>
-                                            <div>
+                                            <div v-if="'I'==retailerGroupInvite.initiated_by">
                                                 When you click 'Accept Invite' an email will be sent to the Park Passes system staff<br>
                                                 They will need to approve you as a member before you can log in and take sales.<br>
+                                            </div>
+                                            <div v-if="'R'==retailerGroupInvite.initiated_by">
+                                                When you click 'Accept Invite' you will be redirected to the retailer
+                                                dashboard where you can begin to take retail sales.
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="container mt-3 d-flex justify-content-end">
-                                <button type="submit" class="btn licensing-btn-primary me-2">Accept Invite</button>
+                                <BootstrapButtonSpinner v-if="loading" class="btn licensing-btn-primary me-2" />
+                                <button v-else type="submit" class="btn licensing-btn-primary me-2">Accept Invite</button>
                             </div>
                             </form>
                             </template>
@@ -97,6 +102,7 @@
 import { useRoute } from 'vue-router'
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
+import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
 import Swal from 'sweetalert2'
 import SectionToggle from '@/components/forms/SectionToggle.vue'
 
@@ -118,6 +124,7 @@ export default {
     components: {
         SectionToggle,
         BootstrapSpinner,
+        BootstrapButtonSpinner,
     },
     methods: {
         returnToRetailerGroupUserDash: function() {
@@ -136,6 +143,9 @@ export default {
                 }
                 vm.retailerGroupInvite = data
                 vm.loading = false;
+                if('A'==vm.retailerGroupInvite.status){
+                    window.location.href = '/retailer/'
+                }
             })
             .catch(error => {
                 this.systemErrorMessage = constants.ERRORS.NETWORK;
@@ -161,12 +171,17 @@ export default {
                         return Promise.reject(error);
                     }
                     vm.retailerGroupInvite = data
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'Retail user invite acceptance sent successfully.',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    })
+
+                    if('A'==vm.retailerGroupInvite.status){
+                        window.location.href = '/retailer/'
+                    } else {
+                        Swal.fire({
+                            title: 'Success',
+                            text: 'Retail user invite acceptance sent successfully.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                    }
                 })
                 .catch(error => {
                     this.systemErrorMessage = constants.ERRORS.NETWORK;
@@ -179,6 +194,11 @@ export default {
         const route = useRoute();
         this.uuid = route.params.uuid;
         this.fetchRetailerGroupInvite(this.uuid);
+    },
+    mounted: function () {
+        if('A'==vm.retailerGroupInvite.status){
+            this.$router.push({name: 'retailer'});
+        }
     }
 }
 </script>

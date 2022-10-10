@@ -44,6 +44,7 @@
                                 The first user added to a group must be an admin.
                             </div>
                         </div>
+                        {{ approval }}
                     </div>
                     <div class="modal-footer">
                         <template v-if="loading">
@@ -82,7 +83,7 @@ export default {
     data() {
         return {
             approval: {
-                is_admin: this.getAdminDefault,
+                is_admin: false,
             },
             loading: false,
         }
@@ -95,7 +96,9 @@ export default {
                     return true;
                 }
             }
+            console.log('returning false');
             return false;
+
         },
     },
     components: {
@@ -142,6 +145,8 @@ export default {
     mounted: function(){
         if (0==this.retailerGroupUserInvite) {
             this.approval.is_admin = true;
+        } else {
+            this.approval.is_admin = false;
         }
     },
 }

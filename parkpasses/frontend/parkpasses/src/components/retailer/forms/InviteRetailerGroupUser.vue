@@ -29,15 +29,16 @@
 
                     </div>
                     <div class="col-md-8">
-                        <SectionToggle label="Invite a Retail User">
+                        <SectionToggle label="Invite a User">
                             <form @submit.prevent="validateForm" class="needs-validation" novalidate>
                             <div class="row mb-1">
                                 <label class="col-sm-3 col-form-label">Retailer</label>
                                 <div class="col-sm-6">
-                                    <select class="form-select" id="retailerGroup" name="retailerGroup" v-model="selectedRetailerGroup" required>
+                                    <select v-if="retailerGroups && retailerGroups.length>1" class="form-select" id="retailerGroup" name="retailerGroup" v-model="selectedRetailerGroup" required>
                                         <option value="" selected disabled>Select a Retailer</option>
                                         <option v-for="retailerGroup in retailerGroups" :key="retailerGroup.id" :value="retailerGroup">{{retailerGroup.name}}</option>
                                     </select>
+                                    <span class="form-text">{{retailerGroups[0].name}}</span>
                                     <div id="validationRetailerGroupFeedback" class="invalid-feedback">
                                         Please select a retailer to invite the user to.
                                     </div>
@@ -46,7 +47,7 @@
                             <div class="row mb-3">
                                 <label class="col-sm-3 col-form-label">Email Address</label>
                                 <div class="col-sm-6">
-                                    <input class="form-control" type="email" v-model="invite.email" required />
+                                    <input class="form-control" type="email" name="email" ref="email" v-model="invite.email" required :autofocus="retailerGroups && retailerGroups.length==1" />
                                     <div id="validationRetailerGroupFeedback" class="invalid-feedback">
                                         Please enter the email of the user to invite.
                                     </div>
@@ -68,9 +69,10 @@
                                     <div class="alert alert-primary d-flex align-items-center" role="alert">
                                         <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
                                         <div>
-                                            <div>When you click 'Invite User' an invite will be sent to the user via email.<br>
-                                                They will need to take action in order to be assigned to the retailer.<br>
-                                                Once they do so, you will be notified by email and will need to approve their request before they can login and make sales.</div>
+                                            <div>
+                                                When you click 'Invite User' an invite will be sent to the user via email.<br>
+                                                They will need to take action in order to be assigned to the retailer.
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -135,11 +137,11 @@ export default {
     },
     methods: {
         returnToRetailerGroupUserDash: function() {
-            this.$router.push({name: 'internal-retailer-group-users'});
+            this.$router.push({name: 'retailer-retailer-group-users'});
         },
         fetchRetailerGroups: function () {
             let vm = this;
-            fetch(apiEndpoints.activeRetailerGroupListInternal)
+            fetch(apiEndpoints.retailerGroupsForUser)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -148,6 +150,9 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.retailerGroups = data
+                if(vm.retailerGroups && vm.retailerGroups.length==1){
+                    vm.selectedRetailerGroup = vm.retailerGroups[0];
+                }
             })
             .catch(error => {
                 this.systemErrorMessage = constants.ERRORS.NETWORK;
@@ -165,7 +170,7 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.invite)
             };
-            fetch(apiEndpoints.createRetailerGroupInviteInternal, requestOptions)
+            fetch(apiEndpoints.createRetailerGroupInviteRetailer, requestOptions)
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {
@@ -175,11 +180,11 @@ export default {
                     }
                     Swal.fire({
                         title: 'Success',
-                        text: 'Retail user invite sent successfully.',
+                        text: 'User invite sent successfully.',
                         icon: 'success',
                         confirmButtonText: 'OK'
                     })
-                    vm.$router.push({name: 'internal-retailer-group-users'});
+                    vm.$router.push({name: 'retailer-retailer-group-users'});
                 })
                 .catch(error => {
                     this.systemErrorMessage = constants.ERRORS.NETWORK;

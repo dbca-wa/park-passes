@@ -195,6 +195,18 @@ class RetailerGroupInvite(models.Model):
 
     status = models.CharField(max_length=3, choices=STATUS_CHOICES, default=NEW)
 
+    INTERNAL_USER = "I"
+    RETAILER_USER = "R"
+
+    INITIATED_BY_CHOICES = [
+        (INTERNAL_USER, "Internal User"),
+        (RETAILER_USER, "Retailer user"),
+    ]
+
+    initiated_by = models.CharField(
+        max_length=3, choices=INITIATED_BY_CHOICES, default=INTERNAL_USER
+    )
+
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Retailer Group Invite"
@@ -225,9 +237,12 @@ class RetailerGroupInvite(models.Model):
         if RetailerGroupInvite.DENIED == self.status:
             RetailerEmails.send_retailer_group_user_denied_notification_email(self)
         if RetailerGroupInvite.APPROVED == self.status:
-            is_admin = RetailerGroupUser.objects.values_list("is_admin").get(
-                retailer_group=self.retailer_group, emailuser=self.user
+            is_admin = (
+                RetailerGroupUser.objects.values_list("is_admin", flat=True)
+                .filter(retailer_group=self.retailer_group, emailuser=self.user)
+                .first()
             )
+            logger.debug("is_admin = " + str(is_admin))
             RetailerEmails.send_retailer_group_user_approved_notification_email(
                 self, is_admin
             )

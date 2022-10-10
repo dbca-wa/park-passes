@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import Http404
 from django.views.generic.base import TemplateView
 
 from parkpasses.components.retailers.models import RetailerGroupInvite
@@ -14,6 +15,15 @@ class RespondToRetailUserInviteView(
         if self.request.user.is_authenticated:
             uuid = self.kwargs["uuid"]
             user = self.request.user
+            if RetailerGroupInvite.objects.filter(
+                uuid=uuid,
+                email=user.email,
+                status__in=[
+                    RetailerGroupInvite.APPROVED,
+                ],
+            ).exists():
+                raise Http404("Invite already approved.")
+
             if RetailerGroupInvite.objects.filter(
                 uuid=uuid,
                 email=user.email,

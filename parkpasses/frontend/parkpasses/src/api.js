@@ -140,17 +140,20 @@ module.exports = {
     /* ========================= Retailer Groups =========================================*/
 
     retailerGroupListInternal:          '/api/retailers/internal/retailer-groups/',
+    retailerGroupListRetailer:          '/api/retailers/retailer/retailer-groups/',
     activeRetailerGroupListInternal:    '/api/retailers/internal/retailer-groups/active-retailer-groups',
     retailerGroupRetrieveInternal: function (retailerGroupId) {
         `/api/retailers/internal/retailer-groups/${retailerGroupId}/`;
     },
     retailerGroupUserListInternal:      '/api/retailers/internal/retailer-group-users/',
+    retailerGroupUserListRetailer:      '/api/retailers/retailer/retailer-group-users/',
     retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-reports/',
 
     /* ========================= Retailer Group Invites ===================================*/
 
     retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-invites/',
-    createRetailerGroupInvite:          '/api/retailers/internal/retailer-group-invites/',
+    createRetailerGroupInviteInternal:  '/api/retailers/internal/retailer-group-invites/',
+    createRetailerGroupInviteRetailer:  '/api/retailers/retailer/retailer-group-invites/',
     retailerGroupInviteRetrieveExternal: function (uuid) {
         return                          `/api/retailers/external/retailer-group-invites/${uuid}/`;
     },

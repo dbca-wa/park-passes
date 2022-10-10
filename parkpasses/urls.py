@@ -83,12 +83,12 @@ urlpatterns = [
         RespondToRetailUserInviteView.as_view(),
         name="respond-to-invite",
     ),
-    url(r"^retailer/", views.RetailerView.as_view(), name="retailer"),
     url(
-        r"^retailer/invite-users",
-        views.RetailerView.as_view(),
-        name="retailer-invite-users",
+        r"^retailer/users$",
+        views.RetailerViewAdmin.as_view(),
+        name="retailer-users",
     ),
+    url(r"^retailer/", views.RetailerView.as_view(), name="retailer"),
     url(r"^retailer/$", views.RetailerView.as_view(), name="retailer-home"),
     # ========================================================================== Component API end-points
     url(r"api/passes/", include("parkpasses.components.passes.urls")),

@@ -20,12 +20,13 @@ from parkpasses.components.retailers.models import (
     RetailerGroupUser,
 )
 from parkpasses.components.retailers.serializers import (
-    RetailerGroupInviteSerializer,
+    InternalRetailerGroupInviteSerializer,
     RetailerGroupSerializer,
     RetailerGroupUserSerializer,
+    RetailerRetailerGroupInviteSerializer,
 )
 from parkpasses.helpers import get_retailer_groups_for_user
-from parkpasses.permissions import IsInternal, IsRetailer
+from parkpasses.permissions import IsInternal, IsRetailer, IsRetailerAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,27 @@ class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+class RetailerRetailerGroupUserViewSet(viewsets.ModelViewSet):
+    model = RetailerGroupUser
+    queryset = RetailerGroupUser.objects.all()
+    permission_classes = [IsRetailerAdmin]
+    serializer_class = RetailerGroupUserSerializer
+    pagination_class = DatatablesPageNumberPagination
+    filter_backends = (DatatablesFilterBackend,)
+
+    def get_queryset(self):
+        if RetailerGroupUser.objects.filter(
+            emailuser__id=self.request.user.id
+        ).exists():
+            retailer_groups = RetailerGroupUser.objects.filter(
+                emailuser__id=self.request.user.id
+            ).values_list("retailer_group__id")
+            return RetailerGroupUser.objects.filter(
+                retailer_group__in=list(retailer_groups)
+            )
+        return RetailerGroupUser.objects.none()
+
+
 class InternalRetailerGroupUserViewSet(viewsets.ModelViewSet):
     model = RetailerGroupUser
     queryset = RetailerGroupUser.objects.all()
@@ -119,7 +141,7 @@ class InternalRetailerGroupUserViewSet(viewsets.ModelViewSet):
 class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     model = RetailerGroupInvite
     permission_classes = [IsAuthenticated]
-    serializer_class = RetailerGroupInviteSerializer
+    serializer_class = InternalRetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
     lookup_field = "uuid"
 
@@ -134,7 +156,24 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
     def accept_retailer_group_user_invite(self, request, *args, **kwargs):
         retailer_group_user_invite = self.get_object()
         if retailer_group_user_invite.user == request.user.id:
-            retailer_group_user_invite.status = RetailerGroupInvite.USER_ACCEPTED
+            if (
+                RetailerGroupInvite.INTERNAL_USER
+                == retailer_group_user_invite.initiated_by
+            ):
+                retailer_group_user_invite.status = RetailerGroupInvite.USER_ACCEPTED
+            if (
+                RetailerGroupInvite.RETAILER_USER
+                == retailer_group_user_invite.initiated_by
+            ):
+                # Since retailers can only add users to their own retailer group and cannot create
+                # admins we bypass the additional steps and just approve them when they login
+                email_user = EmailUser.objects.get(id=retailer_group_user_invite.user)
+                RetailerGroupUser.objects.create(
+                    retailer_group=retailer_group_user_invite.retailer_group,
+                    emailuser=email_user,
+                    active=True,
+                )
+                retailer_group_user_invite.status = RetailerGroupInvite.APPROVED
             retailer_group_user_invite.save()
             serializer = self.get_serializer(retailer_group_user_invite)
             return Response(serializer.data)
@@ -148,6 +187,7 @@ class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
             user_count_for_retailer_group=Count("retailer_group__retailergroupuser")
         )
         .exclude(status__in=[RetailerGroupInvite.APPROVED, RetailerGroupInvite.DENIED])
+        .filter(initiated_by=RetailerGroupInvite.INTERNAL_USER)
         .order_by(
             Case(
                 When(status=RetailerGroupInvite.USER_ACCEPTED, then=Value(0)),
@@ -158,48 +198,92 @@ class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
         )
     )
     permission_classes = [IsInternal]
-    serializer_class = RetailerGroupInviteSerializer
+    serializer_class = InternalRetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
 
     @action(methods=["PUT"], detail=True, url_path="resend-retailer-group-user-invite")
     def resend_retailer_group_user_invite(self, request, *args, **kwargs):
-        retailer_group_invite = self.get_object()
-        if RetailerGroupInvite.NEW == retailer_group_invite.status:
-            retailer_group_invite.save()
-            serializer = self.get_serializer(retailer_group_invite)
+        retailer_group_user_invite = self.get_object()
+        if RetailerGroupInvite.NEW == retailer_group_user_invite.status:
+            retailer_group_user_invite.save()
+            serializer = self.get_serializer(retailer_group_user_invite)
             return Response(serializer.data)
-        elif RetailerGroupInvite.SENT == retailer_group_invite.status:
+        elif RetailerGroupInvite.SENT == retailer_group_user_invite.status:
             RetailerEmails.send_retailer_group_user_invite_notification_email(
-                retailer_group_invite
+                retailer_group_user_invite
             )
-            serializer = self.get_serializer(retailer_group_invite)
+            serializer = self.get_serializer(retailer_group_user_invite)
             return Response(serializer.data)
         raise Http404
 
     @action(methods=["PUT"], detail=True, url_path="process-retailer-group-user-invite")
     def process_retailer_group_user_invite(self, request, *args, **kwargs):
-        retailer_group_invite = self.get_object()
-        logger.debug("retailer_group_invite = " + str(retailer_group_invite))
+        retailer_group_user_invite = self.get_object()
+        logger.debug("retailer_group_user_invite = " + str(retailer_group_user_invite))
         logger.debug("request.data = " + str(request.data))
-        if RetailerGroupInvite.USER_ACCEPTED != retailer_group_invite.status:
+        if RetailerGroupInvite.USER_ACCEPTED != retailer_group_user_invite.status:
             raise Http404
-        if not EmailUser.objects.filter(id=retailer_group_invite.user).exists():
+        if not EmailUser.objects.filter(id=retailer_group_user_invite.user).exists():
             raise Http404
-        email_user = EmailUser.objects.get(id=retailer_group_invite.user)
+        email_user = EmailUser.objects.get(id=retailer_group_user_invite.user)
         if request.data["approved"]:
             if not RetailerGroupUser.objects.filter(
-                retailer_group=retailer_group_invite.retailer_group,
+                retailer_group=retailer_group_user_invite.retailer_group,
                 emailuser=email_user,
             ).exists():
                 RetailerGroupUser.objects.create(
-                    retailer_group=retailer_group_invite.retailer_group,
+                    retailer_group=retailer_group_user_invite.retailer_group,
                     emailuser=email_user,
                     active=True,
                     is_admin=request.data["is_admin"],
                 )
-                retailer_group_invite.status = RetailerGroupInvite.APPROVED
+                retailer_group_user_invite.status = RetailerGroupInvite.APPROVED
         else:
-            retailer_group_invite.status = RetailerGroupInvite.DENIED
-        retailer_group_invite.save()
-        serializer = self.get_serializer(retailer_group_invite)
+            retailer_group_user_invite.status = RetailerGroupInvite.DENIED
+        retailer_group_user_invite.save()
+        serializer = self.get_serializer(retailer_group_user_invite)
         return Response(serializer.data)
+
+
+class RetailerRetailerGroupInviteViewSet(viewsets.ModelViewSet):
+    model = RetailerGroupInvite
+    permission_classes = [IsRetailerAdmin]
+    serializer_class = RetailerRetailerGroupInviteSerializer
+    pagination_class = DatatablesPageNumberPagination
+
+    def perform_create(self, serializer):
+        serializer.save(initiated_by=RetailerGroupInvite.RETAILER_USER)
+
+    def get_queryset(self):
+        if RetailerGroupUser.objects.filter(
+            emailuser__id=self.request.user.id
+        ).exists():
+            retailer_groups = RetailerGroupUser.objects.filter(
+                emailuser__id=self.request.user.id
+            ).values_list("retailer_group__id")
+            return (
+                RetailerGroupInvite.objects.annotate(
+                    user_count_for_retailer_group=Count(
+                        "retailer_group__retailergroupuser"
+                    )
+                )
+                .exclude(
+                    status__in=[
+                        RetailerGroupInvite.APPROVED,
+                        RetailerGroupInvite.DENIED,
+                        RetailerGroupInvite.USER_ACCEPTED,
+                        RetailerGroupInvite.USER_LOGGED_IN,
+                    ]
+                )
+                .filter(
+                    retailer_group__in=list(retailer_groups),
+                    initiated_by=RetailerGroupInvite.RETAILER_USER,
+                )
+                .order_by(
+                    Case(
+                        When(status=RetailerGroupInvite.NEW, then=Value(1)),
+                        When(status=RetailerGroupInvite.SENT, then=Value(2)),
+                    )
+                )
+            )
+        return RetailerGroupUser.objects.none()

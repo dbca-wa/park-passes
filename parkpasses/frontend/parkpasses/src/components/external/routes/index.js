@@ -68,6 +68,6 @@ export default {
             path: '/contact/',
             component: Contact,
             name: 'contact'
-        },
+        }
     ]
 }

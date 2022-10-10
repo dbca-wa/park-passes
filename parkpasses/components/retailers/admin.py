@@ -51,6 +51,7 @@ class RetailerGroupInviteAdmin(admin.ModelAdmin):
         "retailer_group",
         "uuid",
         "status",
+        "initiated_by",
         "datetime_created",
         "datetime_updated",
     )

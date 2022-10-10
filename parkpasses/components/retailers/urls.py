@@ -7,6 +7,8 @@ from parkpasses.components.retailers.api import (
     InternalRetailerGroupUserViewSet,
     InternalRetailerGroupViewSet,
     RetailerGroupsForUser,
+    RetailerRetailerGroupInviteViewSet,
+    RetailerRetailerGroupUserViewSet,
 )
 
 router = routers.SimpleRouter()
@@ -21,9 +23,19 @@ router.register(
     basename="retailer-group-users-internal",
 )
 router.register(
+    r"retailer/retailer-group-users",
+    RetailerRetailerGroupUserViewSet,
+    basename="retailer-group-users-retailer",
+)
+router.register(
     r"internal/retailer-group-invites",
     InternalRetailerGroupInviteViewSet,
     basename="retailer-group-invites-internal",
+)
+router.register(
+    r"retailer/retailer-group-invites",
+    RetailerRetailerGroupInviteViewSet,
+    basename="retailer-group-invites-retailer",
 )
 router.register(
     r"external/retailer-group-invites",
