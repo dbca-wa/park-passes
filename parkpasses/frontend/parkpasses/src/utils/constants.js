@@ -4,6 +4,8 @@ module.exports = {
     PARKPASSES_MODELS_USERACTION:       'useraction',
     PARKPASSES_MODELS_PASS:             'pass',
 
+    TITLE_SUFFIX: ' - Park Passes - Department of Biodiversity, Conservation and Attractions',
+
     HOLIDAY_PASS_NAME: 'HOLIDAY_PASS',
     PINJAR_PASS_NAME: 'PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS',
 

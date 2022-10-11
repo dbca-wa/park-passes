@@ -7,6 +7,7 @@ import helpers from '@/utils/helpers'
 import { useStore } from '@/stores/state'
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import { extendMoment } from 'moment-range';
+import titleMixin from './mixins/titleMixin'
 
 import "datatables.net";
 import "datatables.net-bs5";
@@ -54,6 +55,8 @@ fetch = (originalFetch => {
 const pinia = createPinia();
 
 const app = createApp(App);
+
+app.mixin(titleMixin);
 
 app.use(CKEditor);
 app.use(router);

@@ -2,8 +2,7 @@
         <div>
             <div v-if="passType">
                 <div v-if="passType">
-                    <h1 v-if="isRetailer">Sell a {{passType.display_name}}</h1>
-                    <h1 v-else>Buy {{indefiniteArticle}} {{passType.display_name}}</h1>
+                    <h1>{{getHeading}}</h1>
                 </div>
 
                 <div v-if="isRetailer" class="pb-4">
@@ -403,6 +402,27 @@ import { useStore } from '@/stores/state'
 
 export default {
     name: "PurchasePass",
+    title() {
+        // This has to happen before ajax calls so we need to use strings based on the pass id prop
+        if(1==this.passTypeId){
+            return "Buy a WA Holiday Park Pass";
+        }
+        if(2==this.passTypeId){
+            return "Buy an Annual Local Park Pass";
+        }
+        if(3==this.passTypeId){
+            return "Buy an All Parks Pass";
+        }
+        if(4==this.passTypeId){
+            return "Buy a Gold Star Pass";
+        }
+        if(5==this.passTypeId){
+            return "Buy a Day Entry Pass";
+        }
+        if(6==this.passTypeId){
+            return "Buy a Pinjar Off Road Vehicle Area Pass";
+        }
+    },
     props: {
         passTypeId: {
             type: [Number, String]
@@ -411,6 +431,7 @@ export default {
     data: function () {
         return {
             store: useStore(),
+            title: 'test title data',
             pass: {
                 first_name: '',
                 last_name: '',
@@ -464,8 +485,14 @@ export default {
         BootstrapSpinner,
     },
     computed: {
-        loaded() {
-            return this.passType && this.passOptions && this.concessions;
+        getHeading() {
+            if(this.passType){
+                if(this.isRetailer){
+                    return `Sell a ${this.passType.display_name}`;
+                } else {
+                    return `Buy ${this.indefiniteArticle} ${this.passType.display_name}`;
+                }
+            }
         },
         showPassTypeDescription() {
             console.log('this.isRetailer = ' + this.isRetailer)
@@ -597,6 +624,8 @@ export default {
                         vm.$refs.confirmEmail.focus();
                     }
                 });
+                vm.title = vm.getHeading;
+                console.log(vm.title)
             })
             .catch(error => {
                 this.systemErrorMessage = constants.ERRORS.NETWORK;
