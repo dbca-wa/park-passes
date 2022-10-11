@@ -3,7 +3,7 @@ module.exports = {
 
     /* ========================= User Data =============================================*/
 
-    userData:                           '/api/users/user-data/?format=json',
+    userData:                           '/api/users/user-data/',
     select2Customers:                   '/api/users/users/get_customers',
     allUsers:                           '/api/users/users/',
 
@@ -11,9 +11,9 @@ module.exports = {
 
     /* ========================= Concessions ============================================*/
 
-    concessions:                        '/api/concessions/concessions/?format=json',
+    concessions:                        '/api/concessions/concessions/',
     concession: function (id) {
-        return                          `/api/concessions/concessions/${id}/?format=json`;
+        return                          `/api/concessions/concessions/${id}/`;
     },
 
     /* ========================= Passes =================================================*/
@@ -25,7 +25,7 @@ module.exports = {
         return                          `/api/passes/internal/passes/${passId}`
     },
 
-    passProcessingStatusesDistinct:     '/api/passes/pass-processing-statuses-distinct?format=json',
+    passProcessingStatusesDistinct:     '/api/passes/pass-processing-statuses-distinct',
     createPass:                         '/api/passes/external/passes/',
     updatePass: function (id) {
         return                          `/api/passes/internal/passes/${id}/`;
@@ -49,10 +49,10 @@ module.exports = {
 
     /* ========================= Pass Types =============================================*/
 
-    passTypesDistinct:                  '/api/passes/pass-types-distinct?format=json',
-    passTypes:                          '/api/passes/pass-types?format=json',
-    passType: function (id) {
-        return                          `/api/passes/pass-types/${id}/?format=json`;
+    passTypesDistinct:                  '/api/passes/pass-types-distinct/',
+    passTypes:                          '/api/passes/pass-types/',
+    passType: function (passTypeSlug) {
+        return                          `/api/passes/pass-types/${passTypeSlug}/`;
     },
 
     /* ========================= Pass Options ===========================================*/
@@ -103,7 +103,7 @@ module.exports = {
 
     /* ========================= Cart Items =============================================*/
 
-    cart:                               '/api/cart/cart/?format=json',
+    cart:                               '/api/cart/cart/',
     deleteCartItem: function (id) {
         return                          `/api/cart/cart-items/${id}/`;
     },
