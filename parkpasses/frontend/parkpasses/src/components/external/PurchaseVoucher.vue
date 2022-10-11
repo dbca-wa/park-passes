@@ -140,6 +140,7 @@ import { useStore } from '@/stores/state'
 
 export default {
     name: "PurchaseVoucher",
+    title: "Buy a Park Pass Voucher",
     data: function () {
         return {
             voucher: {
