@@ -12,6 +12,7 @@ import math
 import os
 
 import qrcode
+from autoslug import AutoSlugField
 from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.core import serializers
@@ -54,6 +55,7 @@ def pass_type_image_path(instance, filename):
 class PassType(models.Model):
     """A class to represent a pass type"""
 
+    slug = AutoSlugField(unique=True, populate_from="display_name")
     image = ResizedImageField(
         size=[300, 150],
         quality=99,
@@ -135,6 +137,7 @@ class PassTypePricingWindow(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Pricing Window"
+        ordering = ["pass_type", "date_start", "date_expiry"]
 
     def __str__(self):
         return f"{self.name}"
@@ -246,6 +249,7 @@ class PassTypePricingWindowOption(models.Model):
         app_label = "parkpasses"
         verbose_name = "Duration Option"
         verbose_name = "Duration Options"
+        ordering = ["pricing_window", "price"]
 
     def __str__(self):
         return f"{self.pricing_window.pass_type.display_name} - {self.name} \
