@@ -30,6 +30,7 @@ class PassTypeSerializer(serializers.ModelSerializer):
         model = PassType
         fields = [
             "id",
+            "slug",
             "name",
             "description",
             "image",
@@ -38,6 +39,7 @@ class PassTypeSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "slug",
             "name",
             "description",
             "image",
