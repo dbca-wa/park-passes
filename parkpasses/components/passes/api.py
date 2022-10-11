@@ -100,6 +100,7 @@ class PassTypeViewSet(viewsets.ModelViewSet):
     A ViewSet for performing actions on pass types.
     """
 
+    lookup_field = "slug"
     model = PassType
 
     def get_queryset(self):
@@ -135,13 +136,13 @@ class PassTypeViewSet(viewsets.ModelViewSet):
             return False
         return False
 
-    @method_decorator(cache_page(60 * 60 * 2))
-    def retrieve(self, request, pk=None):
-        return super().retrieve(request, pk=pk)
+    # @method_decorator(cache_page(60 * 60 * 2))
+    # def retrieve(self, request, pk=None):
+    #     return super().retrieve(request, pk=pk)
 
-    @method_decorator(cache_page(60 * 60 * 2))
-    def list(self, request, pk=None):
-        return super().list(request, pk=pk)
+    # @method_decorator(cache_page(60 * 60 * 2))
+    # def list(self, request, pk=None):
+    #     return super().list(request, pk=pk)
 
 
 class PricingWindowFilterBackend(DatatablesFilterBackend):
