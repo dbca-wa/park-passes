@@ -13,7 +13,7 @@ logger = logging.getLogger("payment_checkout")
 
 
 class InternalView(UserPassesTestMixin, TemplateView):
-    template_name = "parkpasses/dash/index.html"
+    template_name = "parkpasses/internal/index.html"
 
     def test_func(self):
         return is_internal(self.request)
@@ -28,7 +28,7 @@ class InternalView(UserPassesTestMixin, TemplateView):
 
 
 class RetailerView(UserPassesTestMixin, TemplateView):
-    template_name = "parkpasses/dash/index.html"
+    template_name = "parkpasses/retailer/index.html"
 
     def test_func(self):
         return is_retailer(self.request)
@@ -42,8 +42,8 @@ class RetailerView(UserPassesTestMixin, TemplateView):
         return context
 
 
-class RetailerViewAdmin(UserPassesTestMixin, TemplateView):
-    template_name = "parkpasses/dash/index.html"
+class RetailerAdminView(UserPassesTestMixin, TemplateView):
+    template_name = "parkpasses/retailer/index.html"
 
     def test_func(self):
         return is_retailer_admin(self.request)
@@ -77,7 +77,7 @@ class ParkPassesRoutingView(TemplateView):
             if is_internal(self.request):
                 return redirect("internal")
             if is_retailer(self.request):
-                return redirect("retailer")
+                return redirect("retailer-home")
         kwargs["form"] = LoginForm
         return super().get(*args, **kwargs)
 
