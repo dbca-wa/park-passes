@@ -7,7 +7,6 @@ def parkpasses_url(request):
     return {
         "GIT_COMMIT_DATE": settings.GIT_COMMIT_DATE,
         "GIT_COMMIT_HASH": settings.GIT_COMMIT_HASH,
-        "KMI_SERVER_URL": settings.KMI_SERVER_URL,
         "template_group": template_group,
         "template_title": template_title,
         "build_tag": settings.BUILD_TAG,
