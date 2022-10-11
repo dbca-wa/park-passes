@@ -4,7 +4,7 @@
 
         <p>
             Enter the details of the person receiving the voucher, the voucher details
-            and your own details and we will send the couvher with your text to the
+            and your own details and we will send the voucher with your text to the
             recipient at the selected date.
         </p>
 
@@ -15,7 +15,7 @@
                     <label for="amount" class="col-form-label">Voucher Amount</label>
                 </div>
                 <div class="col-auto">
-                    <input type="number" id="amount" name="amount" v-model="voucher.amount" class="form-control" ref="amount" min="5" step="5" required="required" autofocus>
+                    <input type="number" id="amount" name="amount" v-model="voucher.amount" class="form-control" ref="amount" min="5" step="5" required="required">
                     <div class="invalid-feedback">
                         Please enter the voucher amount.
                     </div>
@@ -200,6 +200,7 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
+                // Deliberately not using router here so session is forced to update.
                 window.location.href = '/cart/';
             })
             .catch(error => {
@@ -233,7 +234,7 @@ export default {
 
     },
     mounted: function () {
-        console.log(this.store.userData);
+        this.$refs.amount.focus();
     }
 };
 </script>
