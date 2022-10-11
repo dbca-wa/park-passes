@@ -26,14 +26,6 @@ def is_internal(context):
 
 
 @register.simple_tag(takes_context=True)
-def is_model_backend(context):
-    # Return True if user logged in via single sign-on
-    # (or False via social_auth i.e. an external user signing in with a login-token)
-    request = context["request"]
-    return parkpasses_helpers.is_model_backend(request)
-
-
-@register.simple_tag(takes_context=True)
 def is_retailer(context):
     request = context["request"]
     return parkpasses_helpers.is_retailer(request)
