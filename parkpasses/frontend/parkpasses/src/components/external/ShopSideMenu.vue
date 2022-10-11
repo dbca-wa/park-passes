@@ -20,7 +20,7 @@
         v-for="(passType, index) in passTypes"
         :class="[
             'list-item pass-type',
-            { 'opacity-25': activeItem && (index+2) != activeItem },
+            { 'opacity-25': activeItem && (passType.id+1) != activeItem },
         ]"
         @click="purchasePass(passType.id, index)"
         :key="passType.id"
@@ -65,7 +65,7 @@ export default {
     },
     purchasePass: function (passTypeId, index) {
         this.$emit('purchasePass', passTypeId);
-        this.activeItem = index+2;
+        this.activeItem = passTypeId+1;
         console.log('this.activeItem = ' + this.activeItem)
     },
     purchaseVoucher: function () {
@@ -75,8 +75,14 @@ export default {
     },
   },
   created: function () {
-    this.fetchPassTypes();
-    console.log('this.activeItem = ' + this.activeItem);
+      this.fetchPassTypes();
+      if('purchase-voucher'==this.$route.name){
+        this.activeItem = 1;
+      }
+      else if(this.$route.params.passTypeId){
+          this.activeItem = parseInt(this.$route.params.passTypeId)+1;
+      }
+      console.log('Active items = ' + this.activeItem);
   },
   mounted: function () {},
 };
