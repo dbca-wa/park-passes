@@ -276,7 +276,6 @@ APPLICATION_TYPE_PARK_PASSES = "park_passes"
 APPLICATION_TYPES = [
     (APPLICATION_TYPE_PARK_PASSES, "Park Passes"),
 ]
-KMI_SERVER_URL = env("KMI_SERVER_URL", "https://kmi.dbca.wa.gov.au")
 
 GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
 
