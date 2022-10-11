@@ -1,34 +1,39 @@
 <template lang="html">
     <div v-if="retailerGroups" class="container" id="internalInviteRetailerGroupUser">
         <div class="row px-4">
-            <div class="col-sm-12 mb-4">
-                <strong>Invite a Retail User</strong>
-            </div>
-        </div>
-        <div class="row px-4">
             <div class="col-sm-12">
                 <div class="row">
-                    <div class="col-md-3">
-                        <template v-if="selectedRetailerGroup">
-                            <div class="retailer-group">
-                                <div>Retailer</div><div>{{ selectedRetailerGroup.name }}</div>
-                                <div>Address</div><div>{{ selectedRetailerGroup.address_line_1 }}</div>
-                                <div v-if="selectedRetailerGroup.address_line_2"></div><div v-if="selectedRetailerGroup.address_line_2">{{ selectedRetailerGroup.address_line_2 }}</div>
-                                <div>Suburb</div><div>{{ selectedRetailerGroup.suburb }}</div>
-                                <div>State</div><div>{{ selectedRetailerGroup.state }}</div>
-                                <div>Postcode</div><div>{{ selectedRetailerGroup.postcode }}</div>
-                                <div>Commission</div><div>{{ selectedRetailerGroup.commission_percentage }}%</div>
+                    <div class="col-md-4">
+                        <div class="card card-default">
+                            <div class="card-header">
+                                <strong>Retailer</strong>
                             </div>
-                        </template>
-                        <template v-else>
-                            <div>1. Select a Retailer. </div>
-                            <div>2. Enter an Email Address.</div>
-                        </template>
+                            <div class="card-body card-collapse">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <template v-if="selectedRetailerGroup">
+                                            <table class="table table-striped table-sm table-bordered">
+                                                <tbody>
+                                                <tr><th width="35">Retailer</th><td>{{ selectedRetailerGroup.name }}</td></tr>
+                                                <tr><th>Address</th><td>{{ selectedRetailerGroup.address_line_1 }}</td></tr>
+                                                <tr v-if="selectedRetailerGroup.address_line_2"><td>&nbsp;</td><td>{{ selectedRetailerGroup.name }}</td></tr>
+                                                <tr><th>Suburb</th><td>{{ selectedRetailerGroup.suburb }}</td></tr>
+                                                <tr><th>State</th><td>{{ selectedRetailerGroup.state }}</td></tr>
+                                                <tr><th>Postcode</th><td>{{ selectedRetailerGroup.postcode }}</td></tr>
+                                                <tr><th>Commission</th><td>{{ selectedRetailerGroup.commission_percentage }}%</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </template>
+                                        <template v-else>
+                                            <div>Select a Retailer...</div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-1">
 
-                    </div>
-                    <div class="col-md-8">
+                    <div class="col-md-7">
                         <SectionToggle label="Invite a Retail User">
                             <form @submit.prevent="validateForm" class="needs-validation" novalidate>
                             <div class="row mb-1">
@@ -68,9 +73,13 @@
                                     <div class="alert alert-primary d-flex align-items-center" role="alert">
                                         <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
                                         <div>
-                                            <div>When you click 'Invite User' an invite will be sent to the user via email.<br>
-                                                They will need to take action in order to be assigned to the retailer.<br>
-                                                Once they do so, you will be notified by email and will need to approve their request before they can login and make sales.</div>
+                                            <div>
+                                                <ol class="list-group list-group-numbered">
+                                                    <li class="list-group-item mb-2">When you click 'Invite User' an invite will be sent to the user via email.</li>
+                                                    <li class="list-group-item mb-2">They will need to take action in order to be assigned to the retailer.</li>
+                                                    <li class="list-group-item">Once they do so, you will be notified by email and will need to approve their request before they can login and make sales.</li>
+                                                </ol>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
