@@ -111,6 +111,7 @@ class PassTypeAdmin(admin.ModelAdmin):
     ]
     readonly_fields = [
         "name",
+        "slug",
     ]
 
     def get_readonly_fields(self, request, obj=None):
