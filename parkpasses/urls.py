@@ -66,30 +66,68 @@ urlpatterns = [
     url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
     # ========================================================================== Internal
     url(
-        r"^internal/retailer-group-users$",
-        views.InternalView.as_view(),
-        name="internal-retailer-group-users",
+        r"^internal/$",
+        views.InternalView.as_view(extra_context={"title": "Internal Home"}),
+        name="internal",
     ),
-    url(r"^internal/", views.InternalView.as_view(), name="internal"),
-    url(r"^internal/vouchers/", views.InternalView.as_view(), name="internal-vouchers"),
+    url(
+        r"^internal/pricing-windows$",
+        views.InternalView.as_view(extra_context={"title": "Pricing Windows"}),
+        name="internal-vouchers",
+    ),
+    url(
+        r"^internal/vouchers$",
+        views.InternalView.as_view(extra_context={"title": "Vouchers"}),
+        name="internal-vouchers",
+    ),
     url(
         r"^internal/discount-codes/",
-        views.InternalView.as_view(),
+        views.InternalView.as_view(extra_context={"title": "Discount Codes"}),
         name="internal-discount-codes",
+    ),
+    url(
+        r"^internal/retailer-group-users$",
+        views.InternalView.as_view(extra_context={"title": "Retail Users"}),
+        name="internal-retailer-group-users",
+    ),
+    url(
+        r"^internal/reports$",
+        views.InternalView.as_view(extra_context={"title": "Reports and Invoices"}),
+        name="internal-reports",
     ),
     # ========================================================================== Retailer
     url(
-        r"^retailer/respond-to-invite/(?P<uuid>.+)/",
+        r"^retailer/respond-to-invite/(?P<uuid>.+)/$",
         RespondToRetailUserInviteView.as_view(),
         name="respond-to-invite",
     ),
     url(
         r"^retailer/users$",
-        views.RetailerViewAdmin.as_view(),
+        views.RetailerAdminView.as_view(extra_context={"title": "Invite Users"}),
         name="retailer-users",
     ),
-    url(r"^retailer/", views.RetailerView.as_view(), name="retailer"),
-    url(r"^retailer/$", views.RetailerView.as_view(), name="retailer-home"),
+    url(
+        r"^retailer/$",
+        views.RetailerView.as_view(extra_context={"title": "Retailer Home"}),
+        name="retailer-home",
+    ),
+    url(
+        r"^retailer/sell-a-pass$",
+        views.RetailerView.as_view(extra_context={"title": "Sell a Pass"}),
+        name="retailer-sell-a-pass",
+    ),
+    url(
+        r"^retailer/reports$",
+        views.RetailerView.as_view(
+            extra_context={"title": "Invoices and Monthly Reports"}
+        ),
+        name="retailer-reports",
+    ),
+    url(
+        r"^retailer/invite-a-user$",
+        views.RetailerView.as_view(extra_context={"title": "Invite a User"}),
+        name="retailer-invite-a-user",
+    ),
     # ========================================================================== Component API end-points
     url(r"api/passes/", include("parkpasses.components.passes.urls")),
     url(r"api/parks/", include("parkpasses.components.parks.urls")),
