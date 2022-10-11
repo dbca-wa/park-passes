@@ -403,29 +403,29 @@ import { useStore } from '@/stores/state'
 export default {
     name: "PurchasePass",
     title() {
-        // This has to happen before ajax calls so we need to use strings based on the pass id prop
-        if(1==this.passTypeId){
+        // This has to happen before ajax calls so we need to use strings based on the pass slug prop
+        if('wa-holiday-park-pass'==this.passTypeSlug){
             return "Buy a WA Holiday Park Pass";
         }
-        if(2==this.passTypeId){
+        if('annual-local-park-pass'==this.passTypeSlug){
             return "Buy an Annual Local Park Pass";
         }
-        if(3==this.passTypeId){
+        if('all-parks-pass'==this.passTypeSlug){
             return "Buy an All Parks Pass";
         }
-        if(4==this.passTypeId){
+        if('gold-star-pass'==this.passTypeSlug){
             return "Buy a Gold Star Pass";
         }
-        if(5==this.passTypeId){
+        if('day-entry-pass'==this.passTypeSlug){
             return "Buy a Day Entry Pass";
         }
-        if(6==this.passTypeId){
+        if('pinjar-off-road-vehicle-area-pass'==this.passTypeSlug){
             return "Buy a Pinjar Off Road Vehicle Area Pass";
         }
     },
     props: {
-        passTypeId: {
-            type: [Number, String]
+        passTypeSlug: {
+            type: [String]
         }
     },
     data: function () {
@@ -608,7 +608,7 @@ export default {
         },
         fetchPassType: function () {
             let vm = this;
-            fetch(apiEndpoints.passType(vm.passTypeId))
+            fetch(apiEndpoints.passType(vm.passTypeSlug))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -617,6 +617,7 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.passType = data
+                this.fetchPassOptions(vm.passType.id);
                 vm.$nextTick(() => {
                     if(!vm.pass.email.length){
                         vm.$refs.firstName.focus();
@@ -632,9 +633,9 @@ export default {
                 console.error("There was an error!", error);
             });
         },
-        fetchPassOptions: function () {
+        fetchPassOptions: function (passTypeId) {
             let vm = this;
-            fetch(apiEndpoints.passOptions(vm.passTypeId))
+            fetch(apiEndpoints.passOptions(passTypeId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -1022,7 +1023,7 @@ export default {
     created: function () {
         this.fetchPassType();
         this.fetchConcessions();
-        this.fetchPassOptions();
+
     },
     mounted: function () {
         let vm = this;

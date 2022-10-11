@@ -1,35 +1,27 @@
 <template>
   <div>
-    <div
-      @click="purchaseVoucher()"
-      :class="[
-        'list-item voucher',
-        { 'opacity-25': activeItem && 1 != activeItem },
-      ]"
-    >
-      <img src="/static/parkpasses/img/gift-voucher.jpg" width="300" height="266" />
-      <div class="more-information">More Information</div>
+    <div class="list-item">
+      <div @click="purchaseVoucher()" :class="[
+        'voucher',
+        { 'opacity-25': activeItem && 'voucher' != activeItem },
+      ]">
+        <img src="/static/parkpasses/img/gift-voucher.jpg" width="300" height="266" />
+        <div class="more-information">More Information</div>
+      </div>
     </div>
 
     <div v-if="errorMessage" class="alert alert-danger" role="alert">
       {{ errorMessage }}
     </div>
 
-    <div
-
-        v-for="(passType, index) in passTypes"
-        :class="[
-            'list-item pass-type',
-            { 'opacity-25': activeItem && (passType.id+1) != activeItem },
-        ]"
-        @click="purchasePass(passType.id, index)"
-        :key="passType.id"
-        >
-        <img :src="passType.image" width="300" height="150" />
+    <div class="list-item" v-for="(passType, index) in passTypes" :key="passType.id">
+      <div :class="{'opacity-25': activeItem && (passType.slug != activeItem)}" @click="purchasePass(passType.slug, index)">
+        <img classes="rounded" :src="passType.image" width="300" height="150" />
         <div class="more-information">More Information</div>
-        <div class="display-name">{{ passType.display_name }}</div>
-        </div>
+      </div>
+      <div :class="{'opacity-50': activeItem && (passType.slug != activeItem)}" class="display-name">{{ passType.display_name }}</div>
     </div>
+  </div>
 
 </template>
 
@@ -38,6 +30,7 @@ import { apiEndpoints, constants } from "@/utils/hooks";
 
 export default {
   name: "ShopSideMenu",
+  emits: ["purchaseVoucher", "purchasePass"],
   data: function () {
     return {
       activeItem: null,
@@ -63,28 +56,25 @@ export default {
           console.error("There was an error!", error);
         });
     },
-    purchasePass: function (passTypeId, index) {
-        this.$emit('purchasePass', passTypeId);
-        this.activeItem = passTypeId+1;
-        console.log('this.activeItem = ' + this.activeItem)
+    purchasePass: function (passTypeSlug, index) {
+      this.$emit('purchasePass', passTypeSlug);
+      this.activeItem = passTypeSlug;
     },
     purchaseVoucher: function () {
-        this.$emit('purchaseVoucher');
-        this.activeItem = 1;
-        console.log('this.activeItem = ' + this.activeItem)
+      this.$emit('purchaseVoucher');
+      this.activeItem = 'voucher';
     },
   },
   created: function () {
-      this.fetchPassTypes();
-      if('purchase-voucher'==this.$route.name){
-        this.activeItem = 1;
-      }
-      else if(this.$route.params.passTypeId){
-          this.activeItem = parseInt(this.$route.params.passTypeId)+1;
-      }
-      console.log('Active items = ' + this.activeItem);
+    this.fetchPassTypes();
+    if ('purchase-voucher' == this.$route.name) {
+      this.activeItem = 'voucher';
+    }
+    else if (this.$route.params.passTypeSlug) {
+      this.activeItem = this.$route.params.passTypeSlug;
+    }
   },
-  mounted: function () {},
+  mounted: function () { },
 };
 </script>
 
@@ -92,60 +82,45 @@ export default {
 .opacity-25 {
   opacity: 0.25;
 }
+.opacity-50 {
+  opacity: 0.50;
+}
 
-.list-item {
-  position: relative;
-  display: inline-block;
+.list-item div {
+  display:flex;
+  gap: 5px;
 }
 
 .list-item img {
   opacity: 1;
 }
 
-.list-item img:hover {
+.list-item:hover {
   opacity: 0.8;
   cursor: pointer;
 }
 
 .display-name {
-  position: absolute;
-  bottom: 6px;
+  position: relative;
+  bottom: 40px;
   left: 6px;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
   padding: 5px;
+  margin:0 0 -20px 0;
   border-radius: 5px;
+  width: fit-content;
 }
 
-.list-item,
-.voucher {
-  margin: 0 0 8px 0;
-}
 
 .more-information {
-  display: inline-block;
-  position: relative;
-  margin-left: -57px;
-  font-size: 1.1em;
-  color: #9f9f9f;
-
-  transform: rotate(-90deg);
-
-  /* Legacy vendor prefixes that you probably don't need... */
-
-  /* Safari */
-  -webkit-transform: rotate(-90deg);
-
-  /* Firefox */
-  -moz-transform: rotate(-90deg);
-
-  /* IE */
-  -ms-transform: rotate(-90deg);
-
-  /* Opera */
-  -o-transform: rotate(-90deg);
-
-  /* Internet Explorer */
-  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  height: 150px;
+  gap:0px;
 }
+
 </style>

@@ -25,7 +25,7 @@ export default {
             name: 'purchase-voucher'
         },
         {
-            path: '/purchase-pass/:passTypeId/',
+            path: '/purchase-pass/:passTypeSlug/',
             component: ShopHome,
             name: 'purchase-pass'
         },

@@ -9,9 +9,7 @@
       {{ selectPassTypeMessage }}
     </div>
 
-    <div
-
-        v-for="(passType, index) in passTypes"
+    <div v-for="(passType, index) in passTypes"
         :class="[
             'list-item pass-type',
             { 'opacity-25': activeItem && (index+2) != activeItem },
