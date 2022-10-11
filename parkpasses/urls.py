@@ -2,7 +2,6 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.urls import path
-from django.views.decorators.cache import cache_page
 from ledger_api_client.urls import urlpatterns as ledger_patterns
 from rest_framework import routers
 
@@ -32,7 +31,7 @@ api_patterns = [
 # URL Patterns
 urlpatterns = [
     # ========================================================================== External Public
-    url(r"^$", cache_page(60 * 15)(views.ParkPassesRoutingView.as_view()), name="home"),
+    url(r"^$", views.ParkPassesRoutingView.as_view(), name="home"),
     url(r"^help/", ParkPassesHelpView.as_view(), name="help"),
     url(
         r"^purchase-voucher/",
