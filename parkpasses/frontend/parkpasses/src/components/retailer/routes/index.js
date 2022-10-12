@@ -48,7 +48,7 @@ export default {
             name: 'retailer-respond-to-invite'
         },
         {
-            path: '/retailer/sell-a-pass/:passTypeId/',
+            path: '/retailer/sell-a-pass/:passTypeSlug/',
             component: SellPass,
             name: 'sell-a-pass-by-id'
         },
