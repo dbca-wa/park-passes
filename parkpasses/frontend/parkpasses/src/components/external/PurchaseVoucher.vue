@@ -200,7 +200,8 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                // Deliberately not using router here so session is forced to update.
+                // Deliberately redirect here rather than router so session is forced to update
+                // and re-render django template countaining cart item count.
                 window.location.href = '/cart/';
             })
             .catch(error => {
