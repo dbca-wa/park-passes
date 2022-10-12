@@ -25,7 +25,8 @@ def add_retailer_to_session(sender, user, request, **kwargs):
             "name": retailer_group_user.retailer_group.name,
         }
     else:
-        del request.session["retailer"]
+        if "retailer" in request.session.keys():
+            del request.session["retailer"]
 
 
 def assign_orphan_passes(sender, user, request, **kwargs):
