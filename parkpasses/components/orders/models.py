@@ -53,6 +53,7 @@ class Order(models.Model):
 
     class Meta:
         app_label = "parkpasses"
+        ordering = ["-datetime_created"]
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
