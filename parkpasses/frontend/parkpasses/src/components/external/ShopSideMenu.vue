@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="list-item">
+    <div v-if="!isRetailer" class="list-item">
       <div @click="purchaseVoucher()" :class="[
         'voucher',
         { 'opacity-25': activeItem && 'voucher' != activeItem },
@@ -31,6 +31,12 @@ import { apiEndpoints, constants } from "@/utils/hooks";
 export default {
   name: "ShopSideMenu",
   emits: ["purchaseVoucher", "purchasePass"],
+  props: {
+    isRetailer: {
+      type: Boolean,
+      default: false
+    },
+  },
   data: function () {
     return {
       activeItem: null,
@@ -39,9 +45,15 @@ export default {
     };
   },
   methods: {
+    getPassTypeApiEndpoint: function() {
+      if(this.isRetailer){
+        return apiEndpoints.passTypesRetailer
+      }
+      return apiEndpoints.passTypesExternal
+    },
     fetchPassTypes: function () {
       let vm = this;
-      fetch(apiEndpoints.passTypesExternal)
+      fetch(vm.getPassTypeApiEndpoint())
         .then(async (response) => {
           const data = await response.json();
           if (!response.ok) {

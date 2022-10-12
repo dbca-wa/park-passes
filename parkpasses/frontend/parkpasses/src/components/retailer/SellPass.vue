@@ -5,7 +5,7 @@
 
             <div class="col-4">
 
-                <SideMenu @purchase-pass="purchasePass" />
+                <ShopSideMenu is-retailer="true" @purchase-pass="purchasePass" />
 
             </div>
 
@@ -22,7 +22,7 @@
 <script>
 
 import { useStore } from '@/stores/state'
-import SideMenu from '@/components/retailer/SideMenu.vue'
+import ShopSideMenu from '@/components/external/ShopSideMenu.vue'
 import PurchasePass from '@/components/external/PurchasePass.vue'
 
 export default {
@@ -38,7 +38,7 @@ export default {
         };
     },
     components: {
-        SideMenu,
+        ShopSideMenu,
         PurchasePass
     },
     methods: {
