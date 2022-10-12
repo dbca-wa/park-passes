@@ -2,8 +2,9 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
+from django.utils.text import slugify
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.managed_models import SystemGroup, SystemGroupPermission
+from ledger_api_client.managed_models import SystemGroupPermission
 
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 
@@ -11,64 +12,69 @@ logger = logging.getLogger(__name__)
 
 
 def belongs_to(request, group_name):
-    """
-    Check if the user belongs to the given group.
-    :param user:
-    :param group_name:
-    :return:
-    """
     if not request.user.is_authenticated:
         return False
 
     user = request.user
-
-    belongs_to_value = cache.get(
-        "User-belongs_to" + str(user.id) + "group_name:" + group_name
-    )
-    # belongs_to_value = None
-    if belongs_to_value:
-        print(
-            "From Cache - User-belongs_to" + str(user.id) + "group_name:" + group_name
-        )
+    cache_key = "user-" + str(user.id) + "-is-a-member-of-" + slugify(group_name)
+    belongs_to_value = cache.get(cache_key)
     if belongs_to_value is None:
-        sg = SystemGroup.objects.filter(name=group_name)
-        if sg.count() > 0:
-            sgp = SystemGroupPermission.objects.filter(
-                system_group=sg[0], emailuser=user
-            )
-            if sgp.count() > 0:
-                belongs_to_value = True
-            # belongs_to_value = SystemGroup.object.filter(name=group_name).exists()
-        cache.set(
-            "User-belongs_to" + str(user.id) + "group_name:" + group_name,
-            belongs_to_value,
-            3600,
-        )
+        belongs_to_value = SystemGroupPermission.objects.filter(
+            system_group__name=group_name, emailuser=user
+        ).exists()
+        cache.set(cache_key, belongs_to_value, 3600)
     return belongs_to_value
 
 
 def is_parkpasses_admin(request):
-    # logger.info('settings.ADMIN_GROUP: {}'.format(settings.ADMIN_GROUP))
-    return request.user.is_authenticated and (
-        request.user.is_superuser or belongs_to(request, settings.ADMIN_GROUP)
+    if not request.user.is_authenticated:
+        return False
+    cache_key = (
+        "user-"
+        + str(request.user.id)
+        + "-is-a-member-of-"
+        + slugify(settings.ADMIN_GROUP)
     )
+    is_parkpasses_admin = cache.get(cache_key)
+    if is_parkpasses_admin is None:
+        is_parkpasses_admin = request.user.is_superuser or belongs_to(
+            request, settings.ADMIN_GROUP
+        )
+        cache.set(cache_key, is_parkpasses_admin, 3600)
+    return is_parkpasses_admin
 
 
 def is_retailer(request):
     if not request.user.is_authenticated:
         return False
 
-    return RetailerGroupUser.objects.filter(
-        active=True, retailer_group__active=True, emailuser_id=request.user.id
-    ).exists()
+    cache_key = "user-" + str(request.user.id) + "-is-a-retailer"
+    is_retailer = cache.get(cache_key)
+    logger.debug("is_retailer = " + str(is_retailer))
+    if is_retailer is None:
+        is_retailer = RetailerGroupUser.objects.filter(
+            active=True, retailer_group__active=True, emailuser_id=request.user.id
+        ).exists()
+        cache.set(cache_key, is_retailer, 3600)
+    return is_retailer
 
 
 def is_retailer_admin(request):
     if not is_retailer(request):
         return False
-    return RetailerGroupUser.objects.filter(
-        is_admin=True, emailuser_id=request.user.id
-    ).exists()
+
+    cache_key = "user-" + str(request.user.id) + "-is-a-retailer-admin"
+    is_retailer_admin = cache.get(cache_key)
+    logger.debug("is_retailer_admin = " + str(is_retailer))
+    if is_retailer_admin is None:
+        is_retailer_admin = RetailerGroupUser.objects.filter(
+            active=True,
+            retailer_group__active=True,
+            is_admin=True,
+            emailuser_id=request.user.id,
+        ).exists()
+        cache.set(cache_key, is_retailer_admin, 3600)
+    return is_retailer_admin
 
 
 def get_retailer_group_ids_for_user(request):
