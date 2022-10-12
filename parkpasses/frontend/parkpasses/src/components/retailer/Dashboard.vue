@@ -31,7 +31,6 @@ import PassesDatatable from "@/components/retailer/datatables/PassesDatatable.vu
 export default {
   name: "RetailerDashboard",
   data() {
-    let vm = this;
     return {
       accessing_user: null,
     };
