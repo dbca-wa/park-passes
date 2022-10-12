@@ -2,6 +2,7 @@ import logging
 import pprint
 
 from django.conf import settings
+from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse
 from ledger_api_client.utils import create_basket_session, create_checkout_session
@@ -59,8 +60,16 @@ class CartItemViewSet(viewsets.ModelViewSet):
             return CartItem.objects.none()
 
     def destroy(self, request, *args, **kwargs):
-        CartUtils.decrement_cart_item_count(request)
-        return super().destroy(request, *args, **kwargs)
+        try:
+            cart_item = self.get_object()
+            logger.info(
+                f"Destroying Cart Item {cart_item} for cart {cart_item.cart}",
+                extra={"className": self.__class__.__name__},
+            )
+            CartUtils.decrement_cart_item_count(request)
+            return super().destroy(request, *args, **kwargs)
+        except Http404:
+            pass
 
     def has_object_permission(self, request, view, obj):
         if is_internal(request):
@@ -75,16 +84,29 @@ class CartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+        logger.info(
+            f"Retrieving cart for user {request.user}",
+            extra={"className": self.__class__.__name__},
+        )
+
         cart = Cart.get_or_create_cart(request)
-        objects = []
+        logger.info(f"{cart} retrieved", extra={"className": self.__class__.__name__})
+
+        cart_items = []
         for cart_item in cart.items.all():
             item = CartUtils.get_serialized_object_by_id_and_content_type(
                 cart_item.object_id, cart_item.content_type.id
             )
             item["cart_item_id"] = cart_item.id
             item["cart_id"] = cart.id
-            objects.append(item)
-        return Response(objects)
+            cart_items.append(item)
+
+        logger.info(
+            f"Cart items for cart {cart}: {cart_items}",
+            extra={"className": self.__class__.__name__},
+        )
+
+        return Response(cart_items)
 
 
 class LedgerCheckoutView(APIView):
