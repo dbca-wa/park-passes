@@ -62,11 +62,11 @@ class CartItemViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             cart_item = self.get_object()
+            CartUtils.decrement_cart_item_count(request)
             logger.info(
-                f"Destroying Cart Item {cart_item} for cart {cart_item.cart}",
+                f"Destroyed Cart Item {cart_item} for cart {cart_item.cart}",
                 extra={"className": self.__class__.__name__},
             )
-            CartUtils.decrement_cart_item_count(request)
             return super().destroy(request, *args, **kwargs)
         except Http404:
             pass
