@@ -335,7 +335,6 @@ export default {
                     let links = '';
                     links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
                     links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
                     return links;
                 }
             }
