@@ -452,7 +452,7 @@ class ExternalPassViewSet(
         if is_customer(self.request):
             cart_item_count = CartUtils.increment_cart_item_count(self.request)
             logger.info(
-                f"Incremented cart item count to {cart_item_count} for cart {cart}",
+                f"Incremented cart item count to {cart_item_count} -> {cart}",
                 extra={"className": self.__class__.__name__},
             )
 
