@@ -1,26 +1,17 @@
 <template>
-  <div class="text-center">
-
+  <div>
     <div v-if="errorMessage" class="alert alert-danger" role="alert">
       {{ errorMessage }}
     </div>
 
-    <div class="lead">
-      {{ selectPassTypeMessage }}
+    <div class="list-item" v-for="(passType, index) in passTypes" :key="passType.id">
+      <div :class="{'opacity-25': activeItem && (passType.slug != activeItem)}" @click="purchasePass(passType.slug, index)">
+        <img classes="rounded" :src="passType.image" width="300" height="150" />
+        <div class="more-information">More Information</div>
+      </div>
+      <div :class="{'opacity-50': activeItem && (passType.slug != activeItem)}" class="display-name">{{ passType.display_name }}</div>
     </div>
-
-    <div v-for="(passType, index) in passTypes"
-        :class="[
-            'list-item pass-type',
-            { 'opacity-25': activeItem && (index+2) != activeItem },
-        ]"
-        @click="purchasePass(passType.id, index)"
-        :key="passType.id"
-        >
-        <img :src="passType.image" width="300" height="150" />
-        <div class="display-name">{{ passType.display_name }}</div>
-        </div>
-    </div>
+  </div>
 
 </template>
 
@@ -28,11 +19,11 @@
 import { apiEndpoints, constants } from "@/utils/hooks";
 
 export default {
-  name: "SideMenu",
+  name: "ShopSideMenu",
+  emits: ["purchaseVoucher", "purchasePass"],
   data: function () {
     return {
       activeItem: null,
-      selectPassTypeMessage: 'Select a Pass Type',
       passTypes: [],
       errorMessage: null,
     };
@@ -40,7 +31,7 @@ export default {
   methods: {
     fetchPassTypes: function () {
       let vm = this;
-      fetch(apiEndpoints.passTypes)
+      fetch(apiEndpoints.passTypesRetailer)
         .then(async (response) => {
           const data = await response.json();
           if (!response.ok) {
@@ -55,18 +46,25 @@ export default {
           console.error("There was an error!", error);
         });
     },
-    purchasePass: function (passTypeId, index) {
-        this.$emit('purchasePass', passTypeId);
-        this.activeItem = index+2;
-        console.log('this.activeItem = ' + this.activeItem)
-        this.selectPassTypeMessage = '';
+    purchasePass: function (passTypeSlug, index) {
+      this.$emit('purchasePass', passTypeSlug);
+      this.activeItem = passTypeSlug;
+    },
+    purchaseVoucher: function () {
+      this.$emit('purchaseVoucher');
+      this.activeItem = 'voucher';
     },
   },
   created: function () {
     this.fetchPassTypes();
-    console.log('this.activeItem = ' + this.activeItem);
+    if ('purchase-voucher' == this.$route.name) {
+      this.activeItem = 'voucher';
+    }
+    else if (this.$route.params.passTypeSlug) {
+      this.activeItem = this.$route.params.passTypeSlug;
+    }
   },
-  mounted: function () {},
+  mounted: function () { },
 };
 </script>
 
@@ -74,59 +72,45 @@ export default {
 .opacity-25 {
   opacity: 0.25;
 }
+.opacity-50 {
+  opacity: 0.50;
+}
 
-.list-item {
-  position: relative;
-  display: inline-block;
+.list-item div {
+  display:flex;
+  gap: 5px;
 }
 
 .list-item img {
   opacity: 1;
 }
 
-.list-item img:hover {
+.list-item:hover {
   opacity: 0.8;
   cursor: pointer;
 }
 
 .display-name {
-  position: absolute;
-  bottom: 6px;
+  position: relative;
+  bottom: 40px;
   left: 6px;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
   padding: 5px;
+  margin:0 0 -20px 0;
   border-radius: 5px;
+  width: fit-content;
 }
 
-.list-item {
-  margin: 0 0 8px 0;
-}
 
 .more-information {
-  display: inline-block;
-  position: relative;
-  margin-left: -57px;
-  font-size: 1.1em;
-  color: #9f9f9f;
-
-  transform: rotate(-90deg);
-
-  /* Legacy vendor prefixes that you probably don't need... */
-
-  /* Safari */
-  -webkit-transform: rotate(-90deg);
-
-  /* Firefox */
-  -moz-transform: rotate(-90deg);
-
-  /* IE */
-  -ms-transform: rotate(-90deg);
-
-  /* Opera */
-  -o-transform: rotate(-90deg);
-
-  /* Internet Explorer */
-  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  height: 150px;
+  gap:0px;
 }
+
 </style>
