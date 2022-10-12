@@ -16,7 +16,7 @@
 
     <div class="list-item" v-for="(passType, index) in passTypes" :key="passType.id">
       <div :class="{'opacity-25': activeItem && (passType.slug != activeItem)}" @click="purchasePass(passType.slug, index)">
-        <img classes="rounded" :src="passType.image" width="300" height="150" />
+        <img class="rounded" :src="passType.image" width="300" height="150" />
         <div class="more-information">More Information</div>
       </div>
       <div :class="{'opacity-50': activeItem && (passType.slug != activeItem)}" class="display-name">{{ passType.display_name }}</div>
@@ -41,7 +41,7 @@ export default {
   methods: {
     fetchPassTypes: function () {
       let vm = this;
-      fetch(apiEndpoints.passTypes)
+      fetch(apiEndpoints.passTypesExternal)
         .then(async (response) => {
           const data = await response.json();
           if (!response.ok) {
@@ -119,7 +119,6 @@ export default {
   align-items:center;
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  height: 150px;
   gap:0px;
 }
 
