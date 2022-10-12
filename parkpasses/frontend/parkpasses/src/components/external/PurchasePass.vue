@@ -296,15 +296,15 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-if="passOptions" class="row g-1 align-top mb-2">
+                        <div v-if="passOptions" class="row g-1 mb-2">
                             <div class="col-md-4">
                                 <label for="passOption" class="col-form-label">Duration</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-auto my-auto">
                                 <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option_id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
                                     <option v-for="passOption in passOptions" :value="passOption.id" :key="passOption.id">{{passOption.name}}</option>
                                 </select>
-                                <input v-else type="text" readonly class="form-control-plaintext" id="staticEmail" :value="pass.option_name">
+                                <span v-else class="form-text text-dark align-middle">{{pass.option_name}}</span>
                             </div>
                         </div>
                         <div v-if="totalPrice" class="row g-1 align-top mb-2">
@@ -608,7 +608,7 @@ export default {
         },
         fetchPassType: function () {
             let vm = this;
-            fetch(apiEndpoints.passType(vm.passTypeSlug))
+            fetch(apiEndpoints.passTypeExternal(vm.passTypeSlug))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
