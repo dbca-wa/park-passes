@@ -95,54 +95,62 @@ class PassProcessingStatusesDistinct(APIView):
         return Response(processing_status_choices)
 
 
-class PassTypeViewSet(viewsets.ModelViewSet):
+class ExternalPassTypeViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
+    lookup_field = "slug"
+    model = PassType
+    queryset = PassType.objects.filter(display_externally=True)
+    ordering = "display_order"
+    serializer_class = PassTypeSerializer
+
+    @method_decorator(cache_page(60 * 60 * 2))
+    def retrieve(self, request, slug=None):
+        return super().retrieve(request, slug=slug)
+
+    @method_decorator(cache_page(60 * 60 * 2))
+    def list(self, request, slug=None):
+        return super().list(request, slug=slug)
+
+
+class RetailerPassTypeViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
+    lookup_field = "slug"
+    model = PassType
+    queryset = PassType.objects.filter(display_retailer=True)
+    ordering = "display_order"
+    serializer_class = PassTypeSerializer
+    permission_classes = [IsRetailer]
+
+    @method_decorator(cache_page(60 * 60 * 2))
+    def retrieve(self, request, slug=None):
+        return super().retrieve(request, slug=slug)
+
+    @method_decorator(cache_page(60 * 60 * 2))
+    def list(self, request, slug=None):
+        return super().list(request, slug=slug)
+
+
+class InternalPassTypeViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for performing actions on pass types.
     """
 
     lookup_field = "slug"
     model = PassType
+    queryset = PassType.objects.all()
+    ordering = "display_order"
+    permission_classes = [IsInternal]
+    serializer_class = InternalPassTypeSerializer
 
-    def get_queryset(self):
-        if is_internal(self.request):
-            return PassType.objects.all().order_by("display_order")
-        elif is_retailer(self.request):
-            return PassType.objects.filter(display_retailer=True).order_by(
-                "display_order"
-            )
-        else:
-            return PassType.objects.filter(display_externally=True).order_by(
-                "display_order"
-            )
+    @method_decorator(cache_page(60 * 60 * 2))
+    def retrieve(self, request, slug=None):
+        return super().retrieve(request, slug=slug)
 
-    def get_serializer_class(self):
-        if is_internal(self.request):
-            return InternalPassTypeSerializer
-        elif is_retailer(self.request):
-            return PassTypeSerializer
-        else:
-            return PassTypeSerializer
-
-    def has_permission(self, request, view):
-        if is_internal(request):
-            return True
-        if is_customer(request):
-            if view.action in ["list", "retrieve"]:
-                return True
-            return False
-        if is_retailer(self.request):
-            if view.action in ["list", "retrieve"]:
-                return True
-            return False
-        return False
-
-    # @method_decorator(cache_page(60 * 60 * 2))
-    # def retrieve(self, request, pk=None):
-    #     return super().retrieve(request, pk=pk)
-
-    # @method_decorator(cache_page(60 * 60 * 2))
-    # def list(self, request, pk=None):
-    #     return super().list(request, pk=pk)
+    @method_decorator(cache_page(60 * 60 * 2))
+    def list(self, request, slug=None):
+        return super().list(request, slug=slug)
 
 
 class PricingWindowFilterBackend(DatatablesFilterBackend):
@@ -442,7 +450,11 @@ class ExternalPassViewSet(
         cart_item.save()
 
         if is_customer(self.request):
-            CartUtils.increment_cart_item_count(self.request)
+            cart_item_count = CartUtils.increment_cart_item_count(self.request)
+            logger.info(
+                f"Incremented cart item count to {cart_item_count} for cart {cart}",
+                extra={"className": self.__class__.__name__},
+            )
 
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()

@@ -50,9 +50,11 @@ module.exports = {
     /* ========================= Pass Types =============================================*/
 
     passTypesDistinct:                  '/api/passes/pass-types-distinct/',
-    passTypes:                          '/api/passes/pass-types/',
-    passType: function (passTypeSlug) {
-        return                          `/api/passes/pass-types/${passTypeSlug}/`;
+    passTypesExternal:                  '/api/passes/external/pass-types/',
+    passTypesRetailer:                  '/api/passes/retailer/pass-types/',
+    passTypesInternal:                  '/api/passes/internal/pass-types/',
+    passTypeExternal: function (passTypeSlug) {
+        return                          `/api/passes/external/pass-types/${passTypeSlug}/`;
     },
 
     /* ========================= Pass Options ===========================================*/
