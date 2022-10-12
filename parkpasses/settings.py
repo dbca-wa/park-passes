@@ -98,6 +98,8 @@ if SHOW_DEBUG_TOOLBAR:
         "INTERCEPT_REDIRECTS": False,
     }
 
+SILENCED_SYSTEM_CHECKS = ["fields.W903", "fields.W904", "debug_toolbar.W004"]
+
 TEMPLATES[0]["DIRS"].append(os.path.join(BASE_DIR, "parkpasses", "templates"))
 TEMPLATES[0]["DIRS"].append(
     os.path.join(BASE_DIR, "parkpasses", "components", "emails", "templates")
@@ -200,44 +202,83 @@ CONSOLE_EMAIL_BACKEND = env("CONSOLE_EMAIL_BACKEND", False)
 if CONSOLE_EMAIL_BACKEND:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# Additional logging for parkpasses
-LOGGING["handlers"]["payment_checkout"] = {
-    "level": "INFO",
-    "class": "logging.handlers.RotatingFileHandler",
-    "filename": os.path.join(BASE_DIR, "logs", "cols_payment_checkout.log"),
-    "formatter": "verbose",
-    "maxBytes": 5242880,
-}
-LOGGING["loggers"]["payment_checkout"] = {
-    "handlers": ["payment_checkout"],
-    "level": "INFO",
-}
-# Add a handler
-LOGGING["handlers"]["file_parkpasses"] = {
-    "level": "INFO",
-    "class": "logging.handlers.RotatingFileHandler",
-    "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
-    "formatter": "verbose",
-    "maxBytes": 5242880,
-}
-
-LOGGING["loggers"]["parkpasses"] = {
-    "handlers": ["file_parkpasses"],
-    "level": "INFO",
-}
 
 # Add a debug level logger for development
 if DEBUG:
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": True,
+        "formatters": {
+            "verbose": {
+                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s] \
+                    [%(className)s.%(funcName)s] %(message)s"
+            },
+        },
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",
+                "level": "DEBUG",
+            },
+            "rotating_file": {
+                "level": "INFO",
+                "class": "logging.handlers.TimedRotatingFileHandler",
+                "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
+                "formatter": "verbose",
+                "when": "D",
+                "interval": 1,
+            },
+            "mail_admins": {
+                "level": "ERROR",
+                "class": "django.utils.log.AdminEmailHandler",
+                "include_html": True,
             },
         },
         "loggers": {
             "parkpasses": {
+                "handlers": ["console", "rotating_file", "mail_admins"],
+                "propagate": False,
+            },
+            "org_model_documents": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+            "org_model_logs": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+        },
+    }
+else:
+    LOGGING = {
+        "version": 1,
+        "formatters": {
+            "verbose": {
+                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s] \
+                    [%(className)s.%(funcName)s] %(message)s"
+            },
+        },
+        "handlers": {
+            "rotating_file": {
+                "level": "INFO",
+                "class": "logging.handlers.TimedRotatingFileHandler",
+                "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
+                "formatter": "verbose",
+                "when": "D",
+                "interval": 1,
+            },
+            "mail_admins": {
+                "level": "ERROR",
+                "class": "django.utils.log.AdminEmailHandler",
+            },
+        },
+        "loggers": {
+            "parkpasses": {
+                "handlers": ["console", "rotating_file", "mail_admins"],
+                "propagate": False,
+            },
+            "org_model_documents": {
                 "handlers": ["console"],
                 "level": "DEBUG",
                 "propagate": False,
