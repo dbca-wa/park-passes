@@ -316,7 +316,7 @@ export default {
         },
         fetchPassTypes: function () {
             let vm = this;
-            fetch(apiEndpoints.passTypes)
+            fetch(apiEndpoints.passTypesInternal)
             .then(async (response) => {
                 const data = await response.json();
                 if (!response.ok) {
