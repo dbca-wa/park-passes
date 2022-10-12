@@ -5,19 +5,29 @@ from parkpasses.components.passes.api import (
     CancelPass,
     CurrentOptionsForPassType,
     DefaultOptionsForPassType,
+    ExternalPassTypeViewSet,
     ExternalPassViewSet,
+    InternalPassTypeViewSet,
     InternalPassViewSet,
     InternalPricingWindowViewSet,
     PassProcessingStatusesDistinct,
     PassTemplateViewSet,
     PassTypePricingWindowOptionViewSet,
     PassTypesDistinct,
-    PassTypeViewSet,
+    RetailerPassTypeViewSet,
     RetailerPassViewSet,
 )
 
 router = routers.SimpleRouter()
-router.register(r"pass-types", PassTypeViewSet, basename="pass-types")
+router.register(
+    r"external/pass-types", ExternalPassTypeViewSet, basename="pass-types-external"
+)
+router.register(
+    r"retailer/pass-types", RetailerPassTypeViewSet, basename="pass-types-retailer"
+)
+router.register(
+    r"internal/pass-types", InternalPassTypeViewSet, basename="pass-types-internal"
+)
 router.register(
     r"internal/pricing-windows",
     InternalPricingWindowViewSet,
