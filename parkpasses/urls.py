@@ -70,28 +70,49 @@ urlpatterns = [
         name="internal",
     ),
     url(
+        r"^internal/passes/(?P<id>.+)$",
+        views.InternalView.as_view(extra_context={"title": "Internal View/Edit Pass"}),
+        name="internal-pass-detail",
+    ),
+    url(
         r"^internal/pricing-windows$",
-        views.InternalView.as_view(extra_context={"title": "Pricing Windows"}),
+        views.InternalView.as_view(extra_context={"title": "Internal Pricing Windows"}),
         name="internal-vouchers",
     ),
     url(
         r"^internal/vouchers$",
-        views.InternalView.as_view(extra_context={"title": "Vouchers"}),
+        views.InternalView.as_view(extra_context={"title": "Internal Vouchers"}),
         name="internal-vouchers",
     ),
     url(
         r"^internal/discount-codes/",
-        views.InternalView.as_view(extra_context={"title": "Discount Codes"}),
+        views.InternalView.as_view(extra_context={"title": "Internal Discount Codes"}),
         name="internal-discount-codes",
     ),
     url(
+        r"^internal/discount-code-batch-form/(?P<id>.+)$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal View/Edit Discount Code Batch"}
+        ),
+        name="internal-discount-code-batch-detail",
+    ),
+    url(
         r"^internal/retailer-group-users$",
-        views.InternalView.as_view(extra_context={"title": "Retail Users"}),
+        views.InternalView.as_view(extra_context={"title": "Internal Retail Users"}),
         name="internal-retailer-group-users",
     ),
     url(
+        r"^internal/invite-a-retail-user$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal Invite a Retail User"}
+        ),
+        name="internal-invite-retail-user",
+    ),
+    url(
         r"^internal/reports$",
-        views.InternalView.as_view(extra_context={"title": "Reports and Invoices"}),
+        views.InternalView.as_view(
+            extra_context={"title": "Internal Reports and Invoices"}
+        ),
         name="internal-reports",
     ),
     # ========================================================================== Retailer
