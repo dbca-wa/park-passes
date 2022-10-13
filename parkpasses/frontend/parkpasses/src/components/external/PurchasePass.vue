@@ -29,10 +29,10 @@
                 <div>
                     <form @submit.prevent="validateForm" @keydown.enter="$event.preventDefault()" class="needs-validation" novalidate>
                         <div class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="firstName" class="col-form-label">First Name</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" id="firstName" name="firstName" v-model="pass.first_name" class="form-control" ref="firstName" required="required" autofocus>
                                 <div class="invalid-feedback">
                                     Please enter your first name.
@@ -40,10 +40,10 @@
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="lastName" class="col-form-label">Last Name</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" id="lastName" name="lastName" v-model="pass.last_name" class="form-control" required="required">
                                 <div class="invalid-feedback">
                                     Please enter your last name.
@@ -51,10 +51,10 @@
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="email" class="col-form-label">Your Email Address</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="email" id="email" name="email" ref="email" v-model="pass.email" class="form-control" required="required">
                                 <div class="invalid-feedback">
                                     Please enter a valid email address.
@@ -62,10 +62,10 @@
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="confirmEmail" class="col-form-label">Confirm Your Email</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input @change="validateConfirmEmail" type="email" id="confirmEmail" name="confirmEmail" ref="confirmEmail" v-model="confirmEmail" class="form-control" required="required">
                                 <div class="invalid-feedback">
                                     Please make sure your confirmation email matches your email.
@@ -73,10 +73,10 @@
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="mobile" class="col-form-label">Mobile Number</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="tel" id="mobile" name="mobile" v-model="pass.mobile" class="form-control" pattern="[0-9]{4}[0-9]{3}[0-9]{3}" required="required">
                                 <div class="invalid-feedback">
                                     Please enter a valid mobile phone number.
@@ -84,10 +84,10 @@
                             </div>
                         </div>
                         <div v-if="isPinjarPass" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="driversLicenceNumber" class="col-form-label">Driver's Licence Number</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="tel" id="driversLicenceNumber" name="driversLicenceNumber" v-model="pass.drivers_licence_number" class="form-control" pattern="[a-zA-Z0-9]{8}" required="required">
                                 <div class="invalid-feedback">
                                     Please enter a valid driver's licence number.
@@ -95,34 +95,34 @@
                             </div>
                         </div>
                         <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="company" class="col-form-label">Company</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" id="company" name="company" v-model="pass.company" class="form-control">
                             </div>
                         </div>
                         <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="address" class="col-form-label">Address</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" id="address" name="address" v-model="pass.address" class="form-control" required="required">
                             </div>
                         </div>
                         <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="suburb" class="col-form-label">Town / Suburb</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" id="suburb" name="suburb" v-model="pass.suburb" class="form-control" required="required">
                             </div>
                         </div>
                         <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="state" class="col-form-label">State</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <select id="state" name="state" v-model="pass.state" class="form-select" required="required">
                                     <option value="WA" selected="selected">Western Australia</option>
                                     <option value="NSW">New South Wales</option>
@@ -136,10 +136,10 @@
                             </div>
                         </div>
                         <div v-if="isAnnualLocalPass || isGoldStarPass" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="postcode" class="col-form-label">Your Postcode</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input v-if="isAnnualLocalPass" @keyup="validatePostcode" @change="validatePostcode" type="text" id="postcode" name="postcode" ref="postcode" v-model="pass.postcode" class="form-control" pattern="6[0-9]{3}" required="required" minlength="4" maxlength="4">
                                 <input v-else type="text" id="postcode" name="postcode" ref="postcode" v-model="pass.postcode" class="form-control" pattern="[0-9]{4}" required="required" minlength="4" maxlength="4">
                                 <div v-if="!noParkForPostcodeError" class="invalid-feedback">
@@ -154,10 +154,10 @@
                             </div>
                         </div>
                         <div v-if="parkGroups && parkGroups.length && pass.park_group" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="parkGroup" class="col-form-label">Park Group</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <select v-if="parkGroups.length>1" @change="updateParkGroup" v-model="pass.park_group_id" ref="parkGroup" id="parkGroup" name="parkGroup" class="form-select" aria-label="Park Group" required="required">
                                     <option v-for="parkGroup in parkGroups" :value="parkGroup.id" :key="parkGroup.id">{{parkGroup.name}}</option>
                                 </select>
@@ -165,30 +165,30 @@
                             </div>
                         </div>
                         <div v-if="showParksList" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="parkGroup" class="col-form-label">Parks Included</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <ul class="parks-list">
                                     <li v-for="park in pass.park_group.parks" class="park"><span class="badge">{{ park.name }}</span></li>
                                 </ul>
                             </div>
                         </div>
                         <div v-if="!isPinjarPass" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="concession" class="col-form-label">Elibible for Concession</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <div class="form-switch">
                                     <input @change="resetPrice" class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="concession" name="concession" v-model="eligibleForConcession">
                                 </div>
                             </div>
                         </div>
                         <div v-if="eligibleForConcession" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="postcode" class="col-form-label">Concession Type</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" v-model="pass.concession_id" class="form-select" aria-label="Concession Type" required="required">
                                     <option disabled value="0" selected>Select The Concession Type</option>
                                     <option v-for="concession in concessions" :value="concession.id" :key="concession.id">{{concession.concession_type}} ({{concession.discount_percentage}}% Discount)</option>
@@ -196,10 +196,10 @@
                             </div>
                         </div>
                         <div v-if="eligibleForConcession" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="concessionCardNumber" class="col-form-label">Concession Card Number</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" id="concessionCardNumber" name="concessionCardNumber" v-model="pass.concession_card_number" class="form-control" required="required">
                                 <div class="invalid-feedback">
                                     Please enter a concession card number.
@@ -208,52 +208,52 @@
                         </div>
 
                         <div class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="startDate" class="col-form-label">Start Date for Pass</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="date" id="startDate" name="startDate" v-model="pass.date_start" class="form-control" required :min="startDate()">
                             </div>
                         </div>
                         <div v-if="showAutomaticRenewalOption" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="renewAutomatically" class="col-form-label">Automatically Renew at Expiry?</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <div class="form-switch">
                                     <input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="renewAutomatically" name="renewAutomatically" v-model="pass.renew_automatically">
                                 </div>
                             </div>
                         </div>
                         <div v-if="!isPinjarPass" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="vehicleRegistrationNumbersKnown" class="col-form-label">Vehicle Registration Number<span v-if="isHolidayPass">s</span> Known</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <div class="form-switch">
                                     <input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="vehicleRegistrationNumbersKnown" name="vehicleRegistrationNumbersKnown" v-model="vehicleRegistrationNumbersKnown">
                                 </div>
                             </div>
                         </div>
                         <div v-if="!isPinjarPass && vehicleRegistrationNumbersKnown" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="vehicleRegistration1" class="col-form-label">Vehicle Registration<span v-if="vehicleInputs>1"> 1</span></label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" id="vehicleRegistration1" name="vehicleRegistration1" v-model="pass.vehicle_registration_1" class="form-control short-control" required="required" pattern="[a-zA-Z0-9]+" maxlength="9">
                                 <div class="invalid-feedback">
                                     Please enter a valid vehicle registration.
                                 </div>
                             </div>
-                            <div v-if="!isHolidayPass" class="col-auto">
+                            <div v-if="!isHolidayPass" class="col-12 col-lg-12 col-xl-9">
                                 <button @click="toggleExtraVehicle" class="btn licensing-btn-primary">{{extraVehicleText}}</button>
                             </div>
                         </div>
                         <div v-if="!isPinjarPass && vehicleRegistrationNumbersKnown && vehicleInputs>1" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="vehicleRegistration2" class="col-form-label">Vehicle Registration 2</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" id="vehicleRegistration2" name="vehicleRegistration2" v-model="pass.vehicle_registration_2" class="form-control short-control" required="required">
                                 <div class="invalid-feedback">
                                     Please enter a valid vehicle registration.
@@ -261,10 +261,10 @@
                             </div>
                         </div>
                         <div v-if="showDiscountCodeField" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="discountCode" class="col-form-label">Discount Code</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input @keyup="validateDiscountCode" v-model="pass.discount_code" type="text" id="discountCode" name="discountCode" ref="discountCode" class="form-control short-control" :class="{'is-invalid' : discountCodeError}" minlength="8" maxlength="8">
                                 <div v-if="!pass.email" class="invalid-feedback">
                                     You must enter your email address in order to validate the discount code.
@@ -275,10 +275,10 @@
                             </div>
                         </div>
                         <div v-if="showVoucherCodeField" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="voucherCode" class="col-form-label">Voucher Code</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input @change="validateVoucherCode" @keyup="focusVoucherPin" v-model="pass.voucher_code" type="text" id="voucherCode" name="voucherCode" ref="voucherCode" class="form-control short-control" :class="{'is-invalid' : voucherCodeError}" minlength="8" maxlength="8">
                                 <div class="invalid-feedback">
                                     This voucher code is not valid, has expired or does not match the pin.
@@ -286,10 +286,10 @@
                             </div>
                         </div>
                         <div v-if="pass.voucher_code.length==8 && validateVoucherCode" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="voucherPin" class="col-form-label">Voucher Pin</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input @keyup="validateVoucherPin" v-model="pass.voucher_pin" type="text" id="voucherPin" name="voucherPin" ref="voucherPin" class="form-control pin-control" minlength="6" maxlength="6">
                                 <div class="invalid-feedback">
                                     This voucher pin is not valid.
@@ -297,10 +297,10 @@
                             </div>
                         </div>
                         <div v-if="passOptions" class="row g-1 mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="passOption" class="col-form-label">Duration</label>
                             </div>
-                            <div class="col-auto my-auto">
+                            <div class="col-12 col-lg-12 col-xl-9 my-auto">
                                 <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option_id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
                                     <option v-for="passOption in passOptions" :value="passOption.id" :key="passOption.id">{{passOption.name}}</option>
                                 </select>
@@ -308,58 +308,58 @@
                             </div>
                         </div>
                         <div v-if="totalPrice" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="price" class="col-form-label">Price</label>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" readonly class="form-control-plaintext fw-bold" id="price" name="price" :value="'$'+totalPrice">
                             </div>
                         </div>
                         <div v-if="discountCodeDiscount" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 Discount Amount
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <strong class="text-success">-${{ discountCodeDiscount }}</strong>
                             </div>
                         </div>
                         <div v-if="voucherRedemptionAmount" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 Voucher Balance
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <strong class="text-success">${{ voucherBalanceRemaining }}</strong>
                             </div>
                         </div>
                         <div v-if="voucherRedemptionAmount" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 Voucher Redemption
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <strong class="text-success">-${{ voucherRedemptionAmount }}</strong>
                             </div>
                         </div>
                         <div v-if="voucherRedemptionAmount" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 Voucher Balance Remaining
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <strong class="text-success">${{ voucherBalanceRemainingIfUsedForThisPurchase }}</strong>
                             </div>
                         </div>
                         <div v-if="discountCodeDiscount || voucherRedemptionAmount" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 Sub Total
                             </div>
-                            <div class="col-auto lead">
+                            <div class="col-12 col-lg-12 col-xl-9 lead">
                                 <strong>${{ subTotal }}</strong>
                             </div>
                         </div>
                         <div v-if="isRetailer && retailerGroupsForUser && retailerGroupsForUser.length" class="row g-1 align-top mb-2">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 Sold Via
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <template v-if="retailerGroupsForUser && retailerGroupsForUser.length>1">
                                     <select class="form-select" name="retailer_group_id" v-model="pass.sold_via">
                                         <option v-for="retailerGroup in retailerGroupsForUser" :value="retailerGroup.id">{{ retailerGroup.name }}</option>
@@ -371,10 +371,10 @@
                             </div>
                         </div>
                         <div class="row g-1 mb-2 mt-1">
-                            <div class="col-md-4">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 &nbsp;
                             </div>
-                            <div class="col-auto">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <button v-if="!isLoading" class="btn licensing-btn-primary px-5" type="submit">Next</button>
                                 <BootstrapButtonSpinner v-else class="btn licensing-btn-primary px-5" />
                             </div>
@@ -1071,4 +1071,71 @@ export default {
         color: #fff;
         background-color: #337ab7;
     }
+
+h1 {
+    font-size:1.2em;
+
+}
+
+h4 {
+    font-size:0.8em;
+}
+
+p {
+    font-size:0.8em;
+}
+
+@media (min-width: 576px) {
+    h1 {
+        font-size:1.3em;
+    }
+    p {
+        font-size:0.9em;
+    }
+}
+
+@media (min-width: 768px) {
+    h1 {
+        font-size:1.8em;
+    }
+    p {
+        font-size:1em;
+    }
+}
+
+@media (min-width: 992px) {
+    h1 {
+        font-size:1.8em;
+    }
+    p {
+        font-size:1em;
+    }
+}
+
+@media (min-width: 1200px) {
+    h1 {
+        font-size:2em;
+    }
+    p {
+        font-size:1em;
+    }
+}
+
+@media (min-width: 1400px) {
+    h1 {
+        font-size:2em;
+    }
+    p {
+        font-size:1em;
+    }
+}
+
+@media (min-width: 2560px) {
+    h1 {
+        font-size:3em;
+    }
+    p {
+        font-size:1.3em;
+    }
+}
 </style>

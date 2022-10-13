@@ -1,5 +1,5 @@
 <template>
-    <div class="container" id="cart">
+    <div class="container p-0" id="cart">
         <div class="row mx-4">
             <div class="col">
                 <h1>Cart</h1>
@@ -20,15 +20,18 @@
                                     <div class="col border-bottom">
                                         GST
                                     </div>
-                                    <div class="col-md-auto border-bottom">
+                                    <div class="col-auto border-bottom">
                                         ${{ gst }}
                                     </div>
                                 </div>
                                 <div class="row my-3 mx-1 g-0">
-                                    <div class="col border-bottom">
+                                    <div class="col border-bottom d-none d-sm-block">
                                         Sub Total for {{ cartItems.length }} Item<template v-if="cartItems.length>1">s</template>  (Inc GST)
                                     </div>
-                                    <div class="col-md-auto border-bottom">
+                                    <div class="col border-bottom float-end d-block d-sm-none">
+                                        Total (Inc GST)
+                                    </div>
+                                    <div class="col-auto border-bottom">
                                         ${{ totalPrice }}
                                     </div>
                                 </div>

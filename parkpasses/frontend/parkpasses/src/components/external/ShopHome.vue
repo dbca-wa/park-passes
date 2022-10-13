@@ -2,13 +2,13 @@
   <div class="container" id="shopHome">
     <div class="row">
 
-      <div class="col-4">
+      <div class="col-xxl-4 col-xl-4 col-lg-5 col-md-5 col-sm-6">
 
         <ShopSideMenu @purchase-voucher="purchaseVoucher" @purchase-pass="purchasePass" />
 
       </div>
 
-      <div class="col">
+      <div class="col-xxl-8 col-xl-8 col-lg-7 col-md-7 col-sm-6 px-lg-2 ps-md-5 ps-xl-0">
 
         <HomeContent v-if="showHomeContent" />
 

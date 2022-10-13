@@ -3,8 +3,8 @@
 
     <h2 class="px-4 pb-3">Your Park Passes</h2>
 
-    <div v-if="passes" id="passes" class="passes row row-cols-1 row-cols-sm-1 row-cols-md-1 row-cols-lg-1 row-cols-xl-2 row-cols-xxl-2 g-4 px-4">
-        <div v-for="pass in passes" class="col-xs">
+    <div v-if="passes" id="passes" class="passes row row-cols-1 row-cols-sm-1 row-cols-md-1 row-cols-lg-1 row-cols-xl-2 row-cols-xxl-2 g-4 px-sm-4">
+        <div v-for="pass in passes" class="pass col-xs">
           <div class="card border-bottom-0 rounded-0 rounded-top">
             <img :src="pass.pass_type_image" class="img-fluid float-left" width="300" />
             <div class="card-body">
@@ -21,7 +21,7 @@
               </p>
             </div>
           </div>
-          <div class="card-footer border-top-0 align-items-center">
+          <div class="card-footer border-top-0 align-items-center m-0">
             <div><span class="badge" :class="statusClass(pass)">{{ pass.processing_status_display_name }}</span></div>
             <div v-if="canUpdateVehicleDetails(pass)" class="link"><a data-bs-toggle="collapse" :href="'#updateVehicleRego'+pass.id" role="button" aria-expanded="false" :aria-controls="'updateVehicleRego'+pass.id">Update Vehicle Rego</a> <i class="fa-solid fa-car fa-lg ps-1"></i></div>
             <div v-else></div>
@@ -30,18 +30,17 @@
             <div class="link"><a target="_blank" rel="noopener" :href="invoiceURL(pass.id)">Download Invoice</a> <i class="fa-solid fa-file-invoice fa-lg ps-1"></i></div>
 
           </div>
-          <div v-if="canUpdateVehicleDetails(pass)" :id="'updateVehicleRego'+pass.id" class="showUpdateVehicleRego collapse">
-
-            <div class="row">
-              <div class="col">
-                <input type="text" class="form-control form-control-sm m-3" placeholder="Vehicle 1 Registration" aria-label="Vehicle Registration 1" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="loadingUpdatePass">
+          <div v-if="canUpdateVehicleDetails(pass)" :id="'updateVehicleRego'+pass.id" class="container p-0 showUpdateVehicleRego collapse">
+            <div class="row g-0">
+              <div class="col-12 col-sm-4 pe-md-2">
+                <input type="text" class="form-control form-control-sm my-3 mx-sm-3" placeholder="Vehicle 1 Registration" aria-label="Vehicle Registration 1" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="loadingUpdatePass">
               </div>
-              <div v-if="showSecondVehicleRego(pass)" class="col">
-                <input type="text" class="form-control form-control-sm m-3" placeholder="Vehicle 2 Registration" aria-label="Vehicle Registration 2" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="loadingUpdatePass">
+              <div v-if="showSecondVehicleRego(pass)" class="col-12 col-sm-4 pe-md-2">
+                <input type="text" class="form-control form-control-sm my-3 mx-sm-3" placeholder="Vehicle 2 Registration" aria-label="Vehicle Registration 2" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="loadingUpdatePass">
               </div>
-              <div class="col">
-                <button v-if="!loadingUpdatePass" @click="updatePass(pass)" class="btn btn-sm licensing-btn-primary float-end m-3 px-5">Update</button>
-                <button v-else class="btn btn-sm licensing-btn-primary float-end m-3 px-5">
+              <div class="col-12 col-sm-4 px-md-2">
+                <button v-if="!loadingUpdatePass" @click="updatePass(pass)" class="btn btn-sm licensing-btn-primary mt-3 px-3 ms-md-2">Update</button>
+                <button v-else class="btn btn-sm licensing-btn-primary mt-3 px-3">
                     <div class="spinner-border text-light" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
@@ -93,7 +92,7 @@ export default {
   },
   methods: {
     formatDate: function(date){
-      return helpers.getShortDate(date);
+      return helpers.getShorterDate(date);
     },
     statusClass: function (pass) {
       switch (pass.processing_status) {
@@ -230,10 +229,16 @@ export default {
 </script>
 
 <style scoped>
-/* For Mobile */
-@media screen and (max-width: 540px) {
+/* For small mobile */
+@media screen and (max-width: 320px) {
+  h2 {
+    font-size:1.4em;
+  }
+}
+
+@media screen and (max-width: 575px) {
   .card {
-    width:300px;
+    max-width:300px;
   }
   .card-title {
     white-space: nowrap;
@@ -253,24 +258,27 @@ export default {
   background-color: #fff;
   color: #444;
   font-size: 0.9em;
-}
+  }
 
   .card-footer {
-    width:300px;
-    margin:auto;
+    max-width:300px;
   }
   .card-footer div {
     margin-top:10px;
   }
-}
 
+  .showUpdateVehicleRego{
+    max-width: 300px;
+  }
+}
 /* For Tablets */
-@media screen and (min-width: 540px) and (max-width: 780px) {
+@media (min-width: 576px) {
+
 
 }
 
 /* For Computers */
-@media screen and (min-width: 780px){
+@media (min-width: 768px) {
 .card {
   flex-direction: row;
 }
@@ -310,6 +318,10 @@ export default {
 
 }
 
-
+@media (min-width: 1024px) {
+  .pass{
+    max-width:600px;
+  }
+}
 
 </style>

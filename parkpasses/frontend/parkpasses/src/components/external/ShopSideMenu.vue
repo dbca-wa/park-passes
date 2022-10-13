@@ -1,11 +1,12 @@
 <template>
   <div>
+
     <div v-if="!isRetailer" class="list-item">
       <div @click="purchaseVoucher()" :class="[
         'voucher',
         { 'opacity-25': activeItem && 'voucher' != activeItem },
       ]">
-        <img src="/static/parkpasses/img/gift-voucher.jpg" width="300" height="266" />
+        <img class="img-fluid" src="/static/parkpasses/img/gift-voucher.jpg" width="300" height="266" />
         <div class="more-information">More Information</div>
       </div>
     </div>
@@ -14,19 +15,24 @@
       {{ errorMessage }}
     </div>
 
-    <div class="list-item" v-for="(passType, index) in passTypes" :key="passType.id">
+    <div v-if="passTypes" class="list-item" v-for="(passType, index) in passTypes" :key="passType.id">
       <div :class="{'opacity-25': activeItem && (passType.slug != activeItem)}" @click="purchasePass(passType.slug, index)">
-        <img class="rounded" :src="passType.image" width="300" height="150" />
+        <img class="img-fluid rounded" width="300" height="150" :src="passType.image" />
         <div class="more-information">More Information</div>
       </div>
-      <div :class="{'opacity-50': activeItem && (passType.slug != activeItem)}" class="display-name">{{ passType.display_name }}</div>
+      <div :class="{'opacity-50': activeItem && (passType.slug != activeItem)}" class="display-name text-truncate">{{ passType.display_name }}</div>
     </div>
+    <div v-else>
+        <BootstrapSpinner isLoading="true" />
+    </div>
+
   </div>
 
 </template>
 
 <script>
 import { apiEndpoints, constants } from "@/utils/hooks";
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 
 export default {
   name: "ShopSideMenu",
@@ -40,9 +46,12 @@ export default {
   data: function () {
     return {
       activeItem: null,
-      passTypes: [],
+      passTypes: null,
       errorMessage: null,
     };
+  },
+  components: {
+    BootstrapSpinner,
   },
   methods: {
     getPassTypeApiEndpoint: function() {
@@ -121,7 +130,10 @@ export default {
   padding: 5px;
   margin:0 0 -20px 0;
   border-radius: 5px;
+  width: -moz-fit-content;
   width: fit-content;
+  text-overflow: ellipsis;
+  max-width: 95%;
 }
 
 
