@@ -218,6 +218,14 @@ module.exports = {
         };
         return new Date(date).toLocaleDateString('en-AU', options)
     },
+    getShorterDate(date) {
+        var options = {
+            year: "numeric",
+            month: "2-digit",
+            day: "numeric"
+        };
+        return new Date(date).toLocaleDateString('en-AU', options)
+    },
     getPrettyDateFromDatetime(dateTime){
         var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         let formattedOrderDate = new Date(dateTime);
