@@ -117,29 +117,29 @@ urlpatterns = [
     ),
     # ========================================================================== Retailer
     url(
-        r"^retailer/respond-to-invite/(?P<uuid>.+)/$",
-        RespondToRetailUserInviteView.as_view(),
-        name="respond-to-invite",
-    ),
-    url(
-        r"^retailer/users$",
-        views.RetailerAdminView.as_view(extra_context={"title": "Invite Users"}),
-        name="retailer-users",
-    ),
-    url(
         r"^retailer/$",
         views.RetailerView.as_view(extra_context={"title": "Retailer Home"}),
         name="retailer-home",
     ),
     url(
+        r"^retailer/passes/(?P<id>.+)$",
+        views.RetailerView.as_view(extra_context={"title": "Retailer View/Edit Pass"}),
+        name="retailer-pass-detail",
+    ),
+    url(
         r"^retailer/sell-a-pass$",
-        views.RetailerView.as_view(extra_context={"title": "Sell a Pass"}),
+        views.RetailerView.as_view(extra_context={"title": "Retailer Sell a Pass"}),
         name="retailer-sell-a-pass",
+    ),
+    url(
+        r"^retailer/users$",
+        views.RetailerAdminView.as_view(extra_context={"title": "Retailer Users"}),
+        name="retailer-users",
     ),
     url(
         r"^retailer/reports$",
         views.RetailerView.as_view(
-            extra_context={"title": "Invoices and Monthly Reports"}
+            extra_context={"title": "Retailer Invoices and Monthly Reports"}
         ),
         name="retailer-reports",
     ),
@@ -147,6 +147,13 @@ urlpatterns = [
         r"^retailer/invite-a-user$",
         views.RetailerView.as_view(extra_context={"title": "Invite a User"}),
         name="retailer-invite-a-user",
+    ),
+    url(
+        r"^retailer/respond-to-invite/(?P<uuid>.+)/$",
+        RespondToRetailUserInviteView.as_view(
+            extra_context={"title": "Retailer Respond to Invite"}
+        ),
+        name="respond-to-invite",
     ),
     # ========================================================================== Component API end-points
     url(r"api/passes/", include("parkpasses.components.passes.urls")),
