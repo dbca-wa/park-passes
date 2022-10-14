@@ -52,6 +52,7 @@ from parkpasses.components.passes.serializers import (
     OptionSerializer,
     PassTemplateSerializer,
     PassTypeSerializer,
+    RetailerUpdatePassSerializer,
 )
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
@@ -544,8 +545,15 @@ class RetailerPassViewSet(UserActionViewSet):
     model = Pass
     pagination_class = DatatablesPageNumberPagination
     permission_classes = [IsRetailer]
-    serializer_class = InternalPassSerializer
     filter_backends = (PassFilterBackend,)
+    http_method_names = ["get", "post", "head", "put", "patch"]
+
+    def get_serializer_class(self):
+        if "update" == self.action:
+            return RetailerUpdatePassSerializer
+        if "retrieve" == self.action:
+            return InternalPassRetrieveSerializer
+        return InternalPassSerializer
 
     def get_queryset(self):
         if RetailerGroupUser.objects.filter(
