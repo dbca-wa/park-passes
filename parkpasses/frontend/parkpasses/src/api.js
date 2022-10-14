@@ -21,18 +21,23 @@ module.exports = {
     passesList:                         '/api/passes/internal/passes/',
     passesListExternal:                 '/api/passes/external/passes/',
     passesListRetailer:                 '/api/passes/retailer/passes/',
-    internalPass: function (passId) {
+    retrievePassInternal: function (passId) {
         return                          `/api/passes/internal/passes/${passId}`
     },
-
+    retrievePassRetailer: function (passId) {
+        return                          `/api/passes/retailer/passes/${passId}`
+    },
     passProcessingStatusesDistinct:     '/api/passes/pass-processing-statuses-distinct',
     createPass:                         '/api/passes/external/passes/',
-    updatePass: function (id) {
+    updatePassInternal: function (id) {
         return                          `/api/passes/internal/passes/${id}/`;
     },
     cancelPass:                         `/api/passes/external/passes/cancel-pass`,
     updatePassExternal: function (id) {
         return                          `/api/passes/external/passes/${id}/`;
+    },
+    updatePassRetailer: function (id) {
+        return                          `/api/passes/retailer/passes/${id}/`;
     },
     internalParkPassPdf: function (passId) {
         return                          `/api/passes/internal/passes/${passId}/retrieve-park-pass-pdf`
