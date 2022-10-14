@@ -41,27 +41,33 @@
                                 </div>
                             </div>
                             <div class="row mb-1">
-                                <label class="col-sm-4 col-form-label">Pass Holder</label>
-                                <div class="col-sm-6">
-                                    <span class="form-text">{{ pass.first_name + ' ' + pass.last_name  }}</span>
-                                </div>
-                            </div>
-                            <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Pass PDF</label>
                                 <div v-if="pdfUrl" class="col-sm-6">
                                     <a :href="pdfUrl" target="blank">{{ pass.park_pass_pdf }}</a>
                                 </div>
                             </div>
                             <div class="row mb-1">
-                                <label class="col-sm-4 col-form-label">Email Address</label>
-                                <div class="col-sm-8">
-                                    <span class="form-text"><a target="blank" :href="'mailto:' + pass.email">{{ pass.email  }}</a></span>
+                                <label class="col-sm-4 col-form-label">First Name</label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" name="firstName" type="text" v-model="pass.first_name" :disabled="isPassCancelled">
                                 </div>
                             </div>
-                            <div v-if="formattedMobile" class="row mb-1">
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Last Name</label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" name="lastName" type="text" v-model="pass.last_name" :disabled="isPassCancelled">
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Email Address</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" name="email" type="text" v-model="pass.email" :disabled="isPassCancelled">
+                                </div>
+                            </div>
+                            <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Mobile Number</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">{{ formattedMobile }}</span>
+                                    <input class="form-control" name="mobile" type="text" v-model="pass.mobile" :disabled="isPassCancelled">
                                 </div>
                             </div>
                             <div v-if="pass.postcode" class="row mb-1">
@@ -104,7 +110,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration <span v-if="pass.vehicle_registration_2">1</span></label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1" :disabled="isPassCancelled">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="isPassCancelled">
                                     </span>
                                 </div>
                             </div>
@@ -112,7 +118,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2" :disabled="isPassCancelled">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="isPassCancelled">
                                     </span>
                                 </div>
                             </div>
@@ -273,7 +279,7 @@ export default {
         },
         fetchPass: function (passId) {
             let vm = this;
-            fetch(apiEndpoints.internalPass(passId))
+            fetch(apiEndpoints.retrievePassInternal(passId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -317,7 +323,7 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.pass)
             };
-            fetch(apiEndpoints.updatePass(vm.pass.id), requestOptions)
+            fetch(apiEndpoints.updatePassInternal(vm.pass.id), requestOptions)
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {
