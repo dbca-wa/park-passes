@@ -1,8 +1,9 @@
 import { RouterView } from 'vue-router'
 
 import RetailerDashboard from '@/components/retailer/Dashboard.vue'
+import RetailerPassForm from '@/components/retailer/forms/PassForm.vue'
 import RetailerReports from '@/components/retailer/Reports.vue'
-import SellPass from '@/components/retailer/SellPass.vue'
+import RetailerSellPass from '@/components/retailer/SellPass.vue'
 import RetailerGroupUsers from '@/components/retailer/RetailerGroupUsers.vue'
 import RetailerInviteRetailerGroupUser from '@/components/retailer/forms/InviteRetailerGroupUser.vue'
 import RetailerGroupUserInviteResponse from '@/components/retailer/forms/RetailerGroupUserInviteResponse.vue'
@@ -15,12 +16,12 @@ export default {
         {
             path: '/retailer',
             component: RetailerDashboard,
-            name: 'retailer'
+            name: 'retailer-dash'
         },
         {
-            path: '/retailer/parkpasses',
-            component: RetailerDashboard,
-            name: 'retailer-park-passes'
+            path: '/retailer/passes/:passId/',
+            component: RetailerPassForm,
+            name: 'retailer-pass-detail'
         },
         {
             path: '/retailer/reports',
@@ -34,8 +35,8 @@ export default {
         },
         {
             path: '/retailer/sell-a-pass',
-            component: SellPass,
-            name: 'sell-a-pass'
+            component: RetailerSellPass,
+            name: 'retailer-sell-a-pass'
         },
         {
             path: '/retailer/invite-a-user',
@@ -49,8 +50,8 @@ export default {
         },
         {
             path: '/retailer/sell-a-pass/:passTypeSlug/',
-            component: SellPass,
-            name: 'sell-a-pass-by-id'
+            component: RetailerSellPass,
+            name: 'retailer-sell-a-pass-by-slug'
         },
     ]
 }
