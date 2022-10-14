@@ -479,7 +479,7 @@ export default {
                 let action = $(this).data('action');
                 let id = $(this).data('item-id');
                 console.log(action + id);
-                vm.$router.push(`/internal/passes/${id}`)
+                vm.$router.push(`/retailer/passes/${id}`)
             });
             vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="cancel"]', function(e) {
                 e.preventDefault();
