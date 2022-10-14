@@ -444,6 +444,25 @@ class ExternalUpdatePassSerializer(serializers.ModelSerializer):
         return data
 
 
+class RetailerUpdatePassSerializer(serializers.ModelSerializer):
+    duration = serializers.CharField(source="option.name", read_only=True)
+    date_expiry = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Pass
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "mobile",
+            "duration",
+            "date_start",
+            "date_expiry",
+            "vehicle_registration_2",
+            "vehicle_registration_2",
+        ]
+
+
 class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     pass_type = serializers.CharField(
         source="option.pricing_window.pass_type", read_only=True
@@ -530,22 +549,6 @@ class InternalPassSerializer(serializers.ModelSerializer):
         read_only_fields = ["pass_type", "pricing_window", "sold_via", "sold_via_name"]
         datatables_always_serialize = [
             "id",
-            "pass_number",
-            "sold_via",
-            "option",
-            "first_name",
-            "last_name",
-            "email",
-            "vehicle_registration_1",
-            "vehicle_registration_2",
-            "park_group",
-            "date_start",
-            "date_expiry",
-            "renew_automatically",
-            "processing_status",
-            "processing_status_display_name",
-            "datetime_created",
-            "datetime_updated",
         ]
 
     def get_park_pass_pdf(self, obj):
