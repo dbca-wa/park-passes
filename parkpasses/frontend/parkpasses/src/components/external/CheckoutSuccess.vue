@@ -5,7 +5,7 @@
                 <h1>Checkout Success</h1>
             </div>
         </div>
-        <div class="row ms-4">
+        <div class="row ms-4 g-4 pe-3">
 
             <div v-if="isRetailer" class="col-md-3">
                 <div class="card">
@@ -33,18 +33,18 @@
 
                 <div v-if="order" class="card bg-white">
                     <div class="card-header checkout-success-item-header">
-                        <span>Order Placed</span>
-                        <span>{{ formattedOrderDate }}</span>
+                        <span class="heading">Order Placed</span>
+                        <span class="d-none d-sm-block">{{ formattedOrderDate }}</span>
+                        <span class="d-bloack d-sm-none">{{ formattedOrderDateShort }}</span>
 
-                        <span>Items</span>
+                        <span class="heading">Items</span>
                         <span>{{ order.items.length }}</span>
 
-                        <span>Total</span>
+                        <span class="heading">Total</span>
                         <span>${{ order.total.toFixed(2) }}</span>
 
-                        <span>ORDER # {{ order.order_number }}</span>
-                        <span><a href="#">View Invoice</a></span>
-
+                        <span class="heading">ORDER # {{ order.order_number }}</span>
+                        <span><a :href="invoiceURL(order.id)" target="_blank">View Invoice</a></span>
                     </div>
                     <div class="card-body">
 
@@ -78,12 +78,16 @@ export default {
             orderUUID: null,
             order: null,
             formattedOrderDate: null,
+            formattedOrderDateShort: null,
         };
     },
     components: {
 
     },
     methods: {
+        invoiceURL: function(orderId) {
+            return apiEndpoints.externalOrderInvoice(orderId);
+        },
         fetchOrder: function (uuid) {
             let vm = this;
             vm.loading = true;
@@ -97,6 +101,7 @@ export default {
                     }
                     // Do something after adding the voucher to the database and the users cart
                     vm.formattedOrderDate = helpers.getPrettyDateFromDatetime(data.datetime_created)
+                    vm.formattedOrderDateShort = helpers.getShortDate(data.datetime_created)
                     vm.order = Object.assign({}, data);
                     console.log(vm.order)
                 })
@@ -129,19 +134,67 @@ export default {
         display: grid;
 
         /* create colums. 1fr means use available space */
-        grid-template-rows: 1fr 1fr;
-        grid-template-columns: max-content max-content 1fr max-content;
-         grid-auto-flow: column;
+        grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+        grid-template-columns: max-content;
+        grid-auto-flow: column;
         align-items: center;
         justify-content: center;
-        grid-gap: 2px 30px;
+        grid-gap: 2px 3px;
         color: #565959;
         font-size:12px;
+    }
+
+    .checkout-success-item-header .heading{
+        font-weight: bold;
     }
 
     .order-item {
         display: grid;
         grid-template-columns: 21fr max-content;
+        font-size:0.8em;
+    }
+
+    @media (min-width: 425px) {
+        .checkout-success-item-header {
+            grid-template-rows: 1fr 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
+        }
+
+
+        .order-item {
+            font-size:0.8em;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .checkout-success-item-header {
+            /* create a grid */
+            display: grid;
+
+            /* create colums. 1fr means use available space */
+            grid-template-rows: 1fr 1fr;
+            grid-template-columns: max-content max-content 1fr max-content;
+            grid-auto-flow: column;
+            align-items: center;
+            justify-content: center;
+            grid-gap: 2px 14px;
+            color: #565959;
+            font-size:12px;
+        }
+
+        .checkout-success-item-header .heading{
+            font-weight: normal;
+        }
+
+        .order-item {
+            font-size:0.9em;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .checkout-success-item-header {
+            grid-gap: 2px 30px;
+        }
     }
 
 </style>
