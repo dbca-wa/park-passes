@@ -2,7 +2,7 @@
 This management commands sends emails to customers who have have a pass that is about
 to expire.
 
-Usage: ./manage.sh pass_send_atuorenew_notification_emails
+Usage: ./manage.sh pass_send_autorenew_notification_emails
         (this command should be run by a cron job or task runner not manually)
 
 """
