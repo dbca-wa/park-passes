@@ -65,7 +65,7 @@ class Command(BaseCommand):
                     )
                 else:
                     if park_pass.renew_automatically:
-                        park_pass.send_atuorenew_notification_emails()
+                        park_pass.send_autorenew_notification_emails()
                         logger.info(
                             f"Notification email sent to recipient of Pass: {park_pass}"
                         )
