@@ -57,6 +57,7 @@ drf-renderer-xlsx = "^1.0.0"
 django-org-model-logs = "^1.0.0"
 django-org-model-documents = "^1.0.0"
 django-autoslug = "^1.9.8"
+XlsxWriter = "^3.0.3"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"
