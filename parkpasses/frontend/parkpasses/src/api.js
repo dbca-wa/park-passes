@@ -140,8 +140,8 @@ module.exports = {
     orderRetrieveExternal: function (uuid) {
         return                          `/api/orders/external/order-by-uuid/${uuid}/`;
     },
-    externalOrderInvoice: function (passId) {
-        return                          `/api/orders/external/orders/${passId}/retrieve-invoice`
+    externalOrderInvoice: function (orderId) {
+        return                          `/api/orders/external/orders/${orderId}/retrieve-invoice`
     },
 
     /* ========================= Retailer Groups =========================================*/
