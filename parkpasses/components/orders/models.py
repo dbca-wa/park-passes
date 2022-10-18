@@ -27,6 +27,7 @@ class Order(models.Model):
 
     order_number = models.CharField(unique=True, max_length=50, null=False, blank=False)
     uuid = models.CharField(
+        unique=True,
         max_length=36,
         null=False,
         blank=False,
@@ -66,7 +67,9 @@ class Order(models.Model):
 
     @property
     def total(self):
-        return Decimal(self.items.all().aggregate(Sum("amount"))["amount__sum"])
+        if self.items.exists():
+            return Decimal(self.items.all().aggregate(Sum("amount"))["amount__sum"])
+        return Decimal("0.00")
 
     @property
     def total_display(self):
