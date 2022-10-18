@@ -104,10 +104,18 @@
                         </div>
                         <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="address" class="col-form-label">Address</label>
+                                <label for="addressLine1" class="col-form-label">Address Line 1</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
-                                <input type="text" id="address" name="address" v-model="pass.address" class="form-control" required="required">
+                                <input type="text" id="addressLine1" name="addressLine1" v-model="pass.address_line_1" class="form-control" required="required">
+                            </div>
+                        </div>
+                        <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
+                            <div class="col-12 col-lg-12 col-xl-3">
+                                <label for="addressLine2" class="col-form-label">Address Line 2</label>
+                            </div>
+                            <div class="col-12 col-lg-12 col-xl-9">
+                                <input type="text" id="addressLine2" name="addressLine2" v-model="pass.address_line_2" class="form-control">
                             </div>
                         </div>
                         <div v-if="isGoldStarPass" class="row g-1 align-top mb-2">
@@ -540,7 +548,7 @@ export default {
             if(!this.passType){
                 return false;
             }
-            return ('GOLD_STAR'==this.passType.name ? true : false)
+            return ('GOLD_STAR_PASS'==this.passType.name ? true : false)
         },
         indefiniteArticle() {
             return ('A'==this.passType.display_name.substring(0,1) ? 'an' : 'a' )
