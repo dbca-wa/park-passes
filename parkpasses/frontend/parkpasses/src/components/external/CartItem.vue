@@ -67,7 +67,13 @@ const notMobile = breakpoints.greaterOrEqual('sm');
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Your First Name</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.first_name}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Your Last Name</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.last_name}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Your Email</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.email}}</div>
-                        <div v-if="cartItem.postcode && cartItem.postcode.length" class="col-12 col-sm-6 fw-bold border-bottom">Amount</div><div v-if="cartItem.postcode && cartItem.postcode.length" class="col-12 col-sm-6 border-bottom">${{cartItem.postcode}}</div>
+                        <div v-if="cartItem.mobile" class="col-12 col-sm-6 fw-bold border-bottom">Mobile</div><div v-if="cartItem.mobile" class="col-12 col-sm-6 border-bottom">{{cartItem.mobile}}</div>
+                        <div v-if="cartItem.company" class="col-12 col-sm-6 fw-bold border-bottom">Company</div><div v-if="cartItem.company" class="col-12 col-sm-6 border-bottom">{{cartItem.company}}</div>
+                        <div v-if="cartItem.address_line_1" class="col-12 col-sm-6 fw-bold border-bottom">Address Line 1</div><div v-if="cartItem.address_line_1" class="col-12 col-sm-6 border-bottom">{{cartItem.address_line_1}}</div>
+                        <div v-if="cartItem.address_line_2" class="col-12 col-sm-6 fw-bold border-bottom">Address Line 2</div><div v-if="cartItem.address_line_2" class="col-12 col-sm-6 border-bottom">{{cartItem.address_line_2}}</div>
+                        <div v-if="cartItem.suburb" class="col-12 col-sm-6 fw-bold border-bottom">suburb</div><div v-if="cartItem.suburb" class="col-12 col-sm-6 border-bottom">{{cartItem.suburb}}</div>
+                        <div v-if="cartItem.state" class="col-12 col-sm-6 fw-bold border-bottom">state</div><div v-if="cartItem.state" class="col-12 col-sm-6 border-bottom">{{cartItem.state}}</div>
+                        <div v-if="cartItem.postcode && cartItem.postcode.length" class="col-12 col-sm-6 fw-bold border-bottom">Postcode</div><div v-if="cartItem.postcode && cartItem.postcode.length" class="col-12 col-sm-6 border-bottom">{{cartItem.postcode}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Price</div><div class="col-12 col-sm-6 border-bottom">${{cartItem.price}}</div>
                     </div>
                 </div>
