@@ -22,6 +22,7 @@ from django.core.exceptions import (
     ValidationError,
 )
 from django.core.files.storage import FileSystemStorage
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils import timezone
 from django_resized import ResizedImageField
@@ -32,6 +33,7 @@ from parkpasses.components.passes.exceptions import (
     MultipleDefaultPricingWindowsExist,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
+    SendGoldPassDetailsToPICAEmailFailed,
     SendPassAutoRenewNotificationEmailFailed,
     SendPassExpiryNotificationEmailFailed,
     SendPassPurchasedEmailNotificationFailed,
@@ -408,6 +410,26 @@ class Pass(models.Model):
 
     objects = PassManager()
 
+    NEW_SOUTH_WALES = "NSW"
+    VICTORIA = "VIC"
+    QUEENSLAND = "QLD"
+    WESTERN_AUSTRALIA = "WA"
+    SOUTH_AUSTRALIA = "SA"
+    TASMANIA = "TAS"
+    AUSTRALIAN_CAPITAL_TERRITORY = "ACT"
+    NORTHERN_TERRITORY = "NT"
+
+    STATE_CHOICES = [
+        (NEW_SOUTH_WALES, "Western Australia"),
+        (VICTORIA, "Victoria"),
+        (QUEENSLAND, "Queensland"),
+        (WESTERN_AUSTRALIA, "Western Australia"),
+        (SOUTH_AUSTRALIA, "South Australia"),
+        (TASMANIA, "Tasmania"),
+        (AUSTRALIAN_CAPITAL_TERRITORY, "Australian Capital Territory"),
+        (NORTHERN_TERRITORY, "Western Australia"),
+    ]
+
     FUTURE = "FU"
     CURRENT = "CU"
     EXPIRED = "EX"
@@ -428,7 +450,25 @@ class Pass(models.Model):
     last_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
     mobile = models.CharField(max_length=10, null=False, blank=False, default="")
-    postcode = models.CharField(max_length=4, null=True, blank=True)
+    company = models.CharField(max_length=50, null=True, blank=True)
+    address_line_1 = models.CharField(max_length=100, null=True, blank=True)
+    address_line_2 = models.CharField(max_length=100, null=True, blank=True)
+    suburb = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(
+        max_length=3,
+        choices=STATE_CHOICES,
+        default=WESTERN_AUSTRALIA,
+        null=True,
+        blank=True,
+    )
+    postcode = models.CharField(
+        null=True,
+        blank=True,
+        max_length=4,
+        validators=[
+            MinLengthValidator(4, "Australian postcodes must contain 4 digits")
+        ],
+    )
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
     drivers_licence_number = models.CharField(max_length=11, null=True, blank=True)
@@ -448,6 +488,7 @@ class Pass(models.Model):
         max_length=2, choices=PROCESSING_STATUS_CHOICES, null=True, blank=True
     )
     in_cart = models.BooleanField(null=False, blank=False, default=True)
+    purchase_email_sent = models.BooleanField(null=False, blank=False, default=False)
     sold_via = models.ForeignKey(
         RetailerGroup, on_delete=models.PROTECT, null=True, blank=True
     )
@@ -609,12 +650,11 @@ class Pass(models.Model):
             self.processing_status = Pass.CURRENT
 
     def save(self, *args, **kwargs):
+        logger.debug("Entered pass save method.")
         self.date_expiry = self.date_start + timezone.timedelta(
             days=self.option.duration
         )
         self.set_processing_status()
-
-        logger.debug("date_start = " + str(self.date_start))
 
         if self.user:
             email_user = self.email_user
@@ -622,13 +662,29 @@ class Pass(models.Model):
             self.last_name = email_user.last_name
             self.email = email_user.email
 
-        """ Consider: Running generate_park_pass_pdf() with a message queue would be much better """
         super().save(*args, **kwargs)
-        if not self.in_cart:
-            self.generate_park_pass_pdf()
+
         if not self.pass_number:
             self.pass_number = f"PP{self.pk:06d}"
-        logger.debug("pass_number = " + self.pass_number)
+
+        if not self.in_cart:
+            """Consider: Running generate_park_pass_pdf() with a message queue would be much better"""
+            self.generate_park_pass_pdf()
+            if not self.purchase_email_sent:
+                self.send_purchased_notification_email()
+                logger.info(
+                    f"Pass purchased notification email sent for pass {self.pass_number}",
+                    extra={"className": self.__class__.__name__},
+                )
+                self.purchase_email_sent = True
+            else:
+                self.send_updated_notification_email()
+                logger.info(
+                    f"Pass update notification email sent for pass {self.pass_number}",
+                    extra={"className": self.__class__.__name__},
+                )
+
+        logger.debug("Updating pass.")
         super().save(force_update=True)
 
     def send_autorenew_notification_email(self):
@@ -661,6 +717,16 @@ class Pass(models.Model):
         except Exception as e:
             SendPassPurchasedEmailNotificationFailed(error_message.format(self.id, e))
 
+    def send_updated_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_updated_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_updated_notification_email(self)
+        except Exception as e:
+            SendPassPurchasedEmailNotificationFailed(error_message.format(self.id, e))
+
     def send_vehicle_details_not_yet_provided_notification_email(self):
         error_message = "An exception occured trying to run "
         error_message += (
@@ -674,6 +740,16 @@ class Pass(models.Model):
             SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(
                 error_message.format(self.id, e)
             )
+
+    def send_gold_pass_details_to_pica(self, gold_passes_excel_file):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_gold_pass_details_to_pica for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_gold_pass_details_to_pica(self, gold_passes_excel_file)
+        except Exception as e:
+            SendGoldPassDetailsToPICAEmailFailed(error_message.format(self.id, e))
 
 
 class PassCancellationManager(models.Manager):
