@@ -39,5 +39,10 @@ class SendPassPurchasedEmailNotificationFailed(Exception):
 
 
 class SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(Exception):
-    """The exception to be thrown if an error occurs when sending the pass purchase email
-    notification"""
+    """The exception to be thrown if an error occurs when sending the pass vehicle details
+    not yet provided email notification"""
+
+
+class SendGoldPassDetailsToPICAEmailFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the gold pass details to
+    pica email"""
