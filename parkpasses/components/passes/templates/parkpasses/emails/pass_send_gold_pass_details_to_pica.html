@@ -1,0 +1,30 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{% block greetings %}
+            <p>Dear PICA User,</p>
+{% endblock %}
+
+{%  block content %}
+            <p>The following Gold Star Passes were purchased yesterday:</p>
+
+            {% for park_pass in park_passes: %}
+
+            <table>
+                <tr><th>Pass Number:</th><td>{{park_pass.park_pass_number}}</td>
+                <tr><th>First Name:</th><td>{{park_pass.first_name}}</td>
+                <tr><th>Last Name:</th><td>{{park_pass.last_name}}</td>
+                <tr><th>Address Line 1:</th><td>{{park_pass.address_line_1}}</td>
+                <tr><th>Address Line 2:</th><td>{{park_pass.address_line_2}}</td>
+                <tr><th>Suburb:</th><td>{{park_pass.suburb}}</td>
+                <tr><th>Postcode:</th><td>{{park_pass.postcode}}</td>
+                <tr><th>State:</th><td>{{park_pass.state}}</td>
+                <tr><th>Mobile:</th><td>{{park_pass.mobile}}</td>
+                <tr><th>Start Date of Pass:</th><td>{{park_pass.date_start|date:'dd-mm-Y'}}</td>
+            </table>
+
+            <br>
+
+            {% endfor %}
+
+
+{%  endblock %}

@@ -1,7 +1,7 @@
 {%  extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
-            <p>Dear {{ emailuser.first_name|add:" "|add:emailuser.last_name }},</p>
+            <p>Dear {{ emailuser.first_name }} {{ emailuser.last_name }},</p>
 {% endblock %}
 
 {%  block content %}

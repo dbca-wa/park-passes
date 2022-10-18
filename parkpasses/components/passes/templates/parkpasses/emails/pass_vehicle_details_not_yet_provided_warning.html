@@ -1,11 +1,11 @@
 {%  extends 'parkpasses/emails/base_email.html' %}
 
+{% block greetings %}
+            <p>Dear {{pass.first_name}} {{pass.last_name}},</p>
+{% endblock %}
+
 {%  block content %}
+            <p>You have not yet provided your vehicle registration details for your park pass valid from {{pass.date_start|date:'dd-mm-Y'}}</p>.
 
-    {{pass.first_name}} {{pass.last_name}},
-
-    You have not yet provided your vehicle registration details for your park pass valid from {{pass.date_start}}.
-
-    Log in to your account on {{site_url}} and enter the vehicle registration details for your park pass.
-
+            <p>Log in to your account on {{site_url}} and enter the vehicle registration details for your park pass.</p>
 {%  endblock %}

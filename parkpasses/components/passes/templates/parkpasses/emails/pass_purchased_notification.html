@@ -1,28 +1,30 @@
 {%  extends 'parkpasses/emails/base_email.html' %}
 
+{% block greetings %}
+            <p>Dear {{pass.first_name}} {{pass.last_name}},</p>
+{% endblock %}
+
 {%  block content %}
+            <p>You have purchased a park pass with the following details:</p>
 
-{{pass.first_name}} {{pass.last_name}},
+            <table>
+                <tr><th>Pass Type:</th><td>{{pass.pass_type_display_name}}</td>
+                <tr><th>Duration:</th><td>{{pass.duration}}</td>
+                <tr><th>Price:</th><td>{{pass.price}}</td>
+                <tr><th>Start Date:</th><td>{{pass.date_start|date:'dd-mm-Y'}}</td>
+                <tr><th>Expiry Date:</th><td>{{pass.date_expiry|date:'dd-mm-Y'}}</td>
+                {% if pass.park_group %}
+                <tr><th>Park Group:</th><td>{{pass.park_group}}</td>
+                {% endif %}
+                {% if pass.drivers_licence_number %}
+                <tr><th>Driver's Licence Number:</th><td>{{pass.drivers_licence_number}}</td>
+                {% endif %}
+            </table>
 
-You have purchased a park pass with the following details:
+            <p>Your park pass pdf is attached to this email.</p>
 
-Pass Type: {{pass.pass_type_display_name}}
-Duration: {{pass.duration}}
-Price: {{pass.price}}
-Start Date: {{pass.date_start}}
-Expiry Date: {{pass.date_expiry}}
-{% if pass.park_group %}
-Park Group: {{pass.park_group}}
-{% endif %}
-{% if pass.drivers_licence_number %}
-Driver's Licence Number: {{pass.drivers_licence_number}}
-{% endif %}
+            <p>To update the vehicle registration details and generate a new park pass pdf go to <a href="{{site_url}}{% url 'your-park-passes' %}">{{site_url}}{% url 'your-park-passes' %}</a>.</p>
 
-Your park pass pdf is attached to this email.
-
-To update the vehicle registration details and generate a new park pass pdf go to {{site_url}}.
-
-Once you have added your vehicle details to your park pass, please print it out and display it on
-your vehicle dashboard when entering a national park.
-
+            <p>Once you have added your vehicle details to your park pass, please print it out and display it on
+            your vehicle dashboard when entering a national park.</p>
 {%  endblock %}

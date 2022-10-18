@@ -1,0 +1,16 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            Dear {{pass.first_name}} {{pass.last_name}},
+{% endblock %}
+
+{%  block content %}
+            Your park pass has been updated.
+
+            Your new park pass pdf is attached to this email.
+
+            To update the vehicle registration details and generate a new park pass pdf go to {{site_url}}{% url 'your-park-passes' %}.
+
+            Once you have added your vehicle details to your park pass, please print it out and display it on
+            your vehicle dashboard when entering a national park.
+{%  endblock %}
