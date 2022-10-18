@@ -110,26 +110,14 @@ class PassEmails:
         log_communication(park_pass.recipient_email, message, "email", park_pass)
 
     @classmethod
-    def send_pass_autorenew_notification_email(self, park_pass):
-        email = PassAutoRenewNotificationEmail()
-        ExternalPassSerializer = apps.get_model("parkpasses", "ExternalPassSerializer")
-        serializer = ExternalPassSerializer(park_pass)
-        context = {
-            "pass": serializer.data,
-            "site_url": settings.SITE_URL,
-        }
-        message = email.send(park_pass.email, context=context)
-        log_communication(park_pass.recipient_email, message, "email", park_pass)
-
-    @classmethod
     def send_gold_pass_details_to_pica(self, park_pass, gold_passes_excel_file):
-        email = PassAutoRenewNotificationEmail(
+        logger.debug("send_gold_pass_details_to_pica")
+        email = PassGoldPassDetailsForPICAEmail(
             park_pass.datetime_created.strftime("%d/%m/%Y")
         )
-        ExternalPassSerializer = apps.get_model("parkpasses", "ExternalPassSerializer")
-        serializer = ExternalPassSerializer(park_pass)
+        logger.debug(str(email))
         context = {
-            "pass": serializer.data,
+            "park_pass": park_pass,
             "site_url": settings.SITE_URL,
         }
         message = email.send(
