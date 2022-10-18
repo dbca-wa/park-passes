@@ -53,9 +53,11 @@ class Command(BaseCommand):
             else:
                 voucher.send_voucher_recipient_notification_email()
                 logger.info(
-                    f"Notification email sent to recipient of Voucher: {voucher}"
+                    f"Notification email sent to recipient of Voucher: {voucher}",
+                    extra={"className": self.__class__.__name__},
                 )
                 voucher.send_voucher_purchase_notification_email()
                 logger.info(
-                    f"Notification email sent to purchaser of Voucher: {voucher}"
+                    f"Notification email sent to purchaser of Voucher: {voucher}",
+                    extra={"className": self.__class__.__name__},
                 )
