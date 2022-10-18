@@ -131,7 +131,12 @@ class Cart(models.Model):
             "save_order_to_db_and_delete_cart = "
             + str(save_order_to_db_and_delete_cart)
         )
-        order = Order(user=self.user)
+        if Order.objects.filter(uuid=uuid).exists():
+            order = Order.objects.get(uuid=uuid)
+            order.user = self.user
+        else:
+            order = Order(user=self.user)
+
         order_items = []
         if save_order_to_db_and_delete_cart:
             order.uuid = uuid
