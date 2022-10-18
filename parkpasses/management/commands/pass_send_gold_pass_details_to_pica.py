@@ -132,5 +132,6 @@ class Command(BaseCommand):
                 else:
                     park_pass.send_gold_pass_details_to_pica(file_path)
                     logger.info(
-                        f"Notification email sent to recipient of Pass: {park_pass}"
+                        f"Notification email sent to recipient of Pass: {park_pass}",
+                        extra={"className": self.__class__.__name__},
                     )
