@@ -210,8 +210,7 @@ if DEBUG:
         "disable_existing_loggers": True,
         "formatters": {
             "verbose": {
-                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s] \
-                    [%(className)s.%(funcName)s] %(message)s"
+                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s][%(className)s.%(funcName)s] %(message)s"
             },
         },
         "handlers": {
@@ -236,7 +235,7 @@ if DEBUG:
         "loggers": {
             "": {
                 "handlers": ["console"],
-                "level": env("LOG_CONSOLE_LEVEL", "WARNING"),
+                "level": "DEBUG",
                 "propagate": True,
             },
             "parkpasses": {
