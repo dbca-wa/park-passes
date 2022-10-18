@@ -170,6 +170,14 @@ class Voucher(models.Model):
         super().save(*args, **kwargs)
         if not self.voucher_number:
             self.voucher_number = f"V{self.pk:06d}"
+
+        if not self.in_cart:
+            self.send_voucher_purchase_notification_email()
+            logger.info(
+                f"Voucher purchased notification email sent for voucher {self.voucher_number}",
+                extra={"className": self.__class__.__name__},
+            )
+
         super().save(force_update=True)
 
     def send_voucher_purchase_notification_email(self):
@@ -179,11 +187,8 @@ class Voucher(models.Model):
             try:
                 VoucherEmails.send_voucher_purchase_notification_email(self)
                 self.processing_status = Voucher.DELIVERED
-                if not settings.DEBUG:  # handy for testing
-                    self.save()
             except Exception as e:
                 self.processing_status = Voucher.NOT_DELIVERED
-                self.save()
                 SendVoucherRecipientEmailNotificationFailed(
                     error_message.format(self.id, timezone.now(), e)
                 )
@@ -199,7 +204,6 @@ class Voucher(models.Model):
                     self.save()
             except Exception as e:
                 self.processing_status = Voucher.NOT_DELIVERED
-                self.save()
                 SendVoucherRecipientEmailNotificationFailed(
                     error_message.format(self.id, timezone.now(), e)
                 )
