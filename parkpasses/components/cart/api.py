@@ -64,7 +64,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
             cart_item = self.get_object()
             CartUtils.decrement_cart_item_count(request)
             logger.info(
-                f"Destroyed Cart Item {cart_item} for cart {cart_item.cart}",
+                f"Destroyed Cart Item {cart_item} {cart_item.cart}",
                 extra={"className": self.__class__.__name__},
             )
             return super().destroy(request, *args, **kwargs)
@@ -102,7 +102,7 @@ class CartView(APIView):
             cart_items.append(item)
 
         logger.info(
-            f"Cart items for cart {cart}: {cart_items}",
+            f"Cart items in {cart}: {cart_items}",
             extra={"className": self.__class__.__name__},
         )
 
@@ -156,9 +156,7 @@ class LedgerCheckoutView(APIView):
             logger.debug("\nbasket_parameters = " + str(basket_parameters))
 
             create_basket_session(request, request.user.id, basket_parameters)
-            invoice_text = (
-                f'Park Passes Order: {{"user":{request.user.id}, "uuid": {cart.uuid} }}'
-            )
+            invoice_text = f"Park Passes Order: {cart.uuid}"
             logger.debug("\ninvoice_text = " + invoice_text)
             checkout_parameters = CartUtils.get_checkout_parameters(
                 request, cart, invoice_text
