@@ -234,8 +234,14 @@ if DEBUG:
             },
         },
         "loggers": {
+            "": {
+                "handlers": ["console"],
+                "level": env("LOG_CONSOLE_LEVEL", "WARNING"),
+                "propagate": True,
+            },
             "parkpasses": {
                 "handlers": ["console", "rotating_file", "mail_admins"],
+                "level": "DEBUG",
                 "propagate": False,
             },
             "org_model_documents": {
@@ -276,16 +282,17 @@ else:
         "loggers": {
             "parkpasses": {
                 "handlers": ["console", "rotating_file", "mail_admins"],
+                "level": "INFO",
                 "propagate": False,
             },
             "org_model_documents": {
                 "handlers": ["console"],
-                "level": "DEBUG",
+                "level": "INFO",
                 "propagate": False,
             },
             "org_model_logs": {
                 "handlers": ["console"],
-                "level": "DEBUG",
+                "level": "INFO",
                 "propagate": False,
             },
         },
@@ -307,6 +314,10 @@ RETAILER_GROUP_INVOICE_ROOT = env(
 
 RETAILER_GROUP_REPORT_ROOT = env(
     "RETAILER_GROUP_REPORT_ROOT", PROTECTED_MEDIA_ROOT + "/retailer_group_reports"
+)
+
+PICA_GOLD_STAR_PASS_ROOT = env(
+    "RETAILER_GROUP_REPORT_ROOT", PROTECTED_MEDIA_ROOT + "/pica_gold_star_pass"
 )
 
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
