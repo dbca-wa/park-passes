@@ -14,58 +14,87 @@ logger = logging.getLogger(__name__)
 def belongs_to(request, group_name):
     if not request.user.is_authenticated:
         return False
+    if request.user.is_superuser:
+        return True
 
     user = request.user
-    cache_key = "user-" + str(user.id) + "-is-a-member-of-" + slugify(group_name)
+    cache_key = settings.CACHE_KEY_BELONGS_TO.format(str(user.id), slugify(group_name))
     belongs_to_value = cache.get(cache_key)
     if belongs_to_value is None:
         belongs_to_value = SystemGroupPermission.objects.filter(
-            system_group__name=group_name, emailuser=user
+            system_group__name=group_name, emailuser=user, active=True
         ).exists()
-        cache.set(cache_key, belongs_to_value, 3600)
+        cache.set(cache_key, belongs_to_value, settings.CACHE_TIMEOUT_2_HOURS)
     return belongs_to_value
 
 
-def is_parkpasses_admin(request):
+def is_internal(request):
     if not request.user.is_authenticated:
         return False
-    cache_key = (
-        "user-"
-        + str(request.user.id)
-        + "-is-a-member-of-"
-        + slugify(settings.ADMIN_GROUP)
-    )
-    is_parkpasses_admin = cache.get(cache_key)
-    if is_parkpasses_admin is None:
-        is_parkpasses_admin = request.user.is_superuser or belongs_to(
-            request, settings.ADMIN_GROUP
+    if request.user.is_superuser:
+        return True
+
+    user = request.user
+    cache_key = settings.CACHE_KEY_IS_INTERNAL.format(str(user.id))
+    is_internal = cache.get(cache_key)
+    if is_internal is None:
+        is_internal = (
+            is_parkpasses_admin(request)
+            or is_parkpasses_officer(request)
+            or is_parkpasses_payments_officer(request)
+            or is_parkpasses_read_only_user(request)
+            or is_parkpasses_discount_code_percentage_user(request)
         )
-        cache.set(cache_key, is_parkpasses_admin, 3600)
-    return is_parkpasses_admin
+        cache.set(cache_key, is_internal, settings.CACHE_TIMEOUT_2_HOURS)
+    logger.info(f"{cache_key}:{is_internal}", extra={"className": "N/A"})
+    return is_internal
+
+
+def is_parkpasses_admin(request):
+    return belongs_to(request, settings.ADMIN_GROUP)
+
+
+def is_parkpasses_officer(request):
+    return belongs_to(request, settings.OFFICER_GROUP)
+
+
+def is_parkpasses_payments_officer(request):
+    return belongs_to(request, settings.PAYMENTS_OFFICER_GROUP)
+
+
+def is_parkpasses_read_only_user(request):
+    return belongs_to(request, settings.READ_ONLY_GROUP)
+
+
+def is_parkpasses_discount_code_percentage_user(request):
+    return belongs_to(request, settings.DISCOUNT_CODE_PERCENTAGE_GROUP)
 
 
 def is_retailer(request):
     if not request.user.is_authenticated:
         return False
+    if request.user.is_superuser:
+        return True
 
-    cache_key = "user-" + str(request.user.id) + "-is-a-retailer"
+    cache_key = settings.CACHE_KEY_RETAILER.format(str(request.user.id))
     is_retailer = cache.get(cache_key)
-    logger.debug("is_retailer = " + str(is_retailer))
     if is_retailer is None:
         is_retailer = RetailerGroupUser.objects.filter(
             active=True, retailer_group__active=True, emailuser_id=request.user.id
         ).exists()
-        cache.set(cache_key, is_retailer, 3600)
+        cache.set(cache_key, is_retailer, settings.CACHE_TIMEOUT_2_HOURS)
+    logger.info(f"{cache_key}:{is_retailer}", extra={"className": "N/A"})
     return is_retailer
 
 
 def is_retailer_admin(request):
     if not is_retailer(request):
         return False
+    if request.user.is_superuser:
+        return True
 
-    cache_key = "user-" + str(request.user.id) + "-is-a-retailer-admin"
+    cache_key = settings.CACHE_KEY_RETAILER_ADMIN.format(str(request.user.id))
     is_retailer_admin = cache.get(cache_key)
-    logger.debug("is_retailer_admin = " + str(is_retailer))
     if is_retailer_admin is None:
         is_retailer_admin = RetailerGroupUser.objects.filter(
             active=True,
@@ -73,7 +102,8 @@ def is_retailer_admin(request):
             is_admin=True,
             emailuser_id=request.user.id,
         ).exists()
-        cache.set(cache_key, is_retailer_admin, 3600)
+        cache.set(cache_key, is_retailer_admin, settings.CACHE_TIMEOUT_2_HOURS)
+    logger.info(f"{cache_key}:{is_retailer_admin}", extra={"className": "N/A"})
     return is_retailer_admin
 
 
@@ -116,10 +146,6 @@ def is_customer(request):
 
 def is_authenticated(request):
     return request.user.is_authenticated
-
-
-def is_internal(request):
-    return is_departmentUser(request)
 
 
 def get_all_officers():
