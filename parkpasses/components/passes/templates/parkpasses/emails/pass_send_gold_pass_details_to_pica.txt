@@ -1,28 +1,24 @@
 {%  extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
-            Dear {{pass.first_name}} {{pass.last_name}},
+            Dear PICA User,
 {% endblock %}
 
 {%  block content %}
-            You have purchased a park pass with the following details:
+            The following Gold Star Passes were purchased yesterday:
 
-            Pass Type: {{pass.pass_type_display_name}}
-            Duration: {{pass.duration}}
-            Price: {{pass.price}}
-            Start Date: {{pass.date_start|date:'dd-mm-Y'}}
-            Expiry Date: {{pass.date_expiry|date:'dd-mm-Y'}}
-            {% if pass.park_group %}
-            Park Group: {{pass.park_group}}
-            {% endif %}
-            {% if pass.drivers_licence_number %}
-            Driver's Licence Number: {{pass.drivers_licence_number}}
-            {% endif %}
+            {% for pass in passes %}
+            Pass Number: {{pass.pass_number}}
+            First Name: {{pass.first_name}}
+            Last Name: {{pass.last_name}}
+            Address Line 1: {{pass.address_line_1}}
+            Address Line 2: {{pass.address_line_2}}
+            Suburb: {{pass.suburb}}
+            Postcode: {{pass.postcode}}
+            State: {{pass.state}}
+            Mobile: {{pass.mobile}}
+            Start Date of Pass: {{pass.date_start|date:'d-m-Y'}}
 
-            Your park pass pdf is attached to this email.
+            {% endfor %}
 
-            To update the vehicle registration details and generate a new park pass pdf go to {{site_url}}{% url 'your-park-passes' %}.
-
-            Once you have added your vehicle details to your park pass, please print it out and display it on
-            your vehicle dashboard when entering a national park.
 {%  endblock %}

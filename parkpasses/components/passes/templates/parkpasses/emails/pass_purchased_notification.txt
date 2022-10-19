@@ -10,8 +10,8 @@
             Pass Type: {{pass.pass_type_display_name}}
             Duration: {{pass.duration}}
             Price: {{pass.price}}
-            Start Date: {{pass.date_start|date:'dd-mm-Y'}}
-            Expiry Date: {{pass.date_expiry|date:'dd-mm-Y'}}
+            Start Date: {{pass.date_start|date:'d-m-Y'}}
+            Expiry Date: {{pass.date_expiry|date:'d-m-Y'}}
             {% if pass.park_group %}
             Park Group: {{pass.park_group}}
             {% endif %}
@@ -21,7 +21,7 @@
 
             Your park pass pdf is attached to this email.
 
-            To update the vehicle registration details and generate a new park pass pdf go to {{site_url}}{% url 'your-park-passes' %}.
+            To update the vehicle registration details and generate a new park pass pdf go to {{site_url}}{% url 'your-park-passes' %}
 
             Once you have added your vehicle details to your park pass, please print it out and display it on
             your vehicle dashboard when entering a national park.
