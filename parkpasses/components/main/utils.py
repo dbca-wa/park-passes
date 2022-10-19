@@ -49,7 +49,7 @@ def log_communication(to, message, entry_type, instance):
     communication_log_kwargs = {
         "content_type": content_type,
         "object_id": str(instance.id),
-        "to": instance.recipient_email,
+        "to": to,
         "fromm": settings.DEFAULT_FROM_EMAIL,
         "entry_type": entry_type,
         "subject": message.subject,
