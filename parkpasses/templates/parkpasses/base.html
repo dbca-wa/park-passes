@@ -1,10 +1,9 @@
 {% extends "webtemplate_dbca/base_b5.html" %}
 {% load static %}
-
 {% load users %}
 {% load utils %}
 
-{% is_retailer as is_retailer_user %}
+
 {% is_payment_officer as is_payment_officer %}
 
 {% build_tag as build_tag %}
@@ -65,8 +64,13 @@
                         {{ request.user.email }}
                     {% endif %}
                     </strong>
-                    {% if request.session.retailer %}
+
+                    {% is_internal as is_internal_user %}
+
+                    {% if not is_internal_user %}
+                        {% if request.session.retailer %}
                         [{{ request.session.retailer.name }}]
+                        {% endif %}
                     {% endif %}
                 </a>
             </li>
@@ -87,7 +91,8 @@
                         {% include 'webtemplate_dbca/includes/staff_menu_extras.html' %}
                     {% endblock %}
                 {% endif %}
-                {% if is_retailer_user %}
+                {% is_retailer as is_retailer %}
+                {% if is_retailer %}
                     {% include 'webtemplate_dbca/includes/retailer_menu.html' %}
                 {% endif %}
 
