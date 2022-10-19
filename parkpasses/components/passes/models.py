@@ -33,7 +33,6 @@ from parkpasses.components.passes.exceptions import (
     MultipleDefaultPricingWindowsExist,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
-    SendGoldPassDetailsToPICAEmailFailed,
     SendPassAutoRenewNotificationEmailFailed,
     SendPassExpiryNotificationEmailFailed,
     SendPassPurchasedEmailNotificationFailed,
@@ -695,7 +694,9 @@ class Pass(models.Model):
         try:
             PassEmails.send_pass_autorenew_notification_email(self)
         except Exception as e:
-            SendPassAutoRenewNotificationEmailFailed(error_message.format(self.id, e))
+            raise SendPassAutoRenewNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
 
     def send_expiry_notification_email(self):
         error_message = "An exception occured trying to run "
@@ -705,7 +706,9 @@ class Pass(models.Model):
         try:
             PassEmails.send_pass_expiry_notification_email(self)
         except Exception as e:
-            SendPassExpiryNotificationEmailFailed(error_message.format(self.id, e))
+            raise SendPassExpiryNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
 
     def send_purchased_notification_email(self):
         error_message = "An exception occured trying to run "
@@ -715,7 +718,9 @@ class Pass(models.Model):
         try:
             PassEmails.send_pass_purchased_notification_email(self)
         except Exception as e:
-            SendPassPurchasedEmailNotificationFailed(error_message.format(self.id, e))
+            raise SendPassPurchasedEmailNotificationFailed(
+                error_message.format(self.id, e)
+            )
 
     def send_updated_notification_email(self):
         error_message = "An exception occured trying to run "
@@ -725,7 +730,9 @@ class Pass(models.Model):
         try:
             PassEmails.send_pass_updated_notification_email(self)
         except Exception as e:
-            SendPassPurchasedEmailNotificationFailed(error_message.format(self.id, e))
+            raise SendPassPurchasedEmailNotificationFailed(
+                error_message.format(self.id, e)
+            )
 
     def send_vehicle_details_not_yet_provided_notification_email(self):
         error_message = "An exception occured trying to run "
@@ -737,19 +744,9 @@ class Pass(models.Model):
                 self
             )
         except Exception as e:
-            SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(
+            raise SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(
                 error_message.format(self.id, e)
             )
-
-    def send_gold_pass_details_to_pica(self, gold_passes_excel_file):
-        error_message = "An exception occured trying to run "
-        error_message += (
-            "send_gold_pass_details_to_pica for Pass with id {}. Exception {}"
-        )
-        try:
-            PassEmails.send_gold_pass_details_to_pica(self, gold_passes_excel_file)
-        except Exception as e:
-            SendGoldPassDetailsToPICAEmailFailed(error_message.format(self.id, e))
 
 
 class PassCancellationManager(models.Manager):
