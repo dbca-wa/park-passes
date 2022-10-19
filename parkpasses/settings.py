@@ -161,15 +161,25 @@ else:
 PUBLIC_URL = env("PUBLIC_URL", SITE_URL)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 MEDIA_APP_DIR = env("MEDIA_APP_DIR", "cols")
+
+
+""" ==================== SYSTEM GROUP NAMES ======================== """
+
 ADMIN_GROUP = env("ADMIN_GROUP", "Park Passes Admin")
+OFFICER_GROUP = env("OFFICER_GROUP", "Park Passes Officer")
+PAYMENTS_OFFICER_GROUP = env("PAYMENTS_OFFICER_GROUP", "Park Passes Payments Officer")
+READ_ONLY_GROUP = env("READ_ONLY_GROUP", "Park Passes Read-Only Group")
+DISCOUNT_CODE_PERCENTAGE_GROUP = env(
+    "DISCOUNT_CODE_PERCENTAGE_GROUP", "Park Passes Discount Code Percentage Creator"
+)
+
+
 CRON_RUN_AT_TIMES = env("CRON_RUN_AT_TIMES", "04:05")
 CRON_EMAIL = env("CRON_EMAIL", "cron@" + SITE_DOMAIN).lower()
 NO_REPLY_EMAIL = env("NO_REPLY_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 # for ORACLE Job Notification - override settings_base.py
 EMAIL_FROM = DEFAULT_FROM_EMAIL
 OTHER_PAYMENT_ALLOWED = env("OTHER_PAYMENT_ALLOWED", False)  # Cash/Cheque
-
-OSCAR_BASKET_COOKIE_OPEN = "cols_basket"
 
 
 os.environ[
@@ -238,6 +248,10 @@ if DEBUG:
                 "level": "DEBUG",
                 "propagate": True,
             },
+            "django.template": {
+                "handlers": ["console"],
+                "level": "INFO",
+            },
             "parkpasses": {
                 "handlers": ["console", "rotating_file", "mail_admins"],
                 "level": "DEBUG",
@@ -303,6 +317,18 @@ DEV_APP_BUILD_URL = env(
 )  # URL of the Dev app.js served by webpack & express
 LOV_CACHE_TIMEOUT = 10800
 
+CACHE_TIMEOUT_2_HOURS = 60 * 60 * 2  # 2 HOURS
+CACHE_TIMEOUT_24_HOURS = 60 * 60 * 24  # 24 HOURS
+
+CACHE_KEY_EMAIL_USER = "email-user-{}"
+
+CACHE_KEY_BELONGS_TO = "user-{}-is-a-member-of-{}"
+CACHE_KEY_IS_INTERNAL = "user-{}-is-internal"
+CACHE_KEY_RETAILER = "user-{}-is-a-retailer"
+CACHE_KEY_RETAILER_ADMIN = "user-{}-is-a-retailer-admin"
+
+CACHE_KEY_GROUP_IDS = "{}-{}-user-ids"
+
 PROTECTED_MEDIA_ROOT = env(
     "PROTECTED_MEDIA_ROOT", os.path.join(BASE_DIR, "protected_media")
 )
@@ -318,6 +344,8 @@ RETAILER_GROUP_REPORT_ROOT = env(
 PICA_GOLD_STAR_PASS_ROOT = env(
     "RETAILER_GROUP_REPORT_ROOT", PROTECTED_MEDIA_ROOT + "/pica_gold_star_pass"
 )
+
+PICA_EMAIL = env("PICA_EMAIL", "oak.mcilwain@gmail.com")
 
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
     "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", PROTECTED_MEDIA_ROOT
