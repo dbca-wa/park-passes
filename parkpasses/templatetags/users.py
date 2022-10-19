@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 import pytz
@@ -11,18 +12,44 @@ from parkpasses.components.main.models import SystemMaintenance
 register = Library()
 
 
+logger = logging.getLogger(__name__)
+
+
+@register.simple_tag(takes_context=True)
+def is_internal(context):
+    request = context["request"]
+    logger.debug("Is internal = " + str(parkpasses_helpers.is_internal(request)))
+    return parkpasses_helpers.is_internal(request)
+
+
 @register.simple_tag(takes_context=True)
 def is_parkpasses_admin(context):
-    # checks if user is an AdminUser
     request = context["request"]
     return parkpasses_helpers.is_parkpasses_admin(request)
 
 
 @register.simple_tag(takes_context=True)
-def is_internal(context):
-    # checks if user is a departmentuser and logged in via single sign-on
+def is_parkpasses_officer(context):
     request = context["request"]
-    return parkpasses_helpers.is_internal(request)
+    return parkpasses_helpers.is_parkpasses_officer(request)
+
+
+@register.simple_tag(takes_context=True)
+def is_parkpasses_payments_officer(context):
+    request = context["request"]
+    return parkpasses_helpers.is_parkpasses_payments_officer(request)
+
+
+@register.simple_tag(takes_context=True)
+def is_parkpasses_read_only_user(context):
+    request = context["request"]
+    return parkpasses_helpers.is_parkpasses_read_only_user(request)
+
+
+@register.simple_tag(takes_context=True)
+def is_parkpasses_discount_code_percentage_user(context):
+    request = context["request"]
+    return parkpasses_helpers.is_parkpasses_discount_code_percentage_user(request)
 
 
 @register.simple_tag(takes_context=True)
