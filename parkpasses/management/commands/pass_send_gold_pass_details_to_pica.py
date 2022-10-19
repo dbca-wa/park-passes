@@ -16,21 +16,11 @@ from django.utils import timezone
 from django.utils.text import slugify
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+from parkpasses.components.passes.emails import PassEmails
+from parkpasses.components.passes.exceptions import SendGoldPassDetailsToPICAEmailFailed
 from parkpasses.components.passes.models import Pass
 
 logger = logging.getLogger(__name__)
-
-
-def get_col_widths(dataframe):
-    # First we find the maximum length of the index column
-    idx_max = max(
-        [len(str(s)) for s in dataframe.index.values] + [len(str(dataframe.index.name))]
-    )
-    # Then, we concatenate this to the max of the lengths of column name and its values for each column, left to right
-    return [idx_max] + [
-        max([len(str(s)) for s in dataframe[col].values] + [len(col)])
-        for col in dataframe.columns
-    ]
 
 
 class Command(BaseCommand):
@@ -49,22 +39,19 @@ class Command(BaseCommand):
         )
         today = timezone.now().date()
         yesterday = today - timezone.timedelta(days=1)
+
+        date = yesterday
+        if options["test"]:
+            date = today
+
         # Don't bother doing more expensive query if there are no passes that satisfy the basic criteria
         pass_queryset = Pass.objects.exclude(
             cancellation__isnull=False,  # to exclude cancelled passes
         ).filter(
             in_cart=False,
             option__pricing_window__pass_type__name=settings.GOLD_STAR_PASS,
+            datetime_created__date=date,
         )
-        if options["test"]:
-            # It's handy for testing to be able to use passes created today rather than yesterday
-            pass_queryset = pass_queryset.filter(
-                datetime_created__date=today,
-            )
-        else:
-            pass_queryset = pass_queryset.filter(
-                datetime_created__date=yesterday,
-            )
 
         if pass_queryset.exists():
             passes = pass_queryset
@@ -121,17 +108,26 @@ class Command(BaseCommand):
 
             workbook.close()
 
-            for park_pass in passes:
-
-                if options["test"]:
-                    self.stdout.write(
-                        self.style.SUCCESS(
-                            f"TEST: pretending to call send_gold_pass_details_to_pica on Pass: {park_pass}"
-                        )
+            if options["test"]:
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        "TEST: pretending to call send_gold_pass_details_to_pica."
                     )
-                else:
-                    park_pass.send_gold_pass_details_to_pica(file_path)
+                )
+            else:
+                error_message = "An exception occured trying to run "
+                error_message += (
+                    "send_gold_pass_details_to_pica for Pass with id {}. Exception {}"
+                )
+                try:
+                    PassEmails.send_gold_pass_details_to_pica(
+                        yesterday, passes, file_path
+                    )
                     logger.info(
-                        f"Notification email sent to recipient of Pass: {park_pass}",
+                        "Email of new Gold Pass Information sent to PICA.",
                         extra={"className": self.__class__.__name__},
+                    )
+                except Exception as e:
+                    raise SendGoldPassDetailsToPICAEmailFailed(
+                        error_message.format(self.id, e)
                     )
