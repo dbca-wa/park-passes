@@ -68,6 +68,7 @@ class Voucher(models.Model):
     class Meta:
         app_label = "parkpasses"
         indexes = (models.Index(fields=["code"]),)
+        ordering = ["-id"]
 
     def __str__(self):
         return f"{self.voucher_number} (${self.amount})"
