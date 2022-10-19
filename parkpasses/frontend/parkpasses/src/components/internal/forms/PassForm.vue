@@ -49,25 +49,25 @@
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">First Name</label>
                                 <div class="col-sm-6">
-                                    <input class="form-control" name="firstName" type="text" v-model="pass.first_name" :disabled="isPassCancelled">
+                                    <input class="form-control" name="firstName" type="text" v-model="pass.first_name" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Last Name</label>
                                 <div class="col-sm-6">
-                                    <input class="form-control" name="lastName" type="text" v-model="pass.last_name" :disabled="isPassCancelled">
+                                    <input class="form-control" name="lastName" type="text" v-model="pass.last_name" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Email Address</label>
                                 <div class="col-sm-8">
-                                    <input class="form-control" name="email" type="text" v-model="pass.email" :disabled="isPassCancelled">
+                                    <input class="form-control" name="email" type="text" v-model="pass.email" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Mobile Number</label>
                                 <div class="col-sm-8">
-                                    <input class="form-control" name="mobile" type="text" v-model="pass.mobile" :disabled="isPassCancelled">
+                                    <input class="form-control" name="mobile" type="text" v-model="pass.mobile" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div v-if="pass.postcode" class="row mb-1">
@@ -86,7 +86,7 @@
                                 <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start" :disabled="isPassCancelled">
+                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start" :disabled="fieldDisabled">
                                     </span>
                                 </div>
                             </div>
@@ -102,7 +102,7 @@
                                 <label for="preventFurtherVehicleUpdates" class="col-sm-4 col-form-label">Prevent Further Vehicle Updates</label>
                                 <div class="col-sm-8">
                                     <div class="form-switch">
-                                        <input class="form-check-input org-form-switch-primary" type="checkbox" id="preventFurtherVehicleUpdates" v-model="pass.prevent_further_vehicle_updates" :disabled="isPassCancelled">
+                                        <input class="form-check-input org-form-switch-primary" type="checkbox" id="preventFurtherVehicleUpdates" v-model="pass.prevent_further_vehicle_updates" :disabled="fieldDisabled">
                                     </div>
                                 </div>
                             </div>
@@ -110,7 +110,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration <span v-if="pass.vehicle_registration_2">1</span></label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="isPassCancelled">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="fieldDisabled">
                                     </span>
                                 </div>
                             </div>
@@ -118,7 +118,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="isPassCancelled">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="fieldDisabled">
                                     </span>
                                 </div>
                             </div>
@@ -190,8 +190,8 @@
         <div class="container d-flex justify-content-end">
             <template v-if="!loading">
                 <button @click="returnToPassesDash" class="btn licensing-btn-primary me-2">Exit</button>
-                <button v-if="!isPassCancelled" @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
-                <button v-if="!isPassCancelled" @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
+                <button v-if="!fieldDisabled" @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
+                <button v-if="!fieldDisabled" @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
             </template>
             <template v-else>
                 <button class="btn licensing-btn-primary px-4 ms-2">
@@ -245,7 +245,10 @@ export default {
             return constants.HOLIDAY_PASS_NAME==this.pass.pass_type_name ? true : false;
         },
         isPassCancelled: function () {
-            return (constants.PASS_STATUS_CANCELLED==this.pass.processing_status) ? true : false;
+            return constants.PASS_STATUS_CANCELLED==this.pass.processing_status;
+        },
+        fieldDisabled: function () {
+            return this.isPassCancelled || !this.pass.user_can_edit;
         },
         showSecondVehicleRego: function () {
             if(this.isHolidayPass){
