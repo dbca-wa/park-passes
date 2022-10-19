@@ -92,23 +92,25 @@ class RetailerGroup(models.Model):
         return (self.name,)
 
     def save(self, *args, **kwargs):
-        cache.delete(f"{self._meta.label_lower}.{str(self.id)}")
-        cache.delete(f"{self._meta.label_lower}.{str(self.id)}.user_ids")
+        cache.delete(settings.CACHE_KEY_RETAILER.format(str(self.id)))
+        cache.delete(settings.CACHE_KEY_RETAILER_ADMIN.format(str(self.id)))
+        cache.delete(
+            settings.CACHE_KEY_GROUP_IDS.format(self._meta.label_lower, str(self.id))
+        )
         super().save(*args, **kwargs)
 
     def get_user_ids(self):
-        user_ids_cache = cache.get(f"{self._meta.label_lower}.{str(self.id)}.user_ids")
+        cache_key = settings.CACHE_KEY_GROUP_IDS.format(
+            self._meta.label_lower, str(self.id)
+        )
+        user_ids_cache = cache.get(cache_key)
         if user_ids_cache is None:
             user_ids = list(
                 RetailerGroupUser.objects.filter(retailer_group=self)
                 .values_list("emailuser__id", flat=True)
                 .order_by("id")
             )
-            cache.set(
-                f"{self._meta.label_lower}.{str(self.id)}.user_ids",
-                json.dumps(user_ids),
-                86400,
-            )
+            cache.set(cache_key, json.dumps(user_ids), settings.CACHE_TIMEOUT_24_HOURS)
         else:
             user_ids = json.loads(user_ids_cache)
         return user_ids
