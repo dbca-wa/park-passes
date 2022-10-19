@@ -1,6 +1,11 @@
+{% load users %}
+{% is_parkpasses_payments_officer as is_parkpasses_payments_officer %}
+
+{% if is_parkpasses_payments_officer %}
 <li>
     <a  class="dropdown-item" target="_blank" href="{{ LEDGER_UI_URL }}/reports?system_id={{ PARKPASSES_PAYMENT_SYSTEM_PREFIX }} ">Financial Reports</a>
 </li>
+{% endif %}
 <li>
     <a class="dropdown-item" href="{% url 'account' %}">Account</a>
 </li>
