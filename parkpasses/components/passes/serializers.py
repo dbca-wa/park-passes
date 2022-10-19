@@ -21,6 +21,7 @@ from parkpasses.components.vouchers.serializers import (
     ExternalVoucherSerializer,
     ExternalVoucherTransactionSerializer,
 )
+from parkpasses.helpers import is_parkpasses_officer, is_parkpasses_payments_officer
 
 logger = logging.getLogger(__name__)
 
@@ -502,6 +503,21 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     voucher_transaction_amount = serializers.CharField(
         source="voucher_transaction.voucher.amount"
     )
+    user_can_edit = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Pass
+        fields = "__all__"
+        read_only_fields = [
+            "pass_type",
+            "pricing_window",
+            "sold_via",
+            "sold_via_name",
+            "pass_type_name",
+        ]
+        datatables_always_serialize = [
+            "user_can_edit",
+        ]
 
     def get_discount_code_discount(self, obj):
         if hasattr(obj, "discountcodeusage"):
@@ -519,16 +535,13 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     def get_park_pass_pdf(self, obj):
         return os.path.basename(obj.park_pass_pdf.name)
 
-    class Meta:
-        model = Pass
-        fields = "__all__"
-        read_only_fields = [
-            "pass_type",
-            "pricing_window",
-            "sold_via",
-            "sold_via_name",
-            "pass_type_name",
-        ]
+    def get_user_can_edit(self, obj):
+        request = self.context["request"]
+        if request.user.is_superuser:
+            return True
+        return is_parkpasses_payments_officer(
+            self.context["request"]
+        ) or is_parkpasses_officer(self.context["request"])
 
 
 class InternalPassSerializer(serializers.ModelSerializer):
@@ -542,17 +555,36 @@ class InternalPassSerializer(serializers.ModelSerializer):
     processing_status_display_name = serializers.CharField(
         source="status_display", read_only=True
     )
+    user_can_view_payment_details = serializers.SerializerMethodField()
+    user_can_upload_personnel_passes = serializers.SerializerMethodField()
+    user_can_edit_and_cancel = serializers.SerializerMethodField()
 
     class Meta:
         model = Pass
         fields = "__all__"
         read_only_fields = ["pass_type", "pricing_window", "sold_via", "sold_via_name"]
         datatables_always_serialize = [
-            "id",
+            "user_can_view_payment_details",
+            "user_can_upload_personnel_passes",
+            "user_can_edit_and_cancel",
         ]
 
     def get_park_pass_pdf(self, obj):
         return os.path.basename(obj.park_pass_pdf.name)
+
+    def get_user_can_view_payment_details(self, obj):
+        return is_parkpasses_payments_officer(self.context["request"])
+
+    def get_user_can_upload_personnel_passes(self, obj):
+        return is_parkpasses_officer(self.context["request"])
+
+    def get_user_can_edit_and_cancel(self, obj):
+        request = self.context["request"]
+        if request.user.is_superuser:
+            return True
+        return is_parkpasses_payments_officer(
+            self.context["request"]
+        ) or is_parkpasses_officer(self.context["request"])
 
 
 class InternalPassCancellationSerializer(serializers.ModelSerializer):
