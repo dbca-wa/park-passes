@@ -341,15 +341,22 @@ export default {
                         params: { passId: full.id }
                     });
                     let links = '';
-
-                    if('CA'!=full.processing_status){
-                        links +=  `<a href="${editLink.href}">Edit</a>`;
-                        links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
-                    } else {
+                    if(!full.user_can_edit_and_cancel && !full.user_can_view_payment_details){
                         links +=  `<a href="${editLink.href}">View</a>`;
-
+                    } else {
+                        if('CA'!=full.processing_status){
+                            if(full.user_can_edit_and_cancel){
+                                links +=  `<a href="${editLink.href}">Edit</a>`;
+                                links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
+                            }
+                        } else {
+                            links +=  `<a href="${editLink.href}">View</a>`;
+                        }
+                        if(full.user_can_view_payment_details){
+                            links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
+                        }
                     }
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
+
                     return links;
                 }
             }
