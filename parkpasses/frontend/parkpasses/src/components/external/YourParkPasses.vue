@@ -23,7 +23,7 @@
           </div>
           <div class="card-footer border-top-0 align-items-center m-0">
             <div><span class="badge" :class="statusClass(pass)">{{ pass.processing_status_display_name }}</span></div>
-            <div v-if="canUpdateVehicleDetails(pass)" class="link"><a data-bs-toggle="collapse" :href="'#updateVehicleRego'+pass.id" role="button" aria-expanded="false" :aria-controls="'updateVehicleRego'+pass.id">Update Vehicle Rego</a> <i class="fa-solid fa-car fa-lg ps-1"></i></div>
+            <div v-if="canUpdateVehicleDetails(pass)" class="link"><a data-bs-toggle="collapse" :href="'#updateVehicleRego'+pass.id" role="button" aria-expanded="false" :aria-controls="'updateVehicleRego'+pass.id">Update <span class="d-xl-none d-xxl-inline">Vehicle</span> Rego</a> <i class="fa-solid fa-car fa-lg ps-1"></i></div>
             <div v-else></div>
             <div v-if="passCurrentOrFuture(pass)" class="link"><a :href="passURL(pass.id)" target="blank">Download Pass PDF</a> <i class="fa-solid fa-file-pdf fa-lg ps-1"></i></div>
             <div v-else></div>
@@ -236,7 +236,7 @@ export default {
   }
 }
 
-@media screen and (max-width: 575px) {
+@media screen and (max-width: 767px) {
   .card {
     max-width:300px;
   }
@@ -316,12 +316,11 @@ export default {
   color: #444;
 }
 
-}
-
-@media (min-width: 1024px) {
-  .pass{
+.pass{
     max-width:600px;
   }
+
 }
+
 
 </style>
