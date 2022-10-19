@@ -159,14 +159,17 @@ export default {
             return [
                 'id',
                 'Number',
-                'Recipient',
+                'Recipient Name',
+                'Recipient Email',
                 'Purchaser',
                 'Send Date',
                 'Purchased Value',
                 'Remaining Balance',
                 'Status',
                 'Invoice',
-                'Action'
+                'Code',
+                'Pin',
+                'Action',
             ]
         },
         columnId: function(){
@@ -182,6 +185,7 @@ export default {
                 }
             }
         },
+
         columnVoucherNumber: function(){
             return {
                 data: "voucher_number",
@@ -202,6 +206,13 @@ export default {
                 data: "recipient_email",
                 visible: true,
                 name: 'recipient_email',
+            }
+        },
+        columnPurchaserName: function(){
+            return {
+                data: "purchaser_name",
+                visible: true,
+                name: 'purchaser_name',
             }
         },
         columnDatetimeToEmail: function(){
@@ -266,6 +277,21 @@ export default {
                 }
             }
         },
+        columnCode: function(){
+            return {
+                data: "code",
+                visible: true,
+                name: 'code',
+                orderable: true,
+            }
+        },
+        columnPin: function(){
+            return {
+                data: "pin",
+                visible: true,
+                name: 'pin'
+            }
+        },
         columnAction: function(){
             let vm = this
             return {
@@ -275,7 +301,11 @@ export default {
                 visible: true,
                 'render': function(row, type, full){
                     let links = '';
-                    links +=  `<a target="_blank" href='${apiEndpoints.internalVoucherPaymentDetails(full.id)}'>View Payment Details</a><br/>`;
+                    if(full.user_can_view_payment_details){
+                        links +=  `<a target="_blank" href='${apiEndpoints.internalVoucherPaymentDetails(full.id)}'>View Payment Details</a><br/>`;
+                    } else {
+                        links += 'Available to [Park Passes Payments Officer] only';
+                    }
                     return links;
                 }
             }
@@ -309,11 +339,14 @@ export default {
                 vm.columnVoucherNumber,
                 vm.columnRecipientName,
                 vm.columnRecipientEmail,
+                vm.columnPurchaserName,
                 vm.columnDatetimeToEmail,
                 vm.columnAmount,
                 vm.columnRemainingBalance,
                 vm.columnProcessingStatus,
                 vm.columnInvoice,
+                vm.columnCode,
+                vm.columnPin,
                 vm.columnAction,
             ]
             search = true
