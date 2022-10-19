@@ -1,10 +1,13 @@
 import logging
 
+from django.conf import settings
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
 from parkpasses.components.users.serializers import BasicEmailUserSerializer
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
+from parkpasses.helpers import is_parkpasses_payments_officer
+from parkpasses.ledger_api_utils import retrieve_email_user
 
 logger = logging.getLogger(__name__)
 
@@ -86,13 +89,30 @@ class ExternalUpdateVoucherSerializer(serializers.ModelSerializer):
 class InternalVoucherSerializer(serializers.ModelSerializer):
     remaining_balance = serializers.DecimalField(max_digits=8, decimal_places=2)
     processing_status = serializers.SerializerMethodField()
+    pin = serializers.SerializerMethodField()
+    purchaser_name = serializers.SerializerMethodField()
+    user_can_view_payment_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Voucher
         fields = "__all__"
+        datatables_always_serialize = [
+            "user_can_view_payment_details",
+        ]
 
     def get_processing_status(self, obj):
         return obj.get_processing_status_display()
+
+    def get_pin(self, obj):
+        if is_parkpasses_payments_officer(self.context["request"]):
+            return str(obj.pin)
+        return f"Visible to [{settings.PAYMENTS_OFFICER_GROUP}] only"
+
+    def get_purchaser_name(self, obj):
+        return retrieve_email_user(obj.purchaser).get_full_name()
+
+    def get_user_can_view_payment_details(self, obj):
+        return is_parkpasses_payments_officer(self.context["request"])
 
 
 class ExternalVoucherTransactionSerializer(serializers.ModelSerializer):
