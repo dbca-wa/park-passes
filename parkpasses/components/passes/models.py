@@ -10,6 +10,7 @@
 import logging
 import math
 import os
+from decimal import Decimal
 
 import qrcode
 from autoslug import AutoSlugField
@@ -544,13 +545,8 @@ class Pass(models.Model):
     @property
     def price_after_voucher_applied(self):
         if hasattr(self, "voucher_transaction"):
-            logger.debug(" this pass has a voucher transaction")
             voucher_transaction_balance = self.voucher_transaction.balance()
             return self.price_after_discount_code_applied + voucher_transaction_balance
-        logger.debug(
-            "self.price_after_discount_code_applied = "
-            + str(self.price_after_discount_code_applied)
-        )
         return self.price_after_discount_code_applied
 
     @property
@@ -585,6 +581,23 @@ class Pass(models.Model):
         if hasattr(self, "cancellation"):
             return True
         return False
+
+    def pro_rata_refund_percentage(self):
+        if self.date_start >= timezone.now().date():
+            return 100
+        if self.date_expiry <= timezone.now().date():
+            return 0
+        duration = self.option.duration
+        delta = timezone.now().date() - self.date_start
+        days_used = delta.days
+        days_remaining = self.option.duration - days_used
+        return round(days_remaining * 100 / duration)
+
+    def pro_rata_refund_amount(self):
+        amount = self.price_after_all_discounts * Decimal(
+            self.pro_rata_refund_percentage() / 100
+        )
+        return Decimal(amount).quantize(Decimal("0.00"))
 
     def generate_qrcode(self):
         qr = qrcode.QRCode()
