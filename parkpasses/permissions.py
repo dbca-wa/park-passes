@@ -1,6 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from parkpasses.helpers import (
+    get_retailer_group_ids_for_user,
     is_internal,
     is_parkpasses_officer,
     is_parkpasses_payments_officer,
@@ -32,13 +33,24 @@ class IsInternalOrReadOnly(BasePermission):
 
 class IsRetailer(BasePermission):
     def has_permission(self, request, view):
-        if is_internal(request):
-            return True
         return is_retailer(request)
 
 
 class IsRetailerAdmin(BasePermission):
     def has_permission(self, request, view):
-        if is_internal(request):
-            return True
         return is_retailer_admin(request)
+
+
+class IsRetailerObjectCreator(BasePermission):
+    def has_permission(self, request, view):
+        return is_retailer(request)
+
+    def has_object_permission(self, request, view, obj):
+        return obj.sold_via in get_retailer_group_ids_for_user(request)
+
+
+class IsExternalObjectOwner(BasePermission):
+    """This permission will only work with objects where the email user id field is called user"""
+
+    def has_object_permission(self, request, view, obj):
+        return request.user.id == obj.user
