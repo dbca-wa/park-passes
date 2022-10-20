@@ -75,9 +75,14 @@ urlpatterns = [
         name="internal-pass-detail",
     ),
     url(
+        r"^internal/pass/refund-success/(?P<id>.+)/(?P<uuid>.+)$",
+        views.InternalView.as_view(extra_context={"title": "Internal View/Edit Pass"}),
+        name="internal-refund-success",
+    ),
+    url(
         r"^internal/pricing-windows$",
         views.InternalView.as_view(extra_context={"title": "Internal Pricing Windows"}),
-        name="internal-vouchers",
+        name="internal-pricing-windows",
     ),
     url(
         r"^internal/vouchers$",
