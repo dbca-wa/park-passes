@@ -32,7 +32,10 @@ module.exports = {
     updatePassInternal: function (id) {
         return                          `/api/passes/internal/passes/${id}/`;
     },
-    cancelPass:                         `/api/passes/external/passes/cancel-pass`,
+    cancelPass:                         `/api/passes/cancel-pass`,
+    proRataRefundPassInternal: function (passId) {
+        return                          `/api/passes/internal/passes/${passId}/pro-rata-refund/`
+    },
     updatePassExternal: function (id) {
         return                          `/api/passes/external/passes/${id}/`;
     },
@@ -50,6 +53,9 @@ module.exports = {
     },
     retailerParkPassPdf: function (passId) {
         return                          `/api/passes/retailer/passes/${passId}/retrieve-park-pass-pdf`
+    },
+    internalPassPaymentDetails: function (passId) {
+        return                          `/api/passes/internal/passes/${passId}/payment-details`
     },
 
     /* ========================= Pass Types =============================================*/
