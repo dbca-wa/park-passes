@@ -2,7 +2,6 @@ import logging
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.passes.serializers import ExternalPassSerializer
@@ -56,17 +55,19 @@ class CartUtils:
 
     @classmethod
     def get_checkout_parameters(
-        self, request, uuid, user, invoice_text, internal=False
+        self,
+        request,
+        return_url,
+        return_preload_url,
+        user,
+        invoice_text,
+        internal=False,
     ):
         return {
             "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
             "fallback_url": request.build_absolute_uri("/"),
-            "return_url": request.build_absolute_uri(
-                reverse("checkout-success", kwargs={"uuid": uuid})
-            ),
-            "return_preload_url": request.build_absolute_uri(
-                reverse("ledger-api-success-callback", kwargs={"uuid": uuid})
-            ),
+            "return_url": return_url,
+            "return_preload_url": return_preload_url,
             "force_redirect": True,
             "proxy": True if internal else False,
             "invoice_text": invoice_text,
@@ -82,9 +83,10 @@ class CartUtils:
             retailer_group_user = RetailerGroupUser.objects.filter(
                 emailuser=user
             ).first()
-            retailer_group = retailer_group_user.retailer_group
-            if retailer_group.oracle_code:
-                return retailer_group.oracle_code
+            if retailer_group_user:
+                retailer_group = retailer_group_user.retailer_group
+                if retailer_group.oracle_code:
+                    return retailer_group.oracle_code
         # If not, assign the oracle code for the pass type
         pass_content_type = ContentType.objects.get(
             app_label="parkpasses", model="pass"
