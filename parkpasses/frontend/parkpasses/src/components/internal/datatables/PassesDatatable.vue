@@ -353,7 +353,7 @@ export default {
                             links +=  `<a href="${editLink.href}">View</a>`;
                         }
                         if(full.user_can_view_payment_details){
-                            links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
+                            links +=  ` | <a href="${apiEndpoints.internalPassPaymentDetails(full.id)}" target="blank">View Payment Details</a>`;
                         }
                     }
 
