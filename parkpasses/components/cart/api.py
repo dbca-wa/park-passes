@@ -123,14 +123,15 @@ class LedgerCheckoutView(APIView):
                 "ledger_description": order_item.description,
                 "quantity": 1,
                 "price_incl_tax": str(order_item.amount),
-                "oracle_code": CartUtils.get_oracle_code(self.request, order_item),
+                "oracle_code": CartUtils.get_oracle_code(
+                    self.request, order_item.content_type, order_item.object_id
+                ),
                 "line_status": line_status,
             }
             ledger_order_lines.append(ledger_order_line)
             logger.debug(pprint.pformat(ledger_order_line))
         return ledger_order_lines
 
-    # Todo: Change this to post once it's working.
     def post(self, request, format=None):
         cart = Cart.get_or_create_cart(request)
         logger.debug("cart = " + str(cart))
@@ -159,7 +160,7 @@ class LedgerCheckoutView(APIView):
             invoice_text = f"Park Passes Order: {cart.uuid}"
             logger.debug("\ninvoice_text = " + invoice_text)
             checkout_parameters = CartUtils.get_checkout_parameters(
-                request, cart, invoice_text
+                request, cart.uuid, cart.user, invoice_text
             )
             logger.debug("\ncheckout_parameters = " + str(checkout_parameters))
 
