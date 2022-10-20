@@ -44,7 +44,7 @@ export default {
     methods: {
         purchasePass: function (passTypeSlug) {
             this.passTypeSlug = passTypeSlug;
-            this.$router.push({ name:'sell-a-pass', params: { passTypeSlug: this.passTypeSlug } });
+            this.$router.push({ name:'retailer-sell-a-pass-by-slug', params: { passTypeSlug: this.passTypeSlug } });
             this.showHomeContent = false;
             this.showPurchaseVoucher = false;
             this.showPurchasePass = true;
