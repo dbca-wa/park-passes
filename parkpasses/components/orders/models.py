@@ -124,6 +124,12 @@ class OrderItem(models.Model):
     amount = models.DecimalField(
         max_digits=7, decimal_places=2, blank=False, null=False
     )
+    oracle_code = models.CharField(
+        max_length=50,
+        null=False,
+        blank=False,
+        default=settings.PARKPASSES_DEFAULT_ORACLE_CODE,
+    )
 
     class Meta:
         app_label = "parkpasses"

@@ -150,6 +150,7 @@ class Cart(models.Model):
             order_item.object_id = cart_item.object_id
             order_item.content_type_id = cart_item.content_type_id
             order_item.order = order
+            order_item.oracle_code = cart_item.oracle_code
             if cart_item.is_voucher_purchase():
                 voucher = Voucher.objects.get(pk=cart_item.object_id)
                 order_item.description = CartUtils.get_voucher_purchase_description(
@@ -305,6 +306,12 @@ class CartItem(models.Model):
     )
     voucher_transaction = models.ForeignKey(
         VoucherTransaction, on_delete=models.PROTECT, null=True, blank=True
+    )
+    oracle_code = models.CharField(
+        max_length=50,
+        null=False,
+        blank=False,
+        default=settings.PARKPASSES_DEFAULT_ORACLE_CODE,
     )
     datetime_created = models.DateTimeField(auto_now_add=True)
 
