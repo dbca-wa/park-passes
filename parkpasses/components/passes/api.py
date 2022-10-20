@@ -1,14 +1,18 @@
 import logging
+import uuid
 from decimal import Decimal
 
 import requests
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.utils import create_basket_session, create_checkout_session
 from org_model_logs.models import UserAction
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
@@ -57,7 +61,12 @@ from parkpasses.components.passes.serializers import (
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.helpers import is_customer, is_internal, is_retailer
-from parkpasses.permissions import IsInternal, IsRetailer
+from parkpasses.permissions import (
+    IsExternalObjectOwner,
+    IsInternal,
+    IsRetailer,
+    IsRetailerObjectCreator,
+)
 
 # from rest_framework_datatables.filters import DatatablesFilterBackend
 
@@ -399,17 +408,17 @@ class ExternalPassViewSet(
 
         park_pass.save()
 
-        cart_id = self.request.session.get("cart_id", None)
-        if cart_id and Cart.objects.filter(id=cart_id).exists():
-            cart = Cart.objects.get(id=cart_id)
-        else:
-            cart = Cart()
-            cart.save()
-            self.request.session["cart_id"] = cart.id
+        cart = Cart.get_or_create_cart(self.request)
 
         content_type = ContentType.objects.get_for_model(park_pass)
+        oracle_code = CartUtils.get_oracle_code(
+            self.request, content_type, park_pass.id
+        )
         cart_item = CartItem(
-            cart=cart, object_id=park_pass.id, content_type=content_type
+            cart=cart,
+            object_id=park_pass.id,
+            content_type=content_type,
+            oracle_code=oracle_code,
         )
 
         """ If the user deletes a cart item, any objects that can be attached to a cart item
@@ -609,22 +618,109 @@ class InternalPassViewSet(UserActionViewSet):
             return FileResponse(park_pass.park_pass_pdf)
         raise Http404
 
+    @action(methods=["GET"], detail=True, url_path="payment-details")
+    def payment_details(self, request, *args, **kwargs):
+        park_pass = self.get_object()
+        content_type = ContentType.objects.get_for_model(park_pass)
+        if OrderItem.objects.filter(
+            object_id=park_pass.id, content_type=content_type
+        ).exists():
+            order_item = OrderItem.objects.get(
+                object_id=park_pass.id, content_type=content_type
+            )
+            invoice_reference = order_item.order.invoice_reference
+            return redirect(
+                settings.LEDGER_API_URL
+                + "/ledger/payments/oracle/payments?invoice_no="
+                + invoice_reference
+            )
+
+        raise Http404
+
+    @action(methods=["POST"], detail=True, url_path="pro-rata-refund")
+    def pro_rata_refund(self, request, *args, **kwargs):
+        park_pass = self.get_object()
+        content_type = ContentType.objects.get_for_model(park_pass)
+        if not OrderItem.objects.filter(
+            content_type=content_type, object_id=park_pass.id
+        ).exists():
+            raise Http404
+        orderitem = OrderItem.objects.get(
+            content_type=content_type, object_id=park_pass.id
+        )
+        order = orderitem.order
+        ledger_order_lines = [
+            {
+                "ledger_description": f"Pro-rata Refund of Pass: {park_pass.pass_number}",
+                "quantity": 1,
+                "price_incl_tax": str(-abs(park_pass.pro_rata_refund_amount())),
+                "oracle_code": CartUtils.get_oracle_code(
+                    self.request, content_type, park_pass.id
+                ),
+                "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
+            }
+        ]
+        booking_reference = str(uuid.uuid4())
+        basket_parameters = CartUtils.get_basket_parameters(
+            ledger_order_lines,
+            booking_reference,
+            is_no_payment=order.is_no_payment,
+            booking_reference_link=order.uuid,
+        )
+        create_basket_session(request, request.user.id, basket_parameters)
+
+        invoice_text = f"Park Passes Refund: {booking_reference}"
+        return_url = request.build_absolute_uri(
+            reverse(
+                "internal-refund-success",
+                kwargs={
+                    "id": park_pass.id,
+                    "uuid": booking_reference,
+                },
+            )
+        )
+        return_preload_url = request.build_absolute_uri(
+            reverse(
+                "ledger-api-refund-success-callback",
+                kwargs={
+                    "id": park_pass.id,
+                    "uuid": booking_reference,
+                },
+            )
+        )
+        checkout_parameters = CartUtils.get_checkout_parameters(
+            request, return_url, return_preload_url, order.user, invoice_text
+        )
+        logger.debug("\ncheckout_parameters = " + str(checkout_parameters))
+
+        create_checkout_session(request, checkout_parameters)
+
+        return redirect(reverse("ledgergw-payment-details"))
+
+
+class InternalPassRefundSuccessView(APIView):
+    permission_classes = [IsInternal]
+
+    def get(self, request, uuid, format=None):
+        logger.debug("RefundSuccessView get method called")
+
 
 class CancelPass(APIView):
-    permission_classes = [IsInternal]
+    permission_classes = [IsInternal, IsRetailerObjectCreator, IsExternalObjectOwner]
+    action = "cancel"
 
     def post(self, request, format=None):
         serializer = InternalPassCancellationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            park_pass = get_object_or_404(Pass, pk=serializer.data["park_pass"])
             user_action = settings.ACTION_CANCEL
-            object_id = serializer.data["park_pass"]
             content_type = ContentType.objects.get_for_model(Pass)
             user_action = UserAction.objects.log_action(
-                object_id=object_id,
+                object_id=park_pass.id,
                 content_type=content_type,
                 who=request.user.id,
-                what=user_action.format(Pass._meta.model.__name__, object_id),
+                what=user_action.format(Pass._meta.model.__name__, park_pass.id),
                 why=serializer.data["cancellation_reason"],
             )
             extended_serializer = {
