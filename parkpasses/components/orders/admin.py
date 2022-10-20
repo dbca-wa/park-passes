@@ -28,6 +28,7 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     list_display = (
         "order_number",
+        "datetime_created",
         "user",
         "retailer_group",
         "uuid",
