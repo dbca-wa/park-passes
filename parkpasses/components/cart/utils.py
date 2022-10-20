@@ -55,25 +55,27 @@ class CartUtils:
         return False
 
     @classmethod
-    def get_checkout_parameters(self, request, cart, invoice_text, internal=False):
+    def get_checkout_parameters(
+        self, request, uuid, user, invoice_text, internal=False
+    ):
         return {
             "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
             "fallback_url": request.build_absolute_uri("/"),
             "return_url": request.build_absolute_uri(
-                reverse("checkout-success", kwargs={"uuid": cart.uuid})
+                reverse("checkout-success", kwargs={"uuid": uuid})
             ),
             "return_preload_url": request.build_absolute_uri(
-                reverse("ledger-api-success-callback", kwargs={"uuid": cart.uuid})
+                reverse("ledger-api-success-callback", kwargs={"uuid": uuid})
             ),
             "force_redirect": True,
             "proxy": True if internal else False,
             "invoice_text": invoice_text,
             "session_type": "ledger_api",
-            "basket_owner": cart.user,
+            "basket_owner": user,
         }
 
     @classmethod
-    def get_oracle_code(self, request, order_item):
+    def get_oracle_code(self, request, content_type, object_id):
         # Check if the request user belongs to retailer group and if so assign their oracle code
         if is_retailer(request):
             user = request.user
@@ -87,16 +89,15 @@ class CartUtils:
         pass_content_type = ContentType.objects.get(
             app_label="parkpasses", model="pass"
         )
-        logger.debug("pass_content_type = " + str(pass_content_type))
-        logger.debug("order_item.content_type = " + str(order_item.content_type))
-        if pass_content_type == order_item.content_type:
-            park_pass = Pass.objects.get(id=order_item.object_id)
-            pass_type = park_pass.option.pricing_window.pass_type
-            if pass_type.oracle_code:
-                return pass_type.oracle_code
+        if pass_content_type == content_type:
+            if Pass.objects.filter(id=object_id).exists():
+                park_pass = Pass.objects.get(id=object_id)
+                pass_type = park_pass.option.pricing_window.pass_type
+                if pass_type.oracle_code:
+                    return pass_type.oracle_code
 
         # If not then just fall back to the default code from settings.
-        return settings.PARKPASSES_ORACLE_CODE
+        return settings.PARKPASSES_DEFAULT_ORACLE_CODE
 
     @classmethod
     def get_voucher_purchase_description(self, voucher_number):
