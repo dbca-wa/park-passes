@@ -159,8 +159,14 @@ class LedgerCheckoutView(APIView):
             create_basket_session(request, request.user.id, basket_parameters)
             invoice_text = f"Park Passes Order: {cart.uuid}"
             logger.debug("\ninvoice_text = " + invoice_text)
+            return_url = request.build_absolute_uri(
+                reverse("checkout-success", kwargs={"uuid": cart.uuid})
+            )
+            return_preload_url = request.build_absolute_uri(
+                reverse("ledger-api-success-callback", kwargs={"uuid": cart.uuid})
+            )
             checkout_parameters = CartUtils.get_checkout_parameters(
-                request, cart.uuid, cart.user, invoice_text
+                request, return_url, return_preload_url, cart.user, invoice_text
             )
             logger.debug("\ncheckout_parameters = " + str(checkout_parameters))
 
