@@ -679,22 +679,25 @@ class Pass(models.Model):
         if not self.pass_number:
             self.pass_number = f"PP{self.pk:06d}"
 
-        if not self.in_cart:
-            """Consider: Running generate_park_pass_pdf() with a message queue would be much better"""
-            self.generate_park_pass_pdf()
-            if not self.purchase_email_sent:
-                self.send_purchased_notification_email()
-                logger.info(
-                    f"Pass purchased notification email sent for pass {self.pass_number}",
-                    extra={"className": self.__class__.__name__},
-                )
-                self.purchase_email_sent = True
-            else:
-                self.send_updated_notification_email()
-                logger.info(
-                    f"Pass update notification email sent for pass {self.pass_number}",
-                    extra={"className": self.__class__.__name__},
-                )
+        logger.debug("self.processing_status = " + str(self.processing_status))
+
+        if not Pass.CANCELLED == self.processing_status:
+            if not self.in_cart:
+                """Consider: Running generate_park_pass_pdf() with a message queue would be much better"""
+                self.generate_park_pass_pdf()
+                if not self.purchase_email_sent:
+                    self.send_purchased_notification_email()
+                    logger.info(
+                        f"Pass purchased notification email sent for pass {self.pass_number}",
+                        extra={"className": self.__class__.__name__},
+                    )
+                    self.purchase_email_sent = True
+                else:
+                    self.send_updated_notification_email()
+                    logger.info(
+                        f"Pass update notification email sent for pass {self.pass_number}",
+                        extra={"className": self.__class__.__name__},
+                    )
 
         logger.debug("Updating pass.")
         super().save(force_update=True)
