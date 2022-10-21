@@ -8,12 +8,12 @@
 
 {%  block content %}
 
-            <p>The Park Pass voucher you purchased for {{voucher.recipient_email}} has been emailed to {{voucher.recipient_name}}.</p>
+            <p>The Park Pass voucher you purchased for {{voucher.recipient_name}} has been emailed to {{voucher.recipient_email}}.</p>
 
             <ul>
-                <li>Voucher Value: {{voucher.amount}}</li>
+                <li>Voucher Value: ${{voucher.amount}}</li>
                 <li>Voucher Code: {{voucher.code}}</li>
-                <li>Expiry Date: {{voucher.expiry}}</li>
+                <li>Expiry Date: {{voucher.expiry|date:"d-m-Y"}}</li>
             </ul>
 
 {%  endblock %}

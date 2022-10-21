@@ -13,8 +13,8 @@
 
             You can buy a Western Australian park pass with your voucher at {{site_url}}
 
-            Voucher Value: {{voucher.amount}}
+            Voucher Value: ${{voucher.amount}}
             Voucher Code: {{voucher.code}}
             Voucher Pin: {{voucher.pin}}
-            Expiry Date: {{voucher.expiry}}
+            Expiry Date: {{voucher.expiry|date:"d-m-Y"}}
 {%  endblock %}

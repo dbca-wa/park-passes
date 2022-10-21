@@ -11,14 +11,14 @@
 
             <p><strong>{{purchaser.first_name}} {{purchaser.last_name}}</strong></p>
 
-            <p>"{{voucher.personal_message}}"</p>
+            <p style="font-style:italic;">"{{voucher.personal_message}}"</p>
 
             <p>You can buy a Western Australian park pass with your voucher at <a href="{{site_url}}">{{site_url}}</a></p>
 
             <ul>
-                <li>Voucher Value: {{voucher.amount}}</li>
+                <li>Voucher Value: ${{voucher.amount}}</li>
                 <li>Voucher Code: {{voucher.code}}</li>
                 <li>Voucher Pin: {{voucher.pin}}</li>
-                <li>Expiry Date: {{voucher.expiry}}</li>
+                <li>Expiry Date: {{voucher.expiry|date:"d-m-Y"}}</li>
             </ul>
 {%  endblock %}

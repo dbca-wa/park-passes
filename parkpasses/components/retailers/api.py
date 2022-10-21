@@ -83,7 +83,7 @@ class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
     """
 
     model = RetailerGroup
-    queryset = RetailerGroup.objects.annotate(user_count=Count("retailergroupuser"))
+    queryset = RetailerGroup.objects.annotate(user_count=Count("retailer_group_users"))
     permission_classes = [IsInternal]
     serializer_class = RetailerGroupSerializer
     pagination_class = DatatablesPageNumberPagination
@@ -149,7 +149,7 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
         return RetailerGroupInvite.objects.filter(
             email=self.request.user.email
         ).annotate(
-            user_count_for_retailer_group=Count("retailer_group__retailergroupuser")
+            user_count_for_retailer_group=Count("retailer_group__retailer_group_users")
         )
 
     @action(methods=["PUT"], detail=True, url_path="accept-retailer-group-user-invite")
@@ -184,7 +184,7 @@ class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
     model = RetailerGroupInvite
     queryset = (
         RetailerGroupInvite.objects.annotate(
-            user_count_for_retailer_group=Count("retailer_group__retailergroupuser")
+            user_count_for_retailer_group=Count("retailer_group__retailer_group_users")
         )
         .exclude(status__in=[RetailerGroupInvite.APPROVED, RetailerGroupInvite.DENIED])
         .filter(initiated_by=RetailerGroupInvite.INTERNAL_USER)
@@ -264,7 +264,7 @@ class RetailerRetailerGroupInviteViewSet(viewsets.ModelViewSet):
             return (
                 RetailerGroupInvite.objects.annotate(
                     user_count_for_retailer_group=Count(
-                        "retailer_group__retailergroupuser"
+                        "retailer_group__retailer_group_users"
                     )
                 )
                 .exclude(

@@ -10,12 +10,26 @@ from parkpasses.components.emails.emails import TemplateEmailBase
 logger = logging.getLogger(__name__)
 
 
-class VoucherSentPurchaserNotificationEmail(TemplateEmailBase):
+class VoucherPurchaserPurchasedNotificationEmail(TemplateEmailBase):
     def __init__(self, recipient_name):
         super().__init__()
-        self.subject = f"Your Park Pass Voucher Sent to {recipient_name}"
-        self.html_template = "parkpasses/emails/voucher_purchaser_notification.html"
-        self.txt_template = "parkpasses/emails/voucher_purchaser_notification.txt"
+        self.subject = f"You Purchased a Park Pass Voucher for {recipient_name}"
+        self.html_template = (
+            "parkpasses/emails/voucher_purchaser_purchased_notification.html"
+        )
+        self.txt_template = (
+            "parkpasses/emails/voucher_purchaser_purchased_notification.txt"
+        )
+
+
+class VoucherPurchaserSentNotificationEmail(TemplateEmailBase):
+    def __init__(self, recipient_name):
+        super().__init__()
+        self.subject = f"Your Park Pass Voucher has been sent to {recipient_name}"
+        self.html_template = (
+            "parkpasses/emails/voucher_purchaser_sent_notification.html"
+        )
+        self.txt_template = "parkpasses/emails/voucher_purchaser_sent_notification.txt"
 
 
 class VoucherRecipientNotificationEmail(TemplateEmailBase):
@@ -30,9 +44,34 @@ class VoucherRecipientNotificationEmail(TemplateEmailBase):
 
 class VoucherEmails:
     @classmethod
-    def send_voucher_purchase_notification_email(self, voucher):
+    def send_voucher_purchaser_purchased_notification_email(self, voucher):
         purchaser = voucher.get_purchaser
-        email = VoucherSentPurchaserNotificationEmail(voucher.recipient_name)
+        email = VoucherPurchaserPurchasedNotificationEmail(voucher.recipient_name)
+        context = {
+            "voucher": voucher,
+            "purchaser": purchaser,
+        }
+        message = email.send(voucher.recipient_email, context=context)
+        content_type = ContentType.objects.get_for_model(voucher)
+        entry_type = EntryType.objects.get(entry_type__iexact="email")
+        staff = EmailUser.objects.get(email__icontains=settings.DEFAULT_FROM_EMAIL)
+        communication_log_kwargs = {
+            "content_type": content_type,
+            "object_id": str(voucher.id),
+            "to": voucher.recipient_email,
+            "fromm": settings.DEFAULT_FROM_EMAIL,
+            "entry_type": entry_type,
+            "subject": message.subject,
+            "text": message.body,
+            "customer": purchaser.id,
+            "staff": staff.id,
+        }
+        CommunicationsLogEntry.objects.log_communication(**communication_log_kwargs)
+
+    @classmethod
+    def send_voucher_purchaser_sent_notification_email(self, voucher):
+        purchaser = voucher.get_purchaser
+        email = VoucherPurchaserSentNotificationEmail(voucher.recipient_name)
         context = {
             "voucher": voucher,
             "purchaser": purchaser,

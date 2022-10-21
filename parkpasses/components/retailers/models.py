@@ -92,11 +92,22 @@ class RetailerGroup(models.Model):
         return (self.name,)
 
     def save(self, *args, **kwargs):
-        cache.delete(settings.CACHE_KEY_RETAILER.format(str(self.id)))
-        cache.delete(settings.CACHE_KEY_RETAILER_ADMIN.format(str(self.id)))
         cache.delete(
             settings.CACHE_KEY_GROUP_IDS.format(self._meta.label_lower, str(self.id))
         )
+        # If we deactivated a retailer group then all the users in that group need to be kicked out
+        for retailer_group_user in self.retailer_group_users.all():
+            cache.delete(
+                settings.CACHE_KEY_RETAILER.format(
+                    str(retailer_group_user.emailuser.id)
+                )
+            )
+            cache.delete(
+                settings.CACHE_KEY_RETAILER_ADMIN.format(
+                    str(retailer_group_user.emailuser.id)
+                )
+            )
+
         super().save(*args, **kwargs)
 
     def get_user_ids(self):
@@ -126,25 +137,23 @@ class RetailerGroup(models.Model):
         if 1 == dbca_retailer_count:
             return RetailerGroup.objects.get(name=settings.PARKPASSES_DEFAULT_SOLD_VIA)
         if 1 < dbca_retailer_count:
-            logger.critical(
-                "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
-            )
-            raise MultipleDBCARetailerGroupsExist(
-                "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
-            )
+            critical_message = "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
+            logger.critical(critical_message)
+            raise MultipleDBCARetailerGroupsExist(critical_message)
         if 0 == dbca_retailer_count:
-            logger.critical(
+            critical_message = (
                 "CRITICAL: There is no retailer group whose name contains 'DBCA'"
             )
-            raise NoDBCARetailerGroupExists(
-                "CRITICAL: There is no retailer group whose name contains 'DBCA'"
-            )
+            logger.critical(critical_message)
+            raise NoDBCARetailerGroupExists(critical_message)
 
 
 class RetailerGroupUser(models.Model):
     """A class to represent the many to many relationship between retailers and email users"""
 
-    retailer_group = models.ForeignKey(RetailerGroup, on_delete=models.PROTECT)
+    retailer_group = models.ForeignKey(
+        RetailerGroup, on_delete=models.PROTECT, related_name="retailer_group_users"
+    )
     emailuser = models.ForeignKey(
         EmailUser, on_delete=models.PROTECT, blank=True, null=True, db_constraint=False
     )
@@ -160,6 +169,16 @@ class RetailerGroupUser(models.Model):
 
     def __str__(self):
         return f"{self.retailer_group} {self.emailuser}"
+
+    def save(self, *args, **kwargs):
+        cache.delete(settings.CACHE_KEY_RETAILER.format(str(self.emailuser.id)))
+        cache.delete(settings.CACHE_KEY_RETAILER_ADMIN.format(str(self.emailuser.id)))
+        cache.delete(
+            settings.CACHE_KEY_GROUP_IDS.format(
+                self._meta.label_lower, str(self.retailer_group.id)
+            )
+        )
+        super().save(*args, **kwargs)
 
 
 class RetailerGroupInviteManager(models.Manager):

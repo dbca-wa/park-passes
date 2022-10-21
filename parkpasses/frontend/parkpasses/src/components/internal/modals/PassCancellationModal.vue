@@ -75,17 +75,28 @@ export default {
                     let files = $('#reasonFiles')[0].files;
                     utils.uploadOrgModelDocuments(data.user_action.user_action_content_type_id, data.user_action.id, files);
 
-                    vm.$emit('cancelSuccess')
+                    // vm.$emit('cancelSuccess')
 
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'Park Pass cancelled successfully.',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    });
+                    var form = document.createElement("form");
+                    form.setAttribute("method", "POST");
+                    form.setAttribute("action", apiEndpoints.proRataRefundPassInternal(vm.cancellation.park_pass));
+                    var hiddenField = document.createElement("input");
+                    hiddenField.setAttribute("type", "hidden");
+                    hiddenField.setAttribute("name", "csrfmiddlewaretoken");
+                    hiddenField.setAttribute("value", vm.cancellation.csrfmiddlewaretoken);
+                    form.appendChild(hiddenField);
+                    document.body.appendChild(form);
+                    form.submit();
 
-                    var passCancellationFormModalModal = bootstrap.Modal.getInstance(document.getElementById('passCancellationModal'));
-                    passCancellationFormModalModal.hide();
+                    // Swal.fire({
+                    //     title: 'Success',
+                    //     text: 'Park Pass cancelled successfully.',
+                    //     icon: 'success',
+                    //     confirmButtonText: 'OK'
+                    // });
+
+                    // var passCancellationFormModalModal = bootstrap.Modal.getInstance(document.getElementById('passCancellationModal'));
+                    // passCancellationFormModalModal.hide();
                 })
                 .catch(error => {
                     this.systemErrorMessage = constants.ERRORS.NETWORK;

@@ -27,10 +27,39 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        """First: Attempt to resend any vouchers that haven't had success being sent to the purchaser"""
+        vouchers = Voucher.objects.filter(
+            processing_status__in=[Voucher.NEW, Voucher.NOT_DELIVERED_TO_PURCHASER],
+        )
+        if options["test"]:
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Found {len(vouchers)} vouchers that still need to be sent to the purchaser"
+                )
+            )
+        for voucher in vouchers:
+            if options["test"]:
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"TEST: pretending to call send_voucher_purchase_notification_email on Voucher: {voucher}"
+                    )
+                )
+            else:
+                voucher.send_voucher_purchase_notification_email()
+                voucher.save()
+                logger.info(
+                    f"Notification email sent to recipient and purchser of Voucher: {voucher}",
+                    extra={"className": self.__class__.__name__},
+                )
+
+        """ Second: Send any vouchers that to recipients that are due to be sent today """
         today = timezone.now().date()
         vouchers = Voucher.objects.filter(
             datetime_to_email__date=today,
-            processing_status__in=[Voucher.NEW, Voucher.NOT_DELIVERED],
+            processing_status__in=[
+                Voucher.PURCHASER_NOTIFIED,
+                Voucher.NOT_DELIVERED_TO_RECIPIENT,
+            ],
         )
         if options["test"]:
             self.stdout.write(
@@ -42,22 +71,12 @@ class Command(BaseCommand):
             if options["test"]:
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"TEST: pretending to call send_voucher_recipient_notification_email on Voucher: {voucher}"
-                    )
-                )
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"TEST: pretending to call send_voucher_purchase_notification_email on Voucher: {voucher}"
+                        f"TEST: pretending to call send_voucher_sent_notification_emails on Voucher: {voucher}"
                     )
                 )
             else:
-                voucher.send_voucher_recipient_notification_email()
+                voucher.send_voucher_sent_notification_emails()
                 logger.info(
-                    f"Notification email sent to recipient of Voucher: {voucher}",
-                    extra={"className": self.__class__.__name__},
-                )
-                voucher.send_voucher_purchase_notification_email()
-                logger.info(
-                    f"Notification email sent to purchaser of Voucher: {voucher}",
+                    f"Notification email sent to recipient and purchser of Voucher: {voucher}",
                     extra={"className": self.__class__.__name__},
                 )

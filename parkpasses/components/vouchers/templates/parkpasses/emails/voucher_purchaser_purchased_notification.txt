@@ -5,12 +5,12 @@
     {{purchaser.first_name}} {{purchaser.last_name}},
 
     You have purchased a park pass voucher which will be sent to {{voucher.recipient_name}}
-    via their email address {{voucher.recipient_email}} on {{ voucher.datetime_to_email }}.
+    via their email address {{voucher.recipient_email}} on {{ voucher.datetime_to_email|date:"d-m-Y" }}.
 
     We will send you another confirmation email when we send the voucher to the recipient.
 
-    Voucher Value: {{voucher.amount}}
+    Voucher Value: ${{voucher.amount}}
     Voucher Code: {{voucher.code}}
-    Expiry Date: {{voucher.expiry}}
+    Expiry Date: {{voucher.expiry|date:"d-m-Y"}}
 
 {%  endblock %}

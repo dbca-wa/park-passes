@@ -9,14 +9,14 @@
 {%  block content %}
             <p>
                 You have purchased a park pass voucher which will be sent to {{voucher.recipient_name}}
-                via their email address {{voucher.recipient_email}} on {{ voucher.datetime_to_email }}.
+                via their email address {{voucher.recipient_email}} on {{ voucher.datetime_to_email|date:"d-m-Y" }}.
             </p>
 
             <p>We will send you another confirmation email when the voucher is sent to the recipient.
 
             <ul>
-                <li>Voucher Value: {{voucher.amount}}</li>
+                <li>Voucher Value: ${{voucher.amount}}</li>
                 <li>Voucher Code: {{voucher.code}}</li>
-                <li>Expiry Date: {{voucher.expiry}}</li>
+                <li>Expiry Date: {{voucher.expiry|date:"d-m-Y"}}</li>
             </ul>
 {%  endblock %}

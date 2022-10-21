@@ -51,15 +51,20 @@ class Voucher(models.Model):
     datetime_purchased = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
     NEW = "N"
-    DELIVERED = "D"
-    NOT_DELIVERED = "ND"
+    NOT_DELIVERED_TO_PURCHASER = "NDP"
+    PURCHASER_NOTIFIED = "PN"
+    NOT_DELIVERED_TO_RECIPIENT = "NDR"
+    DELIVERED_TO_RECIPIENT = "DR"
+
     PROCESSING_STATUS_CHOICES = [
         (NEW, "New"),
-        (DELIVERED, "Delivered"),
-        (NOT_DELIVERED, "Not Delivered"),
+        (NOT_DELIVERED_TO_PURCHASER, "Not Delivered to Purchaser"),
+        (PURCHASER_NOTIFIED, "Purchaser Notified"),
+        (NOT_DELIVERED_TO_RECIPIENT, "Not Delivered to Recipient"),
+        (DELIVERED_TO_RECIPIENT, "Delivered to Recipient"),
     ]
     processing_status = models.CharField(
-        max_length=2,
+        max_length=3,
         choices=PROCESSING_STATUS_CHOICES,
         default=NEW,
     )
@@ -173,11 +178,13 @@ class Voucher(models.Model):
             self.voucher_number = f"V{self.pk:06d}"
 
         if not self.in_cart:
-            self.send_voucher_purchase_notification_email()
-            logger.info(
-                f"Voucher purchased notification email sent for voucher {self.voucher_number}",
-                extra={"className": self.__class__.__name__},
-            )
+            if self.processing_status in [
+                Voucher.NEW,
+                Voucher.NOT_DELIVERED_TO_PURCHASER,
+            ]:
+                self.send_voucher_purchase_notification_email()
+            if self.datetime_to_email.date() == timezone.now().date():
+                self.send_voucher_sent_notification_emails()
 
         super().save(force_update=True)
 
@@ -186,28 +193,37 @@ class Voucher(models.Model):
         error_message += "send_voucher_purchase_notification_email for Voucher with id {} at {}. Exception {}"
         with transaction.atomic():
             try:
-                VoucherEmails.send_voucher_purchase_notification_email(self)
-                self.processing_status = Voucher.DELIVERED
-            except Exception as e:
-                self.processing_status = Voucher.NOT_DELIVERED
-                SendVoucherRecipientEmailNotificationFailed(
-                    error_message.format(self.id, timezone.now(), e)
+                VoucherEmails.send_voucher_purchaser_purchased_notification_email(self)
+                self.processing_status = Voucher.PURCHASER_NOTIFIED
+                logger.info(
+                    f"Voucher purchased notification email sent for voucher {self.voucher_number}",
+                    extra={"className": self.__class__.__name__},
                 )
+            except SendVoucherRecipientEmailNotificationFailed(
+                error_message.format(self.id, timezone.now(), e)
+            ) as e:
+                self.processing_status = Voucher.NOT_DELIVERED_TO_PURCHASER
+                logger.exception(error_message.format(self.id, timezone.now(), e))
+                raise
 
-    def send_voucher_recipient_notification_email(self):
+    def send_voucher_sent_notification_emails(self):
         error_message = "An exception occured trying to run "
         error_message += "send_voucher_purchase_notification_email for Voucher with id {} at {}. Exception {}"
         with transaction.atomic():
             try:
                 VoucherEmails.send_voucher_recipient_notification_email(self)
-                self.processing_status = Voucher.DELIVERED
-                if not settings.DEBUG:
-                    self.save()
-            except Exception as e:
-                self.processing_status = Voucher.NOT_DELIVERED
-                SendVoucherRecipientEmailNotificationFailed(
-                    error_message.format(self.id, timezone.now(), e)
+                VoucherEmails.send_voucher_purchaser_sent_notification_email(self)
+                self.processing_status = Voucher.DELIVERED_TO_RECIPIENT
+                self.save()
+                logger.info(
+                    f"Voucher sent notification emails sent for voucher {self.voucher_number}",
+                    extra={"className": self.__class__.__name__},
                 )
+            except SendVoucherRecipientEmailNotificationFailed(
+                error_message.format(self.id, timezone.now(), e)
+            ) as e:
+                self.processing_status = Voucher.NOT_DELIVERED_TO_RECIPIENT
+                self.save()
                 logger.exception(error_message.format(self.id, timezone.now(), e))
 
 
