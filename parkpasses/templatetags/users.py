@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 @register.simple_tag(takes_context=True)
 def is_internal(context):
     request = context["request"]
-    logger.debug("Is internal = " + str(parkpasses_helpers.is_internal(request)))
     return parkpasses_helpers.is_internal(request)
 
 
