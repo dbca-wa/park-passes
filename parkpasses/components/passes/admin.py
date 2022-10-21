@@ -37,6 +37,7 @@ class PassAdmin(admin.ModelAdmin):
         "suburb",
         "state",
         "mobile",
+        "rac_member_number",
         "option",
         "park_group",
         "postcode",

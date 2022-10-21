@@ -56,12 +56,18 @@ from parkpasses.components.passes.serializers import (
     OptionSerializer,
     PassTemplateSerializer,
     PassTypeSerializer,
+    RetailerApiCreatePassSerializer,
     RetailerUpdatePassSerializer,
 )
-from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
+from parkpasses.components.retailers.models import (
+    RetailerGroup,
+    RetailerGroupAPIKey,
+    RetailerGroupUser,
+)
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.helpers import is_customer, is_internal, is_retailer
 from parkpasses.permissions import (
+    HasRetailerGroupAPIKey,
     IsExternalObjectOwner,
     IsInternal,
     IsRetailer,
@@ -730,3 +736,46 @@ class CancelPass(APIView):
             return Response(extended_serializer, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RetailerApiAccessViewSet(UserActionViewSet):
+    permission_classes = [HasRetailerGroupAPIKey]
+    model = Pass
+    pagination_class = DatatablesPageNumberPagination
+    filter_backends = (PassFilterBackend,)
+    http_method_names = ["get", "post", "put", "patch", "head", "options"]
+    lookup_field = "rac_member_number"
+
+    def get_serializer_class(self):
+        if "retrieve" == self.action:
+            return InternalPassRetrieveSerializer
+        if "create" == self.action:
+            return RetailerApiCreatePassSerializer
+        return InternalPassSerializer
+
+    def get_queryset(self):
+        retailer_group = self.get_retailer_group(self.request)
+        return (
+            Pass.objects.exclude(in_cart=True)
+            .filter(sold_via=retailer_group)
+            .order_by("-datetime_created")
+        )
+
+    def perform_create(self, serializer):
+        retailer_group = self.get_retailer_group(self.request)
+        email = serializer.validated_data["email"]
+        if EmailUser.objects.filter(email=email).exists():
+            email_user = EmailUser.objects.get(email=email)
+            serializer.save(user=email_user.id, sold_via=retailer_group)
+        else:
+            serializer.save(sold_via=retailer_group)
+
+        return super().perform_create(serializer)
+
+    def get_retailer_group(self, request):
+        """Retrieve a project based on the request API key."""
+        if "HTTP_AUTHORIZATION" in request.META:
+            key = request.META["HTTP_AUTHORIZATION"].split()[1]
+            retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
+            return retailer_group_api_key.retailer_group
+        return RetailerGroup.objects.get(name="RAC")

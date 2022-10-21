@@ -1,5 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework_api_key.permissions import BaseHasAPIKey
 
+from parkpasses.components.retailers.models import RetailerGroupAPIKey
 from parkpasses.helpers import (
     get_retailer_group_ids_for_user,
     is_internal,
@@ -54,3 +56,17 @@ class IsExternalObjectOwner(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return request.user.id == obj.user
+
+
+class HasRetailerGroupAPIKey(BaseHasAPIKey):
+    model = RetailerGroupAPIKey
+
+    def has_permission(self, request, view):
+        if request.user.is_superuser:
+            return True
+        return super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+        return super().has_object_permission(request, view, obj)

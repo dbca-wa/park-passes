@@ -1,7 +1,9 @@
 from django.contrib import admin
+from rest_framework_api_key.admin import APIKeyModelAdmin
 
 from parkpasses.components.retailers.models import (
     RetailerGroup,
+    RetailerGroupAPIKey,
     RetailerGroupInvite,
     RetailerGroupUser,
 )
@@ -28,6 +30,10 @@ class RetailerGroupAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     inlines = [RetailerGroupUserInline]
     ordering = ["name"]
+
+
+class RetailerGroupAPIKeyAdmin(APIKeyModelAdmin):
+    model = RetailerGroupAPIKey
 
 
 class RetailerGroupUserAdmin(admin.ModelAdmin):
@@ -61,3 +67,4 @@ class RetailerGroupInviteAdmin(admin.ModelAdmin):
 admin.site.register(RetailerGroup, RetailerGroupAdmin)
 admin.site.register(RetailerGroupUser, RetailerGroupUserAdmin)
 admin.site.register(RetailerGroupInvite, RetailerGroupInviteAdmin)
+admin.site.register(RetailerGroupAPIKey, RetailerGroupAPIKeyAdmin)

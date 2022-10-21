@@ -30,6 +30,7 @@ STATIC_URL = "/static/"
 INSTALLED_APPS += [
     "webtemplate_dbca",
     "rest_framework",
+    "rest_framework_api_key",
     "rest_framework_datatables",
     "django_filters",
     "rest_framework_gis",

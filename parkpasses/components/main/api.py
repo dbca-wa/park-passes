@@ -18,7 +18,7 @@ from parkpasses.permissions import IsInternal
 logger = logging.getLogger(__name__)
 
 
-""" The following classes are overrideen here because the permission classes belong to park passes app
+""" The following classes are overridden here because the permission classes belong to park passes app
 so can't be included in the org_model_documents or org_model_logs apps as it would break their independence"""
 
 

@@ -58,6 +58,7 @@ django-org-model-logs = "^1.0.0"
 django-org-model-documents = "^1.0.0"
 django-autoslug = "^1.9.8"
 XlsxWriter = "^3.0.3"
+djangorestframework-api-key = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"

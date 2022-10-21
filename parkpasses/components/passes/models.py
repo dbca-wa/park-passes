@@ -469,6 +469,7 @@ class Pass(models.Model):
             MinLengthValidator(4, "Australian postcodes must contain 4 digits")
         ],
     )
+    rac_member_number = models.CharField(max_length=20, null=True, blank=True)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
     drivers_licence_number = models.CharField(max_length=11, null=True, blank=True)
@@ -498,6 +499,7 @@ class Pass(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name_plural = "Passes"
+        ordering = ["-datetime_created"]
 
     def __str__(self):
         return f"{self.pass_number}"

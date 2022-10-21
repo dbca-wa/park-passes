@@ -587,6 +587,38 @@ class InternalPassSerializer(serializers.ModelSerializer):
         ) or is_parkpasses_officer(self.context["request"])
 
 
+class RetailerApiCreatePassSerializer(serializers.ModelSerializer):
+    rac_member_number = serializers.CharField(required=True)
+    postcode = serializers.CharField(required=True)
+    in_cart = serializers.HiddenField(default=False)
+    sold_via = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Pass
+        fields = [
+            "id",
+            "rac_member_number",
+            "option",
+            "first_name",
+            "last_name",
+            "email",
+            "mobile",
+            "postcode",
+            "company",
+            "address_line_1",
+            "address_line_2",
+            "suburb",
+            "state",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+            "park_group",
+            "date_start",
+            "in_cart",
+            "sold_via",
+        ]
+        extra_kwargs = {"mobile": {"required": True, "allow_blank": False}}
+
+
 class InternalPassCancellationSerializer(serializers.ModelSerializer):
     class Meta:
         model = PassCancellation
