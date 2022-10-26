@@ -13,7 +13,9 @@
                 <tr><th>First Name:</th><td>{{pass.first_name}}</td>
                 <tr><th>Last Name:</th><td>{{pass.last_name}}</td>
                 <tr><th>Address Line 1:</th><td>{{pass.address_line_1}}</td>
+            {% if pass.address_line_2 %}
                 <tr><th>Address Line 2:</th><td>{{pass.address_line_2}}</td>
+            {% endif %}
                 <tr><th>Suburb:</th><td>{{pass.suburb}}</td>
                 <tr><th>Postcode:</th><td>{{pass.postcode}}</td>
                 <tr><th>State:</th><td>{{pass.state}}</td>
