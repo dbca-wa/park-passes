@@ -4,7 +4,6 @@ from django.conf import settings
 from django.utils import timezone
 from drf_excel.mixins import XLSXFileMixin
 from drf_excel.renderers import XLSXRenderer
-from org_model_logs.utils import UserActionViewSet
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,6 +12,7 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from org_model_logs.utils import BaseUserActionViewSet
 from parkpasses.components.discount_codes.models import (
     DiscountCode,
     DiscountCodeBatch,
@@ -26,6 +26,7 @@ from parkpasses.components.discount_codes.serializers import (
     InternalDiscountCodeSerializer,
     InternalDiscountCodeXlsxSerializer,
 )
+from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
@@ -117,13 +118,16 @@ class DiscountCodeBatchFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalDiscountCodeBatchViewSet(UserActionViewSet):
+class InternalDiscountCodeBatchViewSet(BaseUserActionViewSet):
     model = DiscountCodeBatch
     pagination_class = DatatablesPageNumberPagination
     queryset = DiscountCodeBatch.objects.all()
     permission_classes = [IsInternal]
     serializer_class = InternalDiscountCodeBatchSerializer
     filter_backends = (DiscountCodeBatchFilterBackend,)
+
+    def get_user_action_serializer_class(self):
+        return UserActionSerializer
 
     def perform_create(self, serializer):
         new_discount_code_batch = serializer.save(created_by=self.request.user.id)
