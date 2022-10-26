@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 
 class PassCancellationInline(admin.TabularInline):
     model = PassCancellation
+    fields = [
+        "cancellation_reason",
+        "datetime_cancelled",
+    ]
+    readonly_fields = ["datetime_cancelled"]
 
 
 class PassAdmin(admin.ModelAdmin):
