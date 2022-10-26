@@ -17,15 +17,16 @@
 
     <div v-if="passTypes" class="list-item" v-for="(passType, index) in passTypes" :key="passType.id">
       <div :class="{'opacity-25': activeItem && (passType.slug != activeItem)}" @click="purchasePass(passType.slug, index)">
-        <img class="img-fluid rounded" width="300" height="150" :src="passType.image" />
+        <img v-show="allImagesLoaded" class="img-fluid rounded" width="300" height="150" @load="imageLoaded()" :src="passType.image" />
+        <div v-show="!allImagesLoaded" class="skeleton-block rounded"></div>
         <div class="more-information">More Information</div>
       </div>
       <div :class="{'opacity-50': activeItem && (passType.slug != activeItem)}" class="display-name text-truncate">{{ passType.display_name }}</div>
     </div>
-    <div v-else>
-        <BootstrapSpinner isLoading="true" />
-    </div>
 
+    <div v-if="!passTypes">
+        <BootstrapSpinner :isLoading="true" :centerOfScreen="false" />
+    </div>
   </div>
 
 </template>
@@ -47,6 +48,8 @@ export default {
     return {
       activeItem: null,
       passTypes: null,
+      imagesLoaded: 0,
+      allImagesLoaded: false,
       errorMessage: null,
     };
   },
@@ -54,6 +57,12 @@ export default {
     BootstrapSpinner,
   },
   methods: {
+    imageLoaded: function() {
+      this.imagesLoaded += 1;
+      if(this.passTypes && (this.passTypes.length==this.imagesLoaded)){
+        this.allImagesLoaded = true;
+      }
+    },
     getPassTypeApiEndpoint: function() {
       if(this.isRetailer){
         return apiEndpoints.passTypesRetailer
@@ -114,6 +123,8 @@ export default {
 
 .list-item img {
   opacity: 1;
+  max-width: 100%;
+  height: auto;
 }
 
 .list-item:hover {
@@ -146,4 +157,25 @@ export default {
   gap:0px;
 }
 
+.skeleton-block {
+  display: block;
+  background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.5) 50%,
+      rgba(255, 255, 255, 0) 80%
+    ),
+    lightgray;
+  background-repeat: repeat-y;
+  background-size: 50px 200px;
+  background-position: 0 0;
+  width:300px;
+  height:150px;
+  animation: shine 1s infinite;
+}
+@keyframes shine {
+  to {
+    background-position: 100% 0, /* move highlight to right */ 0 0;
+  }
+}
 </style>
