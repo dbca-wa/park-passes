@@ -1,3 +1,4 @@
+import hashlib
 import logging
 
 from django.conf import settings
@@ -124,6 +125,20 @@ def get_retailer_groups_for_user(request):
     retailer_group_ids = get_retailer_group_ids_for_user(request)
 
     return RetailerGroup.objects.filter(id__in=retailer_group_ids)
+
+
+def get_rac_discount_code(email):
+    discount_hash = hashlib.shake_256(
+        (settings.RAC_HASH_SALT + email).encode("utf-8")
+    ).hexdigest(10)
+    logger.debug("discount_hash = " + str(hash))
+    return discount_hash
+
+
+def check_rac_discount_hash(discount_hash, email):
+    return discount_hash == hashlib.shake_256(
+        (settings.RAC_HASH_SALT + email).encode("utf-8")
+    ).hexdigest(10)
 
 
 def in_dbca_domain(request):
