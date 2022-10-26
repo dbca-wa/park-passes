@@ -231,11 +231,10 @@ if DEBUG:
             },
             "rotating_file": {
                 "level": "INFO",
-                "class": "logging.handlers.TimedRotatingFileHandler",
+                "class": "logging.handlers.RotatingFileHandler",
                 "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
                 "formatter": "verbose",
-                "when": "D",
-                "interval": 1,
+                "maxBytes": 5242880,
             },
             "mail_admins": {
                 "level": "ERROR",
@@ -407,6 +406,8 @@ PASS_AUTORENEW_REMINDER_DAYS_PRIOR = 7
 
 PRICING_WINDOW_DEFAULT_NAME = "Default"
 
+RAC_HASH_SALT = env("RAC_HASH_SALT")
+RAC_RETAILER_GROUP_NAME = env("RAC_RETAILER_GROUP_NAME", "RAC")
 UNLIMITED_USES = 999999999
 UNLIMITED_USES_TEXT = "Unlimited"
 
