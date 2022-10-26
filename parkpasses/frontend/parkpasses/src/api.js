@@ -57,6 +57,9 @@ module.exports = {
     internalPassPaymentDetails: function (passId) {
         return                          `/api/passes/internal/passes/${passId}/payment-details`
     },
+    checkRacDiscountCode: function (discountHash, email) {
+        return                          `/api/passes/check-hash-matches-email/${discountHash}/${email}/`
+    },
 
     /* ========================= Pass Types =============================================*/
 
