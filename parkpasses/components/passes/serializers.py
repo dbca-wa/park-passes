@@ -150,6 +150,9 @@ class PassTemplateSerializer(serializers.ModelSerializer):
 class PassModelCreateSerializer(serializers.ModelSerializer):
     """A base model serializer for passes that allows additonal fields to be submitted for processing"""
 
+    rac_discount_code = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
     discount_code = serializers.CharField(
         write_only=True, required=False, allow_blank=True
     )
@@ -169,6 +172,7 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = [
+            "rac_discount_code",
             "discount_code",
             "voucher_code",
             "voucher_pin",
@@ -260,6 +264,12 @@ class ExternalCreateGoldStarPassSerializer(PassModelCreateSerializer):
             "last_name",
             "email",
             "mobile",
+            "company",
+            "address_line_1",
+            "address_line_2",
+            "suburb",
+            "state",
+            "postcode",
             "vehicle_registration_1",
             "vehicle_registration_2",
             "renew_automatically",
@@ -302,6 +312,7 @@ class ExternalCreatePinjarOffRoadPassSerializer(PassModelCreateSerializer):
             "last_name",
             "email",
             "mobile",
+            "drivers_licence_number",
             "vehicle_registration_1",
             "vehicle_registration_2",
             "renew_automatically",
@@ -346,6 +357,13 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "mobile",
+            "company",
+            "address_line_1",
+            "address_line_2",
+            "suburb",
+            "state",
+            "postcode",
             "vehicle_registration_1",
             "vehicle_registration_2",
             "prevent_further_vehicle_updates",
