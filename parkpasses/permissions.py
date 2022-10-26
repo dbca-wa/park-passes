@@ -28,6 +28,16 @@ class IsInternal(BasePermission):
         return False
 
 
+class IsInternalAPIView(BasePermission):
+    def has_permission(self, request, view):
+        if is_internal(request):
+            if "DELETE" == request.method:
+                return False
+
+            return True
+        return False
+
+
 class IsInternalOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         return bool(request.method in SAFE_METHODS or is_internal(request))
