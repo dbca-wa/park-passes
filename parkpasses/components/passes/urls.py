@@ -15,6 +15,8 @@ from parkpasses.components.passes.api import (
     PassTemplateViewSet,
     PassTypePricingWindowOptionViewSet,
     PassTypesDistinct,
+    RacDiscountCodeCheckView,
+    RacDiscountCodeView,
     RetailerApiAccessViewSet,
     RetailerPassTypeViewSet,
     RetailerPassViewSet,
@@ -53,6 +55,12 @@ urlpatterns = [
     url(r"pass-processing-statuses-distinct", PassProcessingStatusesDistinct.as_view()),
     url(r"default-pass-options-by-pass-type-id", DefaultOptionsForPassType.as_view()),
     url(r"pass-options-by-pass-type-id", CurrentOptionsForPassType.as_view()),
+    url(r"rac/generate-code-from-email/(?P<email>.+)$", RacDiscountCodeView.as_view()),
+    url(r"rac/generate-code-from-email/$", RacDiscountCodeView.as_view()),
+    url(
+        r"check-hash-matches-email/(?P<discount_hash>.+)/(?P<email>.+)/$",
+        RacDiscountCodeCheckView.as_view(),
+    ),
     url(r"cancel-pass", CancelPass.as_view()),
     url(
         r"ledger-api-refund-success-callback(?P<id>.+)/(?P<uuid>.+)$",

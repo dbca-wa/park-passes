@@ -1,4 +1,5 @@
 import logging
+import re
 import uuid
 from decimal import Decimal
 
@@ -16,8 +17,10 @@ from ledger_api_client.utils import create_basket_session, create_checkout_sessi
 from org_model_logs.models import UserAction
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
@@ -65,7 +68,13 @@ from parkpasses.components.retailers.models import (
     RetailerGroupUser,
 )
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
-from parkpasses.helpers import is_customer, is_internal, is_retailer
+from parkpasses.helpers import (
+    check_rac_discount_hash,
+    get_rac_discount_code,
+    is_customer,
+    is_internal,
+    is_retailer,
+)
 from parkpasses.permissions import (
     HasRetailerGroupAPIKey,
     IsExternalObjectOwner,
@@ -381,6 +390,7 @@ class ExternalPassViewSet(
         logger.debug("serializer data = " + str(serializer.validated_data))
 
         # Pop these values out so they don't mess with the model serializer
+        # rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
         discount_code = serializer.validated_data.pop("discount_code", None)
         voucher_code = serializer.validated_data.pop("voucher_code", None)
         voucher_pin = serializer.validated_data.pop("voucher_pin", None)
@@ -772,10 +782,76 @@ class RetailerApiAccessViewSet(UserActionViewSet):
 
         return super().perform_create(serializer)
 
+    @action(methods=["GET"], detail=True, url_path="get-discount-code-from-email")
+    def get_discount_code_from_email(self, request, *args, **kwargs):
+        email = kwargs["email"]
+        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        if not re.fullmatch(regex, email):
+            raise ValidationError({"email": "Please pass a valid email address."})
+        return get_rac_discount_code(email)
+
     def get_retailer_group(self, request):
         """Retrieve a project based on the request API key."""
         if "HTTP_AUTHORIZATION" in request.META:
             key = request.META["HTTP_AUTHORIZATION"].split()[1]
             retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
             return retailer_group_api_key.retailer_group
-        return RetailerGroup.objects.get(name="RAC")
+        return RetailerGroup.objects.get(name=settings.RAC_RETAILER_GROUP_NAME)
+
+
+class RacDiscountCodeView(APIView):
+    permission_classes = [HasRetailerGroupAPIKey]
+
+    def get(self, request, *args, **kwargs):
+        email = kwargs["email"]
+        logger.debug("email = " + str(email))
+        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        if not re.fullmatch(regex, email):
+            raise ValidationError({"email": "Please pass a valid email address."})
+        return Response(get_rac_discount_code(email))
+
+    def post(self, request, *args, **kwargs):
+        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        emails = request.data.get("emails").split(",")
+        logger.debug(emails)
+        codes = []
+        for email in emails:
+            if not re.fullmatch(regex, email):
+                raise ValidationError(
+                    {"email": f"Your list contains an invalid email address: {email}."}
+                )
+            codes.append({email: get_rac_discount_code(email)})
+        return Response(codes)
+
+
+class RacDiscountCodeCheckView(APIView):
+    throttle_classes = [AnonRateThrottle]
+
+    def get(self, request, *args, **kwargs):
+        discount_hash = kwargs["discount_hash"]
+        if 20 != len(discount_hash):
+            raise ValidationError(
+                {"discount_hash": "The discount hash must be 20 characters long."}
+            )
+        email = kwargs["email"]
+        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        if not re.fullmatch(regex, email):
+            raise ValidationError({"email": "Please pass a valid email address."})
+        result = check_rac_discount_hash(discount_hash, email)
+        if result:
+            discount_percentage = self.get_retailer_group(request).commission_percentage
+            return Response(
+                {
+                    "is_rac_discount_code_valid": result,
+                    "discount_percentage": discount_percentage,
+                }
+            )
+        return Response({"is_rac_discount_code_valid": result})
+
+    def get_retailer_group(self, request):
+        """Retrieve a project based on the request API key."""
+        if "HTTP_AUTHORIZATION" in request.META:
+            key = request.META["HTTP_AUTHORIZATION"].split()[1]
+            retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
+            return retailer_group_api_key.retailer_group
+        return RetailerGroup.objects.get(name=settings.RAC_RETAILER_GROUP_NAME)
