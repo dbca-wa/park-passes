@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-Django = "3.2.13"
+Django = "3.2.16"
 django-confy = "1.0.4" # old
 dj-database-url = "0.5.0" # old
 django_countries = "7.3.2"
@@ -20,8 +20,7 @@ reportlab = "3.5.34"
 requests = "2.24.0"
 setuptools = "45.2.0"
 six = "1.14.0"
-# git+https://github.com/xzzy/webtemplate.git#egg=webtemplate_dbca
-webtemplate_dbca = {git = "https://github.com/xzzy/webtemplate.git"}
+# git+https://github.com/dbca-wa/webtemplate2.git#egg=webtemplate_dbca
 # git+https://github.com/dbca-wa/dbca-utils@1.1.1#egg=dbca-utils
 dbca-utils = {git = "https://github.com/dbca-wa/dbca-utils.git", rev = "1.1.1"}
 psycopg2-binary = "2.8.5"
@@ -59,6 +58,7 @@ django-org-model-documents = "^1.0.0"
 django-autoslug = "^1.9.8"
 XlsxWriter = "^3.0.3"
 djangorestframework-api-key = "^2.2.0"
+webtemplate-dbca = {git = "https://github.com/dbca-wa/webtemplate2.git"}
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.3.0"
