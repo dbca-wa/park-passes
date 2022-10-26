@@ -58,10 +58,11 @@ const notMobile = breakpoints.greaterOrEqual('sm');
                 <div class="container">
                     <div class="row">
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Pass Type</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.pass_type}}</div>
-                        <div v-if="cartItem.park_group && cartItem.park_group.length" class="col-12 col-sm-6 fw-bold border-bottom">Park Group</div><div v-if="cartItem.park_group && cartItem.park_group.length" class="col-12 col-sm-6 border-bottom">{{cartItem.park_group}}</div>
-                        <div v-if="cartItem.renew_automatically" class="col-12 col-sm-6 fw-bold border-bottom">Duration</div><div v-if="cartItem.renew_automatically" class="col-12 col-sm-6 border-bottom"><i class="fa fa-check" style="color:green;" aria-hidden="true"></i></div>
+                        <div v-if="cartItem.park_group" class="col-12 col-sm-6 fw-bold border-bottom">Park Group</div><div v-if="cartItem.park_group" class="col-12 col-sm-6 border-bottom">{{cartItem.park_group}}</div>
+                        <div v-if="cartItem.duration" class="col-12 col-sm-6 fw-bold border-bottom">Duration</div><div v-if="cartItem.duration" class="col-12 col-sm-6 border-bottom">{{cartItem.duration}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Pass Start Date</div><div class="col-12 col-sm-6 border-bottom">{{formatDate(cartItem.date_start)}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Pass Expiry Date</div><div class="col-12 col-sm-6 border-bottom">{{formatDate(cartItem.date_expiry)}}</div>
+                        <div v-if="cartItem.renew_automatically" class="col-12 col-sm-6 fw-bold border-bottom">Renew Automatically</div><div v-if="cartItem.renew_automatically" class="col-12 col-sm-6 border-bottom"><i class="fa fa-check" style="color:green;" aria-hidden="true"></i></div>
                         <div v-if="cartItem.vehicle_registration_1" class="col-12 col-sm-6 fw-bold border-bottom">Vehicle Registration <span v-if="cartItem.vehicle_registration_2">1</span></div><div v-if="cartItem.vehicle_registration_1" class="col-12 col-sm-6 border-bottom">{{cartItem.vehicle_registration_1}}</div>
                         <div v-if="cartItem.vehicle_registration_2" class="col-12 col-sm-6 fw-bold border-bottom">Vehicle Registration <span v-if="cartItem.vehicle_registration_1">2</span></div><div v-if="cartItem.vehicle_registration_2" class="col-12 col-sm-6 border-bottom">{{cartItem.vehicle_registration_2}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Your First Name</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.first_name}}</div>
@@ -73,7 +74,7 @@ const notMobile = breakpoints.greaterOrEqual('sm');
                         <div v-if="cartItem.address_line_2" class="col-12 col-sm-6 fw-bold border-bottom">Address Line 2</div><div v-if="cartItem.address_line_2" class="col-12 col-sm-6 border-bottom">{{cartItem.address_line_2}}</div>
                         <div v-if="cartItem.suburb" class="col-12 col-sm-6 fw-bold border-bottom">suburb</div><div v-if="cartItem.suburb" class="col-12 col-sm-6 border-bottom">{{cartItem.suburb}}</div>
                         <div v-if="cartItem.state" class="col-12 col-sm-6 fw-bold border-bottom">state</div><div v-if="cartItem.state" class="col-12 col-sm-6 border-bottom">{{cartItem.state}}</div>
-                        <div v-if="cartItem.postcode && cartItem.postcode.length" class="col-12 col-sm-6 fw-bold border-bottom">Postcode</div><div v-if="cartItem.postcode && cartItem.postcode.length" class="col-12 col-sm-6 border-bottom">{{cartItem.postcode}}</div>
+                        <div v-if="cartItem.postcode" class="col-12 col-sm-6 fw-bold border-bottom">Postcode</div><div v-if="cartItem.postcode" class="col-12 col-sm-6 border-bottom">{{cartItem.postcode}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Price</div><div class="col-12 col-sm-6 border-bottom">${{cartItem.price}}</div>
                     </div>
                 </div>
