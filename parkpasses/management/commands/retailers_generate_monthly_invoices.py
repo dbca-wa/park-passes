@@ -14,13 +14,11 @@ from pathlib import Path
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.db.models import Count, F, Sum
 from django.utils import timezone
 from docxtpl import DocxTemplate
 
-from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.reports.models import Report
 from parkpasses.components.retailers.models import RetailerGroup
@@ -71,43 +69,66 @@ class Command(BaseCommand):
             if options["test"]:
                 # To make sure we have records when testing just select all no_payment_orders
                 # regardless of the date
-                no_payment_orders = Order.objects.filter(
-                    retailer_group=retailer_group,
-                    is_no_payment=True,
+                passes = Pass.objects.exclude(cancellation__isnull=True).filter(
+                    sold_via=retailer_group,
+                )
+                cancellations = Pass.objects.filter(
+                    cancellation__isnull=True,
+                    sold_via=retailer_group,
+                    cancellation__null=True,
                 )
             else:
-                no_payment_orders = Order.objects.filter(
-                    retailer_group=retailer_group,
-                    is_no_payment=True,
+                passes = Pass.objects.filter(
+                    cancellation__isnull=True,
+                    sold_via=retailer_group,
                     datetime_created__gte=first_day_of_previous_month,
                     datetime_created__lte=last_day_of_previous_month,
                 )
-            no_payment_order_count = len(no_payment_orders)
+                cancellations = Pass.objects.filter(
+                    sold_via=retailer_group,
+                    cancellation__isnull=False,
+                    cancellation__datetime_cancelled__gte=first_day_of_previous_month,
+                    cancellation__datetime_cancelled__lte=last_day_of_previous_month,
+                ).order_by("cancellation__datetime_cancelled")
+
+            pass_count = len(passes)
+            cancellation_count = len(cancellations)
             self.stdout.write(
-                f"\t -- Found {no_payment_order_count} No Payment Orders.\n\n"
+                f"\t -- Found {pass_count} Passes and {cancellation_count} cancellations.\n\n"
             )
 
-            if 0 == no_payment_order_count:
+            if 0 == pass_count:
                 continue
 
-            total = Decimal(0.00)
-            for order in no_payment_orders:
-                total += order.total
+            total_sales = Decimal(0.00)
+            for park_pass in passes:
+                total_sales += park_pass.price
+
+            total_refunds = Decimal(0.00)
+            for park_pass in cancellations:
+                total_refunds += park_pass.pro_rata_refund_amount
+
+            grand_total = total_sales - total_refunds
 
             commission_amount = Decimal(
-                total * (retailer_group.commission_percentage / 100)
+                grand_total * (retailer_group.commission_percentage / 100)
             ).quantize(Decimal("0.01"))
 
-            total_payable = Decimal(total - commission_amount).quantize(Decimal("0.01"))
+            total_payable = Decimal(grand_total - commission_amount).quantize(
+                Decimal("0.01")
+            )
 
             context = {
                 "organisation": organisation,
                 "retailer_group": retailer_group,
-                "orders": no_payment_orders,
+                "passes": passes,
+                "cancellations": cancellations,
                 "date": today,
                 "commission_percentage": f"{retailer_group.commission_percentage}%",
                 "commission_amount": f"${commission_amount}",
-                "total_sales": f"${total}",
+                "total_sales": f"${total_sales}",
+                "total_refunds": f"${total_refunds}",
+                "grand_total": f"${grand_total}",
                 "total_payable": f"${total_payable}",
             }
             invoice_template_docx.render(context)
@@ -129,15 +150,8 @@ class Command(BaseCommand):
                 ]
             )
 
-            content_type = ContentType.objects.get_for_model(Pass)
-            pass_id_strings = OrderItem.objects.filter(
-                order__in=no_payment_orders, content_type=content_type
-            ).values_list("object_id", flat=True)
-            pass_ids = [int(i) for i in pass_id_strings]
-
             total_sales_by_pass_type = (
-                Pass.objects.filter(id__in=pass_ids)
-                .values("option__pricing_window__pass_type__display_name")
+                passes.values("option__pricing_window__pass_type__display_name")
                 .order_by("option__pricing_window__pass_type__display_name")
                 .annotate(total_sales=Sum("option__price"))
                 .annotate(
@@ -153,7 +167,9 @@ class Command(BaseCommand):
                 "date": today,
                 "commission_percentage": f"{retailer_group.commission_percentage}%",
                 "commission_amount": f"${commission_amount}",
-                "total_sales": f"${total}",
+                "total_sales": f"${total_sales}",
+                "total_refunds": f"${total_refunds}",
+                "grand_total": f"${grand_total}",
                 "total_payable": f"${total_payable}",
             }
             report_template_docx.render(context)
