@@ -182,9 +182,33 @@
                                 </ul>
                             </div>
                         </div>
-                        <div v-if="!isPinjarPass" class="row g-1 align-top mb-2">
+                        <div v-if="showRacMemberSwitch" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="concession" class="col-form-label">Elibible for Concession</label>
+                                <label for="racMember" class="col-form-label"><img src="/static/parkpasses/img/rac-icon.png" width="32" height="32"/> RAC Member?</label>
+                            </div>
+                            <div class="col-12 col-lg-12 col-xl-9">
+                                <div class="form-switch">
+                                    <input @change="resetPrice" class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="racMember" name="racMember" v-model="racMember">
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="racMember" class="row g-1 align-top mb-2">
+                            <div class="col-12 col-lg-12 col-xl-3">
+                                <label for="racDiscountCode" class="col-form-label">RAC Discount Code</label>
+                            </div>
+                            <div class="col-12 col-lg-12 col-xl-9">
+                                <input type="text" @keyup="validateRacDiscountCode()" id="racDiscountCode" name="racDiscountCode" ref="racDiscountCode" v-model="pass.rac_discount_code" class="form-control short-control" minlength="20" maxlength="20">
+                                <div v-if="pass.rac_discount_code && pass.rac_discount_code.length<20" class="invalid-feedback">
+                                    The RAC discount code must be 20 characters long.
+                                </div>
+                                <div v-else class="invalid-feedback">
+                                    This RAC discount code is not valid for your email address.
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="showConcessionSwitch" class="row g-1 align-top mb-2">
+                            <div class="col-12 col-lg-12 col-xl-3">
+                                <label for="concession" class="col-form-label">Eligible for Concession</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
                                 <div class="form-switch">
@@ -214,7 +238,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="startDate" class="col-form-label">Start Date for Pass</label>
@@ -268,6 +291,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <div v-if="showDiscountCodeField" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="discountCode" class="col-form-label">Discount Code</label>
@@ -323,6 +347,14 @@
                                 <input type="text" readonly class="form-control-plaintext fw-bold" id="price" name="price" :value="'$'+totalPrice">
                             </div>
                         </div>
+                        <div v-if="racDiscountCodeDiscount" class="row g-1 align-top mb-2">
+                            <div class="col-12 col-lg-12 col-xl-3">
+                                RAC Discount ({{ racDiscountCodePercentage }}% OFF)
+                            </div>
+                            <div class="col-12 col-lg-12 col-xl-9">
+                                <strong class="text-success">-${{ racDiscountCodeDiscount }}</strong>
+                            </div>
+                        </div>
                         <div v-if="discountCodeDiscount" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 Discount Amount
@@ -355,7 +387,7 @@
                                 <strong class="text-success">${{ voucherBalanceRemainingIfUsedForThisPurchase }}</strong>
                             </div>
                         </div>
-                        <div v-if="discountCodeDiscount || voucherRedemptionAmount" class="row g-1 align-top mb-2">
+                        <div v-if="discountCodeDiscount || voucherRedemptionAmount || racDiscountCodeDiscount" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 Sub Total
                             </div>
@@ -406,6 +438,7 @@
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
+import currency from 'currency.js'
 import { useStore } from '@/stores/state'
 
 export default {
@@ -472,10 +505,12 @@ export default {
             extraVehicle: false,
             vehicleInputs: 1,
             extraVehicleText: 'Add a second vehicle',
+            racMember: false,
 
             discountType: null,
             discountPercentage: 0.00,
             discountCodeDiscount: 0.00,
+            racDiscountCodePercentage: 0,
 
             voucherBalanceRemaining: 0.00,
 
@@ -502,18 +537,41 @@ export default {
                 }
             }
         },
-        showPassTypeDescription() {
-            console.log('this.isRetailer = ' + this.isRetailer)
-            return this.passType && !this.isRetailer;
-        },
         showAutomaticRenewalOption() {
             return this.passType && !this.isRetailer;
         },
+        showRacMemberSwitch() {
+            return !this.isRetailer && this.isEmailValid;
+        },
+        racDiscountCodeEntered() {
+            if(this.pass.rac_discount_code && this.pass.rac_discount_code.length>0){
+                return true;
+            }
+            return false;
+        },
+        racDiscountCodeDiscount(){
+            if(0==this.racDiscountCodePercentage){
+                return 0.00;
+            }
+            return currency(this.totalPrice - (this.totalPrice * (this.racDiscountCodePercentage / 100)));
+        },
+        showConcessionSwitch() {
+            console.log('this.pass.rac_discount_code = ' + this.pass.rac_discount_code);
+            if(this.pass.rac_discount_code && this.pass.rac_discount_code.length>0){
+                return false;
+            }
+            return !this.isPinjarPass;
+        },
         showDiscountCodeField() {
+            if(this.racDiscountCodeEntered){
+                return false;
+            }
             return !this.isRetailer && this.isEmailValid;
         },
         showVoucherCodeField() {
-            console.log('this.totalPriceAfterDiscounts = ' + this.totalPriceAfterDiscounts);
+            if(this.racDiscountCodeEntered){
+                return false;discountCode
+            }
             return (this.isEmailValid && (0.00 < this.totalPriceAfterDiscounts) && !this.isRetailer)
         },
         totalPrice() {
@@ -529,7 +587,7 @@ export default {
             return Math.max(totalPriceAfterDiscounts, 0.00).toFixed(2);
         },
         subTotal() {
-            let subTotal = this.totalPrice - this.discountCodeDiscount - this.voucherRedemptionAmount;
+            let subTotal = this.totalPrice - this.discountCodeDiscount - this.voucherRedemptionAmount - this.racDiscountCodeDiscount;
             return Math.max(subTotal, 0.00).toFixed(2);
         },
         isHolidayPass() {
@@ -627,14 +685,13 @@ export default {
                 vm.passType = data
                 this.fetchPassOptions(vm.passType.id);
                 vm.$nextTick(() => {
-                    if(!vm.pass.email.length){
+                    if(!vm.pass.email.length && vm.$refs.firstName){
                         vm.$refs.firstName.focus();
-                    } else {
+                    } else if(vm.$refs.confirmEmail) {
                         vm.$refs.confirmEmail.focus();
                     }
                 });
                 vm.title = vm.getHeading;
-                console.log(vm.title)
             })
             .catch(error => {
                 this.systemErrorMessage = constants.ERRORS.NETWORK;
@@ -680,7 +737,6 @@ export default {
 
                 if (data.results.length >= 1) {
                     vm.parkGroups = data.results
-                    console.log(vm.parkGroups);
                     vm.pass.park_group = Object.assign({}, vm.parkGroups[0]);
                     vm.pass.park_group_id = vm.pass.park_group.id;
                     vm.$nextTick( function() {
@@ -689,7 +745,6 @@ export default {
                         }
                     });
                 } else {
-                    console.log('Something goes here.')
                     vm.noParkForPostcodeError = "Unfortunately there are no local parks for your postcode.";
                     this.$refs.postcode.setCustomValidity("Invalid field.");
                 }
@@ -737,10 +792,13 @@ export default {
                 } else {
                     this.passPrice = this.passOptions[0].price
                 }
-
             } else {
-                console.log('happening');
                 this.pass.concession_type = 0;
+            }
+            console.log('this.racMember = ' + this.racMember);
+            if(!this.racMember){
+                this.pass.rac_discount_code = '';
+                this.racDiscountCodePercentage = 0;
             }
         },
         updateConcessionDiscount: function (event) {
@@ -773,8 +831,42 @@ export default {
                 this.$refs.confirmEmail.setCustomValidity("");
             }
         },
+        validateRacDiscountCode: function () {
+            let vm = this;
+            if(20!=vm.pass.rac_discount_code.length){
+                console.log('RAC discount code is not valid.')
+                vm.racDiscountCodePercentage = 0;
+                vm.$refs.racDiscountCode.setCustomValidity("Invalid field.");
+                return false;
+            } else {
+                vm.pass.discount_code = '';
+                vm.pass.voucher_code = '';
+                fetch(apiEndpoints.checkRacDiscountCode(vm.pass.rac_discount_code, vm.pass.email))
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        const error = (data && data.message) || response.statusText;
+                        console.log(error);
+                        return Promise.reject(error);
+                    }
+                    const isRacDiscountCodeValid = data.is_rac_discount_code_valid
+                    console.log('isRacDiscountCodeValid = ' + isRacDiscountCodeValid)
+                    if(!isRacDiscountCodeValid){
+                        vm.$refs.racDiscountCode.setCustomValidity("Invalid field.");
+                        vm.racDiscountCodePercentage = 0;
+                        return false;
+                    }
+                    vm.racDiscountCodePercentage = data.discount_percentage
+                    vm.$refs.racDiscountCode.setCustomValidity("");
+                    return true;
+                })
+                .catch(error => {
+                    vm.systemErrorMessage = constants.ERRORS.NETWORK;
+                    console.error("There was an error!", error);
+                });
+            }
+        },
         validateDiscountCode: function () {
-
             if(this.pass.discount_code.length && (8!=this.pass.discount_code.length)){
                 this.$refs.discountCode.setCustomValidity("Invalid field.");
                 this.discountCodeDiscount = 0.00;
@@ -857,7 +949,6 @@ export default {
             }
         },
         validateVoucherPin: function () {
-
             console.log('this.pass.voucher_pin.length = ' + this.pass.voucher_pin.length)
             if(6!=this.pass.voucher_pin.length){
                 console.log('Pin is not valid.')
@@ -951,26 +1042,31 @@ export default {
                 console.log("email is valid -- >")
                 this.validateConfirmEmail();
                 if(!this.isRetailer){
-                    this.validateDiscountCode();
-                    if(vm.showVoucherCodeField){
-                        console.log("vm.showVoucherCodeField -- >")
-                        let voucherCodeValid = this.validateVoucherCode();
-                        let voucherPinValid = false;
-                        if(this.pass.voucher_code.length && voucherCodeValid){
-                            console.log("voucherCodeValid valid -- >")
-                            voucherPinValid = this.validateVoucherPin();
-                        }
-                        /* Todo: There are still issues with the validation process.
-                        if (typeof voucherPinValid !== 'undefined'){
-                            console.log("voucherPinValid is undefined returning false -- >")
-                            return false;
-                        }*/
-                        console.log("voucherPinValid = " + voucherPinValid)
-                        if(voucherCodeValid && voucherPinValid){
-                            console.log("Is this happening -- >")
-                            this.validateVoucherCodeBackend();
-                        }
+                    if(this.pass.rac_discount_code){
+                        this.validateRacDiscountCode();
+                    } else {
+                        this.validateDiscountCode();
+                            if(vm.showVoucherCodeField){
+                                console.log("vm.showVoucherCodeField -- >")
+                                let voucherCodeValid = this.validateVoucherCode();
+                                let voucherPinValid = false;
+                                if(this.pass.voucher_code.length && voucherCodeValid){
+                                    console.log("voucherCodeValid valid -- >")
+                                    voucherPinValid = this.validateVoucherPin();
+                                }
+                                /* Todo: There are still issues with the validation process.
+                                if (typeof voucherPinValid !== 'undefined'){
+                                    console.log("voucherPinValid is undefined returning false -- >")
+                                    return false;
+                                }*/
+                                console.log("voucherPinValid = " + voucherPinValid)
+                                if(voucherCodeValid && voucherPinValid){
+                                    console.log("Is this happening -- >")
+                                    this.validateVoucherCodeBackend();
+                                }
+                            }
                     }
+
                 }
             }
 
@@ -1045,7 +1141,6 @@ export default {
                 vm.isRetailer = true;
                 vm.fetchRetailerGroupsForUser();
             }
-            console.log('vm.isRetailer = ' + vm.isRetailer);
         }
     }
 };
@@ -1059,7 +1154,7 @@ export default {
         background: none;
     }
     .short-control{
-        width:180px;
+        width:230px;
     }
     .pin-control{
         width:120px;
