@@ -5,6 +5,8 @@ This management commands sends the details of any new gold star passes to pica s
 Usage: ./manage.sh pass_send_gold_pass_details_to_pica
         (this command should be run by a cron job at 3am each day)
 
+    When the test flag "--test" is appended the gold star passes from today will be selected
+    instead of the ones from yesterday.
 """
 import logging
 from pathlib import Path
@@ -108,26 +110,17 @@ class Command(BaseCommand):
 
             workbook.close()
 
-            if options["test"]:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        "TEST: pretending to call send_gold_pass_details_to_pica."
-                    )
+            error_message = "An exception occured trying to run "
+            error_message += (
+                "send_gold_pass_details_to_pica for Pass with id {}. Exception {}"
+            )
+            try:
+                PassEmails.send_gold_pass_details_to_pica(date, passes, file_path)
+                logger.info(
+                    "Email of new Gold Pass Information sent to PICA.",
+                    extra={"className": self.__class__.__name__},
                 )
-            else:
-                error_message = "An exception occured trying to run "
-                error_message += (
-                    "send_gold_pass_details_to_pica for Pass with id {}. Exception {}"
+            except Exception as e:
+                raise SendGoldPassDetailsToPICAEmailFailed(
+                    error_message.format(self.id, e)
                 )
-                try:
-                    PassEmails.send_gold_pass_details_to_pica(
-                        yesterday, passes, file_path
-                    )
-                    logger.info(
-                        "Email of new Gold Pass Information sent to PICA.",
-                        extra={"className": self.__class__.__name__},
-                    )
-                except Exception as e:
-                    raise SendGoldPassDetailsToPICAEmailFailed(
-                        error_message.format(self.id, e)
-                    )
