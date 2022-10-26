@@ -74,8 +74,6 @@ def is_parkpasses_discount_code_percentage_user(request):
 def is_retailer(request):
     if not request.user.is_authenticated:
         return False
-    if request.user.is_superuser:
-        return True
 
     cache_key = settings.CACHE_KEY_RETAILER.format(str(request.user.id))
     is_retailer = cache.get(cache_key)
