@@ -16,7 +16,6 @@ import qrcode
 from autoslug import AutoSlugField
 from ckeditor.fields import RichTextField
 from django.conf import settings
-from django.core import serializers
 from django.core.exceptions import (
     MultipleObjectsReturned,
     ObjectDoesNotExist,
@@ -557,6 +556,26 @@ class Pass(models.Model):
         return self.price_after_voucher_applied
 
     @property
+    def price_display(self):
+        return f"${self.price_after_all_discounts}"
+
+    @property
+    def gst(self):
+        gst_calcuation = Decimal(100 / (100 + int(settings.LEDGER_GST)))
+        return Decimal(
+            self.price_after_all_discounts
+            - (self.price_after_all_discounts * gst_calcuation)
+        ).quantize(Decimal("0.00"))
+
+    @property
+    def gst_display(self):
+        return f"${self.gst}"
+
+    @property
+    def refund_display(self):
+        return f"${self.pro_rata_refund_amount}"
+
+    @property
     def status(self):
         if self.isCancelled:
             return Pass.CANCELLED
@@ -602,10 +621,15 @@ class Pass(models.Model):
         return Decimal(amount).quantize(Decimal("0.00"))
 
     def generate_qrcode(self):
+        logger.info(f"Generating qr code for pass {self.pass_number}.")
+        from parkpasses.components.passes.serializers import (
+            ExternalQRCodePassSerializer,
+        )
+
         qr = qrcode.QRCode()
-        pass_data_json = serializers.serialize("json", [self])
+        serializer = ExternalQRCodePassSerializer(self)
         # replace this line with the real encryption server at a later date
-        encrypted_pass_data = self.imaginary_encryption_endpoint(pass_data_json)
+        encrypted_pass_data = self.imaginary_encryption_endpoint(serializer.data)
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
         qr_image = qr.make_image(fill="black", back_color="white")
