@@ -101,7 +101,7 @@ class Cart(models.Model):
         park_pass_ids = list(CartItem.passes.filter(cart=self))
         park_passes = Pass.objects.filter(id__in=park_pass_ids)
         for park_pass in park_passes:
-            park_pass.purchaser = user_id
+            park_pass.user = user_id
             park_pass.save()
 
     @property
@@ -386,11 +386,14 @@ class CartItem(models.Model):
         """Takes concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
         logger.debug("model_type = " + str(model_type))
+        logger.debug("object_id = " + str(self.object_id))
         if "parkpasses | voucher" == model_type:
             return Voucher.objects.get(pk=self.object_id).amount
         elif "parkpasses | pass" == model_type:
-            park_pass = Pass.objects.get(pk=self.object_id)
-            return Decimal(park_pass.price_after_all_discounts)
+            if Pass.objects.filter(pk=self.object_id).exists():
+                park_pass = Pass.objects.get(pk=self.object_id)
+                return Decimal(park_pass.price_after_all_discounts)
+            return Decimal(0.00)
 
     # TODO: DRY These should not be in this file. Move them to their respetive objects
     # then use this as convenience methods that just call those methods on the other objects
