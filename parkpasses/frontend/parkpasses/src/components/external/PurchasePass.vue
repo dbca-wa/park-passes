@@ -258,7 +258,7 @@
                         </div>
                         <div v-if="!isPinjarPass" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="vehicleRegistrationNumbersKnown" class="col-form-label">Vehicle Registration Number<span v-if="isHolidayPass">s</span> Known</label>
+                                <label for="vehicleRegistrationNumbersKnown" class="col-form-label">Vehicle Registration Number<span v-if="!isHolidayPass">s</span> Known</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
                                 <div class="form-switch">
@@ -270,13 +270,13 @@
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="vehicleRegistration1" class="col-form-label">Vehicle Registration<span v-if="vehicleInputs>1"> 1</span></label>
                             </div>
-                            <div class="col-12 col-lg-12 col-xl-9">
+                            <div class="col-12 col-lg-auto col-xl-auto">
                                 <input type="text" id="vehicleRegistration1" name="vehicleRegistration1" v-model="pass.vehicle_registration_1" class="form-control short-control" required="required" pattern="[a-zA-Z0-9]+" maxlength="9">
                                 <div class="invalid-feedback">
                                     Please enter a valid vehicle registration.
                                 </div>
                             </div>
-                            <div v-if="!isHolidayPass" class="col-12 col-lg-12 col-xl-9">
+                            <div v-if="!isHolidayPass" class="col-12 pt-3 col-lg-6 pt-lg-0 col-xl-3">
                                 <button @click="toggleExtraVehicle" class="btn licensing-btn-primary">{{extraVehicleText}}</button>
                             </div>
                         </div>
