@@ -14,7 +14,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import create_basket_session, create_checkout_session
-from org_model_logs.models import UserAction
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -25,6 +24,7 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from org_model_logs.models import UserAction
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.concessions.models import Concession, ConcessionUsage
@@ -390,7 +390,9 @@ class ExternalPassViewSet(
         logger.debug("serializer data = " + str(serializer.validated_data))
 
         # Pop these values out so they don't mess with the model serializer
-        # rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
+        rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
+        if rac_discount_code:
+            pass
         discount_code = serializer.validated_data.pop("discount_code", None)
         voucher_code = serializer.validated_data.pop("voucher_code", None)
         voucher_pin = serializer.validated_data.pop("voucher_pin", None)
@@ -400,20 +402,32 @@ class ExternalPassViewSet(
         )
 
         sold_via = serializer.validated_data.pop("sold_via", None)
-
+        email_user_id = 0
         if is_retailer(self.request):
             # If the pass is being sold by a retailer, check if there is an existing email user
             # with the email address assigned to the pass
             email = serializer.validated_data["email"]
             if EmailUser.objects.filter(email=email).exists():
                 email_user = EmailUser.objects.get(email=email)
-                park_pass = serializer.save(user=email_user.id)
+                email_user_id = email_user.id
+                park_pass = serializer.save(user=email_user_id)
             else:
                 park_pass = serializer.save()
         elif is_customer(self.request):
+            logger.debug("request.user.id = " + str(self.request.user.id))
+            email_user_id = self.request.user.id
             park_pass = serializer.save(user=self.request.user.id)
         else:
             park_pass = serializer.save()
+
+        UserAction.objects.log_action(
+            object_id=park_pass.id,
+            content_type=ContentType.objects.get_for_model(park_pass),
+            who=email_user_id,
+            what=settings.ACTION_CREATE.format(
+                park_pass._meta.model.__name__, park_pass.id
+            ),
+        )
 
         logger.debug("park_pass.sold_via = " + str(park_pass.sold_via))
 
@@ -487,6 +501,17 @@ class ExternalPassViewSet(
         cart.datetime_last_added_to = timezone.now()
         cart.save()
         logger.debug(str(self.request.session))
+
+    def perform_update(self, serializer):
+        park_pass = serializer.save()
+        UserAction.objects.log_action(
+            object_id=park_pass.id,
+            content_type=ContentType.objects.get_for_model(park_pass),
+            who=self.request.user.id,
+            what=settings.ACTION_UPDATE.format(
+                park_pass._meta.model.__name__, park_pass.id
+            ),
+        )
 
     def has_object_permission(self, request, view, obj):
         if is_customer(request):
@@ -580,6 +605,9 @@ class RetailerPassViewSet(UserActionViewSet):
             return InternalPassRetrieveSerializer
         return InternalPassSerializer
 
+    def get_user_action_serializer_class(self):
+        return UserActionSerializer
+
     def get_queryset(self):
         if RetailerGroupUser.objects.filter(
             emailuser__id=self.request.user.id
@@ -626,6 +654,9 @@ class InternalPassViewSet(UserActionViewSet):
         if "retrieve" == self.action:
             return InternalPassRetrieveSerializer
         return InternalPassSerializer
+
+    def get_user_action_serializer_class(self):
+        return UserActionSerializer
 
     @action(methods=["GET"], detail=True, url_path="retrieve-park-pass-pdf")
     def retrieve_park_pass_pdf(self, request, *args, **kwargs):
