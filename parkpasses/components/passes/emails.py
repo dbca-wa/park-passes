@@ -130,8 +130,11 @@ class PassEmails:
         logger.debug("send_gold_pass_details_to_pica")
         email = PassGoldPassDetailsForPICAEmail(date.strftime("%d/%m/%Y"))
         logger.debug(str(email))
+        from parkpasses.components.passes.serializers import ExternalPassSerializer
+
+        serializer = ExternalPassSerializer(passes, many=True)
         context = {
-            "passes": passes,
+            "passes": serializer.data,
             "site_url": settings.SITE_URL,
         }
         attachments = []
