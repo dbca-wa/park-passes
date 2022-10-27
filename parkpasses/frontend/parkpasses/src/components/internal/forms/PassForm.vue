@@ -244,10 +244,13 @@ export default {
             return constants.HOLIDAY_PASS_NAME==this.pass.pass_type_name ? true : false;
         },
         isPassCancelled: function () {
-            return constants.PASS_STATUS_CANCELLED==this.pass.processing_status;
+            return constants.PASS_PROCESSING_STATUS_CANCELLED==this.pass.processing_status;
+        },
+        hasPassExpired: function () {
+            return constants.PASS_STATUS_EXPIRED==this.pass.processing_status_display_name;
         },
         fieldDisabled: function () {
-            return this.isPassCancelled || !this.pass.user_can_edit;
+            return this.isPassCancelled || this.hasPassExpired || !this.pass.user_can_edit;
         },
         showSecondVehicleRego: function () {
             if(this.isHolidayPass){

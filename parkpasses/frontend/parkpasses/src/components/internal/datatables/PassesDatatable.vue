@@ -344,7 +344,8 @@ export default {
                     if(!full.user_can_edit_and_cancel && !full.user_can_view_payment_details){
                         links +=  `<a href="${editLink.href}">View</a>`;
                     } else {
-                        if('CA'!=full.processing_status){
+                        console.log('full.processing_status_display_name = ' + full.processing_status_display_name);
+                        if('Current'==full.processing_status_display_name || 'Future'==full.processing_status_display_name){
                             if(full.user_can_edit_and_cancel){
                                 links +=  `<a href="${editLink.href}">Edit</a>`;
                                 links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
