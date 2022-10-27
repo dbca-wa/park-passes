@@ -18,6 +18,7 @@ class CartAdmin(admin.ModelAdmin):
     model = Cart
     list_display = (
         "user",
+        "uuid",
         "grand_total",
         "datetime_created",
         "datetime_first_added_to",
