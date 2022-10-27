@@ -443,6 +443,8 @@ class ExternalPassSerializer(serializers.ModelSerializer):
 class ExternalQRCodePassSerializer(serializers.ModelSerializer):
     pass_type = serializers.CharField()
     park_group = serializers.SerializerMethodField()
+    vehicle_registration_1 = serializers.SerializerMethodField()
+    vehicle_registration_2 = serializers.SerializerMethodField()
 
     class Meta:
         model = Pass
@@ -461,8 +463,18 @@ class ExternalQRCodePassSerializer(serializers.ModelSerializer):
 
     def get_park_group(self, obj):
         if obj.park_group:
-            return obj.park_group
-        return "N/A"
+            return str(obj.park_group)
+        return ""
+
+    def get_vehicle_registration_1(self, obj):
+        if obj.vehicle_registration_1:
+            return obj.vehicle_registration_1
+        return ""
+
+    def get_vehicle_registration_2(self, obj):
+        if obj.vehicle_registration_2:
+            return obj.vehicle_registration_2
+        return ""
 
 
 class ExternalUpdatePassSerializer(serializers.ModelSerializer):
