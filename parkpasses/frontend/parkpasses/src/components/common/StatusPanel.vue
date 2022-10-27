@@ -9,7 +9,7 @@
                     <div class="col-sm-12">
                         <strong>Status</strong><br/>
                         <template v-if="badge">
-                            <span :class="'badge ' + getBadgeClass(status)">{{ status }}</span>
+                            <span class="badge" :class="badgeClass">{{ status }}</span>
                         </template>
                         <template v-else>
                             {{ status }}
@@ -35,6 +35,11 @@ export default {
         badge: {
             required: false,
             type: Boolean,
+            default: false,
+        },
+        badgeClass: {
+            required: false,
+            type: String,
             default: false,
         }
     },

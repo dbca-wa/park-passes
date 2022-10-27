@@ -1,8 +1,9 @@
 module.exports = {
-    GST:                                10,
-    PARKPASSES_APP_LABEL:               'parkpasses',
-    PARKPASSES_MODELS_USERACTION:       'useraction',
-    PARKPASSES_MODELS_PASS:             'pass',
+    GST:                                    10,
+    PARKPASSES_APP_LABEL:                   'parkpasses',
+    PARKPASSES_MODELS_USERACTION:           'useraction',
+    PARKPASSES_MODELS_PASS:                 'pass',
+    PARKPASSES_MODELS_DISCOUNT_CODE_BATCH:  'discountcodebatch',
 
     TITLE_SUFFIX: ' - Park Passes - Department of Biodiversity, Conservation and Attractions',
 

@@ -17,7 +17,7 @@
                             :model="model"
                             :customerId="pass.user"
                             :objectId="pass.id" />
-                        <StatusPanel :status="pass.processing_status_display_name" :badge=true class="pt-3" />
+                        <StatusPanel :status="pass.processing_status_display_name" :badge="true" :badgeClass="badgeClass" class="pt-3" />
                     </div>
                     <div class="col-md-1">
 
@@ -214,7 +214,6 @@ import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 
 import Swal from 'sweetalert2'
 
-
 import SectionToggle from '@/components/forms/SectionToggle.vue'
 import CommsLog from '@/components/common/CommsLog.vue'
 import StatusPanel from '@/components/common/StatusPanel.vue'
@@ -268,7 +267,10 @@ export default {
                 return this.pass.mobile;
             }
             return this.pass.mobile.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
-        }
+        },
+        badgeClass: function () {
+            return helpers.getStatusBadgeClass(this.pass.processing_status_display_name);
+        },
     },
     components: {
         SectionToggle,

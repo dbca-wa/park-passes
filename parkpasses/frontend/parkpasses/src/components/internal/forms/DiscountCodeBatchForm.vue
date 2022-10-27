@@ -9,7 +9,15 @@
             <div class="col-sm-12">
                 <div class="row">
                     <div class="col-md-3">
-                        Side bar
+                        <CommsLog
+                            :commsUrl="listCommsUrl"
+                            :logsUrl="listUserActionsLogUrl"
+                            :commAddUrl="createCommUrl"
+                            :appLabel="appLabel"
+                            :model="model"
+                            :customerId="null"
+                            :objectId="discountCodeBatch.id" />
+                        <StatusPanel :status="discountCodeBatch.status" :badge="true" :badgeClass="badgeClass" class="pt-3" />
                     </div>
                     <div class="col-md-1">
 
@@ -210,6 +218,7 @@ import { apiEndpoints, constants, helpers, utils } from '@/utils/hooks'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import SectionToggle from '@/components/forms/SectionToggle.vue'
 import CommsLog from '@/components/common/CommsLog.vue'
+import StatusPanel from '@/components/common/StatusPanel.vue'
 
 import Swal from 'sweetalert2'
 
@@ -223,6 +232,11 @@ export default {
             discountCodeBatchId: null,
             discountCodeBatch: null,
             passTypes: null,
+            listUserActionsLogUrl: null,
+            listCommsUrl: null,
+            createCommUrl: apiEndpoints.createCommunicationsLogEntry,
+            appLabel: constants.PARKPASSES_APP_LABEL,
+            model: constants.PARKPASSES_MODELS_DISCOUNT_CODE_BATCH,
             errors: {},
             successMessage: null,
         }
@@ -238,12 +252,16 @@ export default {
             let now = new Date();
             let startDate = new Date(this.discountCodeBatch.datetime_start);
             return startDate <= now;
-        }
+        },
+        badgeClass: function () {
+            return helpers.getStatusBadgeClass(this.discountCodeBatch.status);
+        },
     },
     components: {
         SectionToggle,
         CommsLog,
-        BootstrapSpinner
+        BootstrapSpinner,
+        StatusPanel,
     },
     methods: {
         returnToDiscountCodeBatchDash: function() {
@@ -328,6 +346,17 @@ export default {
 
                 console.log('vm.discountCodeBatch.datetime_start = ' + vm.discountCodeBatch.datetime_start);
                 console.log('vm.discountCodeBatch.datetime_expiry = ' + vm.discountCodeBatch.datetime_expiry);
+
+                vm.listUserActionsLogUrl = apiEndpoints.listUserActionsLog(
+                    constants.PARKPASSES_APP_LABEL,
+                    constants.PARKPASSES_MODELS_DISCOUNT_CODE_BATCH,
+                    vm.discountCodeBatch.id
+                )
+                vm.listCommsUrl = apiEndpoints.listCommunicationsLogEntries(
+                    constants.PARKPASSES_APP_LABEL,
+                    constants.PARKPASSES_MODELS_DISCOUNT_CODE_BATCH,
+                    vm.discountCodeBatch.id
+                )
 
                 if(vm.valid_pass_types) {
                     var validPassTypes = vm.valid_pass_types.split(',');
