@@ -440,6 +440,31 @@ class ExternalPassSerializer(serializers.ModelSerializer):
         return None
 
 
+class ExternalQRCodePassSerializer(serializers.ModelSerializer):
+    pass_type = serializers.CharField()
+    park_group = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Pass
+        fields = [
+            "pass_type",
+            "park_group",
+            "first_name",
+            "last_name",
+            "email",
+            "mobile",
+            "date_start",
+            "date_expiry",
+            "vehicle_registration_1",
+            "vehicle_registration_2",
+        ]
+
+    def get_park_group(self, obj):
+        if obj.park_group:
+            return obj.park_group
+        return "N/A"
+
+
 class ExternalUpdatePassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pass
@@ -477,7 +502,7 @@ class RetailerUpdatePassSerializer(serializers.ModelSerializer):
             "duration",
             "date_start",
             "date_expiry",
-            "vehicle_registration_2",
+            "vehicle_registration_1",
             "vehicle_registration_2",
         ]
 
@@ -495,7 +520,7 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
     sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
     processing_status_display_name = serializers.CharField(
-        source="get_processing_status_display", read_only=True
+        source="status_display", read_only=True
     )
     concession_type = serializers.CharField(
         source="concessionusage.concession.concession_type",
@@ -582,6 +607,8 @@ class InternalPassSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["pass_type", "pricing_window", "sold_via", "sold_via_name"]
         datatables_always_serialize = [
+            "date_expiry",
+            "processing_status",
             "user_can_view_payment_details",
             "user_can_upload_personnel_passes",
             "user_can_edit_and_cancel",
