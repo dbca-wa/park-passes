@@ -12,6 +12,9 @@ os.environ.setdefault("BASE_DIR", BASE_DIR)
 
 from ledger_api_client.settings_base import *  # noqa: F403
 
+DATE_FORMAT = "d/m/Y"
+DATETIME_FORMAT = "d/m/Y P"
+
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
@@ -70,6 +73,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 20,
     "SEARCH_PARAM": "search[value]",
+    "DATETIME_FORMAT": "%d-%m-%YT%H:%M:%S.%fZ",
 }
 
 
