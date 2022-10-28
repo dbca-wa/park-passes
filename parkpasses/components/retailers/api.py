@@ -108,13 +108,42 @@ class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+class RetailerGroupUserFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        is_active = request.GET.get("is_active")
+        datetime_created_from = request.GET.get("datetime_created_from")
+        datetime_created_to = request.GET.get("datetime_created_to")
+
+        if is_active:
+            queryset = queryset.filter(active=is_active)
+
+        if datetime_created_from:
+            queryset = queryset.filter(datetime_created__gte=datetime_created_from)
+
+        if datetime_created_to:
+            queryset = queryset.filter(datetime_created__lte=datetime_created_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class RetailerRetailerGroupUserViewSet(viewsets.ModelViewSet):
     model = RetailerGroupUser
     queryset = RetailerGroupUser.objects.all()
     permission_classes = [IsRetailerAdmin]
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
-    filter_backends = (DatatablesFilterBackend,)
+    filter_backends = (RetailerGroupUserFilterBackend,)
 
     def get_queryset(self):
         if RetailerGroupUser.objects.filter(
@@ -129,13 +158,46 @@ class RetailerRetailerGroupUserViewSet(viewsets.ModelViewSet):
         return RetailerGroupUser.objects.none()
 
 
+class RetailerGroupUserFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        retailer_group = request.GET.get("retailer_group")
+        is_admin = request.GET.get("is_admin")
+        datetime_created_from = request.GET.get("datetime_created_from")
+        datetime_created_to = request.GET.get("datetime_created_to")
+
+        if retailer_group:
+            queryset = queryset.filter(retailer_group_id=retailer_group)
+
+        if is_admin:
+            queryset = queryset.filter(is_admin=is_admin)
+
+        if datetime_created_from:
+            queryset = queryset.filter(datetime_created__gte=datetime_created_from)
+
+        if datetime_created_to:
+            queryset = queryset.filter(datetime_created__lte=datetime_created_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class InternalRetailerGroupUserViewSet(viewsets.ModelViewSet):
     model = RetailerGroupUser
     queryset = RetailerGroupUser.objects.all()
     permission_classes = [IsInternal]
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
-    filter_backends = (DatatablesFilterBackend,)
+    filter_backends = (RetailerGroupUserFilterBackend,)
 
 
 class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewSet):
@@ -180,6 +242,39 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
         raise Http404
 
 
+class RetailerGroupUserInviteFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        retailer_group = request.GET.get("retailer_group")
+        status = request.GET.get("status")
+        datetime_created_from = request.GET.get("datetime_created_from")
+        datetime_created_to = request.GET.get("datetime_created_to")
+
+        if retailer_group:
+            queryset = queryset.filter(retailer_group_id=retailer_group)
+
+        if status:
+            queryset = queryset.filter(status=status)
+
+        if datetime_created_from:
+            queryset = queryset.filter(datetime_created__gte=datetime_created_from)
+
+        if datetime_created_to:
+            queryset = queryset.filter(datetime_created__lte=datetime_created_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
     model = RetailerGroupInvite
     queryset = (
@@ -200,6 +295,7 @@ class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInternal]
     serializer_class = InternalRetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
+    filter_backends = (RetailerGroupUserFilterBackend,)
 
     @action(methods=["PUT"], detail=True, url_path="resend-retailer-group-user-invite")
     def resend_retailer_group_user_invite(self, request, *args, **kwargs):

@@ -14,16 +14,17 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Invoice Payment Status</label>
-                        <select class="form-control" v-model="filterProcessingStatus">
+                        <label for="">Is Admin</label>
+                        <select class="form-control" v-model="filterIsAdmin">
                             <option value="" selected="selected">All</option>
-                            <option v-for="status in statuses" :value="status.id">{{ status.value }}</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Date From</label>
+                        <label for="">Date Added From</label>
                         <div class="input-group date" ref="filterDatetimeCreatedFrom">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeCreatedFrom">
                         </div>
@@ -31,7 +32,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Date To</label>
+                        <label for="">Date Added To</label>
                         <div class="input-group date" ref="filterDatetimeCreatedTo">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeCreatedTo">
                         </div>
@@ -76,10 +77,10 @@ export default {
             required: false,
             default: 'filterRetailerGroups',
         },
-        filterProcessingStatusCacheName: {
+        filterIsAdminCacheName: {
             type: String,
             required: false,
-            default: 'filterProcessingStatus',
+            default: 'filterIsAdmin',
         },
         filterDatetimeCreatedFromCacheName: {
             type: String,
@@ -98,7 +99,7 @@ export default {
             datatableId: 'reports-datatable-' + uuid(),
 
             filterRetailerGroups: sessionStorage.getItem(vm.filterRetailerGroupsCacheName) ? sessionStorage.getItem(vm.filterRetailerGroupsCacheName) : '',
-            filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
+            filterIsAdmin: sessionStorage.getItem(vm.filterIsAdminCacheName) ? sessionStorage.getItem(vm.filterIsAdminCacheName) : '',
             filterDatetimeCreatedFrom: sessionStorage.getItem(vm.filterDatetimeCreatedFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeCreatedFromCacheName) : '',
             filterDatetimeCreatedTo: sessionStorage.getItem(vm.filterDatetimeCreatedToCacheName) ? sessionStorage.getItem(vm.filterDatetimeCreatedToCacheName) : '',
 
@@ -134,9 +135,9 @@ export default {
             this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterRetailerGroupsCacheName, this.filterRetailerGroups);
         },
-        filterProcessingStatus: function() {
+        filterIsAdmin: function() {
             this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
+            sessionStorage.setItem(this.filterIsAdminCacheName, this.filterIsAdmin);
         },
         filterDatetimeCreatedFrom: function() {
             this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
@@ -161,7 +162,7 @@ export default {
             let filterApplied = true
             if(
                 this.filterRetailerGroups === '' &&
-                this.filterProcessingStatus === '' &&
+                this.filterIsAdmin === '' &&
                 this.filterDatetimeCreatedFrom === '' &&
                 this.filterDatetimeCreatedTo === ''){
                 filterApplied = false
@@ -314,7 +315,7 @@ export default {
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
                         d.retailer_group = vm.filterRetailerGroups
-                        d.processing_status = vm.filterProcessingStatus
+                        d.is_admin = vm.filterIsAdmin
                         d.datetime_created_from = vm.filterDatetimeCreatedFrom
                         d.datetime_created_to = vm.filterDatetimeCreatedTo
                     }

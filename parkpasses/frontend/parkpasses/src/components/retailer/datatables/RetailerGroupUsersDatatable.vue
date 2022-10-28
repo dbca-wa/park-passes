@@ -9,25 +9,17 @@
             <div class="row mb-3">
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Retailer</label>
-                        <select v-if="retailerGroups" class="form-control" v-model="filterRetailerGroups">
+                        <label for="">Is Active</label>
+                        <select class="form-control" v-model="filterIsActive">
                             <option value="" selected="selected">All</option>
-                            <option v-for="retailerGroup in retailerGroups" :value="retailerGroup.id">{{ retailerGroup.name }}</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Invoice Payment Status</label>
-                        <select class="form-control" v-model="filterProcessingStatus">
-                            <option value="" selected="selected">All</option>
-                            <option v-for="status in statuses" :value="status.id">{{ status.value }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="">Date From</label>
+                        <label for="">Date Added From</label>
                         <div class="input-group date" ref="filterDatetimeCreatedFrom">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeCreatedFrom">
                         </div>
@@ -35,7 +27,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Date To</label>
+                        <label for="">Date Added To</label>
                         <div class="input-group date" ref="filterDatetimeCreatedTo">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeCreatedTo">
                         </div>
@@ -75,15 +67,10 @@ export default {
                 return options.indexOf(val) != -1 ? true: false;
             }
         },
-        filterRetailerGroupsCacheName: {
+        filterIsActiveCacheName: {
             type: String,
             required: false,
-            default: 'filterRetailerGroups',
-        },
-        filterProcessingStatusCacheName: {
-            type: String,
-            required: false,
-            default: 'filterProcessingStatus',
+            default: 'filterIsActive',
         },
         filterDatetimeCreatedFromCacheName: {
             type: String,
@@ -101,8 +88,7 @@ export default {
         return {
             datatableId: 'reports-datatable-' + uuid(),
 
-            filterRetailerGroups: sessionStorage.getItem(vm.filterRetailerGroupsCacheName) ? sessionStorage.getItem(vm.filterRetailerGroupsCacheName) : '',
-            filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
+            filterIsActive: sessionStorage.getItem(vm.filterIsActiveCacheName) ? sessionStorage.getItem(vm.filterIsActiveCacheName) : '',
             filterDatetimeCreatedFrom: sessionStorage.getItem(vm.filterDatetimeCreatedFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeCreatedFromCacheName) : '',
             filterDatetimeCreatedTo: sessionStorage.getItem(vm.filterDatetimeCreatedToCacheName) ? sessionStorage.getItem(vm.filterDatetimeCreatedToCacheName) : '',
 
@@ -134,13 +120,9 @@ export default {
         CollapsibleFilters,
     },
     watch: {
-        filterRetailerGroups: function() {
+        filterIsActive: function() {
             this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterRetailerGroupsCacheName, this.filterRetailerGroups);
-        },
-        filterProcessingStatus: function() {
-            this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
+            sessionStorage.setItem(this.filterIsActiveCacheName, this.filterIsActive);
         },
         filterDatetimeCreatedFrom: function() {
             this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
@@ -164,8 +146,7 @@ export default {
         filterApplied: function(){
             let filterApplied = true
             if(
-                this.filterRetailerGroups === '' &&
-                this.filterProcessingStatus === '' &&
+                this.filterIsActive === '' &&
                 this.filterDatetimeCreatedFrom === '' &&
                 this.filterDatetimeCreatedTo === ''){
                 filterApplied = false
@@ -181,7 +162,6 @@ export default {
         dtHeaders: function(){
             return [
                 'id',
-                'Retailer Group',
                 'Email',
                 'Active',
                 'Is Admin',
@@ -200,15 +180,6 @@ export default {
                     }
                     return full.id
                 }
-            }
-        },
-        columnRetailerGroup: function(){
-            return {
-                data: "retailer_group_name",
-                visible: true,
-                name: 'retailer_group_name',
-                orderable: false,
-                searchable: false,
             }
         },
         columnEmail: function(){
@@ -290,7 +261,6 @@ export default {
 
             columns = [
                 vm.columnId,
-                vm.columnRetailerGroup,
                 vm.columnEmail,
                 vm.columnActive,
                 vm.columnIsAdmin,
@@ -317,8 +287,7 @@ export default {
 
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
-                        d.retailer_group = vm.filterRetailerGroups
-                        d.processing_status = vm.filterProcessingStatus
+                        d.is_active = vm.filterIsActive
                         d.datetime_created_from = vm.filterDatetimeCreatedFrom
                         d.datetime_created_to = vm.filterDatetimeCreatedTo
                     }

@@ -18,16 +18,19 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Invoice Payment Status</label>
-                        <select class="form-control" v-model="filterProcessingStatus">
+                        <label for="">Status</label>
+                        <select class="form-control" v-model="filterStatus">
                             <option value="" selected="selected">All</option>
-                            <option v-for="status in statuses" :value="status.id">{{ status.value }}</option>
+                            <option value="N">New</option>
+                            <option value="S">Sent</option>
+                            <option value="ULI">User Logged In</option>
+                            <option value="UA">User Accepted</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Date From</label>
+                        <label for="">Date Invited From</label>
                         <div class="input-group date" ref="filterDatetimeCreatedFrom">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeCreatedFrom">
                         </div>
@@ -35,7 +38,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="">Date To</label>
+                        <label for="">Date Invited To</label>
                         <div class="input-group date" ref="filterDatetimeCreatedTo">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeCreatedTo">
                         </div>
@@ -84,10 +87,10 @@ export default {
             required: false,
             default: 'filterRetailerGroups',
         },
-        filterProcessingStatusCacheName: {
+        filterStatusCacheName: {
             type: String,
             required: false,
-            default: 'filterProcessingStatus',
+            default: 'filterStatus',
         },
         filterDatetimeCreatedFromCacheName: {
             type: String,
@@ -106,7 +109,7 @@ export default {
             datatableId: 'reports-datatable-' + uuid(),
 
             filterRetailerGroups: sessionStorage.getItem(vm.filterRetailerGroupsCacheName) ? sessionStorage.getItem(vm.filterRetailerGroupsCacheName) : '',
-            filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
+            filterStatus: sessionStorage.getItem(vm.filterStatusCacheName) ? sessionStorage.getItem(vm.filterStatusCacheName) : '',
             filterDatetimeCreatedFrom: sessionStorage.getItem(vm.filterDatetimeCreatedFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeCreatedFromCacheName) : '',
             filterDatetimeCreatedTo: sessionStorage.getItem(vm.filterDatetimeCreatedToCacheName) ? sessionStorage.getItem(vm.filterDatetimeCreatedToCacheName) : '',
 
@@ -145,9 +148,9 @@ export default {
             this.$refs.retailerGroupUserInvitesDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterRetailerGroupsCacheName, this.filterRetailerGroups);
         },
-        filterProcessingStatus: function() {
+        filterStatus: function() {
             this.$refs.retailerGroupUserInvitesDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
-            sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
+            sessionStorage.setItem(this.filterStatusCacheName, this.filterStatus);
         },
         filterDatetimeCreatedFrom: function() {
             this.$refs.retailerGroupUserInvitesDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
@@ -172,7 +175,7 @@ export default {
             let filterApplied = true
             if(
                 this.filterRetailerGroups === '' &&
-                this.filterProcessingStatus === '' &&
+                this.filterStatus === '' &&
                 this.filterDatetimeCreatedFrom === '' &&
                 this.filterDatetimeCreatedTo === ''){
                 filterApplied = false
@@ -191,8 +194,8 @@ export default {
                 'Retailer',
                 'Email',
                 'Status',
-                'Date Created',
-                'Date Updated',
+                'Date Invited',
+                'Last Action Taken',
                 'Actions',
             ]
         },
@@ -326,7 +329,7 @@ export default {
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
                         d.retailer_group = vm.filterRetailerGroups
-                        d.processing_status = vm.filterProcessingStatus
+                        d.status = vm.filterStatus
                         d.datetime_created_from = vm.filterDatetimeCreatedFrom
                         d.datetime_created_to = vm.filterDatetimeCreatedTo
                     }
