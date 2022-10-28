@@ -161,10 +161,21 @@ module.exports = {
     retailerGroupRetrieveInternal: function (retailerGroupId) {
         `/api/retailers/internal/retailer-groups/${retailerGroupId}/`;
     },
-    retailerGroupUserListInternal:      '/api/retailers/internal/retailer-group-users/',
-    retailerGroupUserListRetailer:      '/api/retailers/retailer/retailer-group-users/',
     retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-reports/',
 
+    /* ========================= Retailer Group Users =====================================*/
+
+    retailerGroupUserListInternal:      '/api/retailers/internal/retailer-group-users/',
+    retailerGroupUserListRetailer:      '/api/retailers/retailer/retailer-group-users/',
+    retailerToggleRetailerGroupUserActive: function (retailerGroupUserId) {
+        return `/api/retailers/retailer/retailer-group-users/${retailerGroupUserId}/toggle-active/`;
+    },
+    internalToggleRetailerGroupUserActive: function (retailerGroupUserId) {
+        return `/api/retailers/internal/retailer-group-users/${retailerGroupUserId}/toggle-active/`;
+    },
+    internalToggleRetailerGroupUserIsAdmin: function (retailerGroupUserId) {
+        return `/api/retailers/internal/retailer-group-users/${retailerGroupUserId}/toggle-is-admin/`;
+    },
     /* ========================= Retailer Group Invites ===================================*/
 
     retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-invites/',

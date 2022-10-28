@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db.models import Case, Count, Value, When
 from django.http import Http404
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -157,6 +157,13 @@ class RetailerRetailerGroupUserViewSet(viewsets.ModelViewSet):
             )
         return RetailerGroupUser.objects.none()
 
+    @action(methods=["PUT"], detail=True, url_path="toggle-active")
+    def toggle_active(self, request, *args, **kwargs):
+        retailer_group_user = self.get_object()
+        retailer_group_user.active = not retailer_group_user.active
+        retailer_group_user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class RetailerGroupUserFilterBackend(DatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
@@ -198,6 +205,20 @@ class InternalRetailerGroupUserViewSet(viewsets.ModelViewSet):
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerGroupUserFilterBackend,)
+
+    @action(methods=["PUT"], detail=True, url_path="toggle-active")
+    def toggle_active(self, request, *args, **kwargs):
+        retailer_group_user = self.get_object()
+        retailer_group_user.active = not retailer_group_user.active
+        retailer_group_user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=["PUT"], detail=True, url_path="toggle-is-admin")
+    def toggle_is_admin(self, request, *args, **kwargs):
+        retailer_group_user = self.get_object()
+        retailer_group_user.is_admin = not retailer_group_user.is_admin
+        retailer_group_user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewSet):

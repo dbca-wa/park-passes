@@ -168,31 +168,28 @@ export default {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.pricing_window)
             };
-            fetch(apiEndpoints.savePricingWindow, requestOptions)
-                .then(async response => {
-                    const data = await response.json();
-                    if (!response.ok) {
-                        const error = (data && data.message) || response.statusText;
-                        this.errors = data;
-                        return Promise.reject(error);
+            fetch(apiEndpoints.savePricingWindow, requestOptions).then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    this.errors = data;
+                    return Promise.reject(error);
+                }
+                console.log('data = ' + JSON.stringify(data));
+                this.$emit("saveSuccess", {
+                        message: 'Pricing Window created successfully.',
+                        pricingWindow: data,
                     }
-                    console.log('data = ' + JSON.stringify(data));
-                    this.$emit("saveSuccess", {
-                            message: 'Pricing Window created successfully.',
-                            pricingWindow: data,
-                        }
-                    );
-                    $('#successMessageAlert').show();
-                    vm.pricing_window = vm.getPricingWindowInitialState();
-                    var PricingWindowFormModalModal = bootstrap.Modal.getInstance(document.getElementById('pricingWindowModal'));
-                    PricingWindowFormModalModal.hide();
-                })
-                .catch(error => {
-                    this.systemErrorMessage = constants.ERRORS.NETWORK;
-                    console.error("There was an error!", error);
-                }).finally(() =>{
-
-                });
+                );
+                $('#successMessageAlert').show();
+                vm.pricing_window = vm.getPricingWindowInitialState();
+                var PricingWindowFormModalModal = bootstrap.Modal.getInstance(document.getElementById('pricingWindowModal'));
+                PricingWindowFormModalModal.hide();
+            })
+            .catch(error => {
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                console.error("There was an error!", error);
+            });
             return false;
         },
         validateForm: function () {

@@ -52,21 +52,13 @@
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints, constants } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import Swal from 'sweetalert2'
 
 export default {
     name: 'RetailerGroupUsersDatatable',
     props: {
-        level:{
-            type: String,
-            required: true,
-            validator: function(val) {
-                let options = ['internal', 'referral', 'external'];
-                return options.indexOf(val) != -1 ? true: false;
-            }
-        },
         filterIsActiveCacheName: {
             type: String,
             required: false,
@@ -195,14 +187,21 @@ export default {
             return {
                 data: "active",
                 visible: true,
+                orderable: true,
                 className: 'text-center',
                 name: 'active',
                 'render': function(row, type, full){
-                    if(full.active){
-                        return '<i class="fa fa-check" aria-hidden="true" style="color:green;"></i>';
-                    } else {
-                        return '<i class="fa fa-times" aria-hidden="true" style="color:red;"></i>';
+                    let html = '<div class="form-check form-switch ms-5">';
+                    if(full.is_admin){
+                        html += `<input class="form-check-input" type="checkbox" checked disabled>`;
                     }
+                    else if(full.active){
+                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserActive" checked>`;
+                    } else {
+                        html+= `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserActive"></div>`;
+                    }
+                    html += '</div>';
+                    return html;
                 }
             }
         },
@@ -213,11 +212,14 @@ export default {
                 className: 'text-center',
                 name: 'is_admin',
                 'render': function(row, type, full){
+                    let html = '<div class="form-check form-switch ms-5">';
                     if(full.is_admin){
-                        return '<i class="fa fa-check" aria-hidden="true" style="color:green;"></i>';
+                        html += `<input class="form-check-input" type="checkbox" checked disabled>`;
                     } else {
-                        return '<i class="fa fa-times" aria-hidden="true" style="color:red;"></i>';
+                        html += `<input class="form-check-input" type="checkbox" disabled>`;
                     }
+                    html += '</div>';
+                    return html;
                 }
             }
         },
@@ -296,7 +298,7 @@ export default {
                      "<'row'<'col-sm-12'tr>>" +
                      "<'d-flex align-items-center'<'me-auto'i>p>",
                 buttons: buttons,
-                order: [[1, 'desc']],
+                order: [[4, 'desc']],
 
                 columns: columns,
                 processing: true,
@@ -316,6 +318,31 @@ export default {
         },
         collapsibleComponentMounted: function(){
             this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
+        },
+        toggleRetailerGroupUserActive: function (id) {
+            let vm = this;
+            const requestOptions = {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({'csrfmiddlewaretoken':helpers.getCookie('csrftoken'),'id':id})
+            };
+            fetch(apiEndpoints.retailerToggleRetailerGroupUserActive(id), requestOptions).then(async response => {
+                if (!response.ok) {
+                    const error = response.statusText;
+                    return Promise.reject(error);
+                }
+                Swal.fire({
+                title: 'Success',
+                text: 'User status toggled successfully.',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 1000
+                });
+            })
+            .catch(error => {
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                console.error("There was an error!", error);
+            });
         },
         fetchFilterLists: function(){
             let vm = this;
@@ -337,7 +364,11 @@ export default {
 
         },
         addEventListeners: function(){
-            let vm = this
+            let vm = this;
+            vm.$refs.retailerGroupUsersDatatable.vmDataTable.on('click', 'input[data-action="toggleUserActive"]', function(e) {
+                let id = $(this).data('item-id');
+                vm.toggleRetailerGroupUserActive(id);
+            });
 
             // Listener for the row
             vm.$refs.retailerGroupUsersDatatable.vmDataTable.on('click', 'td', function(e) {

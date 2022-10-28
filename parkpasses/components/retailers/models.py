@@ -186,6 +186,7 @@ class RetailerGroupUser(models.Model):
         app_label = "parkpasses"
         verbose_name = "Retailer Group User"
         unique_together = ("retailer_group", "emailuser")
+        ordering = ["-datetime_created"]
 
     def __str__(self):
         return f"{self.retailer_group} {self.emailuser}"
