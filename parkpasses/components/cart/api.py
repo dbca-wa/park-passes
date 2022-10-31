@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.serializers import CartItemSerializer, CartSerializer
 from parkpasses.components.cart.utils import CartUtils
+from parkpasses.components.passes.models import Pass
 from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.helpers import is_customer, is_internal, is_retailer
 
@@ -135,47 +136,61 @@ class LedgerCheckoutView(APIView):
     def post(self, request, format=None):
         cart = Cart.get_or_create_cart(request)
         logger.debug("cart = " + str(cart))
-        if cart.items.all().exists():
-            ledger_order_lines = self.get_ledger_order_lines(cart)
+        if not cart.items.all().exists():
+            return redirect(reverse("cart"))
 
-            is_no_payment = False
-            if is_retailer(request):
-                if self.request.POST.get("no_payment", False):
-                    is_no_payment = True
-                retailer_group_id = self.request.POST.get("retailer_group_id", None)
-                if retailer_group_id:
-                    if RetailerGroup.objects.filter(id=retailer_group_id).exists():
-                        retailer_group = RetailerGroup.objects.get(id=retailer_group_id)
-                        cart.retailer_group = retailer_group
-                logger.debug("is_no_payment = " + str(is_no_payment))
-                cart.is_no_payment = is_no_payment
-                cart.save()
+        if is_retailer(request):
+            retailer_group_id = self.request.POST.get("retailer_group_id", None)
+            if retailer_group_id:
+                if RetailerGroup.objects.filter(id=retailer_group_id).exists():
+                    retailer_group = RetailerGroup.objects.get(id=retailer_group_id)
+                    cart.retailer_group = retailer_group
+                    cart.save()
+                    cart_item = cart.items.first()
+                    if Pass.objects.filter(id=cart_item.object_id).exists():
+                        # Mark the pass as no longer in cart this will prevent it
+                        # being deleted when the cart item is deleted
+                        park_pass = Pass.objects.get(id=cart_item.object_id)
+                        park_pass.in_cart = False
+                        park_pass.save()
 
-            basket_parameters = CartUtils.get_basket_parameters(
-                ledger_order_lines, cart.uuid, is_no_payment=is_no_payment
-            )
-            logger.debug("\nbasket_parameters = " + str(basket_parameters))
+                        # Remove the cart item and cart and reset the cart details
+                        cart_item.delete()
+                        cart.delete()
+                        CartUtils.reset_cart_item_count(request)
+                        CartUtils.remove_cart_id_from_session(request)
 
-            create_basket_session(request, request.user.id, basket_parameters)
-            invoice_text = f"Park Passes Order: {cart.uuid}"
-            logger.debug("\ninvoice_text = " + invoice_text)
-            return_url = request.build_absolute_uri(
-                reverse("checkout-success", kwargs={"uuid": cart.uuid})
-            )
-            return_preload_url = request.build_absolute_uri(
-                reverse("ledger-api-success-callback", kwargs={"uuid": cart.uuid})
-            )
-            checkout_parameters = CartUtils.get_checkout_parameters(
-                request, return_url, return_preload_url, cart.user, invoice_text
-            )
-            logger.debug("\ncheckout_parameters = " + str(checkout_parameters))
+                        return redirect(
+                            reverse(
+                                "retailer-pass-created-successfully",
+                                kwargs={"id": park_pass.id},
+                            )
+                        )
 
-            create_checkout_session(request, checkout_parameters)
+        ledger_order_lines = self.get_ledger_order_lines(cart)
 
-            return redirect(reverse("ledgergw-payment-details"))
+        basket_parameters = CartUtils.get_basket_parameters(
+            ledger_order_lines, cart.uuid, is_no_payment=False
+        )
+        logger.debug("\nbasket_parameters = " + str(basket_parameters))
 
-        # Return the user to the empty cart page
-        return redirect(reverse("cart"))
+        create_basket_session(request, request.user.id, basket_parameters)
+        invoice_text = f"Park Passes Order: {cart.uuid}"
+        logger.debug("\ninvoice_text = " + invoice_text)
+        return_url = request.build_absolute_uri(
+            reverse("checkout-success", kwargs={"uuid": cart.uuid})
+        )
+        return_preload_url = request.build_absolute_uri(
+            reverse("ledger-api-success-callback", kwargs={"uuid": cart.uuid})
+        )
+        checkout_parameters = CartUtils.get_checkout_parameters(
+            request, return_url, return_preload_url, cart.user, invoice_text
+        )
+        logger.debug("\ncheckout_parameters = " + str(checkout_parameters))
+
+        create_checkout_session(request, checkout_parameters)
+
+        return redirect(reverse("ledgergw-payment-details"))
 
 
 class SuccessView(APIView):
@@ -193,7 +208,6 @@ class SuccessView(APIView):
             logger.debug("\n\ncart = " + str(cart))
             order, order_items = cart.create_order(
                 save_order_to_db_and_delete_cart=True,
-                uuid=uuid,
                 invoice_reference=invoice_reference,
             )
 
