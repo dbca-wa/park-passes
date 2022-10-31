@@ -14,7 +14,7 @@
                 <div class="border-bottom ps-1">{{ formatDate(pass.date_start) }}</div>
                 <div class="border-bottom">{{  passCurrentOrFuture(pass) ? 'Expiry Date' : 'Expired' }}:</div>
                 <div class="border-bottom ps-1">{{ formatDate(pass.date_expiry) }}</div>
-                <label v-if="showAutoRenewalOption(pass)" class="orm-check-label mt-2">Renew Automatically</label>
+                <label v-if="showAutoRenewalOption(pass)" class="orm-check-label mt-2">Auto Renew</label>
                 <div v-if="showAutoRenewalOption(pass)" class="form-check form-switch mt-2 mx-auto">
                   <input @change="updatePass(pass)" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" v-model="pass.renew_automatically" :disabled="loadingUpdatePass">
                 </div>
