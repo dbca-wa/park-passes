@@ -348,12 +348,12 @@ export default {
                         if('Current'==full.processing_status_display_name || 'Future'==full.processing_status_display_name){
                             if(full.user_can_edit_and_cancel){
                                 links +=  `<a href="${editLink.href}">Edit</a>`;
-                                links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
+                                links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-name="${full.pass_number}" data-sold-via-name="${full.sold_via_name}" data-pro-rata-refund-amount-display="${full.pro_rata_refund_amount_display}" data-action="cancel">Cancel</a>`;
                             }
                         } else {
                             links +=  `<a href="${editLink.href}">View</a>`;
                         }
-                        if(full.user_can_view_payment_details){
+                        if(full.user_can_view_payment_details && constants.DEFAULT_SOLD_VIA==full.sold_via_name){
                             links +=  ` | <a href="${apiEndpoints.internalPassPaymentDetails(full.id)}" target="blank">View Payment Details</a>`;
                         }
                     }
@@ -502,7 +502,9 @@ export default {
                 e.preventDefault();
                 let id = $(this).data('item-id');
                 let name = $(this).data('name');
-                vm.cancelPass({id, name})
+                let soldViaName = $(this).data('sold-via-name');
+                let proRataRefundAmountDisplay = $(this).data('pro-rata-refund-amount-display');
+                vm.cancelPass({id, name, soldViaName, proRataRefundAmountDisplay})
             });
             vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="view-payment-details"]', function(e) {
                 e.preventDefault();
