@@ -12,9 +12,6 @@ os.environ.setdefault("BASE_DIR", BASE_DIR)
 
 from ledger_api_client.settings_base import *  # noqa: F403
 
-DATE_FORMAT = "d/m/Y"
-DATETIME_FORMAT = "d/m/Y P"
-
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
@@ -73,7 +70,6 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 20,
     "SEARCH_PARAM": "search[value]",
-    "DATETIME_FORMAT": "%d-%m-%YT%H:%M:%S.%fZ",
 }
 
 
@@ -330,6 +326,7 @@ CACHE_KEY_BELONGS_TO = "user-{}-is-a-member-of-{}"
 CACHE_KEY_IS_INTERNAL = "user-{}-is-internal"
 CACHE_KEY_RETAILER = "user-{}-is-a-retailer"
 CACHE_KEY_RETAILER_ADMIN = "user-{}-is-a-retailer-admin"
+CACHE_KEY_RETAILER_GROUP_IDS = "user-{}-retailer-group-ids"
 
 CACHE_KEY_GROUP_IDS = "{}-{}-user-ids"
 
