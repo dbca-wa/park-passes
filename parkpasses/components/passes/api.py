@@ -75,13 +75,7 @@ from parkpasses.helpers import (
     is_internal,
     is_retailer,
 )
-from parkpasses.permissions import (
-    HasRetailerGroupAPIKey,
-    IsExternalObjectOwner,
-    IsInternal,
-    IsRetailer,
-    IsRetailerObjectCreator,
-)
+from parkpasses.permissions import HasRetailerGroupAPIKey, IsInternal, IsRetailer
 
 # from rest_framework_datatables.filters import DatatablesFilterBackend
 
@@ -615,7 +609,9 @@ class RetailerPassViewSet(UserActionViewSet):
             retailer_groups = RetailerGroupUser.objects.filter(
                 emailuser__id=self.request.user.id
             ).values_list("retailer_group__id")
-            return Pass.objects.filter(sold_via__in=list(retailer_groups))
+            return Pass.objects.exclude(in_cart=True).filter(
+                sold_via__in=list(retailer_groups)
+            )
 
         return Pass.objects.none()
 
@@ -696,11 +692,17 @@ class InternalPassViewSet(UserActionViewSet):
             content_type=content_type, object_id=park_pass.id
         )
         order = orderitem.order
+        ledger_description = f"Pro-rata Refund of Pass: {park_pass.pass_number}"
+        pro_rata_refund_amount = park_pass.pro_rata_refund_amount()
+        if settings.DEBUG:
+            pro_rata_refund_amount = int(pro_rata_refund_amount)
+            ledger_description += " (Price rounded for dev env)"
+
         ledger_order_lines = [
             {
-                "ledger_description": f"Pro-rata Refund of Pass: {park_pass.pass_number}",
+                "ledger_description": ledger_description,
                 "quantity": 1,
-                "price_incl_tax": str(-abs(park_pass.pro_rata_refund_amount())),
+                "price_incl_tax": str(-abs(pro_rata_refund_amount)),
                 "oracle_code": CartUtils.get_oracle_code(
                     self.request, content_type, park_pass.id
                 ),
@@ -745,15 +747,14 @@ class InternalPassViewSet(UserActionViewSet):
         return redirect(reverse("ledgergw-payment-details"))
 
 
-class InternalPassRefundSuccessView(APIView):
-    permission_classes = [IsInternal]
-
-    def get(self, request, uuid, format=None):
-        logger.debug("RefundSuccessView get method called")
+class PassRefundSuccessView(APIView):
+    def get(self, request, id, uuid, format=None):
+        """We don't actually need to do any processing here but ledger needs a valid rul for return_preload_url"""
+        logger.info(f"RefundSuccessView get method called with id {id} and uuid {uuid}")
 
 
 class CancelPass(APIView):
-    permission_classes = [IsInternal, IsRetailerObjectCreator, IsExternalObjectOwner]
+    permission_classes = [IsInternal]
     action = "cancel"
 
     def post(self, request, format=None):
