@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from rest_framework_api_key.permissions import BaseHasAPIKey
 
@@ -11,9 +13,12 @@ from parkpasses.helpers import (
     is_retailer_admin,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class IsInternal(BasePermission):
     def has_permission(self, request, view):
+        logger.debug("request.user.is_superuser = " + str(request.user.is_superuser))
         if is_internal(request):
             if view.action in ["destroy"]:
                 return False
