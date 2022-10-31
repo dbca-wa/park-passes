@@ -285,6 +285,11 @@ export default {
 .card-title {
   font-size: 1.1em;
   color: #696969;
+  white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+
 }
 
 .card-body {
