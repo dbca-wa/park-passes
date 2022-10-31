@@ -21,8 +21,12 @@ class RetailerGroupUserSerializer(serializers.ModelSerializer):
         source="retailer_group.name", read_only=True
     )
     emailuser_email = serializers.SerializerMethodField(read_only=True)
-    datetime_created = serializers.SerializerMethodField(read_only=True)
-    datetime_updated = serializers.SerializerMethodField(read_only=True)
+    datetime_created = serializers.DateTimeField(
+        format="%d/%m/%Y %I:%M %p", read_only=True
+    )
+    datetime_updated = serializers.DateTimeField(
+        format="%d/%m/%Y %I:%M %p", read_only=True
+    )
 
     class Meta:
         model = RetailerGroupUser
@@ -60,8 +64,12 @@ class InternalRetailerGroupInviteSerializer(serializers.ModelSerializer):
         source="get_initiated_by_display", read_only=True
     )
     status_display = serializers.SerializerMethodField()
-    datetime_created = serializers.SerializerMethodField(read_only=True)
-    datetime_updated = serializers.SerializerMethodField(read_only=True)
+    datetime_created = serializers.DateTimeField(
+        format="%d/%m/%Y %I:%M %p", read_only=True
+    )
+    datetime_updated = serializers.DateTimeField(
+        format="%d/%m/%Y %I:%M %p", read_only=True
+    )
     is_admin = serializers.CharField(write_only=True, required=False, allow_blank=True)
     user_count_for_retailer_group = serializers.IntegerField(read_only=True)
 
