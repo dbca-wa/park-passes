@@ -118,7 +118,6 @@ class Cart(models.Model):
     def create_order(
         self,
         save_order_to_db_and_delete_cart=False,
-        uuid=None,
         invoice_reference=None,
     ):
         """This method can create an order and order items from a cart (and cart items)
@@ -126,32 +125,46 @@ class Cart(models.Model):
         order to submit to leger and wait until that order is confirmed before we add
         the order to the park passes database.
         """
-        logger.debug("create_order running")
-        logger.debug(
-            "save_order_to_db_and_delete_cart = "
-            + str(save_order_to_db_and_delete_cart)
+        logger.info(f"Creating order from cart {self}")
+        logger.info(
+            f"Saving order to database = {str(save_order_to_db_and_delete_cart)}"
         )
-        if Order.objects.filter(uuid=uuid).exists():
-            order = Order.objects.get(uuid=uuid)
+        if Order.objects.filter(uuid=self.uuid).exists():
+            logger.info(f"Order with uuid {self.uuid} already exists.")
+            order = Order.objects.get(uuid=self.uuid)
+            logger.info(f"Order {str(order)} selected.")
             order.user = self.user
         else:
+            logger.info(f"Order with uuid {self.uuid} doesn't exist.")
             order = Order(user=self.user)
+            logger.info(f"Order {str(order)} created.")
 
         order_items = []
         if save_order_to_db_and_delete_cart:
-            order.uuid = uuid
+            if not self.uuid or not invoice_reference:
+                raise ValueError(
+                    "If save_order_to_db_and_delete_cart is True then \
+                    the cart must have a uuid and an invoice_reference must be passed in."
+                )
+            logger.info("Populating Order")
+            order.uuid = self.uuid
             order.invoice_reference = invoice_reference
             order.is_no_payment = self.is_no_payment
             if self.retailer_group:
                 order.retailer_group = self.retailer_group
             order.save()
+            logger.info("Transferring cart items to order items.")
         for cart_item in self.items.all():
+            logger.info(
+                f"Creating new order item with data from cart item {cart_item}."
+            )
             order_item = OrderItem()
             order_item.object_id = cart_item.object_id
             order_item.content_type_id = cart_item.content_type_id
             order_item.order = order
             order_item.oracle_code = cart_item.oracle_code
             if cart_item.is_voucher_purchase():
+                logger.info("Cart item is a voucher purchase.")
                 voucher = Voucher.objects.get(pk=cart_item.object_id)
                 order_item.description = CartUtils.get_voucher_purchase_description(
                     voucher.voucher_number
@@ -162,6 +175,8 @@ class Cart(models.Model):
                     voucher.in_cart = False
                     voucher.save()
                     order_item.save()
+                    logger.info(f"Order item {order_item} saved to database.")
+
             else:
                 park_pass = Pass.objects.get(pk=cart_item.object_id)
                 order_item.description = CartUtils.get_pass_purchase_description(
@@ -353,7 +368,7 @@ class CartItem(models.Model):
         if self.is_voucher_purchase():
             Voucher.objects.filter(id=self.object_id).delete()
         elif self.is_pass_purchase():
-            if Pass.objects.filter(id=self.object_id).exists():
+            if Pass.objects.filter(id=self.object_id, in_cart=True).exists():
                 park_pass = Pass.objects.get(id=self.object_id)
                 self.concession_usage = None
                 self.discount_code_usage = None
