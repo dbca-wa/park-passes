@@ -27,6 +27,11 @@ export default {
             name: 'internal-pricing-windows'
         },
         {
+            path: '/internal/passes/refund-success/:passId/:uuid',
+            component: InternalPassForm,
+            name: 'internal-pass-form-refund-success'
+        },
+        {
             path: '/internal/passes/:passId',
             component: InternalPassForm,
             name: 'internal-pass-form'
