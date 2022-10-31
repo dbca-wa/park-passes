@@ -51,9 +51,8 @@
                                         <div class="alert alert-primary d-flex align-items-center" role="alert">
                                             <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
                                             <div>
-                                                <div class="mb-2">This transaction will be processed as a 'No Payment' transaction which will bypass our payment gateway.</div>
-                                                <div class="mb-2">Please press 'Checkout' and then take payment from the customer before clicking the 'Complete Order' button.</div>
-                                                <div>You will be invoiced monthly for your sales minus commission.</div>
+                                                <div class="mb-2">Please take payment from the customer and then click 'Create Pass'</div>
+                                                <div>{{retailerGroupsForUser[0].name}} will be invoiced monthly for any sales minus commission.</div>
                                             </div>
                                         </div>
                                     </div>
@@ -72,6 +71,7 @@
                                                 </select>
                                             </template>
                                             <template v-else>
+                                                <input type="hidden" name="retailer_group_id" :value="retailerGroupsForUser[0].id" />
                                                 <span class="badge org-badge-primary">{{ retailerGroupsForUser[0].name }}</span>
                                             </template>
                                         </div>
@@ -79,7 +79,7 @@
                                             <div v-if="isRetailer">
                                                 <input id="isNoPayment" type="hidden" name="no_payment" value="true" />
 
-                                                <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5 me-2" type="submit">Checkout</button>
+                                                <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5 me-2" type="submit">Create Pass</button>
                                                 <BootstrapButtonSpinner v-if="isRedirecting" class="btn licensing-btn-primary px-5" />
                                             </div>
                                             <div v-else class="col-auto align-right">
