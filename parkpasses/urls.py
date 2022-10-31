@@ -70,14 +70,16 @@ urlpatterns = [
         name="internal",
     ),
     url(
+        r"^internal/passes/refund-success/(?P<id>.+)/(?P<uuid>.+)$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal Pass Refund Success"}
+        ),
+        name="internal-refund-success",
+    ),
+    url(
         r"^internal/passes/(?P<id>.+)$",
         views.InternalView.as_view(extra_context={"title": "Internal View/Edit Pass"}),
         name="internal-pass-detail",
-    ),
-    url(
-        r"^internal/pass/refund-success/(?P<id>.+)/(?P<uuid>.+)$",
-        views.InternalView.as_view(extra_context={"title": "Internal View/Edit Pass"}),
-        name="internal-refund-success",
     ),
     url(
         r"^internal/pricing-windows$",
@@ -125,6 +127,13 @@ urlpatterns = [
         r"^retailer/$",
         views.RetailerView.as_view(extra_context={"title": "Retailer Home"}),
         name="retailer-home",
+    ),
+    url(
+        r"^retailer/passes/(?P<id>.+)/created-successfully$",
+        views.RetailerView.as_view(
+            extra_context={"title": "Retailer Pass Created Successfully"}
+        ),
+        name="retailer-pass-created-successfully",
     ),
     url(
         r"^retailer/passes/(?P<id>.+)$",
