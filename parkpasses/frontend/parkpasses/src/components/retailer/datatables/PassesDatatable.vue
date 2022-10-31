@@ -332,9 +332,16 @@ export default {
                 searchable: false,
                 visible: true,
                 'render': function(row, type, full){
+                    let editLink = vm.$router.resolve({
+                        name: 'retailer-pass-form',
+                        params: { passId: full.id }
+                    });
                     let links = '';
-                    links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
+                    if('Current'==full.processing_status_display_name || 'Future'==full.processing_status_display_name){
+                        links +=  `<a href="${editLink.href}">Edit</a>`;
+                    } else {
+                        links += `<a href="${editLink.href}">View</a>`;
+                    }
                     return links;
                 }
             }
