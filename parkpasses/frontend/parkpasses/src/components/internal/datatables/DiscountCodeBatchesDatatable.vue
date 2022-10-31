@@ -71,13 +71,15 @@
             </div>
         </div>
     </div>
-    <DiscountCodeBatchFormModal @saveSuccess="saveSuccess" :selectedDiscountCodeBatch="selectedDiscountCodeBatch" />
+    <DiscountCodeBatchFormModal @saveSuccess="saveSuccess" :userCanCreatePercentageDiscounts="userCanCreatePercentageDiscounts" :selectedDiscountCodeBatch="selectedDiscountCodeBatch" />
 </template>
 
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
+import { useStore } from '@/stores/state'
+
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import DiscountCodeBatchFormModal from '@/components/internal/modals/DiscountCodeBatchFormModal.vue'
 
@@ -121,6 +123,8 @@ export default {
     data() {
         let vm = this;
         return {
+            store: useStore(),
+
             datatableId: 'discount-code-batch-datatable-' + uuid(),
 
             filterStatus: sessionStorage.getItem(vm.filterStatusCacheName) ? sessionStorage.getItem(vm.filterStatusCacheName) : '',
@@ -131,6 +135,8 @@ export default {
 
             selectedDiscountCodeBatch: null,
             discountCodeBatchModal: null,
+
+            userCanCreatePercentageDiscounts: false,
 
             successMessage: null,
             errorMessage: null,
@@ -577,6 +583,10 @@ export default {
             $('#discountCodeBatchModal').find('input:visible:first').focus();
         });
         this.discountCodeBatchModal = new bootstrap.Modal(discountCodeBatchModal);
+        if(vm.store.userData){
+            vm.userCanCreatePercentageDiscounts = vm.store.userData.user.can_create_percentage_discounts;
+            console.log(vm.store.userData.user.can_create_percentage_discounts);
+        }
     }
 }
 </script>

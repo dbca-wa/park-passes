@@ -43,7 +43,7 @@
                                 <div class="col-md-4">
                                     <label for="discountType" class="col-form-label">Discount:</label>
                                     <div>
-                                        <div class="form-check form-check-inline">
+                                        <div v-if="userCanCreatePercentageDiscounts" class="form-check form-check-inline">
                                             <input @change="discountTypeChanged" type="radio" class="form-check-input"
                                                 id="discountTypePercentage" name="discountType" v-model="discountCodeBatch.discount_type" value="percentage"
                                                 aria-describedby="validationServerDiscountTypeFeedback" required />
@@ -52,7 +52,7 @@
                                         <div class="form-check form-check-inline">
                                             <input @change="discountTypeChanged" type="radio" class="form-check-input"
                                                 id="discountTypeAmount" name="discountType" v-model="discountCodeBatch.discount_type" value="amount"
-                                                aria-describedby="validationServerDiscountTypeFeedback" required />
+                                                aria-describedby="validationServerDiscountTypeFeedback" required :checked="userCanCreatePercentageDiscounts ? false : true" />
                                             <label for="discountTypeAmount" class="col-form-label">Amount</label>
                                         </div>
                                     </div>
@@ -185,6 +185,11 @@ export default {
         selectedDiscountCodeBatch: {
             type: Number,
             default: null,
+        },
+        userCanCreatePercentageDiscounts: {
+            type: Boolean,
+            default: false,
+            required: false
         }
     },
     data() {
@@ -272,11 +277,16 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.discountCodeBatch = Object.assign({}, data);
-                if(vm.discountCodeBatch.discount_percentage) {
-                    vm.discountCodeBatch.discount_type = 'percentage';
+                if(vm.userCanCreatePercentageDiscounts){
+                    if(vm.discountCodeBatch.discount_percentage) {
+                        vm.discountCodeBatch.discount_type = 'percentage';
+                    } else {
+                        vm.discountCodeBatch.discount_type = 'amount';
+                    }
                 } else {
                     vm.discountCodeBatch.discount_type = 'amount';
                 }
+
                 console.log("valid_pass_types = " + JSON.stringify(vm.discountCodeBatch.valid_pass_types));
 
                 vm.discountCodeBatch.valid_pass_types =
@@ -398,6 +408,9 @@ export default {
     },
     mounted: function () {
         this.initialiseValidUsersSelect2();
+        if(!this.userCanCreatePercentageDiscounts){
+            this.discountCodeBatch.discount_type = 'amount';
+        }
     }
 }
 </script>
