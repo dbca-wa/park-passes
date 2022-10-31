@@ -47,7 +47,7 @@ def is_internal(request):
             or is_parkpasses_discount_code_percentage_user(request)
         )
         cache.set(cache_key, is_internal, settings.CACHE_TIMEOUT_2_HOURS)
-    logger.info(f"{cache_key}:{is_internal}", extra={"className": "N/A"})
+    logger.debug(f"{cache_key}:{is_internal}", extra={"className": ""})
     return is_internal
 
 
@@ -82,7 +82,7 @@ def is_retailer(request):
             active=True, retailer_group__active=True, emailuser_id=request.user.id
         ).exists()
         cache.set(cache_key, is_retailer, settings.CACHE_TIMEOUT_2_HOURS)
-    logger.info(f"{cache_key}:{is_retailer}", extra={"className": "N/A"})
+    logger.debug(f"{cache_key}:{is_retailer}", extra={"className": ""})
     return is_retailer
 
 
@@ -102,16 +102,22 @@ def is_retailer_admin(request):
             emailuser_id=request.user.id,
         ).exists()
         cache.set(cache_key, is_retailer_admin, settings.CACHE_TIMEOUT_2_HOURS)
-    logger.info(f"{cache_key}:{is_retailer_admin}", extra={"className": "N/A"})
+    logger.debug(f"{cache_key}:{is_retailer_admin}", extra={"className": ""})
     return is_retailer_admin
 
 
 def get_retailer_group_ids_for_user(request):
-    return list(
-        RetailerGroupUser.objects.filter(emailuser=request.user)
-        .values_list("retailer_group__id", flat=True)
-        .order_by("id")
-    )
+    cache_key = settings.CACHE_KEY_RETAILER_GROUP_IDS.format(str(request.user.id))
+    retailer_group_ids = cache.get(cache_key)
+    if retailer_group_ids is None:
+        retailer_group_ids = list(
+            RetailerGroupUser.objects.filter(emailuser=request.user)
+            .values_list("retailer_group__id", flat=True)
+            .order_by("id")
+        )
+        cache.set(cache_key, retailer_group_ids, settings.CACHE_TIMEOUT_2_HOURS)
+    logger.debug(f"{cache_key}:{retailer_group_ids}", extra={"className": ""})
+    return retailer_group_ids
 
 
 def get_retailer_groups_for_user(request):
@@ -129,7 +135,6 @@ def get_rac_discount_code(email):
     discount_hash = hashlib.shake_256(
         (settings.RAC_HASH_SALT + email).encode("utf-8")
     ).hexdigest(10)
-    logger.debug("discount_hash = " + str(hash))
     return discount_hash
 
 
