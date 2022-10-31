@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
-import { apiEndpoints } from '@/utils/hooks'
+import { useSessionStorage } from '@vueuse/core'
+import { apiEndpoints, constants } from '@/utils/hooks'
 
 export const useStore = defineStore('main', {
     state: () => ({
-        userData: null, /*{
+        userData: useSessionStorage("userData", {
             user: {
                 id: '',
                 firstName: '',
@@ -13,7 +14,7 @@ export const useStore = defineStore('main', {
             is_authenticated: false,
             authorisation_level: 'external',
             retailerGroups: []
-        }*/
+        })
     }),
     actions: {
         async fetchUserData() {
@@ -28,7 +29,7 @@ export const useStore = defineStore('main', {
                 this.userData = data
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         }

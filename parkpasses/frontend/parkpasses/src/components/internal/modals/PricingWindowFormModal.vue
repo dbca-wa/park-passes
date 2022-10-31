@@ -63,9 +63,32 @@
                                 Please enter a valid end date.
                             </div>
                         </div>
+                        <div v-if="defaultPassOptions">
+                         <label for="" class="col-form-label">Options</label>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Duration</th>
+                                    <th>Price</th>
+                                </tr>
+                            <template v-for="(option, index) in defaultPassOptions">
+                                <tr>
+                                    <td>{{ option.name }}</td>
+                                    <td>{{ option.duration }} days</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="options" v-model="pricing_window.pricing_options[index]" required="required" />
+                                        <div id="validationOptionsFeedback" class="invalid-feedback">
+                                            You must specify a price for this pricing option.
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            </template>
+                            </table>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Exit</button>
                         <button type="submit" class="btn licensing-btn-primary">Submit</button>
                     </div>
                 </form>
@@ -75,7 +98,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 
 export default {
     name: 'PricingWindowFormModal',
@@ -86,6 +109,7 @@ export default {
     data() {
         return {
             pricing_window: this.getPricingWindowInitialState(),
+            defaultPassOptions: null,
             errors: {},
         }
     },
@@ -101,50 +125,71 @@ export default {
             const today = new Date();
             return today.toISOString().split('T')[0];
         },
-        fetchDefaultOptionsForPassType: function () {
-
-        },
         getPricingWindowInitialState() {
             return {
                 pass_type: 0,
                 name: '',
                 date_start: this.startDate(),
                 date_expiry: '',
+                pricing_options: [
+
+                ],
             }
+        },
+        fetchDefaultOptionsForPassType: function () {
+            let vm = this;
+            console.log('vm.pricing_window.pass_type = ' + vm.pricing_window.pass_type);
+            fetch(apiEndpoints.defaultPassOptions(vm.pricing_window.pass_type))
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    console.log(error)
+                    return Promise.reject(error);
+                }
+                if(data.results.length > 0) {
+                    vm.defaultPassOptions = data.results
+                } else {
+                    this.systemErrorMessage = constants.ERRORS.CRITICAL;
+                    console.error(`SYSTEM ERROR: Unable to load options for pass type id: ${vm.passTypeId}`);
+                }
+            })
+            .catch(error => {
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                console.error("There was an error!", error);
+            });
         },
         submitForm: function () {
             let vm = this;
             vm.pricing_window.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
+            alert(JSON.stringify(vm.pricing_window));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(vm.pricing_window)
             };
-            fetch(apiEndpoints.savePricingWindow, requestOptions)
-                .then(async response => {
-                    const data = await response.json();
-                    if (!response.ok) {
-                        const error = (data && data.message) || response.statusText;
-                        this.errors = data;
-                        return Promise.reject(error);
+            fetch(apiEndpoints.savePricingWindow, requestOptions).then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    this.errors = data;
+                    return Promise.reject(error);
+                }
+                console.log('data = ' + JSON.stringify(data));
+                this.$emit("saveSuccess", {
+                        message: 'Pricing Window created successfully.',
+                        pricingWindow: data,
                     }
-                    console.log('data = ' + JSON.stringify(data));
-                    this.$emit("saveSuccess", {
-                            message: 'Pricing Window created successfully.',
-                            pricingWindow: data,
-                        }
-                    );
-                    $('#successMessageAlert').show();
-                    vm.pricing_window = vm.getPricingWindowInitialState();
-                    var PricingWindowFormModalModal = bootstrap.Modal.getInstance(document.getElementById('pricingWindowModal'));
-                    PricingWindowFormModalModal.hide();
-                })
-                .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
-                    console.error("There was an error!", error);
-                }).finally(() =>{
-
-                });
+                );
+                $('#successMessageAlert').show();
+                vm.pricing_window = vm.getPricingWindowInitialState();
+                var PricingWindowFormModalModal = bootstrap.Modal.getInstance(document.getElementById('pricingWindowModal'));
+                PricingWindowFormModalModal.hide();
+            })
+            .catch(error => {
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                console.error("There was an error!", error);
+            });
             return false;
         },
         validateForm: function () {

@@ -1,0 +1,11 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{% block greetings %}
+            <p>Dear {{pass.first_name}} {{pass.last_name}},</p>
+{% endblock %}
+
+{%  block content %}
+            <p>Your current {{pass.pass_type_display_name}} is due to renew automatically on {{pass.datetime_expiry}}.</p>
+
+            <p>If you do not want to renew your park pass, log in to your account at {{url}} and cancel the automatic renewal of your park pass.</p>
+{% endblock %}

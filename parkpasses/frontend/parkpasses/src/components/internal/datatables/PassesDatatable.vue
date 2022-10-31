@@ -66,13 +66,13 @@
 <script>
 import Datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import PassCancellationModal from '@/components/internal/modals/PassCancellationModal.vue'
 
 
 export default {
-    name: 'TablePasses',
+    name: 'PassesDatatable',
     props: {
         level:{
             type: String,
@@ -253,11 +253,11 @@ export default {
         },
         columnDatetimeStart: function(){
             return {
-                data: "datetime_start",
+                data: "date_start",
                 visible: true,
-                name: 'datetime_start',
+                name: 'date_start',
                 'render': function(row, type, full){
-                    const date = new Date(full.datetime_start);
+                    const date = new Date(full.date_start);
                     return date.toLocaleDateString();
                 }
             }
@@ -302,6 +302,9 @@ export default {
                 data: "processing_status_display_name",
                 visible: true,
                 name: 'processing_status',
+                'render': function(row, type, full){
+                    return `<span class="badge ${helpers.getStatusBadgeClass(full.processing_status_display_name)}">${full.processing_status_display_name}</span>`;
+                }
             }
         },
         columnParkPassPdf: function(){
@@ -311,7 +314,7 @@ export default {
                 orderable: false,
                 name: 'park_pass_pdf',
                 'render': function(row, type, full){
-                    return `<a href="${apiEndpoints.internalParkPassPdf(full.id)}" target="blank">ParkPass.pdf</a>`
+                    return `<a href="${apiEndpoints.internalParkPassPdf(full.id)}" target="blank">${full.park_pass_pdf}</a>`
                 }
             }
         },
@@ -333,10 +336,28 @@ export default {
                 searchable: false,
                 visible: true,
                 'render': function(row, type, full){
+                    let editLink = vm.$router.resolve({
+                        name: 'internal-pass-form',
+                        params: { passId: full.id }
+                    });
                     let links = '';
-                    links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
+                    if(!full.user_can_edit_and_cancel && !full.user_can_view_payment_details){
+                        links +=  `<a href="${editLink.href}">View</a>`;
+                    } else {
+                        console.log('full.processing_status_display_name = ' + full.processing_status_display_name);
+                        if('Current'==full.processing_status_display_name || 'Future'==full.processing_status_display_name){
+                            if(full.user_can_edit_and_cancel){
+                                links +=  `<a href="${editLink.href}">Edit</a>`;
+                                links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-name="${full.pass_number}" data-sold-via-name="${full.sold_via_name}" data-pro-rata-refund-amount-display="${full.pro_rata_refund_amount_display}" data-action="cancel">Cancel</a>`;
+                            }
+                        } else {
+                            links +=  `<a href="${editLink.href}">View</a>`;
+                        }
+                        if(full.user_can_view_payment_details && constants.DEFAULT_SOLD_VIA==full.sold_via_name){
+                            links +=  ` | <a href="${apiEndpoints.internalPassPaymentDetails(full.id)}" target="blank">View Payment Details</a>`;
+                        }
+                    }
+
                     return links;
                 }
             }
@@ -385,7 +406,7 @@ export default {
             return {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
+                    processing: constants.DATATABLE_PROCESSING_HTML
                 },
                 rowCallback: function (row, pass){
                     let row_jq = $(row)
@@ -440,7 +461,7 @@ export default {
 
         },
         cancelSuccess: function() {
-
+            this.$refs.passDatatable.vmDataTable.draw();
         },
         fetchFilterLists: function(){
             let vm = this;
@@ -476,19 +497,14 @@ export default {
             });
         },
         addEventListeners: function(){
-            let vm = this
-            vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="edit"]', function(e) {
-                e.preventDefault();
-                let action = $(this).data('action');
-                let id = $(this).data('item-id');
-                console.log(action + id);
-                vm.$router.push(`/internal/passes/${id}`)
-            });
+            let vm = this;
             vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="cancel"]', function(e) {
                 e.preventDefault();
                 let id = $(this).data('item-id');
                 let name = $(this).data('name');
-                vm.cancelPass({id, name})
+                let soldViaName = $(this).data('sold-via-name');
+                let proRataRefundAmountDisplay = $(this).data('pro-rata-refund-amount-display');
+                vm.cancelPass({id, name, soldViaName, proRataRefundAmountDisplay})
             });
             vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="view-payment-details"]', function(e) {
                 e.preventDefault();

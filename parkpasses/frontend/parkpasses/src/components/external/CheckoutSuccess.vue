@@ -5,8 +5,20 @@
                 <h1>Checkout Success</h1>
             </div>
         </div>
-        <div class="row ms-4">
-            <div class="col-md-3">
+        <div class="row ms-4 g-4 pe-3">
+
+            <div v-if="isRetailer" class="col-md-3">
+                <div class="card">
+                    <h5 class="card-header">What Next?</h5>
+                    <div class="card-body">
+                        <p class="card-text"><a href="/retailer/sell-a-pass">Sell Another Pass</a></p>
+                        <p class="card-text"><a href="/retailer/reports">View Invoices &amp Reports</a></p>
+                        <p class="card-text"><a href="/">Return home</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="col-md-3">
                 <div class="card">
                     <h5 class="card-header">What Next?</h5>
                     <div class="card-body">
@@ -21,18 +33,18 @@
 
                 <div v-if="order" class="card bg-white">
                     <div class="card-header checkout-success-item-header">
-                        <span>Order Placed</span>
-                        <span>{{ formattedOrderDate }}</span>
+                        <span class="heading">Order Placed</span>
+                        <span class="d-none d-sm-block">{{ formattedOrderDate }}</span>
+                        <span class="d-bloack d-sm-none">{{ formattedOrderDateShort }}</span>
 
-                        <span>Items</span>
+                        <span class="heading">Items</span>
                         <span>{{ order.items.length }}</span>
 
-                        <span>Total</span>
+                        <span class="heading">Total</span>
                         <span>${{ order.total.toFixed(2) }}</span>
 
-                        <span>ORDER # {{ order.order_number }}</span>
-                        <span><a href="#">View Invoice</a></span>
-
+                        <span class="heading">ORDER # {{ order.order_number }}</span>
+                        <span><a :href="invoiceURL(order.id)" target="_blank">View Invoice</a></span>
                     </div>
                     <div class="card-body">
 
@@ -54,22 +66,28 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
+import { useStore } from '@/stores/state'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 
 export default {
     name: "CheckoutSuccess",
     data: function () {
         return {
+            store: useStore(),
+            isRetailer: false,
             orderUUID: null,
             order: null,
             formattedOrderDate: null,
+            formattedOrderDateShort: null,
         };
     },
     components: {
-        Loader
+
     },
     methods: {
+        invoiceURL: function(orderId) {
+            return apiEndpoints.externalOrderInvoice(orderId);
+        },
         fetchOrder: function (uuid) {
             let vm = this;
             vm.loading = true;
@@ -83,11 +101,12 @@ export default {
                     }
                     // Do something after adding the voucher to the database and the users cart
                     vm.formattedOrderDate = helpers.getPrettyDateFromDatetime(data.datetime_created)
+                    vm.formattedOrderDateShort = helpers.getShortDate(data.datetime_created)
                     vm.order = Object.assign({}, data);
                     console.log(vm.order)
                 })
                 .catch(error => {
-                    vm.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    vm.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 }).finally(() => {
                     vm.loading = false;
@@ -97,6 +116,14 @@ export default {
     created: function() {
         this.orderUUID = this.$route.params.uuid;
         this.fetchOrder(this.orderUUID);
+    },
+    mounted: function() {
+        let vm = this;
+        if(vm.store.userData){
+            if(vm.store.userData.is_authenticated && 'retailer'==vm.store.userData.authorisation_level) {
+                vm.isRetailer = true;
+            }
+        }
     }
 };
 </script>
@@ -107,19 +134,67 @@ export default {
         display: grid;
 
         /* create colums. 1fr means use available space */
-        grid-template-rows: 1fr 1fr;
-        grid-template-columns: max-content max-content 1fr max-content;
-         grid-auto-flow: column;
+        grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+        grid-template-columns: max-content;
+        grid-auto-flow: column;
         align-items: center;
         justify-content: center;
-        grid-gap: 2px 30px;
+        grid-gap: 2px 3px;
         color: #565959;
         font-size:12px;
+    }
+
+    .checkout-success-item-header .heading{
+        font-weight: bold;
     }
 
     .order-item {
         display: grid;
         grid-template-columns: 21fr max-content;
+        font-size:0.8em;
+    }
+
+    @media (min-width: 425px) {
+        .checkout-success-item-header {
+            grid-template-rows: 1fr 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
+        }
+
+
+        .order-item {
+            font-size:0.8em;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .checkout-success-item-header {
+            /* create a grid */
+            display: grid;
+
+            /* create colums. 1fr means use available space */
+            grid-template-rows: 1fr 1fr;
+            grid-template-columns: max-content max-content 1fr max-content;
+            grid-auto-flow: column;
+            align-items: center;
+            justify-content: center;
+            grid-gap: 2px 14px;
+            color: #565959;
+            font-size:12px;
+        }
+
+        .checkout-success-item-header .heading{
+            font-weight: normal;
+        }
+
+        .order-item {
+            font-size:0.9em;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .checkout-success-item-header {
+            grid-gap: 2px 30px;
+        }
     }
 
 </style>

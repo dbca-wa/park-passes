@@ -43,7 +43,7 @@
 <script>
 import Datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints } from '@/utils/hooks'
+import { apiEndpoints, constants } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import PassCancellationModal from '@/components/internal/modals/PassCancellationModal.vue'
 
@@ -237,7 +237,7 @@ export default {
                 searchable: false,
                 orderable: false,
                 'render': function(row, type, full){
-                    return '<a href="">View Invoice</a>'
+                    return `<a target="blank" href="${apiEndpoints.externalOrderInvoice(full.id)}">View Invoice</a>`;
                 }
             }
         },
@@ -291,7 +291,7 @@ export default {
             return {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
+                    processing: constants.DATATABLE_PROCESSING_HTML
                 },
                 rowCallback: function (row, pass){
                     let row_jq = $(row)

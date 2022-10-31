@@ -1,0 +1,23 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            {{ ADMIN_GROUP }},
+{% endblock %}
+
+{%  block content %}
+            The retail user with the following email address:
+
+            {{retailer_group_user_invite.email}}
+
+            Which you invited to join the following Retailer Group:
+
+            {{retailer_group_user_invite.retailer_group.name}}
+
+            On the {{retailer_group_user_invite.datetime_created|date:'jS'}} of {{retailer_group_user_invite.datetime_created|date:'F Y'}} at {{retailer_group_user_invite.datetime_created|date:'P'}}
+
+            Has accepted your invitation to join.
+
+            Please log in to approve or deny their request and decide if they should have admin access level:
+
+            {{SITE_URL}}{% url 'internal-retailer-group-users' %}
+{%  endblock %}

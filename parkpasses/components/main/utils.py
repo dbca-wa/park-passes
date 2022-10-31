@@ -1,24 +1,11 @@
 import pytz
-import requests
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry
-from django.core.cache import cache
+from django.contrib.contenttypes.models import ContentType
 from django.db import connection
-from django.db.models import Q
-from ledger_api_client.ledger_models import EmailUserRO
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import serializers
 
-from parkpasses.components.main.serializers import EmailUserROSerializerForReferral
-
-
-def retrieve_department_users():
-    dep_users = (
-        EmailUserRO.objects.filter(Q(email__endswith="@dbca.wa.gov.au"))
-        .exclude(Q(first_name=""), Q(last_name=""))
-        .order_by("first_name")
-    )
-    serialiser = EmailUserROSerializerForReferral(dep_users, many=True)
-    return serialiser.data
+from org_model_logs.models import CommunicationsLogEntry, EntryType
 
 
 def handle_validation_error(e):
@@ -56,30 +43,19 @@ def _get_params(layer_name):
     }
 
 
-def get_dbca_lands_and_waters_geojson():
-    data = cache.get("dbca_legislated_lands_and_waters")
-    if not data:
-        URL = "https://kmi.dpaw.wa.gov.au/geoserver/public/ows"
-        PARAMS = _get_params("public:dbca_legislated_lands_and_waters")
-        res = requests.get(url=URL, params=PARAMS)
-        # geo_json = res.json()
-        cache.set(
-            "dbca_legislated_lands_and_waters", res.json(), settings.LOV_CACHE_TIMEOUT
-        )
-        data = cache.get("dbca_legislated_lands_and_waters")
-    # print(data.get('properties'))
-    return data
-
-
-def get_dbca_lands_and_waters_geos():
-    geojson = get_dbca_lands_and_waters_geojson()
-    geoms = []
-    for feature in geojson.get("features"):
-        feature_geom = feature.get("geometry")
-        geos_geom = GEOSGeometry(f"{feature_geom}").prepared
-        geoms.append(geos_geom)
-    return geoms
-    # geos_obj = GeometryCollection(tuple(geoms))
-    # print(geos_obj.valid)
-    # print(geos_obj.valid_reason)
-    # return geos_obj
+def log_communication(to, message, entry_type, instance):
+    content_type = ContentType.objects.get_for_model(instance)
+    entry_type = EntryType.objects.get(entry_type__iexact=entry_type)
+    staff = EmailUser.objects.get(email__icontains=settings.DEFAULT_FROM_EMAIL)
+    communication_log_kwargs = {
+        "content_type": content_type,
+        "object_id": str(instance.id),
+        "to": to,
+        "fromm": settings.DEFAULT_FROM_EMAIL,
+        "entry_type": entry_type,
+        "subject": message.subject,
+        "text": message.body,
+        "customer": instance.user,
+        "staff": staff.id,
+    }
+    CommunicationsLogEntry.objects.log_communication(**communication_log_kwargs)

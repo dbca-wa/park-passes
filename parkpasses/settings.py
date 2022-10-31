@@ -30,6 +30,7 @@ STATIC_URL = "/static/"
 INSTALLED_APPS += [
     "webtemplate_dbca",
     "rest_framework",
+    "rest_framework_api_key",
     "rest_framework_datatables",
     "django_filters",
     "rest_framework_gis",
@@ -49,6 +50,8 @@ INSTALLED_APPS += [
     "parkpasses.components.orders",
     "parkpasses.components.users",
     "parkpasses.components.help",
+    "parkpasses.components.emails",
+    "parkpasses.components.reports",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -95,6 +98,8 @@ if SHOW_DEBUG_TOOLBAR:
         "SHOW_TOOLBAR_CALLBACK": show_toolbar,
         "INTERCEPT_REDIRECTS": False,
     }
+
+SILENCED_SYSTEM_CHECKS = ["fields.W903", "fields.W904", "debug_toolbar.W004"]
 
 TEMPLATES[0]["DIRS"].append(os.path.join(BASE_DIR, "parkpasses", "templates"))
 TEMPLATES[0]["DIRS"].append(
@@ -148,19 +153,34 @@ DEP_POSTAL = env(
 )
 DEP_NAME = env("DEP_NAME", "Department of Biodiversity, Conservation and Attractions")
 DEP_NAME_SHORT = env("DEP_NAME_SHORT", "DBCA")
+BRANCH_NAME = env("BRANCH_NAME", "Park Passes Branch")
 DEP_ADDRESS = env("DEP_ADDRESS", "17 Dick Perry Avenue, Kensington WA 6151")
-SITE_URL = env("SITE_URL", "https://" + SITE_PREFIX + "." + SITE_DOMAIN)
+if DEBUG is True:
+    SITE_URL = env("SITE_URL", "http://" + SITE_DOMAIN)
+else:
+    SITE_URL = env("SITE_URL", "https://" + SITE_PREFIX + "." + SITE_DOMAIN)
 PUBLIC_URL = env("PUBLIC_URL", SITE_URL)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 MEDIA_APP_DIR = env("MEDIA_APP_DIR", "cols")
+
+
+""" ==================== SYSTEM GROUP NAMES ======================== """
+
 ADMIN_GROUP = env("ADMIN_GROUP", "Park Passes Admin")
+OFFICER_GROUP = env("OFFICER_GROUP", "Park Passes Officer")
+PAYMENTS_OFFICER_GROUP = env("PAYMENTS_OFFICER_GROUP", "Park Passes Payments Officer")
+READ_ONLY_GROUP = env("READ_ONLY_GROUP", "Park Passes Read-Only Group")
+DISCOUNT_CODE_PERCENTAGE_GROUP = env(
+    "DISCOUNT_CODE_PERCENTAGE_GROUP", "Park Passes Discount Code Percentage Creator"
+)
+
+
 CRON_RUN_AT_TIMES = env("CRON_RUN_AT_TIMES", "04:05")
 CRON_EMAIL = env("CRON_EMAIL", "cron@" + SITE_DOMAIN).lower()
+NO_REPLY_EMAIL = env("NO_REPLY_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 # for ORACLE Job Notification - override settings_base.py
 EMAIL_FROM = DEFAULT_FROM_EMAIL
 OTHER_PAYMENT_ALLOWED = env("OTHER_PAYMENT_ALLOWED", False)  # Cash/Cheque
-
-OSCAR_BASKET_COOKIE_OPEN = "cols_basket"
 
 
 os.environ[
@@ -193,44 +213,51 @@ CONSOLE_EMAIL_BACKEND = env("CONSOLE_EMAIL_BACKEND", False)
 if CONSOLE_EMAIL_BACKEND:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# Additional logging for parkpasses
-LOGGING["handlers"]["payment_checkout"] = {
-    "level": "INFO",
-    "class": "logging.handlers.RotatingFileHandler",
-    "filename": os.path.join(BASE_DIR, "logs", "cols_payment_checkout.log"),
-    "formatter": "verbose",
-    "maxBytes": 5242880,
-}
-LOGGING["loggers"]["payment_checkout"] = {
-    "handlers": ["payment_checkout"],
-    "level": "INFO",
-}
-# Add a handler
-LOGGING["handlers"]["file_parkpasses"] = {
-    "level": "INFO",
-    "class": "logging.handlers.RotatingFileHandler",
-    "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
-    "formatter": "verbose",
-    "maxBytes": 5242880,
-}
-
-LOGGING["loggers"]["parkpasses"] = {
-    "handlers": ["file_parkpasses"],
-    "level": "INFO",
-}
 
 # Add a debug level logger for development
 if DEBUG:
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": True,
+        "formatters": {
+            "verbose": {
+                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s][%(className)s.%(funcName)s] %(message)s"
+            },
+        },
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",
+                "level": "DEBUG",
+            },
+            "rotating_file": {
+                "level": "INFO",
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
+                "formatter": "verbose",
+                "maxBytes": 5242880,
+            },
+            "mail_admins": {
+                "level": "ERROR",
+                "class": "django.utils.log.AdminEmailHandler",
+                "include_html": True,
             },
         },
         "loggers": {
+            "": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": True,
+            },
+            "django.template": {
+                "handlers": ["console"],
+                "level": "INFO",
+            },
             "parkpasses": {
+                "handlers": ["console", "rotating_file", "mail_admins"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+            "org_model_documents": {
                 "handlers": ["console"],
                 "level": "DEBUG",
                 "propagate": False,
@@ -242,6 +269,47 @@ if DEBUG:
             },
         },
     }
+else:
+    LOGGING = {
+        "version": 1,
+        "formatters": {
+            "verbose": {
+                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s] \
+                    [%(className)s.%(funcName)s] %(message)s"
+            },
+        },
+        "handlers": {
+            "rotating_file": {
+                "level": "INFO",
+                "class": "logging.handlers.TimedRotatingFileHandler",
+                "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
+                "formatter": "verbose",
+                "when": "D",
+                "interval": 1,
+            },
+            "mail_admins": {
+                "level": "ERROR",
+                "class": "django.utils.log.AdminEmailHandler",
+            },
+        },
+        "loggers": {
+            "parkpasses": {
+                "handlers": ["console", "rotating_file", "mail_admins"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "org_model_documents": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "org_model_logs": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": False,
+            },
+        },
+    }
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DEV_APP_BUILD_URL = env(
@@ -249,23 +317,75 @@ DEV_APP_BUILD_URL = env(
 )  # URL of the Dev app.js served by webpack & express
 LOV_CACHE_TIMEOUT = 10800
 
+CACHE_TIMEOUT_2_HOURS = 60 * 60 * 2  # 2 HOURS
+CACHE_TIMEOUT_24_HOURS = 60 * 60 * 24  # 24 HOURS
+
+CACHE_KEY_EMAIL_USER = "email-user-{}"
+
+CACHE_KEY_BELONGS_TO = "user-{}-is-a-member-of-{}"
+CACHE_KEY_IS_INTERNAL = "user-{}-is-internal"
+CACHE_KEY_RETAILER = "user-{}-is-a-retailer"
+CACHE_KEY_RETAILER_ADMIN = "user-{}-is-a-retailer-admin"
+CACHE_KEY_RETAILER_GROUP_IDS = "user-{}-retailer-group-ids"
+
+CACHE_KEY_GROUP_IDS = "{}-{}-user-ids"
 
 PROTECTED_MEDIA_ROOT = env(
     "PROTECTED_MEDIA_ROOT", os.path.join(BASE_DIR, "protected_media")
+)
+
+RETAILER_GROUP_INVOICE_ROOT = env(
+    "RETAILER_GROUP_INVOICE_ROOT", PROTECTED_MEDIA_ROOT + "/retailer_group_invoices"
+)
+
+RETAILER_GROUP_REPORT_ROOT = env(
+    "RETAILER_GROUP_REPORT_ROOT", PROTECTED_MEDIA_ROOT + "/retailer_group_reports"
+)
+
+PICA_GOLD_STAR_PASS_ROOT = env(
+    "RETAILER_GROUP_REPORT_ROOT", PROTECTED_MEDIA_ROOT + "/pica_gold_star_pass"
+)
+
+PICA_EMAIL = env("PICA_EMAIL", "oak.mcilwain@gmail.com")
+
+ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
+    "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", PROTECTED_MEDIA_ROOT
 )
 
 APPLICATION_TYPE_PARK_PASSES = "park_passes"
 APPLICATION_TYPES = [
     (APPLICATION_TYPE_PARK_PASSES, "Park Passes"),
 ]
-KMI_SERVER_URL = env("KMI_SERVER_URL", "https://kmi.dbca.wa.gov.au")
 
 GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
 
 template_title = "Park Passes"
 template_group = "parkswildlife"
 
+# Use git commit hash for purging cache in browser for deployment changes
+GIT_COMMIT_HASH = ""
+GIT_COMMIT_DATE = ""
+if os.path.isdir(BASE_DIR + "/.git/") is True:
+    GIT_COMMIT_DATE = os.popen("cd " + BASE_DIR + " ; git log -1 --format=%cd").read()
+    GIT_COMMIT_HASH = os.popen("cd  " + BASE_DIR + " ; git log -1 --format=%H").read()
+if len(GIT_COMMIT_HASH) == 0:
+    GIT_COMMIT_HASH = os.popen("cat /app/git_hash").read()
+    if len(GIT_COMMIT_HASH) == 0:
+        print("ERROR: No git hash provided")
+
 LEDGER_TEMPLATE = "bootstrap5"
+
+SESSION_COOKIE_NAME = "pp_sessionid"
+
+ORGANISATION = {
+    "name": "Department of Biodiversity, Conservation and Attractions",
+    "address_line_1": "17 Dick Perry Ave",
+    "address_line_2": "",
+    "suburb": "Kensington",
+    "state": "WA",
+    "postcode": "6151",
+    "ABN": "38 052 249 024",
+}
 
 HOLIDAY_PASS = "HOLIDAY_PASS"
 ANNUAL_LOCAL_PASS = "ANNUAL_LOCAL_PASS"
@@ -282,8 +402,13 @@ PASS_TYPES = [
     (DAY_ENTRY_PASS, "Day Entry Pass"),
 ]
 
+PASS_VEHICLE_REGO_REMINDER_DAYS_PRIOR = 7
+PASS_AUTORENEW_REMINDER_DAYS_PRIOR = 7
+
 PRICING_WINDOW_DEFAULT_NAME = "Default"
 
+RAC_HASH_SALT = env("RAC_HASH_SALT")
+RAC_RETAILER_GROUP_NAME = env("RAC_RETAILER_GROUP_NAME", "RAC")
 UNLIMITED_USES = 999999999
 UNLIMITED_USES_TEXT = "Unlimited"
 
@@ -298,18 +423,6 @@ ACTION_PARTIAL_UPDATE = "Partial Update {} {}"
 ACTION_DESTROY = "Destroy {} {}"
 ACTION_CANCEL = "Cancel {} {}"
 
-
-COMMUNICATIONS_LOG_ENTRY_CHOICES = [
-    ("email", "Email"),
-    ("phone", "Phone Call"),
-    ("mail", "Mail"),
-    ("person", "In Person"),
-    ("onhold", "On Hold"),
-    ("onhold_remove", "Remove On Hold"),
-    ("with_qaofficer", "With QA Officer"),
-    ("with_qaofficer_completed", "QA Officer Completed"),
-    ("referral_complete", "Referral Completed"),
-]
 
 PARKPASSES_VOUCHER_EXPIRY_IN_DAYS = 365 * 2
 
@@ -345,11 +458,20 @@ PARKPASSES_LEDGER_DEFAULT_LINE_STATUS = 1
 PARKPASSES_VOUCHER_PURCHASE_DESCRIPTION = "Voucher Purchase:"
 PARKPASSES_PASS_PURCHASE_DESCRIPTION = "Park Pass Purchase:"
 
-PARKPASSES_CONCESSION_DESCRIPTION = "Concession Discount:"
+PARKPASSES_CONCESSION_APPLIED_DESCRIPTION = "Concession Discount:"
 PARKPASSES_DISCOUNT_CODE_APPLIED_DESCRIPTION = "Discount Code Applied:"
 PARKPASSES_VOUCHER_CODE_REDEEMED_DESCRIPTION = "Voucher Code Redeemed:"
 
-PARKPASSES_ORACLE_CODE = "FN46V9L80"
+PARKPASSES_DEFAULT_ORACLE_CODE = "PARKPASSES_DEFAULT_ORACLE_CODE"
+
+
+LEDGER_UI_ACCOUNTS_MANAGEMENT = [
+    {"first_name": {"options": {"view": True, "edit": True}}},
+    {"last_name": {"options": {"view": True, "edit": True}}},
+    {"residential_address": {"options": {"view": True, "edit": True}}},
+    {"phone_number": {"options": {"view": True, "edit": True}}},
+    {"mobile_number": {"options": {"view": True, "edit": True}}},
+]
 
 
 """ ==================== CKEDITOR CONFIGS ======================== """

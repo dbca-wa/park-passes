@@ -2,19 +2,19 @@
   <div class="container" id="shopHome">
     <div class="row">
 
-      <div class="col-4">
+      <div class="col-xxl-4 col-xl-4 col-lg-5 col-md-5 col-sm-6">
 
         <ShopSideMenu @purchase-voucher="purchaseVoucher" @purchase-pass="purchasePass" />
 
       </div>
 
-      <div class="col">
+      <div class="col-xxl-8 col-xl-8 col-lg-7 col-md-7 col-sm-6 px-lg-2 ps-md-5 ps-xl-0">
 
         <HomeContent v-if="showHomeContent" />
 
         <PurchaseVoucher v-if="showPurchaseVoucher" />
 
-        <PurchasePass v-if="showPurchasePass" :passTypeId="passTypeId" :key="passTypeId" />
+        <PurchasePass v-if="showPurchasePass" :passTypeSlug="passTypeSlug" :key="passTypeSlug" />
 
       </div>
     </div>
@@ -33,7 +33,7 @@ export default {
     name: "ShopHome",
     data: function () {
         return {
-            passTypeId: -1,
+            passTypeSlug: '',
             showHomeContent: true,
             showPurchaseVoucher: false,
             showPurchasePass: false,
@@ -50,16 +50,16 @@ export default {
     },
     methods: {
         purchaseVoucher: function () {
-            this.passTypeId = 0;
-            console.log('this.passTypeId = ' + this.passTypeId)
+            this.passTypeSlug = 'voucher';
+            console.log('this.passTypeSlug = ' + this.passTypeSlug)
             this.$router.push({ name:'purchase-voucher' });
             this.showHomeContent = false;
             this.showPurchasePass = false;
             this.showPurchaseVoucher = true;
         },
-        purchasePass: function (passTypeId) {
-            this.passTypeId = passTypeId;
-            this.$router.push({ name:'purchase-pass', params: { passTypeId: this.passTypeId } });
+        purchasePass: function (passTypeSlug) {
+            this.passTypeSlug = passTypeSlug;
+            this.$router.push({ name:'purchase-pass', params: { passTypeSlug: this.passTypeSlug } });
             this.showHomeContent = false;
             this.showPurchaseVoucher = false;
             this.showPurchasePass = true;
@@ -77,7 +77,7 @@ export default {
             this.showPurchasePass = false;
             this.showPurchaseVoucher = true;
         } else if ('purchase-pass'==this.$route.name) {
-            this.passTypeId = this.$route.params.passTypeId;
+            this.passTypeSlug = this.$route.params.passTypeSlug;
             this.showHomeContent = false;
             this.showPurchaseVoucher = false;
             this.showPurchasePass = true;

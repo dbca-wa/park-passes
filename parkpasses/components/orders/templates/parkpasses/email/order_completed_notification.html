@@ -1,0 +1,30 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{%  block content %}
+
+    {{pass.first_name}} {{pass.last_name}},
+
+    Your park pass order has been completed successfully.
+
+    Order #: {{order.order_number}}
+
+    <table>
+        <tr>
+            <th>Item</th>
+            <th>Price</th>
+        </tr>
+    {% for item in order.items %}
+        <tr>
+            <td>{{item.description}}</td>
+            <td>${{item.amount}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+    You will recieve a seperate confirmation email for each of the items in your order.
+
+    An invoice for this order is attached to this email.
+
+    To view a full list of your orders or make changes to your park passes go to {{site_url}}.
+
+{%  endblock %}

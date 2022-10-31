@@ -7,7 +7,7 @@ from django.template import Template, loader
 from django.utils.html import strip_tags
 from ledger_api_client.ledger_models import Document
 
-logger = logging.getLogger("log")
+logger = logging.getLogger(__name__)
 
 
 def _render(template, context):
@@ -18,16 +18,12 @@ def _render(template, context):
     return template.render(context)
 
 
-# def host_reverse(name, args=None, kwargs=None):
-#   return "{}{}".format(settings.DEFAULT_HOST, reverse(name, args=args, kwargs=kwargs))
-
-
 class TemplateEmailBase:
     def __init__(
         self,
         subject="",
         html_template="parkpasses/emails/base_email.html",
-        txt_template="parkpasses/emails/base-email.txt",
+        txt_template="parkpasses/emails/base_email.txt",
     ):
         self.subject = subject
         self.html_template = html_template

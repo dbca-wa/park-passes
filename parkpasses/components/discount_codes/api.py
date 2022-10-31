@@ -1,12 +1,10 @@
 import logging
 
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from drf_excel.mixins import XLSXFileMixin
 from drf_excel.renderers import XLSXRenderer
 from rest_framework import viewsets
-from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
@@ -14,7 +12,7 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from org_model_logs.models import UserAction
+from org_model_logs.utils import BaseUserActionViewSet
 from parkpasses.components.discount_codes.models import (
     DiscountCode,
     DiscountCodeBatch,
@@ -28,6 +26,7 @@ from parkpasses.components.discount_codes.serializers import (
     InternalDiscountCodeSerializer,
     InternalDiscountCodeXlsxSerializer,
 )
+from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.permissions import IsInternal
 
 logger = logging.getLogger(__name__)
@@ -74,25 +73,64 @@ class DiscountCodeViewSet(viewsets.ModelViewSet):
     serializer_class = InternalDiscountCodeSerializer
 
 
-class InternalDiscountCodeBatchViewSet(viewsets.ModelViewSet):
+class DiscountCodeBatchFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        status = request.GET.get("status")
+
+        datetime_start_from = request.GET.get("datetime_start_from")
+        datetime_start_to = request.GET.get("datetime_start_to")
+
+        datetime_expiry_from = request.GET.get("datetime_expiry_from")
+        datetime_expiry_to = request.GET.get("datetime_expiry_to")
+
+        if "Expired" == status:
+            queryset = queryset.filter(datetime_expiry__lte=timezone.now())
+        if "Current" == status:
+            queryset = queryset.filter(
+                datetime_start__lte=timezone.now(), datetime_expiry__gte=timezone.now()
+            )
+        if "Future" == status:
+            queryset = queryset.filter(datetime_start__gt=timezone.now())
+
+        if datetime_start_from:
+            queryset = queryset.filter(datetime_start__gte=datetime_start_from)
+
+        if datetime_start_to:
+            queryset = queryset.filter(datetime_start__lte=datetime_start_to)
+
+        if datetime_expiry_from:
+            queryset = queryset.filter(datetime_expiry__gte=datetime_expiry_from)
+
+        if datetime_expiry_to:
+            queryset = queryset.filter(datetime_expiry__lte=datetime_expiry_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
+class InternalDiscountCodeBatchViewSet(BaseUserActionViewSet):
     model = DiscountCodeBatch
     pagination_class = DatatablesPageNumberPagination
     queryset = DiscountCodeBatch.objects.all()
     permission_classes = [IsInternal]
     serializer_class = InternalDiscountCodeBatchSerializer
-    filter_backends = (
-        SearchFilter,
-        DatatablesFilterBackend,
-    )
-    filterset_fields = [
-        "times_each_code_can_be_used",
-    ]
+    filter_backends = (DiscountCodeBatchFilterBackend,)
+
+    def get_user_action_serializer_class(self):
+        return UserActionSerializer
 
     def perform_create(self, serializer):
-        logger.debug("self.request.data = " + str(self.request.data))
         new_discount_code_batch = serializer.save(created_by=self.request.user.id)
-        content_type = ContentType.objects.get_for_model(new_discount_code_batch)
-        reason = self.request.data.get("reason")
         valid_pass_types = self.request.data.get("valid_pass_types")
 
         for valid_pass_type in valid_pass_types:
@@ -107,15 +145,9 @@ class InternalDiscountCodeBatchViewSet(viewsets.ModelViewSet):
                 discount_code_batch_id=new_discount_code_batch.id, user=valid_user
             )
 
-        logger.debug("reason = " + str(reason))
-        user_action = UserAction.objects.log_action(
-            object_id=new_discount_code_batch.id,
-            content_type=content_type,
-            who=self.request.user.id,
-            what="Create Discount Code Batch " + str(new_discount_code_batch.id),
-            why=reason,
-        )
-        user_action.save()
+    def perform_update(self, serializer):
+        logger.debug("update self.request.data = " + str(self.request.data))
+        return super().perform_update(serializer)
 
 
 class DiscountCodeBatchCommentViewSet(viewsets.ModelViewSet):

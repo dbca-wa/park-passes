@@ -1,0 +1,23 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{% block greetings %}
+            <p>{{ ADMIN_GROUP }},</p>
+{% endblock %}
+
+{%  block content %}
+            <p>The retail user with the following email address:</p>
+
+            <p>{{retailer_group_user_invite.email}}</p>
+
+            <p>Which you invited to join the following Retailer Group:</p>
+
+            <p>{{retailer_group_user_invite.retailer_group.name}}</p>
+
+            <p>On the {{retailer_group_user_invite.datetime_created|date:'jS'}} of {{retailer_group_user_invite.datetime_created|date:'F Y'}} at {{retailer_group_user_invite.datetime_created|date:'P'}}</p>
+
+            <p>Has accepted your invitation to join.</p>
+
+            <p>Please log in to approve or deny their request and decide if they should have admin access level:</p>
+
+            <p><a href="{{SITE_URL}}{% url 'internal-retailer-group-users' %}">{{SITE_URL}}{% url 'internal-retailer-group-users' %}</a></p>
+{%  endblock %}

@@ -76,11 +76,10 @@
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import PricingWindowFormModal from '@/components/internal/modals/PricingWindowFormModal.vue'
 import PricingWindowConfirmDeleteModal from '@/components/internal/modals/PricingWindowConfirmDeleteModal.vue'
-import BootstrapModalVue from '../../../utils/vue/BootstrapModal.vue';
 
 export default {
     name: 'PricingWindowsDatatable',
@@ -130,7 +129,6 @@ export default {
             datatable_id: 'pricing-window-datatable-' + uuid(),
 
             filterPassType: sessionStorage.getItem(vm.filterPassTypeCacheName) ? sessionStorage.getItem(vm.filterPassTypeCacheName) : '',
-            filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
             filterDateStartFrom: sessionStorage.getItem(vm.filterDateStartFromCacheName) ? sessionStorage.getItem(vm.filterDateStartFromCacheName) : '',
             filterDateStartTo: sessionStorage.getItem(vm.filterDateStartToCacheName) ? sessionStorage.getItem(vm.filterDateStartToCacheName) : '',
             filterDateExpiryFrom: sessionStorage.getItem(vm.filterDateExpiryFromCacheName) ? sessionStorage.getItem(vm.filterDateExpiryFromCacheName) : '',
@@ -143,7 +141,6 @@ export default {
 
             // filtering options
             passTypesDistinct: [],
-            processingStatusesDistinct: [],
 
             dateFormat: 'DD/MM/YYYY',
             datepickerOptions:{
@@ -170,10 +167,6 @@ export default {
         filterPassType: function() {
             this.$refs.pricingWindowDatatable.vmDataTable.draw();
             sessionStorage.setItem(this.filterPassTypeCacheName, this.filterPassType);
-        },
-        filterProcessingStatus: function() {
-            this.$refs.pricingWindowDatatable.vmDataTable.draw();
-            sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
         },
         filterDateStartFrom: function() {
             this.$refs.pricingWindowDatatable.vmDataTable.draw();
@@ -205,8 +198,7 @@ export default {
         filterApplied: function(){
             let filter_applied = true
             if(
-                this.filterProcessingStatus.toLowerCase() === '' &&
-                this.filterPassType.toLowerCase() === '' &&
+                this.filterPassType === '' &&
                 this.filterDateStartFrom.toLowerCase() === '' &&
                 this.filterDateStartTo.toLowerCase() === '' &&
                 this.filterDateExpiryFrom.toLowerCase() === '' &&
@@ -229,6 +221,8 @@ export default {
                 'Name',
                 'Start Date',
                 'End Date',
+                'Options',
+                'Status',
                 'Action'
             ]
         },
@@ -288,7 +282,42 @@ export default {
                     } else {
                         return '';
                     }
-
+                }
+            }
+        },
+        columnStatus: function () {
+            return {
+                data: "status",
+                visible: true,
+                orderable: false,
+                searchable: false,
+                name: 'status',
+                'render': function(row, type, full){
+                    return `<span class="badge ${helpers.getStatusBadgeClass(full.status)}">${full.status}</span>`;
+                }
+            }
+        },
+        columnOptions: function(){
+            let vm = this
+            return {
+                data: "options",
+                orderable: false,
+                searchable: false,
+                visible: true,
+                'render': function(row, type, full){
+                    let optionsHtml = '';
+                    console.log(full.options);
+                    if(full.options && full.options.length){
+                        full.options.forEach((option) => {
+                            optionsHtml += `<span class="badge org-badge-primary">${option.name}`;
+                            optionsHtml += `    <span class="badge bg-secondary">$${option.price}`;
+                            optionsHtml += `    </span>`;
+                            optionsHtml += `</span> `;
+                        });
+                        return optionsHtml;
+                    } else {
+                        return 'No options specified. This is bad.';
+                    }
                 }
             }
         },
@@ -302,8 +331,9 @@ export default {
                 'render': function(row, type, full){
                     let links = '';
                     links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
-                    if(full.date_expiry) {
-                        links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="delete">Delete</a>`;
+                    const startDate = new Date(full.date_start);
+                    if(full.date_expiry && startDate > new Date()) {
+                        links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-name="${full.name}" data-action="delete">Delete</a>`;
                     }
                     // Todo don't show delete option if the pricing window has already commenced.
                     return links;
@@ -340,6 +370,8 @@ export default {
                 vm.columnName,
                 vm.columnDateStart,
                 vm.columnDateExpiry,
+                vm.columnOptions,
+                vm.columnStatus,
                 vm.columnAction,
             ]
             search = true
@@ -347,17 +379,7 @@ export default {
             return {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
-                },
-                'createdRow': function (row, data, dataIndex){
-                    //console.log('data = ' + JSON.stringify(data));
-                    $(row).find('a[data-action="delete"]').on('click', function(e){
-                        var id = $(this).data('item-id');
-                        console.log('Delete ' + id);
-                        vm.deletePricingWindow(data);
-                        // Add a call to a vue function here that confirms deletion and then delete the record and
-                        // redraws the datatable... :D
-                    });
+                    processing: constants.DATATABLE_PROCESSING_HTML
                 },
                 responsive: true,
                 serverSide: true,
@@ -369,11 +391,10 @@ export default {
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
                         d.pass_type = vm.filterPassType
-                        d.processing_status = vm.filterProcessingStatus
                         d.start_date_from = vm.filterDateStartFrom
                         d.start_date_to = vm.filterDateStartTo
-                        d.date_expiry_from = vm.filterDateExpiryFrom
-                        d.date_expiry_to = vm.filterDateExpiryTo
+                        d.expiry_date_from = vm.filterDateExpiryFrom
+                        d.expiry_date_to = vm.filterDateExpiryTo
                     }
                 },
                 dom: "<'d-flex align-items-center'<'me-auto'l>fB>" +
@@ -443,30 +464,15 @@ export default {
                 //this.errorMessage = error;
                 console.error("There was an error!", error);
             });
-
-            // Pass Processing Statuses
-            fetch(apiEndpoints.passProcessingStatusesDistinct)
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    return Promise.reject(error);
-                }
-                vm.processingStatusesDistinct = data
-            })
-            .catch(error => {
-                //this.errorMessage = error;
-                console.error("There was an error!", error);
-            });
         },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.pricingWindowDatatable.vmDataTable.on('click', 'a[data-discard-proposal]', function(e) {
+            vm.$refs.pricingWindowDatatable.vmDataTable.on('click', 'a[data-action="delete"]', function(e) {
                 e.preventDefault();
-                let id = $(this).attr('data-discard-proposal');
-                vm.discardProposal(id)
+                let id = $(this).attr('data-item-id');
+                let name = $(this).attr('data-name');
+                vm.deletePricingWindow({'id':id, 'name':name})
             });
-
             // Listener for the row
             vm.$refs.pricingWindowDatatable.vmDataTable.on('click', 'td', function(e) {
                 let td_link = $(this)

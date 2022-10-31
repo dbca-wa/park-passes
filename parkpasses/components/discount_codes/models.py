@@ -22,7 +22,11 @@ logger = logging.getLogger(__name__)
 
 class DiscountCodeBatchManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset()
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related("discount_codes", "valid_pass_types", "valid_users")
+        )
 
 
 class DiscountCodeBatch(models.Model):
@@ -95,8 +99,10 @@ class DiscountCodeBatch(models.Model):
         existing_discount_codes = DiscountCode.objects.filter(
             discount_code_batch=self
         ).count()
-        if 0 == existing_discount_codes:
-            for i in range(self.codes_to_generate):
+        logger.debug("self.codes_to_generate = " + str(self.codes_to_generate))
+        if existing_discount_codes < self.codes_to_generate:
+            difference = self.codes_to_generate - existing_discount_codes
+            for i in range(difference):
                 code_unique = False
                 while not code_unique:
                     code = str(uuid.uuid4())[:8].upper()
@@ -107,6 +113,16 @@ class DiscountCodeBatch(models.Model):
                     discount_code_batch=self,
                     code=code,
                 )
+        elif existing_discount_codes > self.codes_to_generate:
+            difference = existing_discount_codes - self.codes_to_generate
+            existing_discount_codes = DiscountCode.objects.filter(
+                discount_code_batch=self
+            )
+            discount_codes = DiscountCode.objects.filter(
+                discount_code_batch=self
+            ).order_by("?")[:difference]
+            for discount_code in discount_codes:
+                discount_code.delete()
         if not self.discount_code_batch_number:
             discount_code_batch_number = f"DC{self.pk:06d}"
             self.discount_code_batch_number = discount_code_batch_number
@@ -134,7 +150,7 @@ class DiscountCodeBatchValidPassType(models.Model):
     discount_code_batch = models.ForeignKey(
         DiscountCodeBatch,
         related_name="valid_pass_types",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         null=False,
         blank=False,
     )
@@ -161,7 +177,7 @@ class DiscountCodeBatchValidUser(models.Model):
     discount_code_batch = models.ForeignKey(
         DiscountCodeBatch,
         related_name="valid_users",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         null=False,
         blank=False,
     )
@@ -180,7 +196,7 @@ class DiscountCodeBatchValidUser(models.Model):
 
 class DiscountCodeManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related("discount_code_batch")
+        return super().get_queryset().prefetch_related("discount_code_usages")
 
 
 class DiscountCode(models.Model):
@@ -195,7 +211,7 @@ class DiscountCode(models.Model):
     objects = DiscountCodeManager()
 
     discount_code_batch = models.ForeignKey(
-        DiscountCodeBatch, related_name="discount_codes", on_delete=models.PROTECT
+        DiscountCodeBatch, related_name="discount_codes", on_delete=models.CASCADE
     )
     code = models.CharField(max_length=50, unique=True, null=False, blank=False)
 
@@ -309,9 +325,7 @@ class DiscountCodeUsage(models.Model):
     """A class to represent a discount code
 
     Every time a discount code is used a discount code usage record will be created
-    to show which park pass the discount code was used for
-
-    """
+    to show which park pass the discount code was used for"""
 
     discount_code = models.ForeignKey(
         DiscountCode,
@@ -324,7 +338,6 @@ class DiscountCodeUsage(models.Model):
         Pass,
         on_delete=models.PROTECT,
         related_name="discount_code_usage",
-        primary_key=True,
         null=False,
         blank=False,
     )

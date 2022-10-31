@@ -11,14 +11,14 @@
                 {{ successMessage }}
             </div>
         </div>
-        <CollapsibleFilters component_title="Filters" ref="collapsible_filters" @created="collapsibleComponentMounted"
+        <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted"
             class="mb-2">
             <div class="row mb-3">
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="">Status</label>
                         <select class="form-control" v-model="filterStatus">
-                            <option value="all" selected="selected">All</option>
+                            <option value="" selected="selected">All</option>
                             <option v-for="status in statuses" :value="status">{{ status }}</option>
                         </select>
                     </div>
@@ -28,7 +28,7 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="filterDatetimeStartFrom">Start Date From</label>
-                        <div class="input-group date" ref="voucherDatetimeToEmailFrom">
+                        <div class="input-group date" ref="filterDatetimeStartFrom">
                             <input type="date" name="filterDatetimeStartFrom" class="form-control"
                                 placeholder="DD/MM/YYYY" v-model="filterDatetimeStartFrom">
                         </div>
@@ -37,7 +37,7 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="filterDatetimeStartTo">Start Date To</label>
-                        <div class="input-group date" ref="voucherDatetimeToEmailTo">
+                        <div class="input-group date" ref="filterDatetimeStartTo">
                             <input type="date" name="filterDatetimeStartTo" class="form-control"
                                 placeholder="DD/MM/YYYY" v-model="filterDatetimeStartTo">
                         </div>
@@ -77,7 +77,7 @@
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import DiscountCodeBatchFormModal from '@/components/internal/modals/DiscountCodeBatchFormModal.vue'
 
@@ -97,27 +97,43 @@ export default {
             required: false,
             default: 'filterDiscountCodeBatchStatus',
         },
+        filterDatetimeStartFromCacheName: {
+            type: String,
+            required: false,
+            default: 'filterDatetimeStartFrom',
+        },
+        filterDatetimeStartToCacheName: {
+            type: String,
+            required: false,
+            default: 'filterDatetimeStartTo',
+        },
+        filterDatetimeExpiryFromCacheName: {
+            type: String,
+            required: false,
+            default: 'filterDatetimeExpiryFrom',
+        },
+        filterDatetimeExpiryToCacheName: {
+            type: String,
+            required: false,
+            default: 'filterDatetimeExpiryTo',
+        },
     },
     data() {
         let vm = this;
         return {
             datatableId: 'discount-code-batch-datatable-' + uuid(),
 
-            filterStatus: sessionStorage.getItem(vm.filterStatusCacheName) ? sessionStorage.getItem(vm.filterStatusCacheName) : 'all',
-            filterDatetimeStartFrom: '',
-            filterDatetimeStartTo: '',
-            filterDatetimeExpiryFrom: '',
-            filterDatetimeExpiryTo: '',
+            filterStatus: sessionStorage.getItem(vm.filterStatusCacheName) ? sessionStorage.getItem(vm.filterStatusCacheName) : '',
+            filterDatetimeStartFrom: sessionStorage.getItem(vm.filterDatetimeStartFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeStartFromCacheName) : '',
+            filterDatetimeStartTo: sessionStorage.getItem(vm.filterDatetimeStartToCacheName) ? sessionStorage.getItem(vm.filterDatetimeStartToCacheName) : '',
+            filterDatetimeExpiryFrom: sessionStorage.getItem(vm.filterDatetimeExpiryFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeExpiryFromCacheName) : '',
+            filterDatetimeExpiryTo: sessionStorage.getItem(vm.filterDatetimeExpiryToCacheName) ? sessionStorage.getItem(vm.filterDatetimeExpiryToCacheName) : '',
 
             selectedDiscountCodeBatch: null,
             discountCodeBatchModal: null,
 
             successMessage: null,
             errorMessage: null,
-
-            // filtering options
-            passTypesDistinct: [],
-            passProcessingStatusesDistinct: [],
 
             dateFormat: 'DD/MM/YYYY',
 
@@ -151,6 +167,27 @@ export default {
             this.$refs.discountCodeBatchDatatable.vmDataTable.draw();
             sessionStorage.setItem(this.filterStatusCacheName, this.filterStatus);
         },
+        filterDatetimeStartFrom: function() {
+            this.$refs.discountCodeBatchDatatable.vmDataTable.draw();
+            sessionStorage.setItem(this.filterDatetimeStartFromCacheName, this.filterDatetimeStartFrom);
+        },
+        filterDatetimeStartTo: function() {
+            this.$refs.discountCodeBatchDatatable.vmDataTable.draw();
+            sessionStorage.setItem(this.filterDatetimeStartToCacheName, this.filterDatetimeStartTo);
+        },
+        filterDatetimeExpiryFrom: function() {
+            this.$refs.discountCodeBatchDatatable.vmDataTable.draw();
+            sessionStorage.setItem(this.filterDatetimeExpiryFromCacheName, this.filterDatetimeExpiryFrom);
+        },
+        filterDatetimeExpiryTo: function() {
+            this.$refs.discountCodeBatchDatatable.vmDataTable.draw();
+            sessionStorage.setItem(this.filterDatetimeExpiryToCacheName, this.filterDatetimeExpiryTo);
+        },
+        filterApplied: function() {
+            if (this.$refs.CollapsibleFilters){
+                this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
+            }
+        }
     },
     computed: {
         numberOfColumns: function () {
@@ -158,18 +195,20 @@ export default {
             return num
         },
         filterApplied: function () {
-            let filter_applied = true
+            let filterApplied = true
             if (
-                this.filterStatus.toLowerCase() === 'all' &&
+                this.filterStatus === '' &&
                 this.filterDatetimeStartFrom.toLowerCase() === '' &&
                 this.filterDatetimeStartTo.toLowerCase() === '' &&
                 this.filterDatetimeExpiryFrom.toLowerCase() === '' &&
                 this.filterDatetimeExpiryTo.toLowerCase() === ''
 
             ) {
-                filter_applied = false;
+                filterApplied = false;
             }
-            return filter_applied;
+            console.log('filter status = ' + this.filterStatus);
+            console.log('filter applied = ' + filterApplied);
+            return filterApplied;
         },
         debug: function () {
             if (this.$route.query.debug) {
@@ -208,7 +247,7 @@ export default {
                 }
             }
         },
-        column_discount_code_batch_number: function () {
+        columnDiscountCodeBatchNumber: function () {
             return {
                 data: "discount_code_batch_number",
                 visible: true,
@@ -216,7 +255,7 @@ export default {
                 orderable: true,
             }
         },
-        column_datetime_created: function () {
+        columnDatetimeCreated: function () {
             return {
                 data: "datetime_created",
                 visible: true,
@@ -303,8 +342,10 @@ export default {
                 visible: true,
                 orderable: false,
                 searchable: false,
-                name: 'status'
-
+                name: 'status',
+                'render': function(row, type, full){
+                    return `<span class="badge ${helpers.getStatusBadgeClass(full.status)}">${full.status}</span>`;
+                }
             }
         },
         columnAction: function () {
@@ -318,8 +359,12 @@ export default {
                     let links = '';
                     let today = new Date();
                     let expiryDate = new Date(full.datetime_expiry);
+                    let editLink = vm.$router.resolve({
+                        name: 'internal-discount-code-batch-form',
+                        params: { discountCodeBatchId: full.id }
+                    });
                     if (today < expiryDate) {
-                        links += `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a> | `;
+                        links += `<a href="${editLink.href}">Edit</a> | `;
                         links += `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="invalidate" data-discount-code-batch-number="${full.discount_code_batch_number}">Invalidate</a>`;
                     }
                     return links;
@@ -341,7 +386,7 @@ export default {
                     } else if (1 < full.discount_codes.length) {
                         return `<a data-id="${full.id}" data-action="view-discount-codes" href="${apiEndpoints.discountCodesXlsx(full.id)}">View ${full.discount_codes.length} Discount Codes</a>`;
                     } else {
-                        return '<span class="badge badge-danger">Error no codes were created</span>';
+                        return '<span class="badge bg-danger">Error no codes were created</span>';
                     }
                     return discountCodes;
                 }
@@ -415,8 +460,8 @@ export default {
 
             columns = [
                 vm.columnId,
-                vm.column_discount_code_batch_number,
-                vm.column_datetime_created,
+                vm.columnDiscountCodeBatchNumber,
+                vm.columnDatetimeCreated,
                 vm.column_datetime_start,
                 vm.column_datetime_expiry,
                 vm.column_discount_amount,
@@ -434,11 +479,11 @@ export default {
             return {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
+                    processing: constants.DATATABLE_PROCESSING_HTML
                 },
-                rowCallback: function (row, pass) {
+                rowCallback: function (row, discountCodeBatch) {
                     let row_jq = $(row)
-                    row_jq.attr('id', 'pass_id_' + pass.id)
+                    row_jq.attr('id', 'discountCodeBatchId' + discountCodeBatch.id)
                     //row_jq.children().first().addClass(vm.td_expand_class_name)
                 },
                 responsive: true,
@@ -450,10 +495,11 @@ export default {
 
                     // adding extra GET params for Custom filtering
                     "data": function (d) {
-                        //d.option__pricing_window__datetime_to_email__name = vm.filterStatus
-                        d.processing_status = vm.filterPassProcessingStatus
-                        //d.filter_lodged_from = vm.filterDatetimeStartFrom
-                        //d.filter_lodged_to = vm.filterDatetimeStartTo
+                        d.status = vm.filterStatus
+                        d.datetime_start_from = vm.filterDatetimeStartFrom
+                        d.datetime_start_to = vm.filterDatetimeStartTo
+                        d.datetime_expiry_from = vm.filterDatetimeExpiryFrom
+                        d.datetime_expiry_to = vm.filterDatetimeExpiryTo
                     }
                 },
                 dom: "<'d-flex align-items-center'<'me-auto'l>fB>" +
@@ -476,7 +522,7 @@ export default {
             this.$refs.discountCodeBatchDatatable.vmDataTable.responsive.recalc();
         },
         collapsibleComponentMounted: function () {
-            this.$refs.collapsible_filters.showWarningIcon(this.filterApplied)
+            this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
         },
         saveSuccess: function ({ message, discountCodeBatch }) {
             window.scrollTo(0, 0);

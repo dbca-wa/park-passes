@@ -1,13 +1,19 @@
 {% load users %}
 {% load utils %}
 
-{% is_internal as is_internal_login %}
-{% is_retailer as is_retailer %}
 {% is_authenticated as is_authenticated %}
 
+{% is_internal as is_internal %}
+
+{% is_parkpasses_officer as is_parkpasses_officer %}
+{% is_parkpasses_payments_officer as is_parkpasses_payments_officer %}
+{% is_parkpasses_read_only_user as is_parkpasses_read_only_user %}
 {% is_parkpasses_admin as is_parkpasses_admin_user %}
+
+{% is_retailer as is_retailer %}
+{% is_retailer_admin as is_retailer_admin %}
+
 {% can_show_tests as show_tests %}
-{% system_maintenance_due as system_maintenance_due %}
 {% system_name_short as short_name %}
 {% dept_name as department_name %}
 {% system_name as system_name %}
@@ -16,16 +22,27 @@
 
 {% build_tag as build_tag %}
 
-<ul class="nav navbar-expand-lg navbar-light">
-    {% if is_internal_login %}
+<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    {% if is_internal %}
+
+    <!-- Show these two links to all users including is_parkpasses_read_only_user  -->
     <li class="nav-item"><a class="nav-link" href="/internal">Park Passes</a></li>
-    <li class="nav-item"><a class="nav-link" href="/internal/pricing-windows">Pricing Windows</a></li>
     <li class="nav-item"><a class="nav-link" href="/internal/vouchers">Vouchers</a></li>
+
+    {% if is_parkpasses_officer or is_parkpasses_payments_officer %}
+    <li class="nav-item"><a class="nav-link" href="/internal/pricing-windows">Pricing Windows</a></li>
     <li class="nav-item"><a class="nav-link" href="/internal/discount-codes">Discount Codes</a></li>
-    <li class="nav-item"><a class="nav-link" href="/internal/reports">Invoices &amp; Monthly Reports</a></li>
+    <li class="nav-item"><a class="nav-link" href="/internal/retailer-group-users">Retail Users</a></li>
+    <li class="nav-item"><a class="nav-link" href="/internal/reports">Retailer Reports &amp; Invoices</a></li>
+    {% endif %}
+
     {% elif is_retailer %}
-    <li class="nav-item"><a class="nav-link" href="/retailer/parkpasses">Park Passes</a></li>
-    <li class="nav-item"><a class="nav-link" href="/internal/reports">Invoices &amp; Monthly Reports</a></li>
+    <li class="nav-item"><a class="nav-link" href="/retailer/sell-a-pass">Sell a Pass</a></li>
+    <li class="nav-item"><a class="nav-link" href="/retailer/">Park Passes</a></li>
+    <li class="nav-item"><a class="nav-link" href="/retailer/reports">Invoices &amp; Monthly Reports</a></li>
+    {% if is_retailer_admin %}
+    <li class="nav-item"><a class="nav-link" href="/retailer/users">Invite Users</a></li>
+    {% endif %}
     {% elif is_authenticated %}
     <li class="nav-item"><a class="nav-link" href="/your-park-passes">Your Park Passes</a></li>
     <!-- <li class="nav-item"><a class="nav-link" href="/your-vouchers">Your Vouchers</a></li> -->

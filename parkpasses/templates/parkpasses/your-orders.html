@@ -1,19 +1,5 @@
-{% extends 'parkpasses/base.html' %}
+{% extends 'parkpasses/vue-base.html' %}
 
-{% load static %}
-
-{% block left_menu_items %}
-    <li><a  href="{% url 'ds_contact' %}">Contact Us</a></li>
-    <li><a  href="{% url 'ds_further_info' %}">Further Information</a></li>
-{% endblock %}
-
-{% block messages %}
-{% endblock %}
-
-{% block content %}
-    <div class="container-fluid" id="vue-root">
-        {% block vue-component %}
-        <div id="app"></div>
-        {% endblock %}
-    </div>
+{% block title %}
+    Your Orders - Park Passes - Department of Biodiversity, Conservation and Attractions
 {% endblock %}

@@ -1,41 +1,54 @@
 import logging
 
-from rest_framework import viewsets
-from rest_framework.response import Response
+from org_model_documents.api import DocumentCreateView, DocumentViewSet
 
-from parkpasses.components.main.models import MapLayer, Question, RequiredDocument
-from parkpasses.components.main.serializers import (
-    MapLayerSerializer,
-    QuestionSerializer,
-    RequiredDocumentSerializer,
+from org_model_logs.api import (
+    CreateCommunicationsLogEntry as BaseCreateCommunicationsLogEntry,
 )
-from parkpasses.helpers import is_customer, is_internal
+from org_model_logs.api import EntryTypeList as BaseEntryTypeList
+from org_model_logs.api import UserActionList as BaseUserActionList
+from org_model_logs.api import UserActionViewSet as BaseUserActionViewSet
+from org_model_logs.serializers import EntryTypeSerializer
+from parkpasses.components.main.serializers import (
+    CommunicationsLogEntrySerializer,
+    UserActionSerializer,
+)
+from parkpasses.permissions import IsInternal, IsInternalAPIView
 
-logger = logging.getLogger("payment_checkout")
-
-
-class RequiredDocumentViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = RequiredDocument.objects.all()
-    serializer_class = RequiredDocumentSerializer
-
-
-class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
+logger = logging.getLogger(__name__)
 
 
-class MapLayerViewSet(viewsets.ModelViewSet):
-    queryset = MapLayer.objects.none()
-    serializer_class = MapLayerSerializer
+""" The following classes are overridden here because the permission classes belong to park passes app
+so can't be included in the org_model_documents or org_model_logs apps as it would break their independence"""
 
-    def get_queryset(self):
-        if is_internal(self.request):
-            return MapLayer.objects.filter(option_for_internal=True)
-        elif is_customer(self.request):
-            return MapLayer.objects.filter(option_for_external=True)
-        return MapLayer.objects.none()
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+class DocumentCreateView(DocumentCreateView):
+    permission_classes = [IsInternalAPIView]
+
+
+class DocumentViewSet(DocumentViewSet):
+    permission_classes = [IsInternal]
+
+
+class EntryTypeList(BaseEntryTypeList):
+    serializer_class = EntryTypeSerializer
+    permission_classes = [IsInternalAPIView]
+
+
+class UserActionList(BaseUserActionList):
+    serializer_class = UserActionSerializer
+    permission_classes = [IsInternalAPIView]
+
+
+class UserActionViewSet(BaseUserActionViewSet):
+    permission_classes = [IsInternal]
+
+
+class CreateCommunicationsLogEntry(BaseCreateCommunicationsLogEntry):
+    permission_classes = [IsInternalAPIView]
+
+    def get_serializer_class(self):
+        logger.debug("self.request.method = " + str(self.request.method))
+        if "GET" == self.request.method:
+            return CommunicationsLogEntrySerializer
+        return super().get_serializer_class()

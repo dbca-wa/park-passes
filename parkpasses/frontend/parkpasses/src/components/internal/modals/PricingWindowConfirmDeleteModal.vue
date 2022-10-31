@@ -10,17 +10,14 @@
                     <div class="m-3">
                         Are you sure you want to delete the following pricing window?
                     </div>
-                    <table v-if="pricingWindow" class="table table-striped">
+                    <table v-if="pricingWindow" class="table table-sm">
                         <tbody>
-                            <tr><th>Pass Type</th><td>{{pricingWindow.pass_type_display_name}}</td></tr>
                             <tr><th>Name</th><td>{{pricingWindow.name}}</td></tr>
-                            <tr><th>Date Start</th><td>{{pricingWindow.date_start}}</td></tr>
-                            <tr><th>Date End</th><td>{{pricingWindow.date_expiry}}</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Exit</button>
                     <button @click="deletePricingWindow(pricingWindow.id)" type="button" class="btn btn-danger">Confirm</button>
                 </div>
             </div>
@@ -29,7 +26,7 @@
 </template>
 
 <script>
-import { apiEndpoints, helpers } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 
 export default {
     name: 'pricingWindowConfirmDeleteModal',
@@ -57,7 +54,7 @@ export default {
                     pricingWindowConfirmDeleteModalModal.hide();
                 })
                 .catch(error => {
-                    this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
                     console.error("There was an error!", error);
                 });
             return false;

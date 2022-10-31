@@ -10,12 +10,32 @@
 
         <div class="home-options">
 
-          <div @click="redirectToSSoLogin()" class="card login-card mb-5">
+          <div v-if="store.userData && store.userData.is_authenticated" @click="redirectToSSOLogout()" class="card login-card mb-5">
             <div class="row g-0">
-              <div class="col-md-3 offset-md-1">
+              <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
+                <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Logout"></i>
+              </div>
+              <div class="col-12 col-sm-12 col-md-12 col-lg-7">
+                <div class="card-body">
+                  <h5 class="card-title">Log Out</h5>
+                  <p class="card-text">
+                      <ul>
+                        <li><a href="/your-park-passes">View and download your current park pass</a></li>
+                        <li><a href="/your-park-passes">Update the vehicle details for your pass</a></li>
+                        <li><a href="/ledger-ui/accounts">Update your account details</a></li>
+                      </ul>
+                    </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else @click="redirectToSSOLogin()" class="card login-card mb-5">
+            <div class="row g-0">
+              <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
                 <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Login"></i>
               </div>
-              <div class="col-md-8">
+              <div class="col-12 col-sm-12 col-md-12 col-lg-7">
                 <div class="card-body">
                   <h5 class="card-title">Log In</h5>
 
@@ -23,7 +43,7 @@
                       <ul>
                         <li>View and download your current park pass</li>
                         <li>Update the vehicle details for your pass</li>
-                        <li>Update your other details</li>
+                        <li>Update your account details</li>
                       </ul>
                     </p>
                 </div>
@@ -33,10 +53,10 @@
 
           <div @click="redirectToFAQ()" class="card faq-card mb-4">
             <div class="row g-0">
-              <div class="col-md-3 offset-md-1">
+              <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
                 <i class="fa-solid fa-circle-info org-icon-primary fa-10x" title="Frequently Asked Questions"></i>
               </div>
-              <div class="col-md-8">
+              <div class="col-12 col-sm-12 col-md-12 col-lg-7">
                 <div class="card-body">
                   <h5 class="card-title">FAQ</h5>
                   <p class="card-text">Click here for answers to common questions.</p>
@@ -47,10 +67,10 @@
 
           <div @click="redirectToHelp()" class="card help-card mb-4">
             <div class="row g-0">
-              <div class="col-md-3 offset-md-1">
+              <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
                 <i class="fa-solid fa-circle-question org-icon-primary fa-10x" title="Help"></i>
               </div>
-              <div class="col-md-8">
+              <div class="col-12 col-sm-12 col-md-12 col-lg-6">
                 <div class="card-body">
                   <h5 class="card-title">Help</h5>
                   <p class="card-text">Click here for help if you want to update your vehicle details or if you did not receive your park pass.</p>
@@ -64,11 +84,13 @@
 </template>
 
 <script>
+import { useStore } from '@/stores/state'
+
 export default {
     name: "HomeContent",
     data: function () {
         return {
-
+            store: useStore(),
         };
     },
     methods: {
@@ -78,8 +100,11 @@ export default {
         redirectToHelp: function() {
             window.location.href = '/help/';
         },
-        redirectToSSoLogin: function() {
+        redirectToSSOLogin: function() {
             window.location.href = '/ssologin';
+        },
+        redirectToSSOLogout: function() {
+            window.location.href = '/logout/?next=/';
         }
     },
 };
@@ -94,9 +119,10 @@ export default {
 .card {
   opacity: 1;
   border:0;
+  cursor:pointer;
 }
 
-.card:hover {
+.card i:hover {
   cursor: pointer;
   opacity: 0.8;
 }

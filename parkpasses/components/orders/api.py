@@ -1,6 +1,9 @@
 import logging
 
+import requests
+from django.http import FileResponse, Http404
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 
@@ -34,6 +37,16 @@ class ExternalOrderViewSet(
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user.id)
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
+    def retrieve_invoice(self, request, *args, **kwargs):
+        order = self.get_object()
+        invoice_url = order.invoice_link
+        if invoice_url:
+            response = requests.get(invoice_url)
+            return FileResponse(response, content_type="application/pdf")
+
+        raise Http404
 
 
 class OrderViewSet(viewsets.ModelViewSet):

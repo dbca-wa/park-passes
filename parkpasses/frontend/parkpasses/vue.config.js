@@ -27,7 +27,8 @@ module.exports = {
             devMiddleware: {
                 //index: true,
                 writeToDisk: true,
-            }
+            },
+            hot:true,
         },
         module: {
             rules: [

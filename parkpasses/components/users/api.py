@@ -1,6 +1,6 @@
 import logging
 
-from django.db.models import Value
+from django.db.models import CharField, Value
 from django.db.models.functions import Concat
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import viewsets
@@ -76,7 +76,16 @@ class UserViewSet(viewsets.ModelViewSet):
         customers = (
             self.get_queryset()
             .filter(is_staff=False)
-            .annotate(search_term=Concat("first_name", Value(" "), "last_name"))
+            .annotate(
+                search_term=Concat(
+                    "first_name",
+                    Value(" "),
+                    "last_name",
+                    Value(" "),
+                    "email",
+                    output_field=CharField(),
+                )
+            )
         )
         customers = customers.filter(search_term__icontains=search_term).values(
             "id", "email", "first_name", "last_name"

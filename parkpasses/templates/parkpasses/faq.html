@@ -1,31 +1,5 @@
-{% extends 'parkpasses/base.html' %}
-{% load static %}
-{% load users %}
+{% extends 'parkpasses/vue-base.html' %}
 
-{% block extra_css %}
-{% endblock %}
-
-{% block extra_js %}
-    {{super}}
-{% endblock %}
-
-{% block requirements %}
-{% endblock %}
-
-{% block content %}
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <h1>
-                    FAQ
-                </h1>
-                <p class="m-4">
-                    FAQ documentation for the user will be here.
-                </p>
-                <p class="m-4">
-                    Do we want the general help content to be dynamic?
-                </p>
-            </div>
-        </div>
-    </div>
+{% block title %}
+    FAQ - Park Passes - Department of Biodiversity, Conservation and Attractions
 {% endblock %}

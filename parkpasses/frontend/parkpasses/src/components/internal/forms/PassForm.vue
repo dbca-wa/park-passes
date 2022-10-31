@@ -2,59 +2,91 @@
     <div v-if="pass" class="container" id="internalPass">
         <div class="row px-4">
             <div class="col-sm-12 mb-4">
-                <strong>{{ pass.pass_number }} - {{ pass.pass_type }} </strong>
+                <strong>{{ pass.pass_number }} - {{ pass.pass_type }}</strong>
             </div>
         </div>
         <div class="row px-4">
             <div class="col-sm-12">
                 <div class="row">
                     <div class="col-md-3">
-                        <CommsLog commsUrl="" logsUrl="" commAddUrl="" />
+                        <CommsLog
+                            :commsUrl="listCommsUrl"
+                            :logsUrl="listUserActionsLogUrl"
+                            :commAddUrl="createCommUrl"
+                            :appLabel="appLabel"
+                            :model="model"
+                            :customerId="pass.user"
+                            :objectId="pass.id" />
+                        <StatusPanel :status="pass.processing_status_display_name" :badge="true" :badgeClass="badgeClass" class="pt-3" />
                     </div>
                     <div class="col-md-1">
 
                     </div>
                     <div class="col-md-8">
-                        <SectionToggle :label="'Park Pass - ' + pass.pass_type">
-                            <form>
-                            <div class="row mb-1">
-                                <label class="col-sm-4 col-form-label">Pass Holder</label>
-                                <div class="col-sm-6">
-                                    <span class="form-text">{{ pass.first_name + ' ' + pass.last_name  }}</span>
+                        <SectionToggle :label="pass.pass_number + ' - ' + pass.pass_type">
+                            <form @submit.prevent="validateForm" class="needs-validation" novalidate>
+                            <div v-if="isPassCancelled" class="row">
+                                <div class="col">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                        </symbol>
+                                    </svg>
+                                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                                        <div>
+                                            This pass has been cancelled and can't be modified.
+                                        </div>
+                                    </div>
                                 </div>
-                                <div v-if="pass.park_pass_pdf" class="col">
-                                    <a :href="pass.park_pass_pdf" target="blank">ParkPass.pdf</a>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Pass PDF</label>
+                                <div v-if="pdfUrl" class="col-sm-6">
+                                    <a :href="pdfUrl" target="blank">{{ pass.park_pass_pdf }}</a>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">First Name</label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" name="firstName" type="text" v-model="pass.first_name" :disabled="fieldDisabled">
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Last Name</label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" name="lastName" type="text" v-model="pass.last_name" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Email Address</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text"><a target="blank" :href="'mailto:' + pass.email">{{ pass.email  }}</a></span>
+                                    <input class="form-control" name="email" type="text" v-model="pass.email" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Mobile Number</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">{Would need to come from ledger api}</span>
+                                    <input class="form-control" name="mobile" type="text" v-model="pass.mobile" :disabled="fieldDisabled">
                                 </div>
                             </div>
-                            <div class="row mb-1">
+                            <div v-if="pass.postcode" class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Postcode</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">{Would need to come from ledger api}</span>
+                                    <span class="form-text">{{ pass.postcode }}</span>
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Duration</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">14 Days</span>
+                                    <span class="form-text">{{ pass.duration }}</span>
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start">
+                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start" :disabled="fieldDisabled">
                                     </span>
                                 </div>
                             </div>
@@ -62,23 +94,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">End Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="date" v-model="pass.date_end">
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="row mb-1">
-                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration <span v-if="pass.vehicle_registration_2">1</span></label>
-                                <div class="col-sm-8">
-                                    <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1">
-                                    </span>
-                                </div>
-                            </div>
-                            <div v-if="pass.vehicle_registration_2" class="row mb-1">
-                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
-                                <div class="col-sm-8">
-                                    <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2">
+                                        <input class="form-control" name="endDate" type="date" v-model="pass.date_expiry" disabled>
                                     </span>
                                 </div>
                             </div>
@@ -86,10 +102,27 @@
                                 <label for="preventFurtherVehicleUpdates" class="col-sm-4 col-form-label">Prevent Further Vehicle Updates</label>
                                 <div class="col-sm-8">
                                     <div class="form-switch">
-                                        <input class="form-check-input org-form-switch-primary" type="checkbox" id="preventFurtherVehicleUpdates" v-model="pass.prevent_further_vehicle_updates">
+                                        <input class="form-check-input org-form-switch-primary" type="checkbox" id="preventFurtherVehicleUpdates" v-model="pass.prevent_further_vehicle_updates" :disabled="fieldDisabled">
                                     </div>
                                 </div>
                             </div>
+                            <div v-if="!pass.prevent_further_vehicle_updates" class="row mb-1">
+                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration <span v-if="pass.vehicle_registration_2">1</span></label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="fieldDisabled">
+                                    </span>
+                                </div>
+                            </div>
+                            <div v-if="showSecondVehicleRego" class="row mb-1">
+                                <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="fieldDisabled">
+                                    </span>
+                                </div>
+                            </div>
+
                             </form>
                         </SectionToggle>
                         <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher and Discount">
@@ -153,18 +186,37 @@
         </div>
 
     </div>
-    <div v-else>
-        <loader isLoading="true" />
+    <footer v-if="pass" class="fixed-bottom mt-auto py-3 bg-light">
+        <div class="container d-flex justify-content-end">
+            <template v-if="!loading">
+                <button @click="returnToPassesDash" class="btn licensing-btn-primary me-2">Exit</button>
+                <button v-if="!fieldDisabled" @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
+                <button v-if="!fieldDisabled" @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
+            </template>
+            <template v-else>
+                <button class="btn licensing-btn-primary px-4 ms-2">
+                    <div class="spinner-border spinner-border-sm text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </button>
+            </template>
+        </div>
+    </footer>
+    <div v-if="!pass">
+        <BootstrapSpinner isLoading="true" />
     </div>
 </template>
 
 <script>
 import { useRoute } from 'vue-router'
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
+
+import Swal from 'sweetalert2'
 
 import SectionToggle from '@/components/forms/SectionToggle.vue'
 import CommsLog from '@/components/common/CommsLog.vue'
+import StatusPanel from '@/components/common/StatusPanel.vue'
 
 export default {
     name: "PassForm",
@@ -175,22 +227,67 @@ export default {
         return {
             passId: null,
             pass: null,
+            listUserActionsLogUrl: null,
+            listCommsUrl: null,
+            createCommUrl: apiEndpoints.createCommunicationsLogEntry,
+            pdfUrl: null,
+            appLabel: constants.PARKPASSES_APP_LABEL,
+            model: constants.PARKPASSES_MODELS_PASS,
+            loading: false,
         }
     },
     computed: {
         showDiscountsPanel: function() {
             return this.pass.concession_type || this.pass.voucher_number || this.pass.discount_code_used;
-        }
+        },
+        isHolidayPass: function () {
+            return constants.HOLIDAY_PASS_NAME==this.pass.pass_type_name ? true : false;
+        },
+        isPassCancelled: function () {
+            return constants.PASS_PROCESSING_STATUS_CANCELLED==this.pass.processing_status;
+        },
+        hasPassExpired: function () {
+            return constants.PASS_STATUS_EXPIRED==this.pass.processing_status_display_name;
+        },
+        fieldDisabled: function () {
+            return this.isPassCancelled || this.hasPassExpired || !this.pass.user_can_edit;
+        },
+        showSecondVehicleRego: function () {
+            if(this.isHolidayPass){
+                return false;
+            }
+            if(this.pass.prevent_further_vehicle_updates){
+                return false;
+            }
+            return true;
+        },
+        formattedMobile: function () {
+            if(!this.pass){
+                return '';
+            }
+            console.log('this.pass.mobile.length = ' + this.pass.mobile.length)
+            if(10!=this.pass.mobile.length){
+                return this.pass.mobile;
+            }
+            return this.pass.mobile.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
+        },
+        badgeClass: function () {
+            return helpers.getStatusBadgeClass(this.pass.processing_status_display_name);
+        },
     },
     components: {
         SectionToggle,
         CommsLog,
-        Loader
+        BootstrapSpinner,
+        StatusPanel,
     },
     methods: {
+        returnToPassesDash: function() {
+            this.$router.push({name: 'internal-dash'});
+        },
         fetchPass: function (passId) {
             let vm = this;
-            fetch(apiEndpoints.internalPass(passId))
+            fetch(apiEndpoints.retrievePassInternal(passId))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -199,20 +296,103 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.pass = data
-                vm.pass.date_start = helpers.getDateFromDatetime(vm.pass.datetime_start);
-                vm.pass.date_end = helpers.getDateFromDatetime(vm.pass.datetime_expiry);
+                //vm.pass.date_start = helpers.getDateFromDatetime(vm.pass.date_start);
+                //vm.pass.date_expiry = helpers.getDateFromDatetime(vm.pass.date_expiry);
                 console.log(vm.pass);
                 console.log('date_start = ' + vm.pass.date_start);
+                console.log('pass.user = ' + vm.pass.user)
+
+                vm.listUserActionsLogUrl = apiEndpoints.listUserActionsLog(
+                    constants.PARKPASSES_APP_LABEL,
+                    constants.PARKPASSES_MODELS_PASS,
+                    vm.pass.id
+                )
+                vm.listCommsUrl = apiEndpoints.listCommunicationsLogEntries(
+                    constants.PARKPASSES_APP_LABEL,
+                    constants.PARKPASSES_MODELS_PASS,
+                    vm.pass.id
+                )
+                vm.pdfUrl = apiEndpoints.internalParkPassPdf(vm.pass.id)
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },
+        submitForm: function (exitAfter) {
+            let vm = this;
+            vm.loading = true;
+            vm.pass.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
+            console.log(vm.pass);
+            // vm.pass.date_start  = new Date(vm.pass.date_start).toLocaleString();
+            // vm.pass.date_expiry  = new Date(vm.pass.date_expiry).toLocaleString();
+            const requestOptions = {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(vm.pass)
+            };
+            fetch(apiEndpoints.updatePassInternal(vm.pass.id), requestOptions)
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        const error = (data && data.message) || response.statusText;
+                        this.errors = data;
+                        return Promise.reject(error);
+                    }
+
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Park Pass updated successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    })
+                    if(exitAfter) {
+                        vm.$router.push({name: 'internal-dash'});
+                    }
+                    vm.pass.date_expiry = data.date_expiry
+                    var forms = document.querySelectorAll('.needs-validation');
+                    Array.prototype.slice.call(forms).forEach(function (form) {
+                        form.classList.remove('was-validated');
+                    });
+                    vm.pass.why = '';
+                    $('#reasonFiles').val('');
+                    vm.loading = false;
+                })
+                .catch(error => {
+                    this.systemErrorMessage = constants.ERRORS.NETWORK;
+                    console.error("There was an error!", error);
+                });
+            return false;
+        },
+        validateForm: function (exitAfter) {
+            let vm = this;
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    if (form.checkValidity()) {
+                        vm.submitForm(exitAfter);
+                    } else {
+                        form.classList.add('was-validated');
+                        $(".invalid-feedback:visible:first").siblings('input').focus();
+                    }
+                });
+            return false;
+        }
     },
     created: function() {
         const route = useRoute()
-        this.fetchPass(route.params['passId'] );
+        this.fetchPass(route.params['passId']);
+    },
+    mounted: function () {
+        const route = useRoute()
+        if(route.params['uuid']){
+            Swal.fire({
+                title: 'Success',
+                text: 'Park Pass Cancelled and Refunded Successfully',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            })
+        }
     }
 }
 </script>

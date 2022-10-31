@@ -1,0 +1,24 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            Dear PICA User,
+{% endblock %}
+
+{%  block content %}
+            The following Gold Star Passes were purchased yesterday:
+
+            {% for pass in passes %}
+            Pass Number: {{pass.pass_number}}
+            First Name: {{pass.first_name}}
+            Last Name: {{pass.last_name}}
+            Address Line 1: {{pass.address_line_1}}
+            Address Line 2: {{pass.address_line_2}}
+            Suburb: {{pass.suburb}}
+            Postcode: {{pass.postcode}}
+            State: {{pass.state}}
+            Mobile: {{pass.mobile}}
+            Start Date of Pass: {{pass.date_start|date:'d-m-Y'}}
+
+            {% endfor %}
+
+{%  endblock %}

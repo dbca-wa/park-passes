@@ -62,7 +62,7 @@
 <script>
 import Datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints } from '@/utils/hooks'
+import { apiEndpoints, constants } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 
 
@@ -246,11 +246,11 @@ export default {
         },
         columnDatetimeStart: function(){
             return {
-                data: "datetime_start",
+                data: "date_start",
                 visible: true,
-                name: 'datetime_start',
+                name: 'date_start',
                 'render': function(row, type, full){
-                    const date = new Date(full.datetime_start);
+                    const date = new Date(full.date_start);
                     return date.toLocaleDateString();
                 }
             }
@@ -368,7 +368,7 @@ export default {
             return {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
+                    processing: constants.DATATABLE_PROCESSING_HTML
                 },
                 rowCallback: function (row, pass){
                     let row_jq = $(row)

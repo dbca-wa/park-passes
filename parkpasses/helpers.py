@@ -1,80 +1,123 @@
+import hashlib
 import logging
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
+from django.utils.text import slugify
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.managed_models import SystemGroup, SystemGroupPermission
+from ledger_api_client.managed_models import SystemGroupPermission
 
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
-from parkpasses.settings import GROUP_NAME_PARK_PASSES_RETAILER
 
 logger = logging.getLogger(__name__)
 
 
 def belongs_to(request, group_name):
-    """
-    Check if the user belongs to the given group.
-    :param user:
-    :param group_name:
-    :return:
-    """
     if not request.user.is_authenticated:
         return False
+    if request.user.is_superuser:
+        return True
 
     user = request.user
-
-    belongs_to_value = cache.get(
-        "User-belongs_to" + str(user.id) + "group_name:" + group_name
-    )
-    # belongs_to_value = None
-    if belongs_to_value:
-        print(
-            "From Cache - User-belongs_to" + str(user.id) + "group_name:" + group_name
-        )
+    cache_key = settings.CACHE_KEY_BELONGS_TO.format(str(user.id), slugify(group_name))
+    belongs_to_value = cache.get(cache_key)
     if belongs_to_value is None:
-        sg = SystemGroup.objects.filter(name=group_name)
-        if sg.count() > 0:
-            sgp = SystemGroupPermission.objects.filter(
-                system_group=sg[0], emailuser=user
-            )
-            if sgp.count() > 0:
-                belongs_to_value = True
-            # belongs_to_value = SystemGroup.object.filter(name=group_name).exists()
-        cache.set(
-            "User-belongs_to" + str(user.id) + "group_name:" + group_name,
-            belongs_to_value,
-            3600,
-        )
+        belongs_to_value = SystemGroupPermission.objects.filter(
+            system_group__name=group_name, emailuser=user, active=True
+        ).exists()
+        cache.set(cache_key, belongs_to_value, settings.CACHE_TIMEOUT_2_HOURS)
     return belongs_to_value
 
 
+def is_internal(request):
+    if not request.user.is_authenticated:
+        return False
+    if request.user.is_superuser:
+        return True
+
+    user = request.user
+    cache_key = settings.CACHE_KEY_IS_INTERNAL.format(str(user.id))
+    is_internal = cache.get(cache_key)
+    if is_internal is None:
+        is_internal = (
+            is_parkpasses_admin(request)
+            or is_parkpasses_officer(request)
+            or is_parkpasses_payments_officer(request)
+            or is_parkpasses_read_only_user(request)
+            or is_parkpasses_discount_code_percentage_user(request)
+        )
+        cache.set(cache_key, is_internal, settings.CACHE_TIMEOUT_2_HOURS)
+    logger.debug(f"{cache_key}:{is_internal}", extra={"className": ""})
+    return is_internal
+
+
 def is_parkpasses_admin(request):
-    # logger.info('settings.ADMIN_GROUP: {}'.format(settings.ADMIN_GROUP))
-    return request.user.is_authenticated and (
-        request.user.is_superuser or belongs_to(request, settings.ADMIN_GROUP)
-    )
+    return belongs_to(request, settings.ADMIN_GROUP)
+
+
+def is_parkpasses_officer(request):
+    return belongs_to(request, settings.OFFICER_GROUP)
+
+
+def is_parkpasses_payments_officer(request):
+    return belongs_to(request, settings.PAYMENTS_OFFICER_GROUP)
+
+
+def is_parkpasses_read_only_user(request):
+    return belongs_to(request, settings.READ_ONLY_GROUP)
+
+
+def is_parkpasses_discount_code_percentage_user(request):
+    return belongs_to(request, settings.DISCOUNT_CODE_PERCENTAGE_GROUP)
 
 
 def is_retailer(request):
     if not request.user.is_authenticated:
         return False
 
-    user = request.user
-    try:
-        system_group = SystemGroup.objects.get(name=GROUP_NAME_PARK_PASSES_RETAILER)
-        in_retailer_group = RetailerGroupUser.objects.filter(emailuser=user).count()
-        if user.id not in system_group.get_system_group_member_ids():
-            return False
-        if in_retailer_group:
-            return True
+    cache_key = settings.CACHE_KEY_RETAILER.format(str(request.user.id))
+    is_retailer = cache.get(cache_key)
+    if is_retailer is None:
+        is_retailer = RetailerGroupUser.objects.filter(
+            active=True, retailer_group__active=True, emailuser_id=request.user.id
+        ).exists()
+        cache.set(cache_key, is_retailer, settings.CACHE_TIMEOUT_2_HOURS)
+    logger.debug(f"{cache_key}:{is_retailer}", extra={"className": ""})
+    return is_retailer
 
-    except ObjectDoesNotExist:
-        logger.critical(
-            f"The group {GROUP_NAME_PARK_PASSES_RETAILER} named in setting\
-                 GROUP_NAME_PARK_PASSES_RETAILER does not exist."
-        )
+
+def is_retailer_admin(request):
+    if not is_retailer(request):
         return False
+    if request.user.is_superuser:
+        return True
+
+    cache_key = settings.CACHE_KEY_RETAILER_ADMIN.format(str(request.user.id))
+    is_retailer_admin = cache.get(cache_key)
+    if is_retailer_admin is None:
+        is_retailer_admin = RetailerGroupUser.objects.filter(
+            active=True,
+            retailer_group__active=True,
+            is_admin=True,
+            emailuser_id=request.user.id,
+        ).exists()
+        cache.set(cache_key, is_retailer_admin, settings.CACHE_TIMEOUT_2_HOURS)
+    logger.debug(f"{cache_key}:{is_retailer_admin}", extra={"className": ""})
+    return is_retailer_admin
+
+
+def get_retailer_group_ids_for_user(request):
+    cache_key = settings.CACHE_KEY_RETAILER_GROUP_IDS.format(str(request.user.id))
+    retailer_group_ids = cache.get(cache_key)
+    if retailer_group_ids is None:
+        retailer_group_ids = list(
+            RetailerGroupUser.objects.filter(emailuser=request.user)
+            .values_list("retailer_group__id", flat=True)
+            .order_by("id")
+        )
+        cache.set(cache_key, retailer_group_ids, settings.CACHE_TIMEOUT_2_HOURS)
+    logger.debug(f"{cache_key}:{retailer_group_ids}", extra={"className": ""})
+    return retailer_group_ids
 
 
 def get_retailer_groups_for_user(request):
@@ -83,13 +126,22 @@ def get_retailer_groups_for_user(request):
     if not is_retailer(request):
         return False
 
-    retailer_group_ids = list(
-        RetailerGroupUser.objects.filter(email_user=request.user)
-        .values_list("retailer_group__id", flat=True)
-        .order_by("id")
-    )
+    retailer_group_ids = get_retailer_group_ids_for_user(request)
 
     return RetailerGroup.objects.filter(id__in=retailer_group_ids)
+
+
+def get_rac_discount_code(email):
+    discount_hash = hashlib.shake_256(
+        (settings.RAC_HASH_SALT + email).encode("utf-8")
+    ).hexdigest(10)
+    return discount_hash
+
+
+def check_rac_discount_hash(discount_hash, email):
+    return discount_hash == hashlib.shake_256(
+        (settings.RAC_HASH_SALT + email).encode("utf-8")
+    ).hexdigest(10)
 
 
 def in_dbca_domain(request):
@@ -112,10 +164,6 @@ def is_customer(request):
 
 def is_authenticated(request):
     return request.user.is_authenticated
-
-
-def is_internal(request):
-    return is_departmentUser(request)
 
 
 def get_all_officers():

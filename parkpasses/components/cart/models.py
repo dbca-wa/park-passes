@@ -12,10 +12,11 @@ from django.db import models
 from django.utils import timezone
 
 from parkpasses.components.cart.utils import CartUtils
-from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeUsage
+from parkpasses.components.concessions.models import ConcessionUsage
+from parkpasses.components.discount_codes.models import DiscountCodeUsage
 from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.models import Pass
-from parkpasses.components.users.models import UserInformation
+from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.ledger_api_utils import retrieve_email_user
 
@@ -33,6 +34,14 @@ class Cart(models.Model):
     user = models.IntegerField(null=True, blank=True)  # EmailUserRO
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
     uuid = models.CharField(max_length=36, blank=True, null=True)
+    is_no_payment = models.BooleanField(blank=True, default=False)
+    retailer_group = models.ForeignKey(
+        RetailerGroup,
+        related_name="%(class)s_retailer_group",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
     datetime_first_added_to = models.DateTimeField(null=True, blank=True)
     datetime_last_added_to = models.DateTimeField(null=True, blank=True)
 
@@ -48,7 +57,7 @@ class Cart(models.Model):
         if cart_id and Cart.objects.filter(id=cart_id).exists():
             cart = Cart.objects.get(id=cart_id)
             # There is an edge case here where a user has a cart in db but is browsing the site
-            # annonymously and adds one or more items to their cart. When they log in we need to move
+            # anonymously and adds one or more items to their cart. When they log in we need to move
             # the items from their anonymous cart to their already existing cart...
             if Cart.objects.filter(user=request.user.id).exclude(id=cart.id).exists():
                 anon_cart = copy(cart)
@@ -61,6 +70,10 @@ class Cart(models.Model):
                 if anon_cart.items.all().exists():
                     anon_cart.items.all().update(cart=cart)
                     anon_cart.delete()
+            else:
+                if not cart.user:
+                    cart.user = request.user.id
+                    cart.save()
         else:
             if Cart.objects.filter(user=request.user.id).exists():
                 cart = (
@@ -68,8 +81,6 @@ class Cart(models.Model):
                     .order_by("user", "-datetime_created")
                     .first()
                 )
-            elif cart_id and Cart.objects.filter(id=cart_id).exists():
-                cart = Cart.objects.get(id=cart_id)
             else:
                 cart = Cart.objects.create()
         request.session["cart_item_count"] = CartItem.objects.filter(cart=cart).count()
@@ -90,7 +101,7 @@ class Cart(models.Model):
         park_pass_ids = list(CartItem.passes.filter(cart=self))
         park_passes = Pass.objects.filter(id__in=park_pass_ids)
         for park_pass in park_passes:
-            park_pass.purchaser = user_id
+            park_pass.user = user_id
             park_pass.save()
 
     @property
@@ -99,36 +110,61 @@ class Cart(models.Model):
 
     @property
     def grand_total(self):
-        grand_total = 0.00
+        grand_total = Decimal(0.00)
         for item in self.items.all():
-            grand_total += float(item.get_total_price())
-        return grand_total
+            grand_total += Decimal(item.get_total_price())
+        return grand_total.quantize(Decimal("0.01"))
 
     def create_order(
-        self, save_order_to_db_and_delete_cart=False, uuid=None, invoice_reference=None
+        self,
+        save_order_to_db_and_delete_cart=False,
+        invoice_reference=None,
     ):
         """This method can create an order and order items from a cart (and cart items)
         By default it doesn't add this order to the database. This is so we can use the
         order to submit to leger and wait until that order is confirmed before we add
         the order to the park passes database.
         """
-        logger.debug("create_order running")
-        logger.debug(
-            "save_order_to_db_and_delete_cart = "
-            + str(save_order_to_db_and_delete_cart)
+        logger.info(f"Creating order from cart {self}")
+        logger.info(
+            f"Saving order to database = {str(save_order_to_db_and_delete_cart)}"
         )
-        order = Order(user=self.user)
+        if Order.objects.filter(uuid=self.uuid).exists():
+            logger.info(f"Order with uuid {self.uuid} already exists.")
+            order = Order.objects.get(uuid=self.uuid)
+            logger.info(f"Order {str(order)} selected.")
+            order.user = self.user
+        else:
+            logger.info(f"Order with uuid {self.uuid} doesn't exist.")
+            order = Order(user=self.user)
+            logger.info(f"Order {str(order)} created.")
+
         order_items = []
         if save_order_to_db_and_delete_cart:
-            order.uuid = uuid
+            if not self.uuid or not invoice_reference:
+                raise ValueError(
+                    "If save_order_to_db_and_delete_cart is True then \
+                    the cart must have a uuid and an invoice_reference must be passed in."
+                )
+            logger.info("Populating Order")
+            order.uuid = self.uuid
             order.invoice_reference = invoice_reference
+            order.is_no_payment = self.is_no_payment
+            if self.retailer_group:
+                order.retailer_group = self.retailer_group
             order.save()
+            logger.info("Transferring cart items to order items.")
         for cart_item in self.items.all():
+            logger.info(
+                f"Creating new order item with data from cart item {cart_item}."
+            )
             order_item = OrderItem()
             order_item.object_id = cart_item.object_id
             order_item.content_type_id = cart_item.content_type_id
             order_item.order = order
+            order_item.oracle_code = cart_item.oracle_code
             if cart_item.is_voucher_purchase():
+                logger.info("Cart item is a voucher purchase.")
                 voucher = Voucher.objects.get(pk=cart_item.object_id)
                 order_item.description = CartUtils.get_voucher_purchase_description(
                     voucher.voucher_number
@@ -139,6 +175,8 @@ class Cart(models.Model):
                     voucher.in_cart = False
                     voucher.save()
                     order_item.save()
+                    logger.info(f"Order item {order_item} saved to database.")
+
             else:
                 park_pass = Pass.objects.get(pk=cart_item.object_id)
                 order_item.description = CartUtils.get_pass_purchase_description(
@@ -151,26 +189,33 @@ class Cart(models.Model):
                     park_pass.save()
                     order_item.save()
 
-                if UserInformation.objects.filter(user=self.user).exists():
-                    user_information = UserInformation.objects.get(user=self.user)
-                    if user_information.concession:
-                        concession_discount = (
-                            cart_item.get_concession_discount_as_amount()
+                if cart_item.concession_usage:
+                    # A conession discount is being applied to this pass purchase
+                    concession = cart_item.concession_usage.concession
+                    concession_discount = concession.discount_as_amount(
+                        park_pass.option.price
+                    )
+                    if concession_discount > Decimal(0.00):
+                        order_item = OrderItem()
+                        order_item.order = order
+                        order_item.description = CartUtils.get_concession_description(
+                            concession.concession_type
                         )
-                        if concession_discount > 0.00:
-                            order_item = OrderItem()
-                            order_item.order = order
-                            order_item.description = (
-                                CartUtils.get_concession_discount_description(
-                                    user_information
-                                )
+                        # The ledger checkout doesn't round a negative balance to zero so in order to avoid
+                        # processing a refund we have to make sure the discount is no more than the total pass price
+                        if concession_discount >= park_pass.price:
+                            order_item.amount = -abs(
+                                park_pass.price.quantize(Decimal("0.01"))
                             )
-                            order_item.amount = -abs(concession_discount)
-                            order_items.append(order_item)
-                            if save_order_to_db_and_delete_cart:
-                                order_item.save()
+                        else:
+                            order_item.amount = -abs(
+                                concession_discount.quantize(Decimal("0.01"))
+                            )
+                        order_items.append(order_item)
+                        if save_order_to_db_and_delete_cart:
+                            order_item.save()
 
-                if cart_item.discount_code:
+                if cart_item.discount_code_usage:
                     # A discount code is being applied to this pass purchase
                     discount_code_discount = (
                         cart_item.get_discount_code_discount_as_amount()
@@ -180,7 +225,7 @@ class Cart(models.Model):
                         order_item.order = order
                         order_item.description = (
                             CartUtils.get_discount_code_description(
-                                cart_item.discount_code.code
+                                cart_item.discount_code_usage.discount_code.code
                             )
                         )
                         # The ledger checkout doesn't round a negative balance to zero so in order to avoid
@@ -197,22 +242,22 @@ class Cart(models.Model):
                         if save_order_to_db_and_delete_cart:
                             order_item.save()
 
-                if cart_item.voucher:
+                if cart_item.voucher_transaction:
                     # A voucher is being used for this pass purchase
-                    voucher_discount = cart_item.get_voucher_discount_as_amount()
-                    if 0.00 < voucher_discount:
-                        order_item = OrderItem()
-                        order_item.order = order
-                        order_item.description = CartUtils.get_voucher_code_description(
-                            cart_item.voucher.code
-                        )
-                        order_item.amount = -abs(
-                            voucher_discount.quantize(Decimal("0.01"))
-                        )
-                        order_item.amount = -abs(voucher_discount)
-                        order_items.append(order_item)
-                        if save_order_to_db_and_delete_cart:
-                            order_item.save()
+                    voucher_transaction_balance = (
+                        cart_item.voucher_transaction.balance()
+                    )
+                    order_item = OrderItem()
+                    order_item.order = order
+                    order_item.description = CartUtils.get_voucher_code_description(
+                        cart_item.voucher_transaction.voucher.code
+                    )
+                    order_item.amount = voucher_transaction_balance.quantize(
+                        Decimal("0.01")
+                    )
+                    order_items.append(order_item)
+                    if save_order_to_db_and_delete_cart:
+                        order_item.save()
 
         if save_order_to_db_and_delete_cart:
             self.delete()
@@ -268,17 +313,28 @@ class CartItem(models.Model):
     content_type = models.ForeignKey(
         ContentType, on_delete=models.CASCADE
     )  # Voucher or Pass
-    voucher = models.ForeignKey(
-        Voucher, on_delete=models.PROTECT, null=True, blank=True
+    concession_usage = models.ForeignKey(
+        ConcessionUsage, on_delete=models.PROTECT, null=True, blank=True
     )
-    discount_code = models.ForeignKey(
-        DiscountCode, on_delete=models.PROTECT, null=True, blank=True
+    discount_code_usage = models.ForeignKey(
+        DiscountCodeUsage, on_delete=models.PROTECT, null=True, blank=True
     )
+    voucher_transaction = models.ForeignKey(
+        VoucherTransaction, on_delete=models.PROTECT, null=True, blank=True
+    )
+    oracle_code = models.CharField(
+        max_length=50,
+        null=False,
+        blank=False,
+        default=settings.PARKPASSES_DEFAULT_ORACLE_CODE,
+    )
+    datetime_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         app_label = "parkpasses"
         unique_together = (("content_type", "object_id"),)
         indexes = (models.Index(fields=["content_type", "object_id"]),)
+        ordering = ["datetime_created", "object_id"]
 
     def __str__(self):
         return f"Content Type: {self.content_type} | Object ID: {self.object_id} Total Price: {self.get_total_price()}"
@@ -308,17 +364,21 @@ class CartItem(models.Model):
     def is_pass_purchase(self):
         return "parkpasses | pass" == str(self.content_type)
 
-    def delete_attached_object(self):
+    def delete(self, *args, **kwargs):
         if self.is_voucher_purchase():
             Voucher.objects.filter(id=self.object_id).delete()
         elif self.is_pass_purchase():
-            if Pass.objects.filter(id=self.object_id).exists():
+            if Pass.objects.filter(id=self.object_id, in_cart=True).exists():
                 park_pass = Pass.objects.get(id=self.object_id)
+                self.concession_usage = None
+                self.discount_code_usage = None
+                self.voucher_transaction = None
+                self.save()
+                ConcessionUsage.objects.filter(park_pass=park_pass).delete()
                 DiscountCodeUsage.objects.filter(park_pass=park_pass).delete()
                 VoucherTransaction.objects.filter(park_pass=park_pass).delete()
                 park_pass.delete()
-
-            Pass.objects.filter(id=self.object_id).delete()
+        return super().delete(*args, **kwargs)
 
     def get_price_before_discounts(self):
         """Does not take concession, discount code and voucher into consideration"""
@@ -329,49 +389,55 @@ class CartItem(models.Model):
         elif "parkpasses | pass" == model_type:
             return Pass.objects.get(pk=self.object_id).option.price
 
+    def get_concession_price(self):
+        model_type = str(self.content_type)
+        if "parkpasses | voucher" == model_type:
+            return Voucher.objects.get(pk=self.object_id).amount
+        elif "parkpasses | pass" == model_type:
+            park_pass = Pass.objects.get(pk=self.object_id)
+            return park_pass.price_after_concession_applied
+
     def get_total_price(self):
         """Takes concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
         logger.debug("model_type = " + str(model_type))
+        logger.debug("object_id = " + str(self.object_id))
         if "parkpasses | voucher" == model_type:
             return Voucher.objects.get(pk=self.object_id).amount
         elif "parkpasses | pass" == model_type:
-            return float(self.get_total_price_pass())
+            if Pass.objects.filter(pk=self.object_id).exists():
+                park_pass = Pass.objects.get(pk=self.object_id)
+                return Decimal(park_pass.price_after_all_discounts)
+            return Decimal(0.00)
 
+    # TODO: DRY These should not be in this file. Move them to their respetive objects
+    # then use this as convenience methods that just call those methods on the other objects
     def get_concession_discount_as_amount(self):
-        park_pass = Pass.objects.get(pk=self.object_id)
-        total_price = park_pass.option.price
-        if UserInformation.objects.filter(user=self.cart.user).count():
-            user_information = UserInformation.objects.get(user=self.cart.user)
-            concession = user_information.concession
-            if concession:
-                concession_percentage = concession.discount_percentage
-                concession_discount = total_price * (concession_percentage / 100)
-                return concession_discount
-            return 0.00
-        else:
-            logger.error(
-                f"ERROR: The user with id {self.user.id} that is assigned to cart {self.id} does not exist."
-            )
-        return 0.00
+        if not self.concession_usage:
+            return Decimal(0.00)
+        concession = self.concession_usage.concession
+        total_price = self.get_price_before_discounts()
+        return Decimal(total_price * (concession.discount_percentage / 100))
 
     def get_discount_code_discount_as_amount(self):
-        if not self.discount_code:
-            return 0.00
+        if not self.discount_code_usage:
+            return Decimal(0.00)
         price_before_discounts = self.get_price_before_discounts()
-        discount_code_batch = self.discount_code.discount_code_batch
+        discount_code_batch = self.discount_code_usage.discount_code.discount_code_batch
         if discount_code_batch.discount_amount:
-            return self.discount_code.discount_code_batch.discount_amount
+            return (
+                self.discount_code_usage.discount_code.discount_code_batch.discount_amount
+            )
         else:
             return price_before_discounts * (
                 discount_code_batch.discount_percentage / 100
             )
 
     def get_voucher_discount_as_amount(self):
-        if not self.voucher:
-            return 0.00
-        if 0.00 >= self.voucher.amount:
-            return 0.00
+        if not self.voucher_transaction.voucher:
+            return Decimal(0.00)
+        if Decimal(0.00) >= self.voucher_transaction.voucher.amount:
+            return Decimal(0.00)
         price_before_discounts = self.get_price_before_discounts()
         concession_discount_amount = self.get_concession_discount_as_amount()
         discount_code_discount_amount = self.get_discount_code_discount_as_amount()
@@ -380,42 +446,7 @@ class CartItem(models.Model):
             - concession_discount_amount
             - discount_code_discount_amount
         )
-        if self.voucher.amount >= remaining_price:
+        if self.voucher_transaction.voucher.amount >= remaining_price:
             return remaining_price
         else:
-            return self.voucher.amount
-
-    def get_total_price_pass(self):
-        park_pass = Pass.objects.get(pk=self.object_id)
-        total_price = park_pass.option.price
-        if UserInformation.objects.filter(user=self.cart.user).count():
-            user_information = UserInformation.objects.get(user=self.cart.user)
-            concession = user_information.concession
-            if concession:
-                concession_percentage = concession.discount_percentage
-                concession_discount = total_price * (concession_percentage / 100)
-                total_price += concession_discount
-
-        if self.discount_code:
-            logger.debug("self.discount_code = " + str(self.discount_code))
-            discount_code_batch = self.discount_code.discount_code_batch
-            if discount_code_batch.discount_percentage:
-                discount_code_discount = total_price * (
-                    discount_code_batch.discount_percentage / 100
-                )
-            else:
-                discount_code_discount = (
-                    total_price - discount_code_batch.discount_amount
-                )
-
-                if total_price - discount_code_discount < 0.00:
-                    return 0.00
-            total_price -= discount_code_discount
-
-        if self.voucher:
-            if self.voucher.amount >= total_price:
-                return 0.00
-            else:
-                total_price -= self.voucher.amount
-
-        return total_price
+            return self.voucher_transaction.voucher.amount

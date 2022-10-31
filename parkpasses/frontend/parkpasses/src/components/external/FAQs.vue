@@ -1,5 +1,5 @@
 <template>
-    <div class="container" id="shopHome">
+    <div class="container" id="faqs">
         <div class="row">
             <div class="col">
                 <h1>FAQs</h1>
@@ -39,7 +39,7 @@
 
                 </div>
                 <div v-else>
-                    <loader isLoading="true" />
+                    <BootstrapSpinner isLoading="true" />
                 </div>
             </div>
         </div>
@@ -48,8 +48,8 @@
 </template>
 
 <script>
-import { apiEndpoints } from '@/utils/hooks'
-import Loader from '@/utils/vue/Loader.vue'
+import { apiEndpoints, constants } from '@/utils/hooks'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 
 export default {
     name: "FAQs",
@@ -59,7 +59,7 @@ export default {
         };
     },
     components: {
-        Loader
+        BootstrapSpinner
     },
     methods: {
         fetchFAQs: function () {
@@ -75,7 +75,7 @@ export default {
                 vm.faqs = data.results
             })
             .catch(error => {
-                this.systemErrorMessage = "ERROR: Please try again in an hour.";
+                this.systemErrorMessage = constants.ERRORS.NETWORK;
                 console.error("There was an error!", error);
             });
         },

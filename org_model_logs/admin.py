@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from org_model_logs.models import CommunicationsLogEntry, UserAction
+from org_model_logs.models import CommunicationsLogEntry, EntryType, UserAction
+
+
+class EntryTypeAdmin(admin.ModelAdmin):
+    model = EntryType
+
+
+admin.site.register(EntryType, EntryTypeAdmin)
 
 
 class UserActionAdmin(admin.ModelAdmin):
@@ -35,6 +42,9 @@ class CommunicationsLogEntryAdmin(admin.ModelAdmin):
     list_display = (
         "object_id",
         "content_type",
+        "to",
+        "fromm",
+        "entry_type",
     )
     ordering = ["-created"]
 

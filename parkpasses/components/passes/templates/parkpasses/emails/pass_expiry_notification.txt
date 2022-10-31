@@ -1,0 +1,11 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            Dear {{pass.first_name}} {{pass.last_name}},
+{% endblock %}
+
+{%  block content %}
+            Your current {{pass.pass_type_display_name}} is due to expire on {{pass.date_expiry}}.
+
+            If you want to renew your park pass, log in to your account at {{site_url}}{% url 'your-park-passes' %} and renew your park pass.
+{%  endblock %}

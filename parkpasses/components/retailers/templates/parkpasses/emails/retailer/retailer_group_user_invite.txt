@@ -1,0 +1,21 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            To whom it may concern,
+{% endblock %}
+
+{%  block content %}
+            You have been invited to join the following {{ SYSTEM_NAME }} retailer group:
+
+            {{retailer_group_user_invite.retailer_group.name}}
+
+            Which will allow you to log in and take retail sales.
+
+            To accept the invitiation please go to the following url in your web browser:
+
+            {{SITE_URL}}{% url 'respond-to-invite' uuid=retailer_group_user_invite.uuid %}
+
+            When you click the link, you will be prompted to log in or create a new user account.
+
+            IMPORTANT: You MUST create your {{ SYSTEM_NAME }} account using the email address we sent this email to.
+{%  endblock %}

@@ -19,6 +19,16 @@
             ],
             "type": "node"
         }, {
+            "name": "Django MGMT Command",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "pass_send_gold_pass_details_to_pica"
+            ],
+            "django": true,
+            "justMyCode": true
+        }, {
             "name": "Python: Django",
             "type": "python",
             "request": "launch",

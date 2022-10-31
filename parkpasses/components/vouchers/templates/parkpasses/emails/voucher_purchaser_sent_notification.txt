@@ -1,0 +1,13 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            Dear {{purchaser.first_name}} {{purchaser.last_name}},
+{% endblock %}
+
+{%  block content %}
+            The Park Pass voucher you purchased for {{voucher.recipient_name}} has been emailed to {{voucher.recipient_email}}.
+
+            Voucher Value: ${{voucher.amount}}
+            Voucher Code: {{voucher.code}}
+            Expiry Date: {{voucher.expiry|date:"d-m-Y"}}
+{%  endblock %}

@@ -7,13 +7,13 @@ from django.shortcuts import redirect, render
 from django.views.generic.base import TemplateView
 
 from parkpasses.forms import LoginForm
-from parkpasses.helpers import is_internal, is_retailer
+from parkpasses.helpers import is_internal, is_retailer, is_retailer_admin
 
 logger = logging.getLogger("payment_checkout")
 
 
 class InternalView(UserPassesTestMixin, TemplateView):
-    template_name = "parkpasses/dash/index.html"
+    template_name = "parkpasses/internal/index.html"
 
     def test_func(self):
         return is_internal(self.request)
@@ -28,10 +28,25 @@ class InternalView(UserPassesTestMixin, TemplateView):
 
 
 class RetailerView(UserPassesTestMixin, TemplateView):
-    template_name = "parkpasses/dash/index.html"
+    template_name = "parkpasses/retailer/index.html"
 
     def test_func(self):
         return is_retailer(self.request)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["dev"] = settings.DEV_STATIC
+        context["dev_url"] = settings.DEV_STATIC_URL
+        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
+            context["app_build_url"] = settings.DEV_APP_BUILD_URL
+        return context
+
+
+class RetailerAdminView(UserPassesTestMixin, TemplateView):
+    template_name = "parkpasses/retailer/index.html"
+
+    def test_func(self):
+        return is_retailer_admin(self.request)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -62,7 +77,7 @@ class ParkPassesRoutingView(TemplateView):
             if is_internal(self.request):
                 return redirect("internal")
             if is_retailer(self.request):
-                return redirect("retailer")
+                return redirect("retailer-home")
         kwargs["form"] = LoginForm
         return super().get(*args, **kwargs)
 
@@ -77,10 +92,6 @@ class ParkPassesPurchasePassView(TemplateView):
 
 class ParkPassesContactView(TemplateView):
     template_name = "parkpasses/contact.html"
-
-
-class ParkPassesFAQView(TemplateView):
-    template_name = "parkpasses/index.html"
 
 
 class ParkPassesFurtherInformationView(TemplateView):

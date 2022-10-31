@@ -9,9 +9,16 @@ from parkpasses import views
 from parkpasses.admin import admin
 from parkpasses.components.cart.api import LedgerCheckoutView
 from parkpasses.components.cart.views import CartView, CheckoutSuccessView
-from parkpasses.components.help.views import ParkPassesHelpView
+from parkpasses.components.help.views import ParkPassesFAQView, ParkPassesHelpView
+from parkpasses.components.main.api import (
+    CreateCommunicationsLogEntry,
+    DocumentCreateView,
+    EntryTypeList,
+    UserActionList,
+)
 from parkpasses.components.orders.views import ExternalOrdersView
 from parkpasses.components.passes.views import ExternalPassView
+from parkpasses.components.retailers.views import RespondToRetailUserInviteView
 from parkpasses.components.vouchers.views import ExternalVouchersView
 
 # API patterns
@@ -36,12 +43,12 @@ urlpatterns = [
         views.ParkPassesPurchasePassView.as_view(),
         name="purchase-pass",
     ),
-    url(r"^contact/", views.ParkPassesContactView.as_view(), name="ds_contact"),
-    url(r"^faq/", views.ParkPassesFAQView.as_view(), name="faq"),
+    url(r"^contact/", views.ParkPassesContactView.as_view(), name="contact"),
+    url(r"^faq/", ParkPassesFAQView.as_view(), name="faq"),
     url(
         r"^further_info/",
         views.ParkPassesFurtherInformationView.as_view(),
-        name="ds_further_info",
+        name="further_information",
     ),
     # ========================================================================== External Authenticated
     url(r"^cart/", CartView.as_view(), name="cart"),
@@ -57,15 +64,111 @@ urlpatterns = [
     url(r"^account/$", views.ExternalView.as_view(), name="manage-account"),
     url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
     # ========================================================================== Internal
-    url(r"^internal/", views.InternalView.as_view(), name="internal"),
-    url(r"^internal/vouchers/", views.InternalView.as_view(), name="internal-vouchers"),
+    url(
+        r"^internal/$",
+        views.InternalView.as_view(extra_context={"title": "Internal Home"}),
+        name="internal",
+    ),
+    url(
+        r"^internal/passes/refund-success/(?P<id>.+)/(?P<uuid>.+)$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal Pass Refund Success"}
+        ),
+        name="internal-refund-success",
+    ),
+    url(
+        r"^internal/passes/(?P<id>.+)$",
+        views.InternalView.as_view(extra_context={"title": "Internal View/Edit Pass"}),
+        name="internal-pass-detail",
+    ),
+    url(
+        r"^internal/pricing-windows$",
+        views.InternalView.as_view(extra_context={"title": "Internal Pricing Windows"}),
+        name="internal-pricing-windows",
+    ),
+    url(
+        r"^internal/vouchers$",
+        views.InternalView.as_view(extra_context={"title": "Internal Vouchers"}),
+        name="internal-vouchers",
+    ),
     url(
         r"^internal/discount-codes/",
-        views.InternalView.as_view(),
+        views.InternalView.as_view(extra_context={"title": "Internal Discount Codes"}),
         name="internal-discount-codes",
     ),
+    url(
+        r"^internal/discount-code-batch-form/(?P<id>.+)$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal View/Edit Discount Code Batch"}
+        ),
+        name="internal-discount-code-batch-detail",
+    ),
+    url(
+        r"^internal/retailer-group-users$",
+        views.InternalView.as_view(extra_context={"title": "Internal Retail Users"}),
+        name="internal-retailer-group-users",
+    ),
+    url(
+        r"^internal/invite-a-retail-user$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal Invite a Retail User"}
+        ),
+        name="internal-invite-retail-user",
+    ),
+    url(
+        r"^internal/reports$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal Reports and Invoices"}
+        ),
+        name="internal-reports",
+    ),
     # ========================================================================== Retailer
-    url(r"^retailer/", views.RetailerView.as_view(), name="retailer"),
+    url(
+        r"^retailer/$",
+        views.RetailerView.as_view(extra_context={"title": "Retailer Home"}),
+        name="retailer-home",
+    ),
+    url(
+        r"^retailer/passes/(?P<id>.+)/created-successfully$",
+        views.RetailerView.as_view(
+            extra_context={"title": "Retailer Pass Created Successfully"}
+        ),
+        name="retailer-pass-created-successfully",
+    ),
+    url(
+        r"^retailer/passes/(?P<id>.+)$",
+        views.RetailerView.as_view(extra_context={"title": "Retailer View/Edit Pass"}),
+        name="retailer-pass-detail",
+    ),
+    url(
+        r"^retailer/sell-a-pass$",
+        views.RetailerView.as_view(extra_context={"title": "Retailer Sell a Pass"}),
+        name="retailer-sell-a-pass",
+    ),
+    url(
+        r"^retailer/users$",
+        views.RetailerAdminView.as_view(extra_context={"title": "Retailer Users"}),
+        name="retailer-users",
+    ),
+    url(
+        r"^retailer/reports$",
+        views.RetailerView.as_view(
+            extra_context={"title": "Retailer Invoices and Monthly Reports"}
+        ),
+        name="retailer-reports",
+    ),
+    url(
+        r"^retailer/invite-a-user$",
+        views.RetailerView.as_view(extra_context={"title": "Invite a User"}),
+        name="retailer-invite-a-user",
+    ),
+    url(
+        r"^retailer/respond-to-invite/(?P<uuid>.+)/$",
+        RespondToRetailUserInviteView.as_view(
+            extra_context={"title": "Retailer Respond to Invite"}
+        ),
+        name="respond-to-invite",
+    ),
     # ========================================================================== Component API end-points
     url(r"api/passes/", include("parkpasses.components.passes.urls")),
     url(r"api/parks/", include("parkpasses.components.parks.urls")),
@@ -76,6 +179,30 @@ urlpatterns = [
     url(r"api/help/", include("parkpasses.components.help.urls")),
     url(r"api/orders/", include("parkpasses.components.orders.urls")),
     url(r"api/users/", include("parkpasses.components.users.urls")),
+    url(r"api/retailers/", include("parkpasses.components.retailers.urls")),
+    url(r"api/reports/", include("parkpasses.components.reports.urls")),
+    # ========================================================================== Org Model Documents end-points
+    url(
+        r"api/org-model-documents/upload-documents",
+        DocumentCreateView.as_view(),
+        name="upload-documents",
+    ),
+    # ========================================================================== Org Model Logs
+    url(
+        r"api/org-model-logs/user-actions",
+        UserActionList.as_view(),
+        name="user-actions",
+    ),
+    url(
+        r"api/org-model-logs/entry-types",
+        EntryTypeList.as_view(),
+        name="entry-types",
+    ),
+    url(
+        r"api/org-model-logs/communications-log-entries",
+        CreateCommunicationsLogEntry.as_view(),
+        name="create-communications-log-entry",
+    ),
     # ========================================================================== Management Commands
     url(
         r"^mgt-commands/$", views.ManagementCommandsView.as_view(), name="mgt-commands"

@@ -73,7 +73,7 @@ class DiscountCodeBatchTestCase(TestCase):
             DiscountCode.objects.filter(discount_code_batch=self.discount_code_batch3)
         )
         discount_code = discount_codes[0]
-        self.assertEqual(discount_code.remaining_uses, "Unlimited")
+        self.assertEqual(discount_code.remaining_uses, 999999999)
 
     def test_discount_code_usage(self):
         pass

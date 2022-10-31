@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 
 class PassCancellationInline(admin.TabularInline):
     model = PassCancellation
+    fields = [
+        "cancellation_reason",
+        "datetime_cancelled",
+    ]
+    readonly_fields = ["datetime_cancelled"]
 
 
 class PassAdmin(admin.ModelAdmin):
@@ -25,19 +30,27 @@ class PassAdmin(admin.ModelAdmin):
     fields = [
         "user",
         "in_cart",
+        "purchase_email_sent",
         "processing_status",
         "sold_via",
         "first_name",
         "last_name",
         "email",
+        "company",
+        "address_line_1",
+        "address_line_2",
+        "suburb",
+        "state",
+        "mobile",
+        "rac_member_number",
         "option",
         "park_group",
         "postcode",
         "vehicle_registration_1",
         "vehicle_registration_2",
         "prevent_further_vehicle_updates",
-        "datetime_start",
-        "datetime_expiry",
+        "date_start",
+        "date_expiry",
         "renew_automatically",
         "datetime_created",
         "datetime_updated",
@@ -53,7 +66,7 @@ class PassAdmin(admin.ModelAdmin):
         "full_name",
         "vehicle_registration_1",
         "vehicle_registration_2",
-        "datetime_start",
+        "date_start",
     )
     autocomplete_fields = ("sold_via",)
     readonly_fields = [
@@ -61,7 +74,7 @@ class PassAdmin(admin.ModelAdmin):
         "first_name",
         "last_name",
         "email",
-        "datetime_expiry",
+        "date_expiry",
         "datetime_created",
         "datetime_updated",
     ]
@@ -110,6 +123,7 @@ class PassTypeAdmin(admin.ModelAdmin):
     ]
     readonly_fields = [
         "name",
+        "slug",
     ]
 
     def get_readonly_fields(self, request, obj=None):
@@ -157,6 +171,7 @@ admin.site.register(PassTypePricingWindow, PassTypePricingWindowAdmin)
 class PassTemplateAdmin(admin.ModelAdmin):
     model = PassTemplate
     list_display = (
+        "id",
         "template_secure",
         "version",
     )

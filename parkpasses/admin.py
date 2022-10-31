@@ -1,8 +1,13 @@
-from django.contrib.gis import admin
+import logging
+
+from django.contrib import admin
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 admin.site.index_template = "admin-index.html"
 admin.autodiscover()
+
+
+logger = logging.getLogger(__name__)
 
 
 @admin.register(EmailUser)

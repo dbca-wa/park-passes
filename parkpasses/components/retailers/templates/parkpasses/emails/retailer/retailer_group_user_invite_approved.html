@@ -1,0 +1,28 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{% block greetings %}
+            <p>Dear {{ emailuser.first_name }} {{ emailuser.last_name }},</p>
+{% endblock %}
+
+{%  block content %}
+            <p>Your invite to the {{ SYSTEM_NAME }} Retailer Group:</p>
+
+            <p>{{retailer_group_user_invite.retailer_group.name}}</p>
+
+            <p>Has been approved and you can now take retail sales.</p>
+
+            <p>You may log in to the system here:</p>
+
+            <p><a href="{{SITE_URL}}{% url 'retailer-home' %}">{{SITE_URL}}{% url 'retailer-home' %}</a></p>
+
+            {% if is_admin %}
+            <p><strong>Admin Account</strong></p>
+            <p>
+                Your account has been assigned administrator priveleges so you can invite other users to your
+                retailer group by clicking the 'Invite Users' link once you log in or by clicking here:
+            </p>
+            <p>
+                <a href="{{SITE_URL}}{% url 'retailer-users' %}">{{SITE_URL}}{% url 'retailer-users' %}</a>
+            </p>
+            {% endif %}
+{%  endblock %}

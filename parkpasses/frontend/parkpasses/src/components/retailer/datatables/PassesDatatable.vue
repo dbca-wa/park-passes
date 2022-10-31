@@ -2,12 +2,7 @@
     <div>
         <div class="row mb-3">
             <div class="col">
-                <button class="btn licensing-btn-primary float-end" data-bs-toggle="modal" data-bs-target="#pricingWindowModal">Sell a Park Pass</button>
-            </div>
-        </div>
-        <div v-if="successMessage" class="row mx-1">
-            <div id="successMessageAlert" class="col alert alert-success show fade" role="alert">
-                {{ successMessage }}
+                <router-link class="btn licensing-btn-primary btn-lg float-end" tabindex="-1" role="button" to="sell-a-pass">Sell a Park Pass</router-link>
             </div>
         </div>
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
@@ -76,7 +71,7 @@
 <script>
 import Datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints } from '@/utils/hooks'
+import { apiEndpoints, constants } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import PassCancellationModal from '@/components/internal/modals/PassCancellationModal.vue'
 
@@ -206,7 +201,6 @@ export default {
                 'Last Name',
                 'Pass Type',
                 'Start Date',
-                'Automatic Renewal',
                 'Vehicle 1',
                 'Vehicle 2',
                 'Status',
@@ -263,29 +257,13 @@ export default {
         },
         columnDatetimeStart: function(){
             return {
-                data: "datetime_start",
+                data: "date_start",
                 visible: true,
-                name: 'datetime_start',
+                name: 'date_start',
                 'render': function(row, type, full){
-                    const date = new Date(full.datetime_start);
+                    const date = new Date(full.date_start);
                     return date.toLocaleDateString();
                 }
-            }
-        },
-        columnRenewAutomatically: function(){
-            return {
-                data: "renew_automatically",
-                visible: true,
-                className: 'text-center',
-                name: 'renew_automatically',
-                'render': function(row, type, full){
-                    if(full.renew_automatically){
-                        return '<i class="fa fa-check" aria-hidden="true" style="color:green;"></i>';
-                    } else {
-                        return '<i class="fa fa-times" aria-hidden="true" style="color:red;"></i>';
-                    }
-                }
-
             }
         },
         columnVehicleRegistration1: function(){
@@ -312,6 +290,17 @@ export default {
                 data: "processing_status_display_name",
                 visible: true,
                 name: 'processing_status',
+                'render': function(row, type, full){
+                    let html = '';
+                    if('Current'==full.processing_status_display_name){
+                        html = `<span class="badge bg-success">${full.processing_status_display_name}</span>`;
+                    } else  if('Future'==full.processing_status_display_name) {
+                        html = `<span class="badge bg-info">${full.processing_status_display_name}</span>`;
+                    } else {
+                        html = `<span class="badge bg-danger">${full.processing_status_display_name}</span>`;
+                    }
+                    return html;
+                }
             }
         },
         columnParkPassPdf: function(){
@@ -321,7 +310,7 @@ export default {
                 orderable: false,
                 name: 'park_pass_pdf',
                 'render': function(row, type, full){
-                    return `<a href="${apiEndpoints.retailerParkPassPdf(full.id)}" target="blank">ParkPass.pdf</a>`
+                    return `<a href="${apiEndpoints.retailerParkPassPdf(full.id)}" target="blank">${full.park_pass_pdf}</a>`
                 }
             }
         },
@@ -343,10 +332,16 @@ export default {
                 searchable: false,
                 visible: true,
                 'render': function(row, type, full){
+                    let editLink = vm.$router.resolve({
+                        name: 'retailer-pass-form',
+                        params: { passId: full.id }
+                    });
                     let links = '';
-                    links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="cancel" data-name="${full.pass_number}">Cancel</a>`;
-                    links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-action="view-payment-details">View Payment Details</a>`;
+                    if('Current'==full.processing_status_display_name || 'Future'==full.processing_status_display_name){
+                        links +=  `<a href="${editLink.href}">Edit</a>`;
+                    } else {
+                        links += `<a href="${editLink.href}">View</a>`;
+                    }
                     return links;
                 }
             }
@@ -382,7 +377,6 @@ export default {
                 vm.columnLastName,
                 vm.columnPassType,
                 vm.columnDatetimeStart,
-                vm.columnRenewAutomatically,
                 vm.columnVehicleRegistration1,
                 vm.columnVehicleRegistration2,
                 vm.columnProcessingStatus,
@@ -395,7 +389,7 @@ export default {
             return {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
+                    processing: constants.DATATABLE_PROCESSING_HTML
                 },
                 rowCallback: function (row, pass){
                     let row_jq = $(row)
@@ -406,7 +400,7 @@ export default {
                 serverSide: true,
                 searching: true,
                 ajax: {
-                    "url": apiEndpoints.retailerPassesList + '?format=datatables',
+                    "url": apiEndpoints.passesListRetailer + '?format=datatables',
                     "dataSrc": 'data',
 
                     // adding extra GET params for Custom filtering
@@ -492,7 +486,7 @@ export default {
                 let action = $(this).data('action');
                 let id = $(this).data('item-id');
                 console.log(action + id);
-                vm.$router.push(`/internal/passes/${id}`)
+                vm.$router.push(`/retailer/passes/${id}`)
             });
             vm.$refs.passDatatable.vmDataTable.on('click', 'a[data-action="cancel"]', function(e) {
                 e.preventDefault();

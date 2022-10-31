@@ -202,9 +202,29 @@ module.exports = {
             let popover = new bootstrap.Popover(popoverTriggerEl)
         })
     },
+    getDatetimeLocalFormat() {
+        return 'yyyy-MM-DDTHH:mm:ss.SSS';
+    },
     getDateFromDatetime(dateTime) {
         date = new Date(dateTime);
         return date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
+    },
+    getShortDate(date) {
+        var options = {
+            weekday: "short",
+            year: "numeric",
+            month: "2-digit",
+            day: "numeric"
+        };
+        return new Date(date).toLocaleDateString('en-AU', options)
+    },
+    getShorterDate(date) {
+        var options = {
+            year: "numeric",
+            month: "2-digit",
+            day: "numeric"
+        };
+        return new Date(date).toLocaleDateString('en-AU', options)
     },
     getPrettyDateFromDatetime(dateTime){
         var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -219,4 +239,25 @@ module.exports = {
              .replace(/"/g, "&quot;")
              .replace(/'/g, "&#039;");
      },
+     getStatusBadgeClass(status){
+        switch(status) {
+            case 'Current':
+                return 'bg-success'
+                break;
+            case 'Future':
+                return 'bg-info';
+                break;
+            case 'Expired':
+                return 'bg-danger';
+                break;
+            case 'Cancelled':
+                return 'bg-danger';
+                break;
+            default:
+                return 'org-badge-primary';
+        }
+    },
+    getGstFromTotalIncludingGst(GstRate, totalIncludingGst){
+        return totalIncludingGst - (totalIncludingGst * (100 / (100 + GstRate)));
+    }
 };

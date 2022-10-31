@@ -29,7 +29,7 @@
                 </div>
             </div>
         </div>
-        <AddCommLog ref="addComm" :url="commAddUrl"/>
+        <AddCommLog id="AddComms" ref="addComm" :url="commAddUrl" :appLabel="appLabel" :model="model" :objectId="objectId" :customerId="customerId" />
     </div>
 </template>
 
@@ -37,7 +37,8 @@
 import AddCommLog from './AddCommLog.vue'
 import {
     apiEndpoints,
-    helpers
+    helpers,
+    constants,
 }from '@/utils/hooks'
 import { v4 as uuid } from 'uuid';
 
@@ -58,7 +59,23 @@ export default {
         },
         disableAddEntry: {
             type: Boolean,
-            default: true
+            default: false
+        },
+        appLabel: {
+            type: String,
+            required: true
+        },
+        model: {
+            type: String,
+            required: true
+        },
+        objectId: {
+            type: Number,
+            required: true
+        },
+        customerId: {
+            type: Number,
+            required: false,
         }
     },
     data() {
@@ -70,22 +87,22 @@ export default {
             popoversInitialised: false,
             actionsDtOptions:{
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
+                    processing: constants.DATATABLE_PROCESSING_HTML
                 },
                 responsive: true,
                 deferRender: true,
                 autowidth: true,
-                order: [[3, 'desc']], // order the non-formatted date as a hidden column
+                order: [[4, 'desc']], // order the non-formatted date as a hidden column
                 dom:
                     "<'row'<'col-sm-4'l><'col-sm-8'f>>" +
                     "<'row'<'col-sm-12'tr>>" +
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 processing: true,
+                serverSide: true,
                 ajax: {
                     "url": vm.logsUrl,
-                    "dataSrc": '',
+                    "dataSrc": 'data',
                 },
-                order: [],
                 columns:[
                     {
                         title: 'Who',
@@ -102,12 +119,35 @@ export default {
                         data:"when",
                         orderable: false,
                         mRender:function(data,type,full){
-                            //return moment(data).format(vm.DATE_TIME_FORMAT)
                             return moment(data).format(vm.dateFormat);
                         }
                     },
                     {
-                        title: 'Created',
+                        title: 'Why',
+                        data:"why",
+                        orderable: false,
+                        mRender:function(data,type,full){
+                            return full.why ? full.why : "N/A";
+                        }
+                    },
+                    {
+                        title: 'Documents',
+                        data: "documents",
+                        orderable: false,
+                        mRender:function(data,type,full){
+                            if(full.documents && 1<full.documents.length){
+                                console.log(full.documents)
+                                let documentsHtml = '';
+                                for(let i=0;i<full.documents.length;i++){
+                                    documentsHtml += `<a href="">${full.documents[i].file_name}</a><br />`;
+                                }
+                                return documentsHtml;
+                            } else {
+                                return 'No Files'
+                            }
+                        }
+                    },
+                    {
                         data: 'when',
                         visible: false
                     }
@@ -128,7 +168,7 @@ export default {
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 ajax: {
                     "url": vm.commsUrl,
-                    "dataSrc": '',
+                    "dataSrc": 'data',
                 },
                 columns:[
                     {
@@ -142,7 +182,7 @@ export default {
                     },
                     {
                         title: 'Type',
-                        data: 'type'
+                        data: 'entry_type_display_name'
                     },
                     /*{
                         title: 'Reference',
@@ -329,7 +369,6 @@ export default {
                 ]
             },
             commsTable : null,
-
         }
     },
     components:{
@@ -346,14 +385,11 @@ export default {
             myDefaultAllowList.table = []
 
             let vm = this;
-            // let commsLogId = 'comms-log-table' + vm_uid;
-            // let popover_name = 'popover-'+ vm._uid+'-comms';
             let commsLogId = 'comms-log-table' + vm.uuid;
             let popover_name = 'popover-' + vm.uuid + '-comms';
             let popover_elem = $(vm.$refs.showCommsBtn)[0]
             let my_content = '<table id="' + commsLogId + '" class="hover table table-striped table-bordered dt-responsive" cellspacing="0" width="100%"></table>'
             let my_template = '<div class="popover ' + popover_name +'" role="tooltip"><div class="popover-arrow" style="top:110px;"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
-            //let my_template = `<div class="popover ${popover_name}" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>`
 
             new bootstrap.Popover(popover_elem, {
                 sanitize: false,
@@ -363,14 +399,12 @@ export default {
                 title: 'Communication logs',
                 container: 'body',
                 placement: 'right',
-                // trigger: "click focus",
                 trigger: "click",
             })
             popover_elem.addEventListener('inserted.bs.popover', () => {
                 // when the popover template has been added to the DOM
                 vm.commsTable = $('#' + commsLogId).DataTable(vm.commsDtOptions);
 
-                //vm.commsTable.on('draw.dt', function () {
                 vm.commsTable.on('draw', function () { // Draw event - fired once the table has completed a draw.
 
                     var popoverTriggerList = [].slice.call(document.querySelectorAll('#' + commsLogId + ' [data-bs-toggle="popover"]'))
@@ -387,6 +421,7 @@ export default {
                 var diff = el_bounding_top - popover_bounding_top;
                 var x = diff + 5;
                 $('.'+popover_name).children('.arrow').css('top', x + 'px');
+
             })
 
         },
@@ -396,8 +431,6 @@ export default {
             myDefaultAllowList.table = []
 
             let vm = this;
-            //let actionLogId = 'actions-log-table' + vm_uid;
-            //let popover_name = 'popover-'+ vm_uid + '-logs';
             let actionLogId = 'actions-log-table' + vm.uuid;
             let popover_name = 'popover-'+ vm.uuid + '-logs';
             let popover_elem = $(vm.$refs.showActionBtn)[0]
@@ -411,24 +444,12 @@ export default {
                 title: 'Action logs',
                 container: 'body',
                 placement: 'right',
-                // trigger: "click focus",
                 trigger: "click",
             })
             popover_elem.addEventListener('inserted.bs.popover', () => {
                 // when the popover template has been added to the DOM
                 vm.actionsTable = $('#' + actionLogId).DataTable(this.actionsDtOptions);
-
-                //vm.actionsTable.on('draw.dt', function () {
                 vm.actionsTable.on('draw', function () {
-                    //var $tablePopover = $(this).find('[data-bs-toggle="popover"]');
-                    //if ($tablePopover.length > 0) {
-                    //    $tablePopover.popover();
-                    //    // the next line prevents from scrolling up to the top after clicking on the popover.
-                    //    $($tablePopover).on('click', function (e) {
-                    //        e.preventDefault();
-                    //        return true;
-                    //    });
-                    //}
                     var popoverTriggerList = [].slice.call(document.querySelectorAll('#' + actionLogId + ' [data-bs-toggle="popover"]'))
                     var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
                         return new bootstrap.Popover(popoverTriggerEl)
@@ -443,6 +464,7 @@ export default {
                 var diff = el_bounding_top - popover_bounding_top;
                 var x = diff + 5;
                 $('.'+popover_name).children('.arrow').css('top', x + 'px');
+                $('#to').focus();
             })
 
         },
@@ -462,6 +484,11 @@ export default {
         let vm = this;
         this.$nextTick(() => {
             vm.initialisePopovers();
+        });
+        var addComms = document.getElementById('AddComms');
+        addComms.addEventListener('shown.bs.modal', function (event) {
+            alert('test');
+            $('#to').focus();
         });
     }
 }

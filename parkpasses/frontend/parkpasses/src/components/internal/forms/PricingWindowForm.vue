@@ -1,5 +1,5 @@
 <template>
-<div class="container" id="internalApproval">
+<div class="container" id="pricingWindowForm">
     <div class="row">
         <h3>{{ pricing_window.name }}</h3>
         <div class="col-md-3">

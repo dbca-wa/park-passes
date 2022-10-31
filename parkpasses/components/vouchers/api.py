@@ -1,25 +1,30 @@
 import logging
 
+import requests
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.http import FileResponse, Http404
+from django.shortcuts import redirect
 from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
-from rest_framework.filters import SearchFilter
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
-from rest_framework_datatables.django_filters.backends import DatatablesFilterBackend
 from rest_framework_datatables.django_filters.filterset import DatatablesFilterSet
+from rest_framework_datatables.filters import DatatablesFilterBackend
 
 from parkpasses.components.cart.models import Cart, CartItem
+from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.components.vouchers.serializers import (
     ExternalCreateVoucherSerializer,
     ExternalUpdateVoucherSerializer,
     ExternalVoucherSerializer,
+    ExternalVoucherTransactionSerializer,
     InternalVoucherSerializer,
     InternalVoucherTransactionSerializer,
-    VoucherTransactionSerializer,
 )
 from parkpasses.helpers import is_customer, is_internal
 from parkpasses.permissions import IsInternal, IsInternalOrReadOnly
@@ -54,17 +59,37 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
             voucher = serializer.save()
 
         cart = Cart.get_or_create_cart(self.request)
+        logger.info(
+            f"Retrieving cart for user {self.request.user}",
+            extra={"className": self.__class__.__name__},
+        )
 
         content_type = ContentType.objects.get_for_model(voucher)
         cart_item = CartItem(cart=cart, object_id=voucher.id, content_type=content_type)
         cart_item.save()
+        logger.info(
+            f"Added cart item: {cart_item}",
+            extra={"className": self.__class__.__name__},
+        )
+
         if is_customer(self.request):
-            CartUtils.increment_cart_item_count(self.request)
+            cart_item_count = CartUtils.increment_cart_item_count(self.request)
+            logger.info(
+                f"Incremented cart item count to {cart_item_count} -> {cart}",
+                extra={"className": self.__class__.__name__},
+            )
+
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
+            logger.info(
+                f"Assigned date first added to {cart.datetime_first_added_to} -> {cart}",
+                extra={"className": self.__class__.__name__},
+            )
+
         cart.datetime_last_added_to = timezone.now()
         cart.save()
-        logger.debug(str(self.request.session))
+
+        logger.info(f"Cart saved {cart}", extra={"className": self.__class__.__name__})
 
     def has_object_permission(self, request, view, obj):
         if "create" == view.action:
@@ -90,18 +115,84 @@ class VoucherFilter(DatatablesFilterSet):
         fields = "__all__"
 
 
+class VoucherFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        processing_status = request.GET.get("processing_status")
+
+        datetime_to_email_from = request.GET.get("datetime_to_email_from")
+        datetime_to_email_to = request.GET.get("datetime_to_email_to")
+
+        if processing_status:
+            queryset = queryset.filter(processing_status=processing_status)
+
+        if datetime_to_email_from:
+            queryset = queryset.filter(datetime_to_email__gte=datetime_to_email_from)
+
+        if datetime_to_email_to:
+            queryset = queryset.filter(datetime_to_email__lte=datetime_to_email_to)
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
+
+        queryset = super().filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class InternalVoucherViewSet(viewsets.ModelViewSet):
     """
     A ViewSet for internal users to perform actions on vouchers.
     """
 
     search_fields = ["recipient_name", "recipient_email"]
-    queryset = Voucher.objects.all()
+    queryset = Voucher.objects.exclude(in_cart=True)
     model = Voucher
     permission_classes = [IsInternal]
     serializer_class = InternalVoucherSerializer
-    filter_backends = [SearchFilter, DatatablesFilterBackend]
+    filter_backends = (VoucherFilterBackend,)
     filterset_class = VoucherFilter
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
+    def retrieve_invoice(self, request, *args, **kwargs):
+        voucher = self.get_object()
+        content_type = ContentType.objects.get_for_model(Voucher)
+        if OrderItem.objects.filter(
+            object_id=voucher.id, content_type=content_type
+        ).exists():
+            order_item = OrderItem.objects.get(
+                object_id=voucher.id, content_type=content_type
+            )
+            invoice_url = order_item.order.invoice_link
+            if invoice_url:
+                response = requests.get(invoice_url)
+                return FileResponse(response, content_type="application/pdf")
+
+        raise Http404
+
+    @action(methods=["GET"], detail=True, url_path="payment-details")
+    def payment_details(self, request, *args, **kwargs):
+        voucher = self.get_object()
+        content_type = ContentType.objects.get_for_model(Voucher)
+        if OrderItem.objects.filter(
+            object_id=voucher.id, content_type=content_type
+        ).exists():
+            order_item = OrderItem.objects.get(
+                object_id=voucher.id, content_type=content_type
+            )
+            invoice_reference = order_item.order.invoice_reference
+            return redirect(
+                settings.LEDGER_API_URL
+                + "/ledger/payments/oracle/payments?invoice_no="
+                + invoice_reference
+            )
+
+        raise Http404
 
 
 class VoucherTransactionViewSet(viewsets.ModelViewSet):
@@ -119,7 +210,7 @@ class VoucherTransactionViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return InternalVoucherTransactionSerializer
         else:
-            return VoucherTransactionSerializer
+            return ExternalVoucherTransactionSerializer
 
 
 class ValidateVoucherView(APIView):
@@ -132,10 +223,18 @@ class ValidateVoucherView(APIView):
 
         if email and code and pin:
             if Voucher.objects.filter(
-                in_cart=False, recipient_email=email, code=code, pin=pin
+                in_cart=False,
+                recipient_email=email,
+                code=code,
+                pin=pin,
+                processing_status=Voucher.DELIVERED,
             ).exists():
                 voucher = Voucher.objects.get(
-                    in_cart=False, recipient_email=email, code=code, pin=pin
+                    in_cart=False,
+                    recipient_email=email,
+                    code=code,
+                    pin=pin,
+                    processing_status=Voucher.DELIVERED,
                 )
                 logger.debug(
                     "voucher.remaining_balance = " + str(voucher.remaining_balance)

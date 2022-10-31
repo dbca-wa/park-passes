@@ -13,24 +13,30 @@ import os
 from decimal import Decimal
 
 import qrcode
+from autoslug import AutoSlugField
 from ckeditor.fields import RichTextField
 from django.conf import settings
-from django.core import serializers
 from django.core.exceptions import (
     MultipleObjectsReturned,
     ObjectDoesNotExist,
     ValidationError,
 )
 from django.core.files.storage import FileSystemStorage
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils import timezone
 from django_resized import ResizedImageField
 
 from parkpasses.components.parks.models import ParkGroup
+from parkpasses.components.passes.emails import PassEmails
 from parkpasses.components.passes.exceptions import (
     MultipleDefaultPricingWindowsExist,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
+    SendPassAutoRenewNotificationEmailFailed,
+    SendPassExpiryNotificationEmailFailed,
+    SendPassPurchasedEmailNotificationFailed,
+    SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed,
 )
 from parkpasses.components.passes.utils import PassUtils
 from parkpasses.components.retailers.models import RetailerGroup
@@ -50,6 +56,7 @@ def pass_type_image_path(instance, filename):
 class PassType(models.Model):
     """A class to represent a pass type"""
 
+    slug = AutoSlugField(unique=True, populate_from="display_name")
     image = ResizedImageField(
         size=[300, 150],
         quality=99,
@@ -61,6 +68,7 @@ class PassType(models.Model):
     name = models.CharField(max_length=100)  # Name reserved for system use
     display_name = models.CharField(max_length=50, null=False, blank=False)
     description = RichTextField(null=True)
+    oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     display_order = models.SmallIntegerField(null=False, blank=False)
     display_retailer = models.BooleanField(null=False, blank=False, default=True)
     display_externally = models.BooleanField(null=False, blank=False, default=True)
@@ -69,6 +77,7 @@ class PassType(models.Model):
         app_label = "parkpasses"
         verbose_name = "Pass Type"
         verbose_name_plural = "Pass Types"
+        ordering = ["id"]
 
     def __str__(self):
         return f"{self.display_name}"
@@ -129,6 +138,7 @@ class PassTypePricingWindow(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Pricing Window"
+        ordering = ["pass_type", "date_start", "date_expiry"]
 
     def __str__(self):
         return f"{self.name}"
@@ -163,6 +173,17 @@ class PassTypePricingWindow(models.Model):
 
         super().save(*args, **kwargs)
 
+    @property
+    def status(self):
+        if not self.date_expiry:
+            return "Current"
+        if self.date_start >= timezone.now().date():
+            return "Future"
+        elif self.date_expiry < timezone.now().date():
+            return "Expired"
+        else:
+            return "Current"
+
     @classmethod
     def get_default_pricing_window_by_pass_type_id(self, pass_type_id):
         try:
@@ -186,10 +207,7 @@ class PassTypePricingWindow(models.Model):
         return default_pricing_window
 
     def is_valid(self):
-        if (
-            not self.datetime_expiry
-            and settings.PRICING_WINDOW_DEFAULT_NAME == self.name
-        ):
+        if not self.date_expiry and settings.PRICING_WINDOW_DEFAULT_NAME == self.name:
             """The default pricing window is always valid as it forms the template that other pricing windows
             must follow"""
             return True
@@ -222,7 +240,7 @@ class PassTypePricingWindowOption(models.Model):
     objects = PassTypePricingWindowOptionManager()
 
     pricing_window = models.ForeignKey(
-        PassTypePricingWindow, on_delete=models.PROTECT, related_name="options"
+        PassTypePricingWindow, on_delete=models.CASCADE, related_name="options"
     )
     name = models.CharField(max_length=50)  # i.e. '5 days'
     duration = models.SmallIntegerField()  # in days i.e. 5, 14, 28, 365
@@ -232,6 +250,7 @@ class PassTypePricingWindowOption(models.Model):
         app_label = "parkpasses"
         verbose_name = "Duration Option"
         verbose_name = "Duration Options"
+        ordering = ["pricing_window", "price"]
 
     def __str__(self):
         return f"{self.pricing_window.pass_type.display_name} - {self.name} \
@@ -313,6 +332,14 @@ class PassTypePricingWindowOption(models.Model):
 
         return PassTypePricingWindowOption.objects.filter(pricing_window=pricing_window)
 
+    @classmethod
+    def get_default_options_by_pass_type_id(self, pass_type_id):
+        return PassTypePricingWindowOption.objects.filter(
+            pricing_window__name=settings.PRICING_WINDOW_DEFAULT_NAME,
+            pricing_window__date_expiry__isnull=True,
+            pricing_window__pass_type__id=pass_type_id,
+        )
+
 
 def pass_template_file_path(instance, filename):
     """Stores the pass template documents in a unique folder
@@ -382,15 +409,37 @@ class Pass(models.Model):
 
     objects = PassManager()
 
+    NEW_SOUTH_WALES = "NSW"
+    VICTORIA = "VIC"
+    QUEENSLAND = "QLD"
+    WESTERN_AUSTRALIA = "WA"
+    SOUTH_AUSTRALIA = "SA"
+    TASMANIA = "TAS"
+    AUSTRALIAN_CAPITAL_TERRITORY = "ACT"
+    NORTHERN_TERRITORY = "NT"
+
+    STATE_CHOICES = [
+        (NEW_SOUTH_WALES, "Western Australia"),
+        (VICTORIA, "Victoria"),
+        (QUEENSLAND, "Queensland"),
+        (WESTERN_AUSTRALIA, "Western Australia"),
+        (SOUTH_AUSTRALIA, "South Australia"),
+        (TASMANIA, "Tasmania"),
+        (AUSTRALIAN_CAPITAL_TERRITORY, "Australian Capital Territory"),
+        (NORTHERN_TERRITORY, "Western Australia"),
+    ]
+
     FUTURE = "FU"
     CURRENT = "CU"
     EXPIRED = "EX"
     CANCELLED = "CA"
+    VALID = "VA"
     PROCESSING_STATUS_CHOICES = [
         (FUTURE, "Future"),
         (CURRENT, "Current"),
         (EXPIRED, "Expired"),
         (CANCELLED, "Cancelled"),
+        (VALID, "Valid"),
     ]
 
     user = models.IntegerField(null=True, blank=True)  # EmailUserRO
@@ -399,26 +448,47 @@ class Pass(models.Model):
     first_name = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=50, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
-    postcode = models.CharField(max_length=4, null=True, blank=True)
+    mobile = models.CharField(max_length=10, null=False, blank=False, default="")
+    company = models.CharField(max_length=50, null=True, blank=True)
+    address_line_1 = models.CharField(max_length=100, null=True, blank=True)
+    address_line_2 = models.CharField(max_length=100, null=True, blank=True)
+    suburb = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(
+        max_length=3,
+        choices=STATE_CHOICES,
+        default=WESTERN_AUSTRALIA,
+        null=True,
+        blank=True,
+    )
+    postcode = models.CharField(
+        null=True,
+        blank=True,
+        max_length=4,
+        validators=[
+            MinLengthValidator(4, "Australian postcodes must contain 4 digits")
+        ],
+    )
+    rac_member_number = models.CharField(max_length=20, null=True, blank=True)
     vehicle_registration_1 = models.CharField(max_length=10, null=True, blank=True)
     vehicle_registration_2 = models.CharField(max_length=10, null=True, blank=True)
     drivers_licence_number = models.CharField(max_length=11, null=True, blank=True)
     park_group = models.ForeignKey(
         ParkGroup, on_delete=models.PROTECT, null=True, blank=True
     )
-    datetime_start = models.DateTimeField(null=False, blank=False)
-    datetime_expiry = models.DateTimeField(null=False, blank=False)
+    date_start = models.DateField(null=False, blank=False)
+    date_expiry = models.DateField(null=False, blank=False)
     renew_automatically = models.BooleanField(null=False, blank=False, default=False)
     prevent_further_vehicle_updates = models.BooleanField(
         null=False, blank=False, default=False
     )
     park_pass_pdf = models.FileField(
-        storage=upload_protected_files_storage, null=True, blank=True
+        storage=upload_protected_files_storage, null=True, blank=True, max_length=500
     )
     processing_status = models.CharField(
         max_length=2, choices=PROCESSING_STATUS_CHOICES, null=True, blank=True
     )
     in_cart = models.BooleanField(null=False, blank=False, default=True)
+    purchase_email_sent = models.BooleanField(null=False, blank=False, default=False)
     sold_via = models.ForeignKey(
         RetailerGroup, on_delete=models.PROTECT, null=True, blank=True
     )
@@ -428,6 +498,7 @@ class Pass(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name_plural = "Passes"
+        ordering = ["-datetime_created"]
 
     def __str__(self):
         return f"{self.pass_number}"
@@ -453,19 +524,112 @@ class Pass(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     @property
+    def price_after_concession_applied(self):
+        if hasattr(self, "concession_usage"):
+            concession = self.concession_usage.concession
+            discount_amount = concession.discount_as_amount(self.price)
+            price_after_discount = self.price - discount_amount
+            return price_after_discount
+        return self.price
+
+    @property
     def price_after_discount_code_applied(self):
         if hasattr(self, "discount_code_usage"):
             discount_code = self.discount_code_usage.discount_code
-            discount_amount = discount_code.discount_as_amount(self.price)
-            price_after_discount = self.price - discount_amount
+            discount_amount = discount_code.discount_as_amount(
+                self.price_after_concession_applied
+            )
+            price_after_discount = self.price_after_concession_applied - discount_amount
             return price_after_discount
-        return Decimal(0.00)
+        return self.price_after_concession_applied
+
+    @property
+    def price_after_voucher_applied(self):
+        if hasattr(self, "voucher_transaction"):
+            voucher_transaction_balance = self.voucher_transaction.balance()
+            return self.price_after_discount_code_applied + voucher_transaction_balance
+        return self.price_after_discount_code_applied
+
+    @property
+    def price_after_all_discounts(self):
+        """Convenience method that makes more descriptive sense"""
+        return self.price_after_voucher_applied
+
+    @property
+    def price_display(self):
+        return f"${self.price_after_all_discounts}"
+
+    @property
+    def gst(self):
+        gst_calcuation = Decimal(100 / (100 + int(settings.LEDGER_GST)))
+        return Decimal(
+            self.price_after_all_discounts
+            - (self.price_after_all_discounts * gst_calcuation)
+        ).quantize(Decimal("0.00"))
+
+    @property
+    def gst_display(self):
+        return f"${self.gst}"
+
+    @property
+    def pro_rata_refund_amount_display(self):
+        return f"${self.pro_rata_refund_amount()}"
+
+    @property
+    def status(self):
+        if self.isCancelled:
+            return Pass.CANCELLED
+        elif self.date_start > timezone.now().date():
+            return Pass.FUTURE
+        elif self.date_expiry <= timezone.now().date():
+            return Pass.EXPIRED
+        else:
+            return Pass.CURRENT
+
+    @property
+    def status_display(self):
+        if self.isCancelled:
+            return "Cancelled"
+        elif self.date_start > timezone.now().date():
+            return "Future"
+        elif self.date_expiry <= timezone.now().date():
+            return "Expired"
+        else:
+            return "Current"
+
+    @property
+    def isCancelled(self):
+        if hasattr(self, "cancellation"):
+            return True
+        return False
+
+    def pro_rata_refund_percentage(self):
+        if self.date_start >= timezone.now().date():
+            return 100
+        if self.date_expiry <= timezone.now().date():
+            return 0
+        duration = self.option.duration
+        delta = timezone.now().date() - self.date_start
+        days_used = delta.days
+        days_remaining = self.option.duration - days_used
+        return round(days_remaining * 100 / duration)
+
+    def pro_rata_refund_amount(self):
+        amount = self.price_after_all_discounts * Decimal(
+            self.pro_rata_refund_percentage() / 100
+        )
+        return Decimal(amount).quantize(Decimal("0.00"))
 
     def generate_qrcode(self):
+        logger.info(f"Generating qr code for pass {self.pass_number}.")
+        from parkpasses.components.passes.serializers import (
+            ExternalQRCodePassSerializer,
+        )
+
         qr = qrcode.QRCode()
-        pass_data_json = serializers.serialize("json", [self])
+        serializer = ExternalQRCodePassSerializer(self)
         # replace this line with the real encryption server at a later date
-        encrypted_pass_data = self.imaginary_encryption_endpoint(pass_data_json)
+        encrypted_pass_data = self.imaginary_encryption_endpoint(serializer.data)
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
         qr_image = qr.make_image(fill="black", back_color="white")
@@ -495,7 +659,7 @@ class Pass(models.Model):
         return json_pass_data
 
     def can_cancel_automatic_renewal(self):
-        return self.datetime_expiry > timezone.now() + timezone.timedelta(days=1)
+        return self.date_expiry > timezone.now() + timezone.timedelta(days=1)
 
     def cancel_automatic_renewal(self):
         if not self.renew_automatically:
@@ -516,15 +680,16 @@ class Pass(models.Model):
     def set_processing_status(self):
         if PassCancellation.objects.filter(park_pass=self).count():
             self.processing_status = Pass.CANCELLED
-        elif self.datetime_start > timezone.now():
+        elif self.date_start > timezone.now().date():
             self.processing_status = Pass.FUTURE
-        elif self.datetime_expiry < timezone.now():
+        elif self.date_expiry < timezone.now().date():
             self.processing_status = Pass.EXPIRED
         else:
             self.processing_status = Pass.CURRENT
 
     def save(self, *args, **kwargs):
-        self.datetime_expiry = self.datetime_start + timezone.timedelta(
+        logger.debug("Entered pass save method.")
+        self.date_expiry = self.date_start + timezone.timedelta(
             days=self.option.duration
         )
         self.set_processing_status()
@@ -535,14 +700,95 @@ class Pass(models.Model):
             self.last_name = email_user.last_name
             self.email = email_user.email
 
-        """ Consider: Running generate_park_pass_pdf() with a message queue would be much better """
         super().save(*args, **kwargs)
-        if not self.in_cart:
-            self.generate_park_pass_pdf()
+
         if not self.pass_number:
             self.pass_number = f"PP{self.pk:06d}"
-        logger.debug("pass_number = " + self.pass_number)
+
+        logger.debug("self.processing_status = " + str(self.processing_status))
+
+        if not Pass.CANCELLED == self.processing_status:
+            if not self.in_cart:
+                """Consider: Running generate_park_pass_pdf() with a message queue would be much better"""
+                self.generate_park_pass_pdf()
+                if not self.purchase_email_sent:
+                    self.send_purchased_notification_email()
+                    logger.info(
+                        f"Pass purchased notification email sent for pass {self.pass_number}",
+                        extra={"className": self.__class__.__name__},
+                    )
+                    self.purchase_email_sent = True
+                else:
+                    self.send_updated_notification_email()
+                    logger.info(
+                        f"Pass update notification email sent for pass {self.pass_number}",
+                        extra={"className": self.__class__.__name__},
+                    )
+
+        logger.debug("Updating pass.")
         super().save(force_update=True)
+
+    def send_autorenew_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_autorenew_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_autorenew_notification_email(self)
+        except Exception as e:
+            raise SendPassAutoRenewNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
+
+    def send_expiry_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_expiry_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_expiry_notification_email(self)
+        except Exception as e:
+            raise SendPassExpiryNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
+
+    def send_purchased_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_purchased_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_purchased_notification_email(self)
+        except Exception as e:
+            raise SendPassPurchasedEmailNotificationFailed(
+                error_message.format(self.id, e)
+            )
+
+    def send_updated_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_updated_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_updated_notification_email(self)
+        except Exception as e:
+            raise SendPassPurchasedEmailNotificationFailed(
+                error_message.format(self.id, e)
+            )
+
+    def send_vehicle_details_not_yet_provided_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_purchased_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_vehicle_details_not_yet_provided_notification_email(
+                self
+            )
+        except Exception as e:
+            raise SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(
+                error_message.format(self.id, e)
+            )
 
 
 class PassCancellationManager(models.Manager):
@@ -577,3 +823,11 @@ class PassCancellation(models.Model):
         super().save(*args, **kwargs)
         self.park_pass.processing_status = Pass.CANCELLED
         self.park_pass.save()
+
+    def delete(self, *args, **kwargs):
+        """If the pass cancellation is deleted we automatically recalculate the status"""
+        park_pass = self.park_pass
+        deleted = super().delete()
+        park_pass.set_processing_status()
+        park_pass.save()
+        return deleted
