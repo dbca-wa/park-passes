@@ -9,7 +9,7 @@
             <div class="col-sm-12">
                 <div class="row">
                     <div class="col-md-3">
-                        <StatusPanel :status="pass.processing_status_display_name" :badge=true class="pt-3" />
+                        <StatusPanel :status="pass.processing_status_display_name" :badge="true" :badgeClass="badgeClass" class="pt-3" />
                     </div>
                     <div class="col-md-1">
 
@@ -41,25 +41,25 @@
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">First Name</label>
                                 <div class="col-sm-6">
-                                    <input class="form-control" name="firstName" type="text" v-model="pass.first_name" :disabled="isPassCancelled">
+                                    <input class="form-control" name="firstName" type="text" v-model="pass.first_name" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Last Name</label>
                                 <div class="col-sm-6">
-                                    <input class="form-control" name="lastName" type="text" v-model="pass.last_name" :disabled="isPassCancelled">
+                                    <input class="form-control" name="lastName" type="text" v-model="pass.last_name" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Email Address</label>
                                 <div class="col-sm-8">
-                                    <input class="form-control" name="email" type="text" v-model="pass.email" :disabled="isPassCancelled">
+                                    <input class="form-control" name="email" type="text" v-model="pass.email" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Mobile Number</label>
                                 <div class="col-sm-8">
-                                    <input class="form-control" name="mobile" type="text" v-model="pass.mobile" :disabled="isPassCancelled">
+                                    <input class="form-control" name="mobile" type="text" v-model="pass.mobile" :disabled="fieldDisabled">
                                 </div>
                             </div>
                             <div v-if="pass.postcode" class="row mb-1">
@@ -78,7 +78,7 @@
                                 <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start" :disabled="isPassCancelled">
+                                        <input class="form-control" name="startDate" type="date" v-model="pass.date_start" :disabled="fieldDisabled">
                                     </span>
                                 </div>
                             </div>
@@ -94,7 +94,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration <span v-if="pass.vehicle_registration_2">1</span></label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="isPassCancelled">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_1" maxlength="10" :disabled="fieldDisabled">
                                     </span>
                                 </div>
                             </div>
@@ -102,7 +102,7 @@
                                 <label for="endDate" class="col-sm-4 col-form-label">Vehicle Registration 2</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="isPassCancelled">
+                                        <input class="form-control" name="endDate" type="text" v-model="pass.vehicle_registration_2" maxlength="10" :disabled="fieldDisabled">
                                     </span>
                                 </div>
                             </div>
@@ -175,8 +175,8 @@
         <div class="container d-flex justify-content-end">
             <template v-if="!loading">
                 <button @click="returnToPassesDash" class="btn licensing-btn-primary me-2">Exit</button>
-                <button v-if="!isPassCancelled" @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
-                <button v-if="!isPassCancelled" @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
+                <button v-if="!fieldDisabled" @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
+                <button v-if="!fieldDisabled" @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
             </template>
             <template v-else>
                 <button class="btn licensing-btn-primary px-4 ms-2">
@@ -207,7 +207,10 @@ import StatusPanel from '@/components/common/StatusPanel.vue'
 export default {
     name: "PassForm",
     props: {
-
+        created: {
+            default: false,
+            required: false,
+        }
     },
     data() {
         return {
@@ -232,6 +235,9 @@ export default {
         isPassCancelled: function () {
             return (constants.PASS_STATUS_CANCELLED==this.pass.processing_status) ? true : false;
         },
+        fieldDisabled: function () {
+            return this.isPassCancelled || this.hasPassExpired || !this.pass.user_can_edit;
+        },
         showSecondVehicleRego: function () {
             if(this.isHolidayPass){
                 return false;
@@ -250,7 +256,10 @@ export default {
                 return this.pass.mobile;
             }
             return this.pass.mobile.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
-        }
+        },
+        badgeClass: function () {
+            return helpers.getStatusBadgeClass(this.pass.processing_status_display_name);
+        },
     },
     components: {
         SectionToggle,
@@ -359,6 +368,16 @@ export default {
     created: function() {
         const route = useRoute()
         this.fetchPass(route.params['passId']);
+    },
+    mounted: function () {
+        if(this.created){
+            Swal.fire({
+                title: 'Success',
+                text: 'Park Pass created successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            })
+        }
     }
 }
 </script>
