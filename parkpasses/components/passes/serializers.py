@@ -21,7 +21,12 @@ from parkpasses.components.vouchers.serializers import (
     ExternalVoucherSerializer,
     ExternalVoucherTransactionSerializer,
 )
-from parkpasses.helpers import is_parkpasses_officer, is_parkpasses_payments_officer
+from parkpasses.helpers import (
+    get_retailer_group_ids_for_user,
+    is_parkpasses_officer,
+    is_parkpasses_payments_officer,
+    is_retailer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -592,8 +597,10 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
 
     def get_user_can_edit(self, obj):
         request = self.context["request"]
-        if request.user.is_superuser:
-            return True
+        if is_retailer(request):
+            retailer_group_ids = get_retailer_group_ids_for_user(request)
+            if obj.sold_via_id in retailer_group_ids:
+                return True
         return is_parkpasses_payments_officer(
             self.context["request"]
         ) or is_parkpasses_officer(self.context["request"])
@@ -610,6 +617,7 @@ class InternalPassSerializer(serializers.ModelSerializer):
     processing_status_display_name = serializers.CharField(
         source="status_display", read_only=True
     )
+    pro_rata_refund_amount_display = serializers.CharField(read_only=True)
     user_can_view_payment_details = serializers.SerializerMethodField()
     user_can_upload_personnel_passes = serializers.SerializerMethodField()
     user_can_edit_and_cancel = serializers.SerializerMethodField()
@@ -621,6 +629,7 @@ class InternalPassSerializer(serializers.ModelSerializer):
         datatables_always_serialize = [
             "date_expiry",
             "processing_status",
+            "pro_rata_refund_amount_display",
             "user_can_view_payment_details",
             "user_can_upload_personnel_passes",
             "user_can_edit_and_cancel",
