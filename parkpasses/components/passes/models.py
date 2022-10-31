@@ -572,8 +572,8 @@ class Pass(models.Model):
         return f"${self.gst}"
 
     @property
-    def refund_display(self):
-        return f"${self.pro_rata_refund_amount}"
+    def pro_rata_refund_amount_display(self):
+        return f"${self.pro_rata_refund_amount()}"
 
     @property
     def status(self):
