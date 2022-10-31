@@ -7,11 +7,11 @@ from parkpasses.components.passes.api import (
     DefaultOptionsForPassType,
     ExternalPassTypeViewSet,
     ExternalPassViewSet,
-    InternalPassRefundSuccessView,
     InternalPassTypeViewSet,
     InternalPassViewSet,
     InternalPricingWindowViewSet,
     PassProcessingStatusesDistinct,
+    PassRefundSuccessView,
     PassTemplateViewSet,
     PassTypePricingWindowOptionViewSet,
     PassTypesDistinct,
@@ -63,8 +63,8 @@ urlpatterns = [
     ),
     url(r"cancel-pass", CancelPass.as_view()),
     url(
-        r"ledger-api-refund-success-callback(?P<id>.+)/(?P<uuid>.+)$",
-        InternalPassRefundSuccessView.as_view(),
+        r"ledger-api-refund-success-callback/(?P<id>.+)/(?P<uuid>.+)$",
+        PassRefundSuccessView.as_view(),
         name="ledger-api-refund-success-callback",
     ),
 ]
