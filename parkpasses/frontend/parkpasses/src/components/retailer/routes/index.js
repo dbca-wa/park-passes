@@ -19,9 +19,15 @@ export default {
             name: 'retailer-dash'
         },
         {
+            path: '/retailer/passes/:passId/created-successfully',
+            component: RetailerPassForm,
+            name: 'retailer-pass-created-successfully',
+            props: { created: true, }
+        },
+        {
             path: '/retailer/passes/:passId/',
             component: RetailerPassForm,
-            name: 'retailer-pass-detail'
+            name: 'retailer-pass-form'
         },
         {
             path: '/retailer/reports',
