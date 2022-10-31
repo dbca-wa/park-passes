@@ -26,6 +26,7 @@ class OrderAdmin(admin.ModelAdmin):
         "retailer_group",
         "is_no_payment",
     ]
+
     list_display = (
         "order_number",
         "datetime_created",
