@@ -51,7 +51,7 @@ urlpatterns = [
         name="further_information",
     ),
     # ========================================================================== External Authenticated
-    url(r"^cart/", CartView.as_view(), name="cart"),
+    url(r"^cart/", CartView.as_view(), name="user-cart"),
     url(r"^ledger-checkout/", LedgerCheckoutView.as_view(), name="ledger-checkout"),
     url(
         r"checkout-success/(?P<uuid>.+)/",
@@ -141,8 +141,17 @@ urlpatterns = [
         name="retailer-pass-detail",
     ),
     url(
+        r"^retailer/sell-a-pass/(?P<pass_type_slug>.+)/$",
+        views.RetailerSellAPassView.as_view(
+            extra_context={"title": "Retailer Sell a Pass"}
+        ),
+        name="retailer-sell-a-pass-with-pass-type-slug",
+    ),
+    url(
         r"^retailer/sell-a-pass$",
-        views.RetailerView.as_view(extra_context={"title": "Retailer Sell a Pass"}),
+        views.RetailerSellAPassView.as_view(
+            extra_context={"title": "Retailer Sell a Pass"}
+        ),
         name="retailer-sell-a-pass",
     ),
     url(
