@@ -541,7 +541,7 @@ export default {
             return this.passType && !this.isRetailer;
         },
         showRacMemberSwitch() {
-            return !this.isRetailer && this.isEmailValid;
+            return !this.isRetailer && this.isEmailValid && !this.isPinjarPass;
         },
         racDiscountCodeEntered() {
             if(this.pass.rac_discount_code && this.pass.rac_discount_code.length>0){
@@ -556,7 +556,6 @@ export default {
             return currency(this.totalPrice - (this.totalPrice * (this.racDiscountCodePercentage / 100)));
         },
         showConcessionSwitch() {
-            console.log('this.pass.rac_discount_code = ' + this.pass.rac_discount_code);
             if(this.pass.rac_discount_code && this.pass.rac_discount_code.length>0){
                 return false;
             }
@@ -570,7 +569,7 @@ export default {
         },
         showVoucherCodeField() {
             if(this.racDiscountCodeEntered){
-                return false;discountCode
+                return false;
             }
             return (this.isEmailValid && (0.00 < this.totalPriceAfterDiscounts) && !this.isRetailer)
         },
