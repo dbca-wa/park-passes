@@ -51,7 +51,7 @@ export default {
         },
     },
     created: function() {
-        if ('purchase-pass'==this.$route.name) {
+        if ('retailer-sell-a-pass-by-slug'==this.$route.name) {
             this.passTypeSlug = this.$route.params.passTypeSlug;
             this.showHomeContent = false;
             this.showPurchaseVoucher = false;
@@ -59,7 +59,7 @@ export default {
         }
     },
     mounted: function () {
-
+        console.log(this.$route.name);
     }
 }
 

@@ -40,6 +40,11 @@ export default {
             name: 'retailer-retailer-group-users'
         },
         {
+            path: '/retailer/sell-a-pass/:passTypeSlug/',
+            component: RetailerSellPass,
+            name: 'retailer-sell-a-pass-by-slug'
+        },
+        {
             path: '/retailer/sell-a-pass',
             component: RetailerSellPass,
             name: 'retailer-sell-a-pass'
@@ -54,10 +59,6 @@ export default {
             component: RetailerGroupUserInviteResponse,
             name: 'retailer-respond-to-invite'
         },
-        {
-            path: '/retailer/sell-a-pass/:passTypeSlug/',
-            component: RetailerSellPass,
-            name: 'retailer-sell-a-pass-by-slug'
-        },
+
     ]
 }
