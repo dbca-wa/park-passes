@@ -382,6 +382,17 @@ export default {
     created: function() {
         const route = useRoute()
         this.fetchPass(route.params['passId']);
+    },
+    mounted: function () {
+        const route = useRoute()
+        if(route.params['uuid']){
+            Swal.fire({
+                title: 'Success',
+                text: 'Park Pass Cancelled and Refunded Successfully',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            })
+        }
     }
 }
 </script>
