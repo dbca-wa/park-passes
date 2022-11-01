@@ -5,13 +5,13 @@
 
             <div class="col-4">
 
-                <ShopSideMenu is-retailer="true" @purchase-pass="purchasePass" />
+                <ShopSideMenu :is-retailer="true" @purchase-pass="purchasePass" />
 
             </div>
 
             <div class="col">
 
-                <PurchasePass v-if="showPurchasePass" :passTypeSlug="passTypeSlug" :key="passTypeSlug" />
+                <PurchasePass v-if="showPurchasePass" :is-retailer="true" :passTypeSlug="passTypeSlug" :key="passTypeSlug" />
                 <h1 v-else>&#8592; &#8592; &#8592; Select a Pass Type</h1>
             </div>
 
