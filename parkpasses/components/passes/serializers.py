@@ -329,9 +329,8 @@ class ExternalCreatePinjarOffRoadPassSerializer(PassModelCreateSerializer):
 
 
 class ExternalPassSerializer(serializers.ModelSerializer):
-    processing_status_display_name = serializers.CharField(
-        source="get_processing_status_display", read_only=True
-    )
+    status = serializers.CharField(read_only=True)
+    status_display = serializers.CharField(read_only=True)
     price = serializers.SerializerMethodField()
     duration = serializers.SerializerMethodField()
     pass_type = serializers.SerializerMethodField()
@@ -347,6 +346,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     voucher = serializers.SerializerMethodField()
     voucher_transaction = ExternalVoucherTransactionSerializer()
     price_after_voucher_applied = serializers.CharField()
+    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
 
     class Meta:
         model = Pass
@@ -377,8 +377,8 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "date_start",
             "date_expiry",
             "renew_automatically",
-            "processing_status",
-            "processing_status_display_name",
+            "status",
+            "status_display",
             "datetime_created",
             "datetime_updated",
             "concession",
@@ -388,6 +388,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "voucher",
             "voucher_transaction",
             "price_after_voucher_applied",
+            "sold_via_name",
         ]
         read_only_fields = [
             "id",
@@ -398,8 +399,8 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "park_group",
             "date_expiry",
             "park_pass_pdf",
-            "processing_status",
-            "processing_status_display_name",
+            "status",
+            "status_display",
             "datetime_created",
             "datetime_updated",
             "concession",
@@ -409,6 +410,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "voucher",
             "voucher_transaction",
             "price_after_voucher_applied",
+            "sold_via_name",
         ]
 
     def get_price(self, obj):
