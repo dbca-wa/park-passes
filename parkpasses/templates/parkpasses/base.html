@@ -4,14 +4,10 @@
 {% load utils %}
 
 
-{% is_payment_officer as is_payment_officer %}
-
-{% build_tag as build_tag %}
-
 <!DOCTYPE html>
 <html lang="en">
     {% block extra_hidden_inputs %}
-        <link rel="icon" href="{% static 'favicon.ico' %}">
+        <link rel="icon" href="{% static 'parkpasses/favicon.ico' %}">
     {% endblock %}
 
     {% block title %}
@@ -21,12 +17,44 @@
     <body>
         {% block header_top_menu %}
         {% endblock %}
+
+        {% block main_header %}
+            <header class="park-passes-bg-banner p-0" role="banner">
+                <div class="wrapper m-0">
+                    <section>
+                        <a href="{% url 'home'%}">
+                            <img src="{% static 'parkpasses/img/wa-gov-logo-white.svg' %}" width="62.92" height="60" alt="Western Australian State Government Logo" title="Western Australian State Government Logo" typeof="foaf:Image" class="img-responsive">
+                        </a>
+                    </section>
+                    <section>
+                        <a href="{% url 'home'%}">
+                            <img src="{% static 'parkpasses/img/parks-and-wildlife-service-logo-white.svg' %}" width="148.08" height="60" alt="Parks and Wildlife Service logo" title="Parks and Wildlife Service logo" typeof="foaf:Image" class="img-responsive">
+                        </a>
+                    </section>
+                    <section>
+                        <a href="{% url 'home'%}">
+                            <img src="{% static 'parkpasses/img/explore-parks-wa-logo-white.svg' %}" width="219.56" height="60"  alt="Explore Parks logo" title="Explore Parks WA logo" typeof="foaf:Image" class="img-responsive">
+                        </a>
+                    </section>
+                    <section class="site-title">
+                        <h1>Park Passes</h1>
+                    </section>
+                </div>
+            </header>
+        {% endblock %}
+
+        {% block menu_items_left_brand %}
+        <a class="navbar-brand" href="{% url 'home'%}"><img src="{% static 'parkpasses/img/explore-parks-logo-small.png' %}"> Home</a>
+        {% endblock %}
+
         {% block extra_css %}
+            {% build_tag as build_tag %}
             <link rel="stylesheet" href="{% static 'parkpasses/css/global.css' %}?v={{build_tag}}">
             <link rel="stylesheet" href="{% static 'parkpasses_vue/css/chunk-vendors.css' %}?v={{build_tag}}">
             <link rel="stylesheet" href="{% static 'parkpasses_vue/css/app.css' %}?v={{build_tag}}">
         {% endblock %}
         {% block custom_js %}
+            {% build_tag as build_tag %}
             <script type="text/javascript" src="{% static 'parkpasses_vue/js/chunk-vendors.js' %}?v={{build_tag}}"></script>
             {% if app_build_url %}
                 <script type="text/javascript" src="{{ app_build_url }}"></script>
