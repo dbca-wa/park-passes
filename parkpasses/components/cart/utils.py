@@ -1,4 +1,5 @@
 import logging
+import pprint
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -23,6 +24,29 @@ class CartUtils:
         if "parkpasses | pass" == str(content_type):
             park_pass = Pass.objects.get(id=object_id)
             return ExternalPassSerializer(park_pass).data
+
+    @classmethod
+    def get_ledger_order_lines(self, request, cart):
+        ledger_order_lines = []
+        line_status = settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS
+
+        order, order_items = cart.create_order()
+        for order_item in order_items:
+            if settings.DEBUG:
+                order_item.amount = int(order_item.amount)
+                order_item.description += " (Price rounded for dev env)"
+            ledger_order_line = {
+                "ledger_description": order_item.description,
+                "quantity": 1,
+                "price_incl_tax": str(order_item.amount),
+                "oracle_code": CartUtils.get_oracle_code(
+                    request, order_item.content_type, order_item.object_id
+                ),
+                "line_status": line_status,
+            }
+            ledger_order_lines.append(ledger_order_line)
+            logger.debug(pprint.pformat(ledger_order_line))
+        return ledger_order_lines
 
     @classmethod
     def get_basket_parameters(
