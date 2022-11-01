@@ -6,6 +6,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
 from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.orders.serializers import (
@@ -26,6 +27,12 @@ class ExternalOrderByUUID(RetrieveAPIView):
         return Order.objects.filter(user=self.request.user.id)
 
 
+class SmallResultSetPagination(DatatablesPageNumberPagination):
+    page_size = 30
+    page_size_query_param = "page_size"
+    max_page_size = 1000
+
+
 class ExternalOrderViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -34,9 +41,12 @@ class ExternalOrderViewSet(
     model = Order
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
+    pagination_class = SmallResultSetPagination
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user.id)
+        return Order.objects.filter(user=self.request.user.id).order_by(
+            "-datetime_created"
+        )
 
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
     def retrieve_invoice(self, request, *args, **kwargs):
