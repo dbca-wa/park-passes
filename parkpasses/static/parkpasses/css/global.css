@@ -1,63 +1,98 @@
+/*body {
+    font-family: proxima-nova;
+}*/
 
 /* Bring app content inline with header logo and navbar */
-div#app .container{
-    padding:0 36px 0 36px;
+div#app .container {
+    padding: 0 36px 0 36px;
 }
 
-.parks_bg_banner .col-lg-9 {
+.park-passes-bg-banner .wrapper {
+    padding: 30px 48px 32px 48px;
     display: flex;
     align-items: center;
+
 }
-.parks_bg_banner .col-lg-9 h1 {
-    font-size: 3em;
+
+.park-passes-bg-banner .wrapper section {
+    padding-right: 32px;
+}
+
+.park-passes-bg-banner {
+    height:126px;
+    background-color: #003e52;
+}
+
+.park-passes-bg-banner .logo-container {
+    display: flex;
+    align-items: center;
+    /*border:1px solid black;*/
+}
+
+.logo-container-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.site-title {
+    height: 62px;
+    line-height: 62px;
+    padding-top: 8px;
+}
+
+.site-title h1 {
+    color:#eee;
+    margin:0px;
 }
 
 .licensing-btn-primary {
-    color:#fff;
-    background-color:#337ab7;
+    color: #fff;
+    background-color: #003e52;
 }
 
 .licensing-btn-primary:hover {
-    color:#fff;
-    background-color:#286090;
+    color: #fff;
+    background-color: #00818F;
 }
 
-.org-primary{
-    color:#337ab7;
+.org-primary {
+    color: #003e52;
 }
 
 .org-icon-primary {
-    color:#337ab7;
+    color: #003e52;
 }
 
 .org-icon-primary:hover {
-    color:#286090;
+    color: #00818F;
 }
 
 .org-error-message {
-    color:#dc3545;
+    color: #dc3545;
     margin-top: 0.25rem;
     font-size: 0.875em;
 }
 
 .org-form-switch-primary:checked {
-    background-color: #337ab7;
-    border-color: #337ab7;
+    background-color: #00818F;
+    border-color: #00818F;
 }
 
 .org-badge-primary {
     color: #fff;
-    background-color: #337ab7;
+    background-color: #00818F;
 }
 
 .fa-cart-shopping {
-    color:#337ab7;
+    color: #00818F;
 }
 
 .fa-cart-shopping:hover {
-    color:#286090;;
+    color: #003e52;
+    ;
 }
 
 div.dataTables_processing div:last-child div {
     display: none;
-  }
+}
