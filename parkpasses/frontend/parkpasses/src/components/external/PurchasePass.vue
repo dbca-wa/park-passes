@@ -467,7 +467,11 @@ export default {
     props: {
         passTypeSlug: {
             type: [String]
-        }
+        },
+        isRetailer: {
+            type: Boolean,
+            default: false
+        },
     },
     data: function () {
         return {
@@ -487,8 +491,6 @@ export default {
                 park_group: null,
                 park_group_id: null,
             },
-
-            isRetailer: false,
 
             passType: null,
             passOptions: null,
@@ -673,7 +675,11 @@ export default {
         },
         fetchPassType: function () {
             let vm = this;
-            fetch(apiEndpoints.passTypeExternal(vm.passTypeSlug))
+            let endPoint = apiEndpoints.passTypeExternal(vm.passTypeSlug);
+            if(vm.isRetailer){
+                endPoint = apiEndpoints.passTypeRetailer(vm.passTypeSlug);
+            }
+            fetch(endPoint)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -1124,9 +1130,8 @@ export default {
         }
     },
     created: function () {
-        this.fetchPassType();
         this.fetchConcessions();
-
+        this.fetchPassType();
     },
     mounted: function () {
         let vm = this;
@@ -1136,10 +1141,10 @@ export default {
                 vm.pass.last_name = vm.store.userData.user.last_name
                 vm.pass.email = vm.store.userData.user.email
             }
-            if('retailer'==vm.store.userData.authorisation_level) {
-                vm.isRetailer = true;
-                vm.fetchRetailerGroupsForUser();
-            }
+
+        }
+        if(vm.isRetailer) {
+            vm.fetchRetailerGroupsForUser();
         }
     }
 };
