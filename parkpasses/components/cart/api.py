@@ -1,7 +1,5 @@
 import logging
-import pprint
 
-from django.conf import settings
 from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -86,7 +84,7 @@ class CartView(APIView):
 
     def get(self, request, format=None):
         logger.info(
-            f"Retrieving cart for user {request.user}",
+            f"Retrieving cart for user: {request.user.id} ({request.user})",
             extra={"className": self.__class__.__name__},
         )
 
@@ -111,28 +109,6 @@ class CartView(APIView):
 
 
 class LedgerCheckoutView(APIView):
-    def get_ledger_order_lines(self, cart):
-        ledger_order_lines = []
-        line_status = settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS
-
-        order, order_items = cart.create_order()
-        for order_item in order_items:
-            if settings.DEBUG:
-                order_item.amount = int(order_item.amount)
-                order_item.description += " (Price rounded for dev env)"
-            ledger_order_line = {
-                "ledger_description": order_item.description,
-                "quantity": 1,
-                "price_incl_tax": str(order_item.amount),
-                "oracle_code": CartUtils.get_oracle_code(
-                    self.request, order_item.content_type, order_item.object_id
-                ),
-                "line_status": line_status,
-            }
-            ledger_order_lines.append(ledger_order_line)
-            logger.debug(pprint.pformat(ledger_order_line))
-        return ledger_order_lines
-
     def post(self, request, format=None):
         cart = Cart.get_or_create_cart(request)
         logger.debug("cart = " + str(cart))
@@ -167,7 +143,7 @@ class LedgerCheckoutView(APIView):
                             )
                         )
 
-        ledger_order_lines = self.get_ledger_order_lines(cart)
+        ledger_order_lines = CartUtils.get_ledger_order_lines(request, cart)
 
         basket_parameters = CartUtils.get_basket_parameters(
             ledger_order_lines, cart.uuid, is_no_payment=False
