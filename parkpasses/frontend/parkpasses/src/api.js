@@ -70,7 +70,9 @@ module.exports = {
     passTypeExternal: function (passTypeSlug) {
         return                          `/api/passes/external/pass-types/${passTypeSlug}/`;
     },
-
+    passTypeRetailer: function (passTypeSlug) {
+        return                          `/api/passes/retailer/pass-types/${passTypeSlug}/`;
+    },
     /* ========================= Pass Options ===========================================*/
 
     passOptions: function (passTypeId) {
