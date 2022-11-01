@@ -77,7 +77,7 @@
                                             <div>
                                                 <ol class="list-group list-group-numbered">
                                                     <li class="list-group-item mb-2">When you click 'Invite User' an invite will be sent to the user via email.</li>
-                                                    <li class="list-group-item">They will need to take action in order to be assigned to the retailer.</li>
+                                                    <li class="list-group-item">They will need to take action in order to log in and take sales.</li>
                                                 </ol>
                                             </div>
                                         </div>
