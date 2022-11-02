@@ -16,7 +16,7 @@
                     <span class="heading">Total</span>
                     <span>${{ order.total.toFixed(2) }}</span>
 
-                    <span class="heading">ORDER # {{ order.order_number }}</span>
+                    <span class="heading">ORDER #{{ order.order_number }}</span>
                     <span><a :href="invoiceURL(order.id)" target="_blank">View Invoice</a></span>
                 </div>
                 <div class="card-body p-0">
