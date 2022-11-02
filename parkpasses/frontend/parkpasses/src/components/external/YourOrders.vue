@@ -22,7 +22,7 @@
                 <div class="card-body p-0">
 
                     <div :id="'order'+order.id" class="container p-0 pt-2 collapse">
-                        <div v-for="orderItem in order.items" class="card bg-white">
+                        <div v-for="orderItem in order.items" class="bg-white">
                             <div class="card-header order-item">
                                 <span>{{ orderItem.description }}</span>
                                 <span>${{ orderItem.amount }}</span>
@@ -92,12 +92,24 @@ export default {
                     console.log(error)
                     return Promise.reject(error);
                 }
-                if(vm.orders){
+                if(vm.orders && vm.orders.length>0){
                     vm.orders.push(...data.results)
                 } else {
                     vm.orders = data.results
                 }
                 vm.count = data.count
+
+                // Load more passes if there are no enough to fill the screen.
+                var hasVScroll = document.body.scrollHeight > document.body.clientHeight;
+                var cStyle = document.body.currentStyle||window.getComputedStyle(document.body, "");
+                hasVScroll = cStyle.overflow == "visible"
+                            || cStyle.overflowY == "visible"
+                            || (hasVScroll && cStyle.overflow == "auto")
+                            || (hasVScroll && cStyle.overflowY == "auto");
+                if(!hasVScroll && !vm.allResultsLoaded){
+                    this.fetchPasses();
+                }
+
                 vm.loading = false;
                 vm.loadingMore = false;
             })
@@ -121,10 +133,6 @@ export default {
                 }
             }
         };
-        var hasVScroll = document.body.scrollHeight > document.body.clientHeight;
-        if(!hasVScroll){
-            this.fetchOrders();
-        }
     }
 };
 </script>
@@ -142,6 +150,7 @@ export default {
         justify-content: center;
         grid-gap: 2px 3px;
         color: #565959;
+        background-color: #EDE5D9;
         font-size:12px;
     }
 
@@ -149,10 +158,12 @@ export default {
         font-weight: bold;
     }
 
+
     .order-item {
         display: grid;
         grid-template-columns: 21fr max-content;
-        font-size:0.8em;
+        font-size: 0.8em;
+        margin-bottom: 4px;
     }
 
     @media (min-width: 425px) {
@@ -184,7 +195,7 @@ export default {
         }
 
         .order-list-item-header .heading{
-            font-weight: normal;
+            font-weight: bold;
         }
 
         .order-item {
