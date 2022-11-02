@@ -533,7 +533,7 @@ export default {
         getHeading() {
             if(this.passType){
                 if(this.isRetailer){
-                    return `Sell a ${this.passType.display_name}`;
+                    return `Sell ${this.indefiniteArticle} ${this.passType.display_name}`;
                 } else {
                     return `Buy ${this.indefiniteArticle} ${this.passType.display_name}`;
                 }
