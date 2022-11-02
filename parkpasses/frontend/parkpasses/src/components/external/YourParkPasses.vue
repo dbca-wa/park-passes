@@ -1,13 +1,14 @@
 <template>
   <div class="container" id="your-park-passes">
 
-    <h2 class="px-4 pb-3">Your Park Passes</h2>
+    <h2 class="pb-3">Your Park Passes</h2>
 
-    <div v-if="passes" id="passes" class="passes row row-cols-1 row-cols-sm-1 row-cols-md-1 row-cols-lg-1 row-cols-xl-1 row-cols-xxl-2 g-4 px-sm-4">
+    <div v-if="passes" id="passes" class="passes row row-cols-1 row-cols-sm-1 row-cols-md-1 row-cols-lg-1 row-cols-xl-1 row-cols-xxl-2 g-4">
         <div v-for="pass in passes" class="pass col-xs">
           <div class="card border-bottom-0 rounded-0 rounded-top">
             <img v-show="allImagesLoaded" @load="imageLoaded()" :src="pass.pass_type_image" class="img-fluid float-left" width="300" height="150" />
             <div v-show="!allImagesLoaded" class="skeleton-block rounded"></div>
+            <div class="pass-number">{{pass.pass_number}}</div>
 
             <div class="card-body">
               <h5 class="card-title">{{ pass.pass_type }}</h5>
@@ -30,6 +31,7 @@
             <div v-if="passCurrentOrFuture(pass)" class="link"><a :href="passURL(pass.id)" target="blank">Download Pass PDF</a> <i class="fa-solid fa-file-pdf fa-lg ps-1"></i></div>
             <div v-else></div>
             <div v-if="soldViaDBCA(pass)" class="link"><a target="_blank" rel="noopener" :href="invoiceURL(pass.id)">Download Invoice</a> <i class="fa-solid fa-file-invoice fa-lg ps-1"></i></div>
+            <div v-else class="link"> <a href="/contact/">Contact DBCA</a> <i class="fa-solid fa-phone fa-lg ps-1"></i></div>
 
           </div>
           <div v-if="canUpdateVehicleDetails(pass)" :id="'updateVehicleRego'+pass.id" class="container p-0 showUpdateVehicleRego collapse">
@@ -138,7 +140,7 @@ export default {
         return true;
     },
     passCurrentOrFuture: function (pass) {
-      switch (pass.processing_status) {
+      switch (pass.status) {
         case 'CU':
           return true;
         case 'FU':
@@ -170,12 +172,23 @@ export default {
             console.log(error)
             return Promise.reject(error);
           }
-          if(vm.passes){
+          if(vm.passes && vm.passes.length>0){
               vm.passes.push(...data.results)
           } else {
               vm.passes = data.results
           }
           vm.count = data.count
+
+          // Load more passes if there are no enough to fill the screen.
+          var hasVScroll = document.body.scrollHeight > document.body.clientHeight;
+          var cStyle = document.body.currentStyle||window.getComputedStyle(document.body, "");
+          hasVScroll = cStyle.overflow == "visible"
+                      || cStyle.overflowY == "visible"
+                      || (hasVScroll && cStyle.overflow == "auto")
+                      || (hasVScroll && cStyle.overflowY == "auto");
+          if(!hasVScroll && !vm.allResultsLoaded){
+            this.fetchPasses();
+          }
           vm.loading = false;
           vm.loadingMore = false;
         })
@@ -236,10 +249,7 @@ export default {
             }
         }
     };
-    var hasVScroll = document.body.scrollHeight > document.body.clientHeight;
-    if(!hasVScroll){
-      this.fetchPasses();
-    }
+
   },
 
 };
@@ -291,58 +301,75 @@ export default {
 /* For Tablets */
 @media (min-width: 576px) {
 
-
 }
 
 /* For Computers */
 @media (min-width: 768px) {
-.card {
-  flex-direction: row;
+  .card {
+    flex-direction: row;
+  }
+  .card-title {
+    font-size: 1.1em;
+    color: #696969;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+
+  }
+
+  .card-body {
+    padding:12px;
+  }
+
+  .card-text {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 5px;
+    background-color: #fff;
+    color: #444;
+    font-size: 0.9em;
+  }
+
+  .card-footer {
+    display: grid;
+    grid-template-columns: 1fr max-content max-content max-content;
+    grid-gap: 20px;
+    color: #444;
+  }
+
+  .card-footer .link {
+    font-size: 0.8em;
+  }
+
+  .pass{
+    max-width:600px;
+  }
 }
-.card-title {
-  font-size: 1.1em;
-  color: #696969;
-  white-space: nowrap;
-  overflow: hidden;
+
+.passes {
+  min-height: 200px;
+}
+
+.pass-number {
+  position:absolute;
+  top: 6px;
+  left: 6px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 5px;
+  margin:0 0 -20px 0;
+  border-radius: 5px;
+  width: -moz-fit-content;
+  width: fit-content;
   text-overflow: ellipsis;
-  max-width: 260px;
-
-}
-
-.card-body {
-  padding:12px;
-}
-
-.card-text {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 5px;
-  background-color: #fff;
-  color: #444;
-  font-size: 0.9em;
-}
-
-.card-footer {
-  display: grid;
-  grid-template-columns: 1fr max-content max-content max-content;
-  grid-gap: 20px;
-  color: #444;
-}
-
-.card-footer .link {
-  font-size: 0.8em;
+  max-width: 95%;
 }
 
 .showUpdateVehicleRego{
-  background-color:rgba(0, 0, 0, 0.03);
-  color: #444;
-}
-
-.pass{
-    max-width:600px;
+    background-color:#EDE5D9;
+    color: #444;
   }
-
-}
 
 .skeleton-block {
   display: block;
@@ -364,6 +391,10 @@ export default {
   to {
     background-position: 100% 0, /* move highlight to right */ 0 0;
   }
+}
+
+.card-footer {
+  background-color: #EDE5D9;
 }
 
 </style>
