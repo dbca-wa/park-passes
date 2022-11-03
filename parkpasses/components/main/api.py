@@ -1,7 +1,6 @@
 import logging
 
 from org_model_documents.api import DocumentCreateView, DocumentViewSet
-
 from org_model_logs.api import (
     CreateCommunicationsLogEntry as BaseCreateCommunicationsLogEntry,
 )
