@@ -394,14 +394,6 @@ Django = ">=2.2"
 tests = ["coverage"]
 
 [[package]]
-name = "django-org-model-documents"
-version = "1.0.0"
-description = "A Django app to allow attaching any number of documents to any model in a project."
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "django-phonenumber-field"
 version = "6.1.0"
 description = "An international phone number field for django models."
@@ -1338,7 +1330,7 @@ python-versions = ">=3.4"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "c40fda42bf11d389d10f904de35fa3a1633090c6d45610917f225a29655c975f"
+content-hash = "86520b5fb45a2059ecc5817f97d92acb351a59d1c006391ae32e0e59efa20496"
 
 [metadata.files]
 appnope = []
@@ -1375,7 +1367,6 @@ django-dirtyfields = []
 django-extensions = []
 django-filter = []
 django-js-asset = []
-django-org-model-documents = []
 django-phonenumber-field = []
 django-redis = []
 django-resized = []
