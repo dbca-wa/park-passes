@@ -380,9 +380,20 @@ class ExternalPassViewSet(
         return ExternalPassSerializer
 
     def perform_create(self, serializer):
-        logger.debug("perform create -------------\n\n")
-        logger.debug("serializer data = " + str(serializer.validated_data))
+        logger.info(
+            "Calling perform_create",
+            extra={"className": self.__class__.__name__},
+        )
+        logger.info(
+            f"serializer.validated_data = {serializer.validated_data}",
+            extra={"className": self.__class__.__name__},
+        )
 
+        logger.info(
+            "Popping rac_discount_code, discount_code, voucher_code, voucher_pin,\
+                 concession_id, concession_cart_number and sold_via.",
+            extra={"className": self.__class__.__name__},
+        )
         # Pop these values out so they don't mess with the model serializer
         rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
         if rac_discount_code:
@@ -394,26 +405,90 @@ class ExternalPassViewSet(
         concession_card_number = serializer.validated_data.pop(
             "concession_card_number", None
         )
-
         sold_via = serializer.validated_data.pop("sold_via", None)
+        logger.info(
+            "rac_discount_code, discount_code, voucher_code, voucher_pin, \
+                concession_id, concession_cart_number and sold_via popped.",
+            extra={"className": self.__class__.__name__},
+        )
+
         email_user_id = 0
         if is_retailer(self.request):
+            logger.info(
+                "This pass is being created by a retailer.",
+                extra={"className": self.__class__.__name__},
+            )
             # If the pass is being sold by a retailer, check if there is an existing email user
             # with the email address assigned to the pass
             email = serializer.validated_data["email"]
             if EmailUser.objects.filter(email=email).exists():
+                logger.info(
+                    f"User with email: {email} already exists in ledger.",
+                    extra={"className": self.__class__.__name__},
+                )
                 email_user = EmailUser.objects.get(email=email)
                 email_user_id = email_user.id
+                logger.info(
+                    f"Calling serializer.save(user={email_user_id})",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass = serializer.save(user=email_user_id)
+                logger.info(
+                    f"serializer.save(user={email_user_id}) called.",
+                    extra={"className": self.__class__.__name__},
+                )
             else:
+                logger.info(
+                    "User with email does not exist in ledger.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    "Calling serializer.save()",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass = serializer.save()
+                logger.info(
+                    "serializer.save() called.",
+                    extra={"className": self.__class__.__name__},
+                )
         elif is_customer(self.request):
-            logger.debug("request.user.id = " + str(self.request.user.id))
+            logger.info(
+                "This pass is being created by an external user.",
+                extra={"className": self.__class__.__name__},
+            )
+            logger.info(
+                f"serializer.save(user={email_user_id}) called.",
+                extra={"className": self.__class__.__name__},
+            )
             email_user_id = self.request.user.id
-            park_pass = serializer.save(user=self.request.user.id)
+            logger.info(
+                f"Calling serializer.save(user={email_user_id})",
+                extra={"className": self.__class__.__name__},
+            )
+            park_pass = serializer.save(user=email_user_id)
+            logger.info(
+                f"serializer.save(user={email_user_id}) called.",
+                extra={"className": self.__class__.__name__},
+            )
         else:
+            logger.warn(
+                "This pass is being created by a user that is not a retailer or an external user.",
+                extra={"className": self.__class__.__name__},
+            )
+            logger.info(
+                "Calling serializer.save()",
+                extra={"className": self.__class__.__name__},
+            )
             park_pass = serializer.save()
+            logger.info(
+                "serializer.save() called.",
+                extra={"className": self.__class__.__name__},
+            )
 
+        logger.info(
+            f"Logging user action for: {park_pass}",
+            extra={"className": self.__class__.__name__},
+        )
         UserAction.objects.log_action(
             object_id=park_pass.id,
             content_type=ContentType.objects.get_for_model(park_pass),
@@ -422,15 +497,46 @@ class ExternalPassViewSet(
                 park_pass._meta.model.__name__, park_pass.id
             ),
         )
+        logger.info(
+            "User action logged.",
+            extra={"className": self.__class__.__name__},
+        )
 
-        logger.debug("park_pass.sold_via = " + str(park_pass.sold_via))
-
+        logger.info(
+            f"Checking if sold_via: {sold_via} matches any retailer groups",
+            extra={"className": self.__class__.__name__},
+        )
         if sold_via and RetailerGroup.objects.filter(id=sold_via).exists():
-            park_pass.sold_via = RetailerGroup.objects.get(id=sold_via)
+            retailer_group = RetailerGroup.objects.get(id=sold_via)
+            logger.info(
+                f"sold_via: {sold_via} matches retailer group: {retailer_group}",
+                extra={"className": self.__class__.__name__},
+            )
+            park_pass.sold_via = retailer_group
+            logger.info(
+                f"sold_via: {sold_via} assigned to park pass: {park_pass}",
+                extra={"className": self.__class__.__name__},
+            )
         else:
+            logger.info(
+                f"sold_via: {sold_via} does not match any retailer groups",
+                extra={"className": self.__class__.__name__},
+            )
             park_pass.sold_via = RetailerGroup.get_dbca_retailer_group()
+            logger.info(
+                f"Default DBCA retailer group assigned to park pass: {park_pass}",
+                extra={"className": self.__class__.__name__},
+            )
 
+        logger.info(
+            f"Saving park pass: {park_pass}",
+            extra={"className": self.__class__.__name__},
+        )
         park_pass.save()
+        logger.info(
+            f"Park pass: {park_pass} saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
         cart = Cart.get_or_create_cart(self.request)
 
