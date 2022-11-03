@@ -53,14 +53,34 @@ class Cart(models.Model):
 
     @classmethod
     def get_or_create_cart(self, request):
+        logger.info(
+            f"Calling get_or_create_cart for user: {request.user.id} ({request.user})",
+            extra={"className": self.__class__.__name__},
+        )
         cart_id = request.session.get("cart_id", None)
+        logger.info(
+            f"cart_id = {cart_id}",
+            extra={"className": self.__class__.__name__},
+        )
         if cart_id and Cart.objects.filter(id=cart_id).exists():
+            logger.info(
+                f"Cart with cart_id of {cart_id} exists.",
+                extra={"className": self.__class__.__name__},
+            )
             cart = Cart.objects.get(id=cart_id)
             # There is an edge case here where a user has a cart in db but is browsing the site
             # anonymously and adds one or more items to their cart. When they log in we need to move
             # the items from their anonymous cart to their already existing cart...
             if Cart.objects.filter(user=request.user.id).exclude(id=cart.id).exists():
+                logger.info(
+                    f"Anonymous cart items exist for user: {request.user.id} ({request.user})",
+                    extra={"className": self.__class__.__name__},
+                )
                 anon_cart = copy(cart)
+                logger.info(
+                    f"Selecting existing cart for user: {request.user.id} ({request.user}).",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart = (
                     Cart.objects.filter(user=request.user.id)
                     .exclude(id=cart.id)
@@ -68,13 +88,49 @@ class Cart(models.Model):
                     .first()
                 )
                 if anon_cart.items.all().exists():
+                    logger.info(
+                        f"Assigning anonymous cart items to existing cart: {cart}",
+                        extra={"className": self.__class__.__name__},
+                    )
                     anon_cart.items.all().update(cart=cart)
+                    logger.info(
+                        f"Deleting anonymous cart: {anon_cart}",
+                        extra={"className": self.__class__.__name__},
+                    )
                     anon_cart.delete()
+                    logger.info(
+                        f"Anonymous cart: {anon_cart} deleted.",
+                        extra={"className": self.__class__.__name__},
+                    )
             else:
+                logger.info(
+                    f"No Anonymous cart items exists for user: {request.user.id} ({request.user})",
+                    extra={"className": self.__class__.__name__},
+                )
                 if not cart.user:
+                    logger.info(
+                        f"Assigning user: {request.user.id} ({request.user}) to cart: {cart}.",
+                        extra={"className": self.__class__.__name__},
+                    )
                     cart.user = request.user.id
+                    logger.info(
+                        f"Saving cart: {cart}",
+                        extra={"className": self.__class__.__name__},
+                    )
                     cart.save()
+                    logger.info(
+                        f"Cart: {cart} saved.",
+                        extra={"className": self.__class__.__name__},
+                    )
         else:
+            logger.info(
+                f"No cart with id: {cart_id} exists for user: {request.user.id} ({request.user})",
+                extra={"className": self.__class__.__name__},
+            )
+            logger.info(
+                f"Checking if user: {request.user.id} ({request.user}) has any carts.",
+                extra={"className": self.__class__.__name__},
+            )
             if Cart.objects.filter(user=request.user.id).exists():
                 cart = (
                     Cart.objects.filter(user=request.user.id)
@@ -82,27 +138,94 @@ class Cart(models.Model):
                     .first()
                 )
             else:
+                logger.info(
+                    f"User: {request.user.id} ({request.user}) has no carts. Creating new cart.",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart = Cart.objects.create()
-        request.session["cart_item_count"] = CartItem.objects.filter(cart=cart).count()
+                logger.info(
+                    f"New cart: {cart} created.",
+                    extra={"className": self.__class__.__name__},
+                )
+        cart_item_count = CartItem.objects.filter(cart=cart).count()
+        request.session["cart_item_count"] = cart_item_count
+        logger.info(
+            f"cart_item_count session variable for cart: {cart} set to {cart_item_count}",
+            extra={"className": self.__class__.__name__},
+        )
         request.session["cart_id"] = cart.id
+        logger.info(
+            f"cart_id session variable for cart: {cart} set to {cart.id}",
+            extra={"className": self.__class__.__name__},
+        )
+
+        logger.info(
+            f"Returning cart: {cart} to caller",
+            extra={"className": self.__class__.__name__},
+        )
         return cart
 
     def set_user_for_cart_and_items(self, user_id):
+        logger.info(
+            f"Calling set_user_for_cart_and_items for user: {user_id}.",
+            extra={"className": self.__class__.__name__},
+        )
         self.user = user_id
+        logger.info(
+            f"Assigning user with id: {user_id} to cart: {self}",
+            extra={"className": self.__class__.__name__},
+        )
         self.save()
-        logger.debug("Selecting vouchers")
+        logger.info(
+            f"Cart: {self} saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
         voucher_ids = list(CartItem.vouchers.filter(cart=self))
         vouchers = Voucher.objects.filter(id__in=voucher_ids)
-        for voucher in vouchers:
-            voucher.purchaser = user_id
-            voucher.save()
+        if vouchers:
+            logger.info(
+                f"Vouchers exist for cart: {self}.",
+                extra={"className": self.__class__.__name__},
+            )
+            for voucher in vouchers:
+                voucher.purchaser = user_id
+                logger.info(
+                    f"Voucher: {voucher} purchaser field set to: {user_id}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    f"Saving Voucher: {voucher}",
+                    extra={"className": self.__class__.__name__},
+                )
+                voucher.save()
+                logger.info(
+                    f"Voucher: {voucher} saved.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         park_pass_ids = list(CartItem.passes.filter(cart=self))
         park_passes = Pass.objects.filter(id__in=park_pass_ids)
-        for park_pass in park_passes:
-            park_pass.user = user_id
-            park_pass.save()
+        if park_passes:
+            logger.info(
+                f"Park passes exist for cart: {self}.",
+                extra={"className": self.__class__.__name__},
+            )
+            for park_pass in park_passes:
+                logger.info(
+                    f"Park pass: {park_pass} user field set to: {user_id}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    f"Saving Park pass: {park_pass}",
+                    extra={"className": self.__class__.__name__},
+                )
+                park_pass.user = user_id
+                park_pass.save()
+                logger.info(
+                    f"Park pass: {park_pass} saved.",
+                    extra={"className": self.__class__.__name__},
+                )
 
     @property
     def email_user(self):
