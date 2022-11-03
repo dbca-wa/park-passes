@@ -13,31 +13,31 @@
     font-family: 'proxima-nova-semibold';
     src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.eot");
     src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.eot?#iefix") format("embedded-opentype"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Sbold-webfont.woff") format("woff"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Sbold-webfont.ttf") format("truetype"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Sbold-webfont.svg#proxima_nova_ltsemibold") format("svg");
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.woff") format("woff"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.ttf") format("truetype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.svg#proxima_nova_ltsemibold") format("svg");
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'proxima-nova-thin';
-    src: url("/static/parkpasses/proxima-nova/ProximaNova-Thin-webfont.eot");
-    src: url("/static/parkpasses/proxima-nova/ProximaNova-Thin-webfont.eot?#iefix") format("embedded-opentype"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Thin-webfont.woff") format("woff"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Thin-webfont.ttf") format("truetype"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Thin-webfont.svg#proxima_nova_ththin") format("svg");
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.eot");
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.eot?#iefix") format("embedded-opentype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.woff") format("woff"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.ttf") format("truetype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.svg#proxima_nova_ththin") format("svg");
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'proxima-nova';
-    src: url("/static/parkpasses/proxima-nova/ProximaNova-Reg-webfont.eot");
-    src: url("/static/parkpasses/proxima-nova/ProximaNova-Reg-webfont.eot?#iefix") format("embedded-opentype"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Reg-webfont.woff") format("woff"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Reg-webfont.ttf") format("truetype"),
-    url("/static/parkpasses/proxima-nova/ProximaNova-Reg-webfont.svg#proxima_nova_rgregular") format("svg");
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.eot");
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.eot?#iefix") format("embedded-opentype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.woff") format("woff"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.ttf") format("truetype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.svg#proxima_nova_rgregular") format("svg");
     font-weight: normal;
     font-style: normal;
 }
