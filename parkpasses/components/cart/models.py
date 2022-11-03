@@ -503,14 +503,23 @@ class Cart(models.Model):
         return order, order_items
 
     def save(self, *args, **kwargs):
-        logger.info(f"Saving Cart: {self}.")
+        logger.info(
+            f"Saving Cart: {self}.", extra={"className": self.__class__.__name__}
+        )
         if not self.uuid:
-            logger.info("Cart has no uuid")
+            logger.info(
+                "Cart has no uuid", extra={"className": self.__class__.__name__}
+            )
             self.uuid = uuid.uuid4()
-            logger.info(f"Cart assigned uuid: {self.uuid}")
-        logger.info(f"Saving Cart: {self}.")
+            logger.info(
+                f"Cart assigned uuid: {self.uuid}",
+                extra={"className": self.__class__.__name__},
+            )
+        logger.info(
+            f"Saving Cart: {self}.", extra={"className": self.__class__.__name__}
+        )
         super().save(*args, **kwargs)
-        logger.info("Cart Saved.")
+        logger.info("Cart Saved.", extra={"className": self.__class__.__name__})
 
 
 class CartItemVoucherManager(models.Manager):
@@ -583,35 +592,54 @@ class CartItem(models.Model):
         return f"Content Type: {self.content_type} | Object ID: {self.object_id} Total Price: {self.get_total_price()}"
 
     def save(self, *args, **kwargs):
-        logger.info(f"Saving Cart Item: {self}.")
+        logger.info(
+            f"Saving Cart Item: {self}.", extra={"className": self.__class__.__name__}
+        )
 
         if str(self.content_type) not in settings.PARKPASSES_VALID_CART_CONTENT_TYPES:
             logger.error(
                 f"Attempting to add invalid content type {self.content_type} \
-                    to cart {self.cart.pk} for user {self.cart.user}"
+                    to cart {self.cart.pk} for user {self.cart.user}",
+                extra={"className": self.__class__.__name__},
             )
-            raise ValueError("A Cart Item can only contain a Voucher or a Pass")
+            raise ValueError(
+                "A Cart Item can only contain a Voucher or a Pass",
+                extra={"className": self.__class__.__name__},
+            )
         datetime_item_added = timezone.now()
-        logger.info("Checking if parent Cart has been added to in the past?")
+        logger.info(
+            "Checking if parent Cart has been added to in the past?",
+            extra={"className": self.__class__.__name__},
+        )
         if not self.cart.datetime_first_added_to and not self.cart.items.count():
-            logger.info("Parent Cart has not been added to in the past.")
+            logger.info(
+                "Parent Cart has not been added to in the past.",
+                extra={"className": self.__class__.__name__},
+            )
             self.cart.datetime_first_added_to = datetime_item_added
             logger.info(
-                f"Assigned date time first added to: {self.cart.datetime_first_added_to}."
+                f"Assigned date time first added to: {self.cart.datetime_first_added_to}.",
+                extra={"className": self.__class__.__name__},
             )
 
         self.cart.datetime_last_added_to = datetime_item_added
         logger.info(
-            f"Assigned date time last added to: {self.cart.datetime_last_added_to}."
+            f"Assigned date time last added to: {self.cart.datetime_last_added_to}.",
+            extra={"className": self.__class__.__name__},
         )
 
-        logger.info(f"Saving parent Cart: {self.cart}.")
+        logger.info(
+            f"Saving parent Cart: {self.cart}.",
+            extra={"className": self.__class__.__name__},
+        )
         self.cart.save()
-        logger.info("Parent Cart saved.")
+        logger.info("Parent Cart saved.", extra={"className": self.__class__.__name__})
 
-        logger.info(f"Saving Cart Item: {self}.")
+        logger.info(
+            f"Saving Cart Item: {self}.", extra={"className": self.__class__.__name__}
+        )
         super().save(*args, **kwargs)
-        logger.info("Cart Item saved.")
+        logger.info("Cart Item saved.", extra={"className": self.__class__.__name__})
 
     def is_voucher_purchase(self):
         return "parkpasses | voucher" == str(self.content_type)
@@ -620,51 +648,88 @@ class CartItem(models.Model):
         return "parkpasses | pass" == str(self.content_type)
 
     def delete(self, *args, **kwargs):
-        logger.info(f"Deleting Cart Item: {self}.")
+        logger.info(
+            f"Deleting Cart Item: {self}.", extra={"className": self.__class__.__name__}
+        )
         if self.is_voucher_purchase():
-            logger.info("Cart Item is a voucher purchase.")
+            logger.info(
+                "Cart Item is a voucher purchase.",
+                extra={"className": self.__class__.__name__},
+            )
             if Voucher.objects.filter(id=self.object_id, in_cart=True).exists():
-                logger.info(f"Selected Voucher with id: {self.object_id}.")
+                logger.info(
+                    f"Selected Voucher with id: {self.object_id}.",
+                    extra={"className": self.__class__.__name__},
+                )
                 voucher = Voucher.objects.get(id=self.object_id)
-                logger.info(f"Deleting associated voucher: {voucher}.")
+                logger.info(
+                    f"Deleting associated voucher: {voucher}.",
+                    extra={"className": self.__class__.__name__},
+                )
                 voucher.delete()
-                logger.info("Associated voucher deleted.")
+                logger.info(
+                    "Associated voucher deleted.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         elif self.is_pass_purchase():
-            logger.info("Cart Item is a Park Pass purchase.")
+            logger.info(
+                "Cart Item is a Park Pass purchase.",
+                extra={"className": self.__class__.__name__},
+            )
             if Pass.objects.filter(id=self.object_id, in_cart=True).exists():
-                logger.info(f"Selected Pass with id: {self.object_id}.")
+                logger.info(
+                    f"Selected Pass with id: {self.object_id}.",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass = Pass.objects.get(id=self.object_id)
 
                 logger.info(
-                    "Removed concession usage, discount code usage and voucher transaction from cart item."
+                    "Removing concession usage, discount code usage and voucher transaction from cart item.",
+                    extra={"className": self.__class__.__name__},
                 )
                 self.concession_usage = None
                 self.discount_code_usage = None
                 self.voucher_transaction = None
                 logger.info(
-                    "Concession usage, discount code usage and voucher transaction removed."
+                    "Concession usage, discount code usage and voucher transaction removed.",
+                    extra={"className": self.__class__.__name__},
                 )
 
-                logger.info(f"Saving cart item: {self}.")
+                logger.info(
+                    f"Saving cart item: {self}.",
+                    extra={"className": self.__class__.__name__},
+                )
                 self.save()
-                logger.info("Cart Item saved.")
+                logger.info(
+                    "Cart Item saved.", extra={"className": self.__class__.__name__}
+                )
 
                 logger.info(
-                    "Deleting concession usage, discount code usage and voucher transaction."
+                    "Deleting concession usage, discount code usage and voucher transaction.",
+                    extra={"className": self.__class__.__name__},
                 )
                 ConcessionUsage.objects.filter(park_pass=park_pass).delete()
                 DiscountCodeUsage.objects.filter(park_pass=park_pass).delete()
                 VoucherTransaction.objects.filter(park_pass=park_pass).delete()
                 logger.info(
-                    "Doncession usage, discount code usage and voucher transaction deleted."
+                    "Doncession usage, discount code usage and voucher transaction deleted.",
+                    extra={"className": self.__class__.__name__},
                 )
 
-                logger.info(f"Deleting park pass: {park_pass}.")
+                logger.info(
+                    f"Deleting park pass: {park_pass}.",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass.delete()
-                logger.info("Park Pass deleted.")
+                logger.info(
+                    "Park Pass deleted.", extra={"className": self.__class__.__name__}
+                )
 
-        logger.info("Returning from Cart Item delete.")
+        logger.info(
+            "Returning from Cart Item delete.",
+            extra={"className": self.__class__.__name__},
+        )
         return super().delete(*args, **kwargs)
 
     def get_price_before_discounts(self):
