@@ -456,10 +456,6 @@ class ExternalPassViewSet(
                 "This pass is being created by an external user.",
                 extra={"className": self.__class__.__name__},
             )
-            logger.info(
-                f"serializer.save(user={email_user_id}) called.",
-                extra={"className": self.__class__.__name__},
-            )
             email_user_id = self.request.user.id
             logger.info(
                 f"Calling serializer.save(user={email_user_id})",
@@ -936,7 +932,10 @@ class InternalPassViewSet(UserActionViewSet):
         checkout_parameters = CartUtils.get_checkout_parameters(
             request, return_url, return_preload_url, order.user, invoice_text
         )
-        logger.debug("\ncheckout_parameters = " + str(checkout_parameters))
+        logger.info(
+            "Checkout_parameters = " + str(checkout_parameters),
+            extra={"className": self.__class__.__name__},
+        )
 
         create_checkout_session(request, checkout_parameters)
 
@@ -945,7 +944,7 @@ class InternalPassViewSet(UserActionViewSet):
 
 class PassRefundSuccessView(APIView):
     def get(self, request, id, uuid, format=None):
-        """We don't actually need to do any processing here but ledger needs a valid rul for return_preload_url"""
+        """We don't actually need to do any processing here but ledger needs a valid url for return_preload_url"""
         logger.info(f"RefundSuccessView get method called with id {id} and uuid {uuid}")
 
 
