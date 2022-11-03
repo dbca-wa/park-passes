@@ -60,7 +60,7 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
 
         cart = Cart.get_or_create_cart(self.request)
         logger.info(
-            f"Retrieving cart for user {self.request.user}",
+            f"Retrieving cart for user: {self.request.user.id} ({self.request.user})",
             extra={"className": self.__class__.__name__},
         )
 
@@ -82,14 +82,24 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
             logger.info(
-                f"Assigned date first added to {cart.datetime_first_added_to} -> {cart}",
+                f"Assigned date first added to: {cart.datetime_first_added_to} to {cart}",
                 extra={"className": self.__class__.__name__},
             )
 
         cart.datetime_last_added_to = timezone.now()
+        logger.info(
+            f"Assigned date last added to: {cart.datetime_first_added_to} to {cart}",
+            extra={"className": self.__class__.__name__},
+        )
+        logger.info(
+            f"Saving cart: {cart_item_count}",
+            extra={"className": self.__class__.__name__},
+        )
         cart.save()
-
-        logger.info(f"Cart saved {cart}", extra={"className": self.__class__.__name__})
+        logger.info(
+            "Cart saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
     def has_object_permission(self, request, view, obj):
         if "create" == view.action:
