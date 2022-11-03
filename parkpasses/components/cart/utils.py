@@ -167,7 +167,7 @@ class CartUtils:
                 pass_type = park_pass.option.pricing_window.pass_type
                 if pass_type.oracle_code:
                     logger.info(
-                        f"Returning Pass Type {pass_type} oracle code: {retailer_group.oracle_code}.",
+                        f"Returning Pass Type: {pass_type} oracle code: {pass_type.oracle_code}.",
                         extra={"className": self.__class__.__name__},
                     )
                     return pass_type.oracle_code
