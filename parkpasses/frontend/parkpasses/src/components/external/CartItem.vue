@@ -49,7 +49,7 @@ const notMobile = breakpoints.greaterOrEqual('sm');
             <a class="accordian-header-note text-white d-block d-sm-none" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">More...</a>
 
             <span class="item-amount">${{cartItem.price}}</span>
-            <span class="delete-button"><i @click="deleteCartItem($event, cartItem.cart_item_id)" class="fa fa-trash org-primary" aria-hidden="true"></i></span>
+            <span class="delete-button"><i @click="deleteCartItem($event, cartItem.cart_item_id)" class="fa fa-trash" aria-hidden="true"></i></span>
         </div>
 
         <div :id="'collapse' + $.vnode.key" class="collapse" aria-labelledby="headingOne" data-parent="#checkoutAccordion">
@@ -272,5 +272,13 @@ export default {
 
     .discount-code-text{
         font-size:0.9em;
+    }
+
+    .fa-trash {
+        color:#eee;
+    }
+
+    .fa-trash:hover {
+        color:red;
     }
 </style>
