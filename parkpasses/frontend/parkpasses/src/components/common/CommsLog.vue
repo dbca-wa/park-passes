@@ -92,7 +92,7 @@ export default {
                 responsive: true,
                 deferRender: true,
                 autowidth: true,
-                order: [[4, 'desc']], // order the non-formatted date as a hidden column
+                order: [[2, 'desc']], // order the non-formatted date as a hidden column
                 dom:
                     "<'row'<'col-sm-4'l><'col-sm-8'f>>" +
                     "<'row'<'col-sm-12'tr>>" +
@@ -117,7 +117,7 @@ export default {
                     {
                         title: 'When',
                         data:"when",
-                        orderable: false,
+                        orderable: true,
                         mRender:function(data,type,full){
                             return moment(data).format(vm.dateFormat);
                         }
