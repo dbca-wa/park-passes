@@ -45,8 +45,8 @@ const notMobile = breakpoints.greaterOrEqual('sm');
                 <span v-if="isHolidayPass(cartItem)">({{ cartItem.duration }})</span>
             </span>
             <span class="item-type d-block d-sm-none">Pass</span>
-            <a class="accordian-header-note text-secondary d-none d-sm-block" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show more details</a>
-            <a class="accordian-header-note text-secondary d-block d-sm-none" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">More...</a>
+            <a class="accordian-header-note text-white d-none d-sm-block" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show more details</a>
+            <a class="accordian-header-note text-white d-block d-sm-none" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">More...</a>
 
             <span class="item-amount">${{cartItem.price}}</span>
             <span class="delete-button"><i @click="deleteCartItem($event, cartItem.cart_item_id)" class="fa fa-trash org-primary" aria-hidden="true"></i></span>
@@ -253,6 +253,8 @@ export default {
         align-items: center;
         justify-content: center;
         grid-gap: 10px;
+        background-color: #003e52;
+        color:#eee;
     }
 
     .delete-button {
