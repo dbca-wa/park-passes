@@ -204,21 +204,21 @@ class CartUtils:
     def increment_cart_item_count(self, request):
         cart_item_count = request.session.get("cart_item_count", None)
         if cart_item_count:
-            request.session["cart_item_count"] = cart_item_count + 1
-            return cart_item_count + 1
-
-        request.session["cart_item_count"] = 1
-        return 1
+            cart_item_count = cart_item_count + 1
+        else:
+            cart_item_count = 1
+        request.session["cart_item_count"] = cart_item_count
+        return cart_item_count
 
     @classmethod
     def decrement_cart_item_count(self, request):
         cart_item_count = request.session.get("cart_item_count", None)
-        if cart_item_count:
-            request.session["cart_item_count"] = cart_item_count - 1
-            return cart_item_count - 1
-
-        request.session["cart_item_count"] = 0
-        return 0
+        if cart_item_count and 0 < cart_item_count:
+            cart_item_count = cart_item_count - 1
+        else:
+            cart_item_count = 0
+        request.session["cart_item_count"] = cart_item_count
+        return cart_item_count
 
     @classmethod
     def reset_cart_item_count(self, request):
