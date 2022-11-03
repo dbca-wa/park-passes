@@ -131,15 +131,15 @@ class InternalDiscountCodeBatchViewSet(BaseUserActionViewSet):
 
     def perform_create(self, serializer):
         new_discount_code_batch = serializer.save(created_by=self.request.user.id)
-        valid_pass_types = self.request.data.get("valid_pass_types")
 
+        valid_pass_types = self.request.data.get("valid_pass_types")
         for valid_pass_type in valid_pass_types:
             DiscountCodeBatchValidPassType.objects.create(
                 discount_code_batch_id=new_discount_code_batch.id,
                 pass_type_id=valid_pass_type,
             )
-        valid_users = self.request.data.get("valid_users")
 
+        valid_users = self.request.data.get("valid_users")
         for valid_user in valid_users:
             DiscountCodeBatchValidUser.objects.create(
                 discount_code_batch_id=new_discount_code_batch.id, user=valid_user
