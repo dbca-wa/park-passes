@@ -621,7 +621,10 @@ class Pass(models.Model):
         return Decimal(amount).quantize(Decimal("0.00"))
 
     def generate_qrcode(self):
-        logger.info(f"Generating qr code for pass {self.pass_number}.")
+        logger.info(
+            f"Generating qr code for pass {self.pass_number}.",
+            extra={"className": self.__class__.__name__},
+        )
         from parkpasses.components.passes.serializers import (
             ExternalQRCodePassSerializer,
         )
@@ -643,7 +646,8 @@ class Pass(models.Model):
     def generate_park_pass_pdf(self):
         if not PassTemplate.objects.count():
             logger.critical(
-                "CRITICAL: The system can not find a Pass Template to use for generating park passes."
+                "CRITICAL: The system can not find a Pass Template to use for generating park passes.",
+                extra={"className": self.__class__.__name__},
             )
             raise PassTemplateDoesNotExist(
                 "CRITICAL: The system can not find a Pass Template to use for generating park passes."
@@ -725,7 +729,7 @@ class Pass(models.Model):
                         extra={"className": self.__class__.__name__},
                     )
 
-        logger.debug("Updating pass.")
+        logger.info("Updating pass.", extra={"className": self.__class__.__name__})
         super().save(force_update=True)
 
     def send_autorenew_notification_email(self):
