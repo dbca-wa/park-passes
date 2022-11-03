@@ -60,6 +60,7 @@ class UserActionList(generics.ListAPIView):
 class UserActionViewSet(BaseUserActionViewSet):
     model = UserAction
     serializer_class = UserActionSerializer
+    queryset = UserAction.objects.all().order_by("-when")
 
 
 class CreateCommunicationsLogEntry(generics.ListCreateAPIView):
