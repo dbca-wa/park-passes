@@ -538,11 +538,19 @@ class ExternalPassViewSet(
             extra={"className": self.__class__.__name__},
         )
 
+        logger.info(
+            f"Getting cart for user: {self.request.user.id} ({self.request.user}).",
+            extra={"className": self.__class__.__name__},
+        )
         cart = Cart.get_or_create_cart(self.request)
 
         content_type = ContentType.objects.get_for_model(park_pass)
         oracle_code = CartUtils.get_oracle_code(
             self.request, content_type, park_pass.id
+        )
+        logger.info(
+            f"Oracle code: {oracle_code} will be used for this park pass.",
+            extra={"className": self.__class__.__name__},
         )
         cart_item = CartItem(
             cart=cart,
@@ -551,31 +559,76 @@ class ExternalPassViewSet(
             oracle_code=oracle_code,
         )
 
+        logger.info(
+            f"Cart item: {cart_item} created in memory.",
+            extra={"className": self.__class__.__name__},
+        )
+
         """ If the user deletes a cart item, any objects that can be attached to a cart item
         (concession usage, discount code usage and voucher transaction)
         are deleted in the cart item's delete method  """
         if concession_id and concession_card_number:
             if Concession.objects.filter(id=concession_id).exists():
                 concession = Concession.objects.get(id=concession_id)
+                logger.info(
+                    f"This pass purchase includes a concession: {concession}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    "Creating concession usage.",
+                    extra={"className": self.__class__.__name__},
+                )
                 concession_usage = ConcessionUsage.objects.create(
                     concession=concession,
                     park_pass=park_pass,
                     concession_card_number=concession_card_number,
                 )
+                logger.info(
+                    "Concession usage: {concession_usage} created.",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart_item.concession_usage = concession_usage
+                logger.info(
+                    "Concession usage assigned to cart item: {cart_item}.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         if discount_code:
             pass_type_id = park_pass.option.pricing_window.pass_type.id
             if DiscountCode.is_valid(discount_code, self.request.user.id, pass_type_id):
                 discount_code = DiscountCode.objects.get(code=discount_code)
+                logger.info(
+                    f"This pass purchase includes a discount code: {discount_code}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    "Creating discount code usage.",
+                    extra={"className": self.__class__.__name__},
+                )
                 discount_code_usage = DiscountCodeUsage.objects.create(
                     discount_code=discount_code, park_pass=park_pass
                 )
+                logger.info(
+                    "Discount code usage: {discount_code_usage} created.",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart_item.discount_code_usage = discount_code_usage
+                logger.info(
+                    "Discount code usage assigned to cart item: {cart_item}.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         if voucher_code:
             if Voucher.is_valid(voucher_code, voucher_pin):
                 voucher = Voucher.objects.get(code=voucher_code, pin=voucher_pin)
+                logger.info(
+                    f"This pass purchase includes a voucher transaction for voucher: {voucher}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    "Creating voucher transaction.",
+                    extra={"className": self.__class__.__name__},
+                )
                 voucher_transaction = VoucherTransaction.objects.create(
                     voucher=voucher,
                     park_pass=park_pass,
@@ -584,12 +637,32 @@ class ExternalPassViewSet(
                     ),
                     credit=Decimal(0.00),
                 )
+                logger.info(
+                    f"Voucher transaction: {voucher_transaction} created.",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart_item.voucher_transaction = voucher_transaction
+                logger.info(
+                    f"Voucher transaction assigned to cart item: {cart_item}.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         # Save to apply any concession usages, discount code usages or voucher transactions to the cart item
+        logger.info(
+            f"Saving cart item: {cart_item}.",
+            extra={"className": self.__class__.__name__},
+        )
         cart_item.save()
+        logger.info(
+            f"Cart item: {cart_item} saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
         if is_customer(self.request):
+            logger.info(
+                "User is an external user so will increment cart item count.",
+                extra={"className": self.__class__.__name__},
+            )
             cart_item_count = CartUtils.increment_cart_item_count(self.request)
             logger.info(
                 f"Incremented cart item count to {cart_item_count} -> {cart}",
@@ -598,9 +671,26 @@ class ExternalPassViewSet(
 
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
+            logger.info(
+                f"Assigned datetime_first_added_to {cart.datetime_first_added_to} for cart: {cart}.",
+                extra={"className": self.__class__.__name__},
+            )
+
         cart.datetime_last_added_to = timezone.now()
+        logger.info(
+            f"Assigned datetime_last_added_to {cart.datetime_last_added_to} for cart: {cart}.",
+            extra={"className": self.__class__.__name__},
+        )
+
+        logger.info(
+            f"Saving cart: {cart}.",
+            extra={"className": self.__class__.__name__},
+        )
         cart.save()
-        logger.debug(str(self.request.session))
+        logger.info(
+            f"Cart: {cart} saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
     def perform_update(self, serializer):
         park_pass = serializer.save()
