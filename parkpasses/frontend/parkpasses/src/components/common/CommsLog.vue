@@ -138,8 +138,9 @@ export default {
                             if(full.documents && 1<full.documents.length){
                                 console.log(full.documents)
                                 let documentsHtml = '';
+                                // Need to add a call to an api here to access documents in protected media
                                 for(let i=0;i<full.documents.length;i++){
-                                    documentsHtml += `<a href="">${full.documents[i].file_name}</a><br />`;
+                                    documentsHtml += `<a href="${apiEndpoints.retrieveOrgModelDocument(full.documents[i].id)}" target="_blank">${full.documents[i].file_name}</a><br />`;
                                 }
                                 return documentsHtml;
                             } else {
