@@ -228,9 +228,9 @@ module.exports = {
     listUserActionsLog: function (appLabel, model, objectId) {
         return                          `/api/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&objectId=${objectId}&format=datatables`;
     },
-    createCommunicationsLogEntry:       '/api/org-model-logs/communications-log-entries',
+    createCommunicationsLogEntry:       '/api/internal/org-model-logs/communications-log-entries',
     listCommunicationsLogEntries: function (appLabel, model, objectId) {
-        return                          `/api/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&objectId=${objectId}&format=datatables`;
+        return                          `/api/internal/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&objectId=${objectId}&format=datatables`;
     },
 
 
