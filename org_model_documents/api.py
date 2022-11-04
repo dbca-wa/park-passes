@@ -1,6 +1,8 @@
 import logging
 
+from django.http import FileResponse, Http404
 from rest_framework import generics, viewsets
+from rest_framework.decorators import action
 
 from org_model_documents.models import Document
 from org_model_documents.serializers import DocumentSerializer
@@ -19,3 +21,11 @@ class DocumentCreateView(generics.CreateAPIView):
 class DocumentViewSet(viewsets.ModelViewSet):
     model = Document
     serializer_class = DocumentSerializer
+    queryset = Document.objects.all()
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-document")
+    def retrieve_document(self, request, *args, **kwargs):
+        document = self.get_object()
+        if document._file:
+            return FileResponse(document._file)
+        raise Http404
