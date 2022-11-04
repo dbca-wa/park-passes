@@ -11,6 +11,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = [
+            "id",
             "content_type",
             "object_id",
             "datetime_created",
