@@ -165,6 +165,7 @@ div#app .container {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
 }
 
+select:focus,
 textarea:focus,
 input[type="text"]:focus,
 input[type="password"]:focus,
@@ -180,10 +181,17 @@ input[type="url"]:focus,
 input[type="search"]:focus,
 input[type="tel"]:focus,
 input[type="color"]:focus,
+input[type="file"]:focus,
 .uneditable-input:focus {
-  border-color: #00818F;
-  box-shadow: 0 1px 1px #eee inset, 0 0 8px #00818F;
-  outline: 0 none;
+  border-color: #00818F !important;
+  box-shadow: 0 1px 1px #eee inset, 0 0 8px #00818F !important;
+  outline: 0 none !important;
+}
+
+.popover-header {
+    background-color: #003e52;
+    color: #eee;
+    border: 1px solid #eee;
 }
 
 div.dataTables_processing div:last-child div {
