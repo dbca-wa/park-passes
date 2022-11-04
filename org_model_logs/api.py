@@ -63,7 +63,7 @@ class UserActionViewSet(BaseUserActionViewSet):
     queryset = UserAction.objects.all().order_by("-when")
 
 
-class CreateCommunicationsLogEntry(generics.ListCreateAPIView):
+class ListCreateCommunicationsLogEntry(generics.ListCreateAPIView):
     model = CommunicationsLogEntry
     filter_backends = (DatatablesFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
