@@ -188,6 +188,12 @@ input[type="file"]:focus,
   outline: 0 none !important;
 }
 
+button:focus {
+    border-color: #00818F !important;
+    box-shadow: inset 0 1px 0 #eee, 0 1px 1px #00818F;
+    outline: 0 none !important;
+}
+
 .popover-header {
     background-color: #003e52;
     color: #eee;
