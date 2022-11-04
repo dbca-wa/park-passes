@@ -1,5 +1,4 @@
-import api from './api'
-import {helpers} from '@/utils/hooks'
+import { apiEndpoints, constants } from '@/utils/hooks'
 
 export default {
     uploadOrgModelDocuments: function(contentType, objectId, files){
@@ -9,7 +8,7 @@ export default {
             formData.append('content_type', contentType);
             formData.append('object_id', objectId);
             formData.append('_file', files[i]);
-            fetch(api.uploadOrgModelDocuments, {
+            fetch(apiEndpoints.uploadOrgModelDocuments, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
