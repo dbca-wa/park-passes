@@ -190,9 +190,10 @@ urlpatterns = [
     url(r"api/users/", include("parkpasses.components.users.urls")),
     url(r"api/retailers/", include("parkpasses.components.retailers.urls")),
     url(r"api/reports/", include("parkpasses.components.reports.urls")),
+    url(r"api/main/", include("parkpasses.components.main.urls")),
     # ========================================================================== Org Model Documents end-points
     url(
-        r"api/org-model-documents/upload-documents",
+        r"api/internal/org-model-documents/upload-documents",
         DocumentCreateView.as_view(),
         name="upload-documents",
     ),
