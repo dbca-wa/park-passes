@@ -76,7 +76,7 @@
 
 import Modal from '@vue-utils/BootstrapModal.vue'
 import Alert from '@vue-utils/Alert.vue'
-import { constants, helpers, apiEndpoints } from "@/utils/hooks.js"
+import { constants, utils, apiEndpoints } from "@/utils/hooks.js"
 
 export default {
     name: 'AddCommLog',
@@ -212,7 +212,6 @@ export default {
             vm.comms.model = vm.model
             vm.comms.object_id = vm.objectId
             vm.comms.customer = vm.customerId
-            alert(JSON.stringify(vm.comms));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -226,6 +225,11 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
+
+                console.log(data);
+                let files = $('#attachments')[0].files;
+                utils.uploadOrgModelDocuments(data.comms_log_entry_content_type, data.id, files);
+
                 vm.addingComms = false;
                 vm.close();
             })
@@ -262,6 +266,7 @@ export default {
 </script>
 
 <style lang="css">
+
 
 select {
   color: #efefef;
