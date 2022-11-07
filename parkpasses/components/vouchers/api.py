@@ -16,6 +16,10 @@ from rest_framework_datatables.django_filters.filterset import DatatablesFilterS
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
 from parkpasses.components.cart.models import Cart, CartItem
+from parkpasses.components.main.api import (
+    CustomDatatablesListMixin,
+    CustomDatatablesRenderer,
+)
 from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.components.vouchers.serializers import (
@@ -155,7 +159,7 @@ class VoucherFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalVoucherViewSet(viewsets.ModelViewSet):
+class InternalVoucherViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     """
     A ViewSet for internal users to perform actions on vouchers.
     """
@@ -167,6 +171,7 @@ class InternalVoucherViewSet(viewsets.ModelViewSet):
     serializer_class = InternalVoucherSerializer
     filter_backends = (VoucherFilterBackend,)
     filterset_class = VoucherFilter
+    renderer_classes = (CustomDatatablesRenderer,)
 
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
     def retrieve_invoice(self, request, *args, **kwargs):

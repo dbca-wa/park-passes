@@ -266,7 +266,7 @@ class SuccessView(APIView):
 
         if uuid and invoice_reference:
             logger.info(
-                "Invoice reference: {invoice_reference} and uuid: {uuid}.",
+                f"Invoice reference: {invoice_reference} and uuid: {uuid}.",
                 extra={"className": self.__class__.__name__},
             )
             if not Cart.objects.filter(uuid=uuid).exists():

@@ -705,7 +705,7 @@ class Pass(models.Model):
             days=self.option.duration
         )
         logger.info(
-            f"Pass expiry date set as: {self.option.duration}.",
+            f"Pass expiry date set as: {self.date_expiry}.",
             extra={"className": self.__class__.__name__},
         )
 
@@ -713,14 +713,15 @@ class Pass(models.Model):
 
         if self.user:
             logger.info(
-                "Pass has a user id.", extra={"className": self.__class__.__name__}
+                f"Pass has a user id: {self.user}",
+                extra={"className": self.__class__.__name__},
             )
             email_user = self.email_user
             self.first_name = email_user.first_name
             self.last_name = email_user.last_name
             self.email = email_user.email
             logger.info(
-                "Populated pass details from SSO.",
+                "Populated pass details from ledger email user.",
                 extra={"className": self.__class__.__name__},
             )
 
@@ -752,6 +753,7 @@ class Pass(models.Model):
 
                 """Consider: Running generate_park_pass_pdf() with a message queue would be much better"""
                 self.generate_park_pass_pdf()
+
                 logger.info(
                     "Park pass pdf generated.",
                     extra={"className": self.__class__.__name__},

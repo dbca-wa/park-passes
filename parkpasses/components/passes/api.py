@@ -29,7 +29,11 @@ from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.concessions.models import Concession, ConcessionUsage
 from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeUsage
-from parkpasses.components.main.api import UserActionViewSet
+from parkpasses.components.main.api import (
+    CustomDatatablesListMixin,
+    CustomDatatablesRenderer,
+    UserActionViewSet,
+)
 from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
@@ -211,7 +215,7 @@ class PricingWindowFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalPricingWindowViewSet(viewsets.ModelViewSet):
+class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     search_fields = [
         # "pass_type_display_name",
         "name",
@@ -221,6 +225,7 @@ class InternalPricingWindowViewSet(viewsets.ModelViewSet):
     queryset = PassTypePricingWindow.objects.all()
     permission_classes = [IsInternal]
     filter_backends = (PricingWindowFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     def get_serializer_class(self):
         logger.debug("self.action = " + str(self.action))
@@ -742,15 +747,28 @@ class PassFilterBackend(DatatablesFilterBackend):
         total_count = queryset.count()
 
         pass_type = request.GET.get("pass_type")
-        processing_status = request.GET.get("processing_status")
+        status = request.GET.get("status")
         start_date_from = request.GET.get("start_date_from")
         start_date_to = request.GET.get("start_date_to")
 
         if pass_type:
             queryset = queryset.filter(option__pricing_window__pass_type__id=pass_type)
 
-        if processing_status:
-            queryset = queryset.filter(processing_status=processing_status)
+        if status:
+            if Pass.CANCELLED == status:
+                queryset = queryset.filter(cancellation__isnull=False)
+
+            elif Pass.FUTURE == status:
+                queryset = queryset.filter(date_start__gt=timezone.now().date())
+
+            elif Pass.EXPIRED == status:
+                queryset = queryset.filter(date_expiry__lte=timezone.now().date())
+
+            elif Pass.CURRENT == status:
+                queryset = queryset.filter(
+                    date_start__lte=timezone.now().date(),
+                    date_expiry__gte=timezone.now().date(),
+                )
 
         if start_date_from:
             queryset = queryset.filter(date_start__gte=start_date_from)
@@ -770,7 +788,7 @@ class PassFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class RetailerPassViewSet(UserActionViewSet):
+class RetailerPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
     search_fields = [
         "pass_number",
         "first_name",
@@ -782,6 +800,7 @@ class RetailerPassViewSet(UserActionViewSet):
     pagination_class = DatatablesPageNumberPagination
     permission_classes = [IsRetailer]
     filter_backends = (PassFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
     http_method_names = ["get", "post", "head", "put", "patch"]
 
     def get_serializer_class(self):
@@ -824,7 +843,7 @@ class RetailerPassViewSet(UserActionViewSet):
         raise Http404
 
 
-class InternalPassViewSet(UserActionViewSet):
+class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
     search_fields = [
         "pass_number",
         "first_name",
@@ -837,6 +856,7 @@ class InternalPassViewSet(UserActionViewSet):
     queryset = Pass.objects.exclude(in_cart=True)
     permission_classes = [IsInternal]
     filter_backends = (PassFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     def get_serializer_class(self):
         if "retrieve" == self.action:

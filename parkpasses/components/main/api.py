@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
+from rest_framework_datatables.renderers import DatatablesRenderer
 
 from org_model_documents.api import DocumentCreateView, DocumentViewSet
 from org_model_logs.api import EntryTypeList as BaseEntryTypeList
@@ -25,6 +26,28 @@ logger = logging.getLogger(__name__)
 
 """ The following classes are overridden here because the permission classes belong to park passes app
 so can't be included in the org_model_documents or org_model_logs apps as it would break their independence"""
+
+
+class CustomDatatablesRenderer(DatatablesRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if "view" in renderer_context and hasattr(
+            renderer_context["view"], "_datatables_total_count"
+        ):
+            data["recordsTotal"] = renderer_context["view"]._datatables_total_count
+        return super().render(data, accepted_media_type, renderer_context)
+
+
+class CustomDatatablesListMixin:
+    def list(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        qs = self.filter_queryset(qs)
+        qs = qs.distinct()
+        self.paginator.page_size = qs.count()
+        result_page = self.paginator.paginate_queryset(qs, request)
+        serializer = self.get_serializer(
+            result_page, context={"request": request}, many=True
+        )
+        return self.paginator.get_paginated_response(serializer.data)
 
 
 class DocumentCreateView(DocumentCreateView):

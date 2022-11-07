@@ -26,6 +26,10 @@ from parkpasses.components.discount_codes.serializers import (
     InternalDiscountCodeSerializer,
     InternalDiscountCodeXlsxSerializer,
 )
+from parkpasses.components.main.api import (
+    CustomDatatablesListMixin,
+    CustomDatatablesRenderer,
+)
 from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.permissions import IsInternal
 
@@ -118,13 +122,16 @@ class DiscountCodeBatchFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalDiscountCodeBatchViewSet(BaseUserActionViewSet):
+class InternalDiscountCodeBatchViewSet(
+    CustomDatatablesListMixin, BaseUserActionViewSet
+):
     model = DiscountCodeBatch
     pagination_class = DatatablesPageNumberPagination
     queryset = DiscountCodeBatch.objects.all()
     permission_classes = [IsInternal]
     serializer_class = InternalDiscountCodeBatchSerializer
     filter_backends = (DiscountCodeBatchFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     def get_user_action_serializer_class(self):
         return UserActionSerializer

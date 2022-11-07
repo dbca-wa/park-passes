@@ -13,6 +13,10 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from parkpasses.components.main.api import (
+    CustomDatatablesListMixin,
+    CustomDatatablesRenderer,
+)
 from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.models import (
     RetailerGroup,
@@ -137,13 +141,16 @@ class RetailerGroupUserFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class RetailerRetailerGroupUserViewSet(viewsets.ModelViewSet):
+class RetailerRetailerGroupUserViewSet(
+    CustomDatatablesListMixin, viewsets.ModelViewSet
+):
     model = RetailerGroupUser
     queryset = RetailerGroupUser.objects.all()
     permission_classes = [IsRetailerAdmin]
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerGroupUserFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     def get_queryset(self):
         if RetailerGroupUser.objects.filter(
@@ -198,13 +205,16 @@ class RetailerGroupUserFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalRetailerGroupUserViewSet(viewsets.ModelViewSet):
+class InternalRetailerGroupUserViewSet(
+    CustomDatatablesListMixin, viewsets.ModelViewSet
+):
     model = RetailerGroupUser
     queryset = RetailerGroupUser.objects.all()
     permission_classes = [IsInternal]
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerGroupUserFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     @action(methods=["PUT"], detail=True, url_path="toggle-active")
     def toggle_active(self, request, *args, **kwargs):
@@ -276,6 +286,7 @@ class RetailerGroupUserInviteFilterBackend(DatatablesFilterBackend):
             queryset = queryset.filter(retailer_group_id=retailer_group)
 
         if status:
+            logger.debug("status = " + str(status))
             queryset = queryset.filter(status=status)
 
         if datetime_created_from:
@@ -296,7 +307,9 @@ class RetailerGroupUserInviteFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
+class InternalRetailerGroupInviteViewSet(
+    CustomDatatablesListMixin, viewsets.ModelViewSet
+):
     model = RetailerGroupInvite
     queryset = (
         RetailerGroupInvite.objects.annotate(
@@ -316,7 +329,8 @@ class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInternal]
     serializer_class = InternalRetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
-    filter_backends = (RetailerGroupUserFilterBackend,)
+    filter_backends = (RetailerGroupUserInviteFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     @action(methods=["PUT"], detail=True, url_path="resend-retailer-group-user-invite")
     def resend_retailer_group_user_invite(self, request, *args, **kwargs):
@@ -362,11 +376,15 @@ class InternalRetailerGroupInviteViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class RetailerRetailerGroupInviteViewSet(viewsets.ModelViewSet):
+class RetailerRetailerGroupInviteViewSet(
+    CustomDatatablesListMixin, viewsets.ModelViewSet
+):
     model = RetailerGroupInvite
     permission_classes = [IsRetailerAdmin]
     serializer_class = RetailerRetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
+    filter_backends = (RetailerGroupUserInviteFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     def perform_create(self, serializer):
         serializer.save(initiated_by=RetailerGroupInvite.RETAILER_USER)

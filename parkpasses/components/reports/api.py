@@ -6,6 +6,10 @@ from rest_framework.decorators import action
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from parkpasses.components.main.api import (
+    CustomDatatablesListMixin,
+    CustomDatatablesRenderer,
+)
 from parkpasses.components.reports.models import Report
 from parkpasses.components.reports.serializers import (
     InternalReportSerializer,
@@ -51,7 +55,7 @@ class RetailerReportFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class RetailerReportViewSet(viewsets.ModelViewSet):
+class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     """
     A ViewSet for retailers to perform actions on reports.
     """
@@ -61,6 +65,7 @@ class RetailerReportViewSet(viewsets.ModelViewSet):
     serializer_class = RetailerReportSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerReportFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     def get_queryset(self):
         user_retailer_groups = get_retailer_group_ids_for_user(self.request)
@@ -134,7 +139,7 @@ class ReportFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalReportViewSet(viewsets.ModelViewSet):
+class InternalReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     """
     A ViewSet for internal users to perform actions on reports.
     """
@@ -145,6 +150,7 @@ class InternalReportViewSet(viewsets.ModelViewSet):
     serializer_class = InternalReportSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (ReportFilterBackend,)
+    renderer_classes = (CustomDatatablesRenderer,)
 
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice-pdf")
     def retrieve_invoice_pdf(self, request, *args, **kwargs):

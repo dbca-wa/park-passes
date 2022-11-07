@@ -263,7 +263,7 @@ class Cart(models.Model):
             )
             order = Order.objects.get(uuid=self.uuid)
             logger.info(
-                f"Order {str(order)} selected.",
+                f"Order: {str(order)} selected.",
                 extra={"className": self.__class__.__name__},
             )
             order.user = self.user
@@ -300,7 +300,7 @@ class Cart(models.Model):
             )
         for cart_item in self.items.all():
             logger.info(
-                f"Creating new order item with data from cart item {cart_item}.",
+                f"Creating new order item with data from cart item: {cart_item}.",
                 extra={"className": self.__class__.__name__},
             )
             order_item = OrderItem()

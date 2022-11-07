@@ -14,9 +14,12 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="">Status</label>
-                        <select class="form-control" v-model="filterProcessingStatus">
-                            <option value="">All</option>
-                            <option v-for="processingStatus in passProcessingStatusesDistinct" :value="processingStatus.code">{{ processingStatus.description }}</option>
+                        <select class="form-control" v-model="filterStatus">
+                            <option value="" selected="selected">All</option>
+                            <option value="CU">Current</option>
+                            <option value="FU">Future</option>
+                            <option value="EX">Expired</option>
+                            <option value="CA">Cancelled</option>
                         </select>
                     </div>
                 </div>
@@ -82,10 +85,10 @@ export default {
                 return options.indexOf(val) != -1 ? true: false;
             }
         },
-        filterProcessingStatusCacheName: {
+        filterStatusCacheName: {
             type: String,
             required: false,
-            default: 'filterProcessingStatus',
+            default: 'filterStatus',
         },
         filterPassTypeCacheName: {
             type: String,
@@ -110,7 +113,7 @@ export default {
             dataTableId: 'passes-datatable-' + uuid(),
 
             filterPassType: sessionStorage.getItem(vm.filterPassTypeCacheName) ? sessionStorage.getItem(vm.filterPassTypeCacheName) : '',
-            filterProcessingStatus: sessionStorage.getItem(vm.filterProcessingStatusCacheName) ? sessionStorage.getItem(vm.filterProcessingStatusCacheName) : '',
+            filterStatus: sessionStorage.getItem(vm.filterStatusCacheName) ? sessionStorage.getItem(vm.filterStatusCacheName) : '',
             filterDatetimeStartFrom: sessionStorage.getItem(vm.filterDatetimeStartFromCacheName) ? sessionStorage.getItem(vm.filterDatetimeStartFromCacheName) : '',
             filterDatetimeStartTo: sessionStorage.getItem(vm.filterDatetimeStartToCacheName) ? sessionStorage.getItem(vm.filterDatetimeStartToCacheName) : '',
 
@@ -147,9 +150,9 @@ export default {
             this.$refs.passDatatable.vmDataTable.columns.adjust().draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
             sessionStorage.setItem(this.filterPassTypeCacheName, this.filterPassType);
         },
-        filterProcessingStatus: function() {
+        filterStatus: function() {
             this.$refs.passDatatable.vmDataTable.draw();
-            sessionStorage.setItem(this.filterProcessingStatusCacheName, this.filterProcessingStatus);
+            sessionStorage.setItem(this.filterStatusCacheName, this.filterStatus);
         },
         filterDatetimeStartFrom: function() {
             this.$refs.passDatatable.vmDataTable.draw();  // This calls ajax() backend call.  This line is enough to search?  Do we need following lines...?
@@ -173,7 +176,7 @@ export default {
         filterApplied: function(){
             let filter_applied = true
             if(
-                this.filterProcessingStatus.toLowerCase() === '' &&
+                this.filterStatus.toLowerCase() === '' &&
                 this.filterPassType === '' &&
                 this.filterDatetimeStartFrom.toLowerCase() === '' &&
                 this.filterDatetimeStartTo.toLowerCase() === ''
@@ -423,7 +426,7 @@ export default {
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
                         d.pass_type = vm.filterPassType
-                        d.processing_status = vm.filterProcessingStatus
+                        d.status = vm.filterStatus
                         d.start_date_from = vm.filterDatetimeStartFrom
                         d.start_date_to = vm.filterDatetimeStartTo
                     }
@@ -475,21 +478,6 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.passTypesDistinct = data
-            })
-            .catch(error => {
-                //this.errorMessage = error;
-                console.error("There was an error!", error);
-            });
-
-            // Pass Processing Statuses
-            fetch(apiEndpoints.passProcessingStatusesDistinct)
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    return Promise.reject(error);
-                }
-                vm.passProcessingStatusesDistinct = data
             })
             .catch(error => {
                 //this.errorMessage = error;

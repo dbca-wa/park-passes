@@ -5,6 +5,12 @@ from parkpasses.components.orders.models import Order, OrderItem
 
 class OrderItemAdmin(admin.ModelAdmin):
     model = OrderItem
+    list_display = (
+        "order",
+        "object_id",
+        "content_type",
+        "amount",
+    )
 
 
 admin.site.register(OrderItem, OrderItemAdmin)
