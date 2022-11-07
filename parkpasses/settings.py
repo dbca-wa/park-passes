@@ -52,6 +52,7 @@ INSTALLED_APPS += [
     "parkpasses.components.help",
     "parkpasses.components.emails",
     "parkpasses.components.reports",
+    "django_q",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -66,7 +67,9 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
-    # "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    "DEFAULT_FILTER_BACKENDS": (
+        "rest_framework_datatables.filters.DatatablesFilterBackend",
+    ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 20,
     "SEARCH_PARAM": "search[value]",
@@ -472,6 +475,19 @@ LEDGER_UI_ACCOUNTS_MANAGEMENT = [
     {"phone_number": {"options": {"view": True, "edit": True}}},
     {"mobile_number": {"options": {"view": True, "edit": True}}},
 ]
+
+
+""" ==================== DJANDO Q ======================== """
+
+Q_CLUSTER = {
+    "name": "DjangORM",
+    "workers": 4,
+    "timeout": 90,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+}
 
 
 """ ==================== CKEDITOR CONFIGS ======================== """

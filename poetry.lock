@@ -1,10 +1,29 @@
 [[package]]
+name = "ansicon"
+version = "1.89.0"
+description = "Python wrapper for loading Jason Hood's ANSICON"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "appnope"
 version = "0.1.3"
 description = "Disable App Nap on macOS >= 10.9"
 category = "dev"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "arrow"
+version = "1.2.3"
+description = "Better dates & times for Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+python-dateutil = ">=2.7.0"
 
 [[package]]
 name = "asgiref"
@@ -43,14 +62,6 @@ six = "*"
 
 [package.extras]
 test = ["astroid (<=2.5.3)", "pytest"]
-
-[[package]]
-name = "async-timeout"
-version = "4.0.2"
-description = "Timeout context manager for asyncio programs"
-category = "main"
-optional = false
-python-versions = ">=3.6"
 
 [[package]]
 name = "attrs"
@@ -118,6 +129,19 @@ colorama = ["colorama (>=0.4.3)"]
 d = ["aiohttp (>=3.7.4)"]
 jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
+
+[[package]]
+name = "blessed"
+version = "1.19.1"
+description = "Easy, practical library for making terminal apps, by providing an elegant, well-documented interface to Colors, Keyboard input, and screen Positioning capabilities."
+category = "main"
+optional = false
+python-versions = ">=2.7"
+
+[package.dependencies]
+jinxed = {version = ">=1.1.0", markers = "platform_system == \"Windows\""}
+six = ">=1.9.0"
+wcwidth = ">=0.1.4"
 
 [[package]]
 name = "cerberus"
@@ -199,20 +223,6 @@ description = "Decorators for Humans"
 category = "dev"
 optional = false
 python-versions = ">=3.5"
-
-[[package]]
-name = "deprecated"
-version = "1.2.13"
-description = "Python @deprecated decorator to deprecate old python classes, functions or methods."
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-
-[package.dependencies]
-wrapt = ">=1.10,<2"
-
-[package.extras]
-dev = ["tox", "bump2version (<1)", "sphinx (<2)", "importlib-metadata (<3)", "importlib-resources (<4)", "configparser (<5)", "sphinxcontrib-websupport (<2)", "zipp (<2)", "PyTest (<5)", "PyTest-Cov (<2.6)", "pytest", "pytest-cov"]
 
 [[package]]
 name = "dill"
@@ -407,6 +417,40 @@ Django = ">=2.2"
 [package.extras]
 phonenumbers = ["phonenumbers (>=7.0.2)"]
 phonenumberslite = ["phonenumberslite (>=7.0.2)"]
+
+[[package]]
+name = "django-picklefield"
+version = "3.1"
+description = "Pickled object field for Django"
+category = "main"
+optional = false
+python-versions = ">=3"
+
+[package.dependencies]
+Django = ">=3.2"
+
+[package.extras]
+tests = ["tox"]
+
+[[package]]
+name = "django-q"
+version = "1.3.9"
+description = "A multiprocessing distributed task queue for Django"
+category = "main"
+optional = false
+python-versions = ">=3.6.2,<4"
+
+[package.dependencies]
+arrow = ">=1.1.0,<2.0.0"
+blessed = ">=1.17.6,<2.0.0"
+django = ">=2.2"
+django-picklefield = ">=3.0.1,<4.0.0"
+redis = ">=3.5.3,<4.0.0"
+
+[package.extras]
+testing = ["hiredis (>=1.0.1,<2.0.0)", "psutil (>=5.7.0,<6.0.0)", "django-redis (>=4.12.1,<5.0.0)", "iron-mq (>=0.9,<0.10)", "boto3 (>=1.14.12,<2.0.0)", "pymongo (>=3.10.1,<4.0.0)", "croniter (>=0.3.34,<0.4.0)"]
+rollbar = ["django-q-rollbar (>=0.1)"]
+sentry = ["django-q-sentry (>=0.1)"]
 
 [[package]]
 name = "django-redis"
@@ -716,6 +760,17 @@ MarkupSafe = ">=2.0"
 
 [package.extras]
 i18n = ["Babel (>=2.7)"]
+
+[[package]]
+name = "jinxed"
+version = "1.2.0"
+description = "Jinxed Terminal Library"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+ansicon = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "kolo"
@@ -1122,20 +1177,14 @@ test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "redis"
-version = "4.3.4"
-description = "Python client for Redis database and key-value store"
+version = "3.5.3"
+description = "Python client for Redis key-value store"
 category = "main"
 optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-async-timeout = ">=4.0.2"
-deprecated = ">=1.2.3"
-packaging = ">=20.4"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.extras]
-hiredis = ["hiredis (>=1.0.0)"]
-ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==20.0.1)", "requests (>=2.26.0)"]
+hiredis = ["hiredis (>=0.1.3)"]
 
 [[package]]
 name = "reportlab"
@@ -1278,7 +1327,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 name = "wcwidth"
 version = "0.2.5"
 description = "Measures the displayed width of unicode strings in a terminal"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -1315,7 +1364,7 @@ brotli = ["brotli"]
 name = "wrapt"
 version = "1.14.1"
 description = "Module for decorators, wrappers and monkey patching."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
@@ -1330,19 +1379,21 @@ python-versions = ">=3.4"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "86520b5fb45a2059ecc5817f97d92acb351a59d1c006391ae32e0e59efa20496"
+content-hash = "719b1817e9561e2c26b8e10d008a5d42f4b86030a38ebc8dbc42d1f1cbbaf617"
 
 [metadata.files]
+ansicon = []
 appnope = []
+arrow = []
 asgiref = []
 astroid = []
 asttokens = []
-async-timeout = []
 attrs = []
 autopep8 = []
 babel = []
 backcall = []
 black = []
+blessed = []
 cerberus = []
 certifi = []
 chardet = []
@@ -1351,7 +1402,6 @@ colorama = []
 coverage = []
 dbca-utils = []
 decorator = []
-deprecated = []
 dill = []
 dj-database-url = []
 django = []
@@ -1368,6 +1418,8 @@ django-extensions = []
 django-filter = []
 django-js-asset = []
 django-phonenumber-field = []
+django-picklefield = []
+django-q = []
 django-redis = []
 django-resized = []
 django-reversion = []
@@ -1393,6 +1445,7 @@ ipython = []
 isort = []
 jedi = []
 jinja2 = []
+jinxed = []
 kolo = []
 lazy-object-proxy = []
 ledger-api-client = []
