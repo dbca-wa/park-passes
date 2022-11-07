@@ -4,7 +4,6 @@ import os
 import confy
 import dj_database_url
 from confy import env
-from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 confy.read_environment_file(BASE_DIR + "/.env")
@@ -129,10 +128,7 @@ STATICFILES_DIRS.extend(
         os.path.join(os.path.join(BASE_DIR, "parkpasses", "static")),
     ]
 )
-DEV_STATIC = env("DEV_STATIC", False)
-DEV_STATIC_URL = env("DEV_STATIC_URL")
-if DEV_STATIC and not DEV_STATIC_URL:
-    raise ImproperlyConfigured("If running in DEV_STATIC, DEV_STATIC_URL has to be set")
+
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 TEMPLATES[0]["OPTIONS"]["context_processors"].append(
@@ -253,7 +249,7 @@ if DEBUG:
             },
             "django.template": {
                 "handlers": ["console"],
-                "level": "INFO",
+                "level": "DEBUG",
             },
             "parkpasses": {
                 "handlers": ["console", "rotating_file", "mail_admins"],
@@ -315,9 +311,7 @@ else:
     }
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
-DEV_APP_BUILD_URL = env(
-    "DEV_APP_BUILD_URL"
-)  # URL of the Dev app.js served by webpack & express
+
 LOV_CACHE_TIMEOUT = 10800
 
 CACHE_TIMEOUT_2_HOURS = 60 * 60 * 2  # 2 HOURS

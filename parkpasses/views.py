@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.management import call_command
 from django.shortcuts import redirect, render
@@ -19,28 +18,12 @@ class InternalView(UserPassesTestMixin, TemplateView):
     def test_func(self):
         return is_internal(self.request)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
-        return context
-
 
 class RetailerView(UserPassesTestMixin, TemplateView):
     template_name = "parkpasses/retailer/index.html"
 
     def test_func(self):
         return is_retailer(self.request)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
-        return context
 
 
 class RetailerSellAPassView(UserPassesTestMixin, TemplateView):
@@ -66,25 +49,9 @@ class RetailerAdminView(UserPassesTestMixin, TemplateView):
     def test_func(self):
         return is_retailer_admin(self.request)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
-        return context
-
 
 class ExternalView(LoginRequiredMixin, TemplateView):
     template_name = "parkpasses/dash/index.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
-        return context
 
 
 class ParkPassesRoutingView(TemplateView):
