@@ -10,12 +10,6 @@ from parkpasses.admin import admin
 from parkpasses.components.cart.api import LedgerCheckoutView
 from parkpasses.components.cart.views import CartView, CheckoutSuccessView
 from parkpasses.components.help.views import ParkPassesFAQView, ParkPassesHelpView
-from parkpasses.components.main.api import (
-    DocumentCreateView,
-    EntryTypeList,
-    ListCreateCommunicationsLogEntry,
-    UserActionList,
-)
 from parkpasses.components.orders.views import ExternalOrdersView
 from parkpasses.components.passes.views import ExternalPassView
 from parkpasses.components.retailers.views import RespondToRetailUserInviteView
@@ -191,28 +185,6 @@ urlpatterns = [
     url(r"api/retailers/", include("parkpasses.components.retailers.urls")),
     url(r"api/reports/", include("parkpasses.components.reports.urls")),
     url(r"api/main/", include("parkpasses.components.main.urls")),
-    # ========================================================================== Org Model Documents end-points
-    url(
-        r"api/internal/org-model-documents/upload-documents",
-        DocumentCreateView.as_view(),
-        name="upload-documents",
-    ),
-    # ========================================================================== Org Model Logs
-    url(
-        r"api/org-model-logs/user-actions",
-        UserActionList.as_view(),
-        name="user-actions",
-    ),
-    url(
-        r"api/org-model-logs/entry-types",
-        EntryTypeList.as_view(),
-        name="entry-types",
-    ),
-    url(
-        r"api/internal/org-model-logs/communications-log-entries",
-        ListCreateCommunicationsLogEntry.as_view(),
-        name="list-create-communications-log-entries",
-    ),
     # ========================================================================== Management Commands
     url(
         r"^mgt-commands/$", views.ManagementCommandsView.as_view(), name="mgt-commands"

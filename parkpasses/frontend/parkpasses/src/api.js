@@ -221,19 +221,19 @@ module.exports = {
 
     /* ========================= Org Model Documents ====================================*/
 
-    uploadOrgModelDocuments:            '/api/internal/org-model-documents/upload-documents',
+    uploadOrgModelDocuments:            '/api/main/internal/org-model-documents/upload-documents',
     retrieveOrgModelDocument:  function (documentId) {
         return                          `/api/main/internal/org-model-documents/${documentId}/retrieve-document/`;
     },
     /* ========================= Org Model Logs =========================================*/
 
-    entryTypes:                         '/api/org-model-logs/entry-types',
+    entryTypes:                         '/api/main/org-model-logs/entry-types',
     listUserActionsLog: function (appLabel, model, objectId) {
-        return                          `/api/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
+        return                          `/api/main/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
     },
-    createCommunicationsLogEntry:       '/api/internal/org-model-logs/communications-log-entries',
+    createCommunicationsLogEntry:       '/api/main/internal/org-model-logs/communications-log-entries',
     listCommunicationsLogEntries: function (appLabel, model, objectId) {
-        return                          `/api/internal/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
+        return                          `/api/main/internal/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
     },
 
 
