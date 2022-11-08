@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -88,6 +89,7 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
     user_can_create_percentage_discounts = serializers.SerializerMethodField(
         read_only=True
     )
+    content_type = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = DiscountCodeBatch
@@ -109,6 +111,7 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
             "valid_users",
             "discount_codes",
             "user_can_create_percentage_discounts",
+            "content_type",
         ]
         read_only_fields = [
             "created_by_name",
@@ -128,6 +131,9 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
 
     def get_user_can_create_percentage_discounts(self, obj):
         return is_parkpasses_discount_code_percentage_user(self.context["request"])
+
+    def get_content_type(self, obj):
+        return ContentType.objects.get_for_model(obj).id
 
 
 class InternalDiscountCodeBatchCommentSerializer(serializers.ModelSerializer):
