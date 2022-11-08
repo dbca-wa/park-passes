@@ -108,7 +108,7 @@
     </div>
 
     <div v-if="!retailerGroups">
-        <BootstrapSpinner isLoading="true" />
+        <BootstrapSpinner :isLoading="true" />
     </div>
 </template>
 

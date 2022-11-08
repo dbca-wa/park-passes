@@ -16,6 +16,7 @@ export default {
   name:'BootstrapSpinner',
   props:{
       isLoading:{
+          type: Boolean,
           default: false
       },
       centerOfScreen:{

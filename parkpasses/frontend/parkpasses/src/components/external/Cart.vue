@@ -105,7 +105,7 @@
                 </div>
 
                 <div v-else>
-                    <BootstrapSpinner isLoading="true" />
+                    <BootstrapSpinner :isLoading="true" />
                 </div>
 
                 <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">

@@ -39,7 +39,7 @@
 
                 </div>
                 <div v-else>
-                    <BootstrapSpinner isLoading="true" />
+                    <BootstrapSpinner :isLoading="true" />
                 </div>
             </div>
         </div>

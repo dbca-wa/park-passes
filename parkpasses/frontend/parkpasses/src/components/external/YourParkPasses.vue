@@ -57,7 +57,7 @@
     </div>
 
     <div v-if="loading || loadingMore || loadingUpdatePass">
-        <BootstrapSpinner isLoading="true" />
+        <BootstrapSpinner :isLoading="true" />
     </div>
 
     <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">

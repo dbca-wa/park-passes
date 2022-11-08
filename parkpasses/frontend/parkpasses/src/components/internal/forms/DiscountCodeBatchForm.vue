@@ -209,7 +209,7 @@
         </div>
     </footer>
     <div v-if="!discountCodeBatch">
-        <BootstrapSpinner isLoading="true" />
+        <BootstrapSpinner :isLoading="true" />
     </div>
 </template>
 
