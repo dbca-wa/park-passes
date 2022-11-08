@@ -71,7 +71,8 @@
             </div>
         </div>
     </div>
-    <DiscountCodeBatchFormModal @saveSuccess="saveSuccess" :userCanCreatePercentageDiscounts="userCanCreatePercentageDiscounts" :selectedDiscountCodeBatch="selectedDiscountCodeBatch" />
+    <DiscountCodeBatchFormModal @saveSuccess="saveSuccess" :userCanCreatePercentageDiscounts="userCanCreatePercentageDiscounts" :selectedDiscountCodeBatchId="selectedDiscountCodeBatchId" />
+    <DiscountCodeBatchInvalidationModal @invalidateSuccess="invalidateSuccess" :discountCodeBatch="selectedDiscountCodeBatch" />
 </template>
 
 <script>
@@ -79,9 +80,11 @@ import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import { useStore } from '@/stores/state'
+import Swal from 'sweetalert2'
 
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import DiscountCodeBatchFormModal from '@/components/internal/modals/DiscountCodeBatchFormModal.vue'
+import DiscountCodeBatchInvalidationModal from '@/components/internal/modals/DiscountCodeBatchInvalidationModal.vue'
 
 export default {
     name: 'DiscountCodeBatchDatatable',
@@ -134,6 +137,7 @@ export default {
             filterDatetimeExpiryTo: sessionStorage.getItem(vm.filterDatetimeExpiryToCacheName) ? sessionStorage.getItem(vm.filterDatetimeExpiryToCacheName) : '',
 
             selectedDiscountCodeBatch: null,
+            selectedDiscountCodeBatchId: null,
             discountCodeBatchModal: null,
 
             userCanCreatePercentageDiscounts: false,
@@ -167,6 +171,7 @@ export default {
         datatable,
         CollapsibleFilters,
         DiscountCodeBatchFormModal,
+        DiscountCodeBatchInvalidationModal,
     },
     watch: {
         filterStatus: function () {
@@ -371,7 +376,9 @@ export default {
                     });
                     if (today < expiryDate) {
                         links += `<a href="${editLink.href}">Edit</a> | `;
-                        links += `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="invalidate" data-discount-code-batch-number="${full.discount_code_batch_number}">Invalidate</a>`;
+                        links += `<a href="javascript:void(0)" data-item-id="${full.id}" data-item-discount-code-batch-number="${full.discount_code_batch_number}" data-item-id="${full.id}" data-action="invalidate">Invalidate</a>`;
+                    } else {
+                        links += 'Discount code batch has expired.'
                     }
                     return links;
                 }
@@ -533,25 +540,33 @@ export default {
         saveSuccess: function ({ message, discountCodeBatch }) {
             window.scrollTo(0, 0);
             this.successMessage = message;
-            console.log(JSON.stringify(discountCodeBatch));
             this.$nextTick(() => {
                 $('#successMessageAlert').fadeOut(4000, function () {
                     this.successMessage = null;
                 });
             });
-            this.$refs.discountCodeBatchDatatable.ajax.reload();
+            this.$refs.discountCodeBatchDatatable.vmDataTable.ajax.reload();
+        },
+        invalidateSuccess: function() {
+            this.$refs.discountCodeBatchDatatable.vmDataTable.draw();
         },
         addDiscountCodeBatch: function () {
             console.log('addDiscountCodeBatch');
             this.selectedDiscountCodeBatch = null;
         },
         editDiscountCodeBatch: function (id) {
-            this.selectedDiscountCodeBatch = id;
-            console.log("selectedDiscountCodeBatch = " + this.selectedDiscountCodeBatch);
+            this.selectedDiscountCodeBatchId = id;
+            console.log("selectedDiscountCodeBatchId = " + this.selectedDiscountCodeBatchId);
             this.discountCodeBatchModal.show();
         },
         invalidateDiscountCodeBatch: function (discountCodeBatch) {
-            alert('About to invalidate discount code batch = ' + discountCodeBatch.discountCodeBatchNumber);
+            this.selectedDiscountCodeBatch = discountCodeBatch;
+            let discountCodeBatchInvalidationModalElement = document.getElementById('discountCodeBatchInvalidationModal')
+            let discountCodeBatchInvalidationModal = new bootstrap.Modal(discountCodeBatchInvalidationModalElement, {});
+            discountCodeBatchInvalidationModalElement.addEventListener('shown.bs.modal', function() {
+                $('#invalidationReason').focus();
+            });
+            discountCodeBatchInvalidationModal.show();
         },
         addEventListeners: function () {
             let vm = this
@@ -563,10 +578,9 @@ export default {
                 vm.editDiscountCodeBatch(id);
             });
             vm.$refs.discountCodeBatchDatatable.vmDataTable.on('click', 'a[data-action="invalidate"]', function (e) {
-                e.preventDefault();
                 let id = $(this).data('item-id');
-                let discountCodeBatchNumber = $(this).data('discount-code-batch-number');
-                vm.invalidateDiscountCodeBatch({ id, discountCodeBatchNumber });
+                let discountCodeBatchNumber = $(this).data('item-discount-code-batch-number');
+                vm.invalidateDiscountCodeBatch({'id':id, 'discount_code_batch_number':discountCodeBatchNumber});
             });
         },
     },
