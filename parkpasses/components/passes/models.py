@@ -258,8 +258,6 @@ class PassTypePricingWindowOption(models.Model):
 
     @classmethod
     def get_current_options_by_pass_type_id(self, pass_type_id):
-        logger.debug("pass_type_id = " + str(pass_type_id))
-
         try:
             pass_type = PassType.objects.get(id=pass_type_id)
         except ObjectDoesNotExist:
@@ -269,10 +267,6 @@ class PassTypePricingWindowOption(models.Model):
         pricing_windows_for_pass_count = PassTypePricingWindow.objects.filter(
             pass_type=pass_type
         ).count()
-
-        logger.debug(
-            "pricing_windows_for_pass_count = " + str(pricing_windows_for_pass_count)
-        )
 
         if 0 == pricing_windows_for_pass_count:
             logger.critical(
@@ -295,9 +289,7 @@ class PassTypePricingWindowOption(models.Model):
                 )
                 .count()
             )
-            logger.debug(
-                "current_pricing_window_count = " + str(current_pricing_window_count)
-            )
+
             # If there are none just get the default pricing window
             if 0 == current_pricing_window_count:
                 pricing_window = PassTypePricingWindow.objects.get(

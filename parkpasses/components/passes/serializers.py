@@ -86,7 +86,6 @@ class InternalCreatePricingWindowSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        logger.debug(str(data))
         pass_type = data["pass_type"]
         default_options = (
             PassTypePricingWindowOption.get_default_options_by_pass_type_id(
@@ -97,12 +96,10 @@ class InternalCreatePricingWindowSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "A price must be provided for each of the default options."
             )
-        logger.debug(str(data))
         return data
 
     def create(self, validated_data):
         options = validated_data.pop("pricing_options")
-        logger.debug(str(validated_data))
         pricing_window = PassTypePricingWindow.objects.create(**validated_data)
         default_options = (
             PassTypePricingWindowOption.get_default_options_by_pass_type_id(

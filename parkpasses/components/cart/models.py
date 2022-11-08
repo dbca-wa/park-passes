@@ -353,7 +353,7 @@ class Cart(models.Model):
                         f"Concession Usage exists for cart_item {cart_item}.",
                         extra={"className": self.__class__.__name__},
                     )
-                    # A conession discount is being applied to this pass purchase
+                    # A concession discount is being applied to this pass purchase
                     concession = cart_item.concession_usage.concession
                     concession_discount = concession.discount_as_amount(
                         park_pass.option.price
@@ -735,7 +735,6 @@ class CartItem(models.Model):
     def get_price_before_discounts(self):
         """Does not take concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
-        logger.debug("model_type = " + str(model_type))
         if "parkpasses | voucher" == model_type:
             return Voucher.objects.get(pk=self.object_id).amount
         elif "parkpasses | pass" == model_type:
@@ -752,8 +751,6 @@ class CartItem(models.Model):
     def get_total_price(self):
         """Takes concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
-        logger.debug("model_type = " + str(model_type))
-        logger.debug("object_id = " + str(self.object_id))
         if "parkpasses | voucher" == model_type:
             return Voucher.objects.get(pk=self.object_id).amount
         elif "parkpasses | pass" == model_type:

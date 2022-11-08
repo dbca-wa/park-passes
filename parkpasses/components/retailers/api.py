@@ -287,7 +287,6 @@ class RetailerGroupUserInviteFilterBackend(DatatablesFilterBackend):
             queryset = queryset.filter(retailer_group_id=retailer_group)
 
         if status:
-            logger.debug("status = " + str(status))
             queryset = queryset.filter(status=status)
 
         if datetime_created_from:
@@ -351,8 +350,6 @@ class InternalRetailerGroupInviteViewSet(
     @action(methods=["PUT"], detail=True, url_path="process-retailer-group-user-invite")
     def process_retailer_group_user_invite(self, request, *args, **kwargs):
         retailer_group_user_invite = self.get_object()
-        logger.debug("retailer_group_user_invite = " + str(retailer_group_user_invite))
-        logger.debug("request.data = " + str(request.data))
         if RetailerGroupInvite.USER_ACCEPTED != retailer_group_user_invite.status:
             raise Http404
         if not EmailUser.objects.filter(id=retailer_group_user_invite.user).exists():

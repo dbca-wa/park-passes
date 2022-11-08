@@ -158,10 +158,6 @@ class InternalDiscountCodeBatchViewSet(
                     discount_code_batch_id=new_discount_code_batch.id, user=valid_user
                 )
 
-    def perform_update(self, serializer):
-        logger.debug("update self.request.data = " + str(self.request.data))
-        return super().perform_update(serializer)
-
     @action(methods=["PUT"], detail=True, url_path="invalidate-discount-code-batch")
     def invalidate_discount_code_batch(self, request, *args, **kwargs):
         discount_code_batch = self.get_object()

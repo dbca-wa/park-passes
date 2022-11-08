@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 class IsInternal(BasePermission):
     def has_permission(self, request, view):
-        logger.debug("request.user.is_superuser = " + str(request.user.is_superuser))
         if is_internal(request):
             if view.action in ["destroy"]:
                 return False

@@ -322,7 +322,6 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
     @action(methods=["GET"], detail=True, url_path="retrieve-pass-template")
     def retrieve_park_pass_pdf(self, request, *args, **kwargs):
         pass_template = self.get_object()
-        logger.debug("user = " + str(self.request.user.id))
         if pass_template.template:
             return FileResponse(pass_template.template)
         raise Http404
@@ -711,7 +710,6 @@ class ExternalPassViewSet(
     @action(methods=["GET"], detail=True, url_path="retrieve-park-pass-pdf")
     def retrieve_park_pass_pdf(self, request, *args, **kwargs):
         park_pass = self.get_object()
-        logger.debug("user = " + str(self.request.user.id))
         if park_pass.user == self.request.user.id:
             if park_pass.park_pass_pdf:
                 return FileResponse(park_pass.park_pass_pdf)
@@ -720,7 +718,6 @@ class ExternalPassViewSet(
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
     def retrieve_invoice(self, request, *args, **kwargs):
         park_pass = self.get_object()
-        logger.debug("user = " + str(self.request.user.id))
         content_type = ContentType.objects.get_for_model(Pass)
         if OrderItem.objects.filter(
             object_id=park_pass.id, content_type=content_type
@@ -833,8 +830,6 @@ class RetailerPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
                 emailuser__id=self.request.user.id
             ).values_list("retailer_group__id", flat=True)
             park_pass = self.get_object()
-            logger.debug("park_pass.sold_via = " + str(park_pass.sold_via.id))
-            logger.debug("list(retailer_groups) = " + str(list(retailer_groups)))
             if park_pass.sold_via.id in list(retailer_groups):
                 if park_pass.park_pass_pdf:
                     return FileResponse(park_pass.park_pass_pdf)
@@ -1049,7 +1044,6 @@ class RacDiscountCodeView(APIView):
 
     def get(self, request, *args, **kwargs):
         email = kwargs["email"]
-        logger.debug("email = " + str(email))
         regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
         if not re.fullmatch(regex, email):
             raise ValidationError({"email": "Please pass a valid email address."})
@@ -1058,7 +1052,6 @@ class RacDiscountCodeView(APIView):
     def post(self, request, *args, **kwargs):
         regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
         emails = request.data.get("emails").split(",")
-        logger.debug(emails)
         codes = []
         for email in emails:
             if not re.fullmatch(regex, email):

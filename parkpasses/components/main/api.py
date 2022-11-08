@@ -82,7 +82,6 @@ class ListCreateCommunicationsLogEntry(BaseListCreateCommunicationsLogEntry):
     permission_classes = [IsInternalAPIView]
 
     def get_serializer_class(self):
-        logger.debug("self.request.method = " + str(self.request.method))
         if "GET" == self.request.method:
             return CommunicationsLogEntrySerializer
         return super().get_serializer_class()
@@ -90,7 +89,6 @@ class ListCreateCommunicationsLogEntry(BaseListCreateCommunicationsLogEntry):
     def perform_create(self, serializer):
         app_label = serializer.validated_data.pop("app_label", None)
         model = serializer.validated_data.pop("model", None)
-        logger.debug(str(serializer.validated_data))
         if not ContentType.objects.filter(app_label=app_label, model=model).exists():
             raise ValidationError(
                 f"There is no content_type with app_label={app_label} and model={model}"

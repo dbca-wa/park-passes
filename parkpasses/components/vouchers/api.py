@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 
 import requests
 from django.conf import settings
@@ -238,6 +239,12 @@ class ValidateVoucherView(APIView):
         pin = request.query_params.get("pin", None)
 
         if email and code and pin:
+            logger.info(
+                "Validating voucher with email: {}, code: {}, pin: {}".format(
+                    email, code, pin
+                ),
+                extra={"className": self.__class__.__name__},
+            )
             if Voucher.objects.filter(
                 in_cart=False,
                 recipient_email=email,
@@ -252,13 +259,23 @@ class ValidateVoucherView(APIView):
                     pin=pin,
                     processing_status=Voucher.DELIVERED,
                 )
-                logger.debug(
-                    "voucher.remaining_balance = " + str(voucher.remaining_balance)
+                logger.info(
+                    f"Voucher exists: {voucher}.",
+                    extra={"className": self.__class__.__name__},
                 )
-                return Response(
-                    {
-                        "is_voucher_code_valid": True,
-                        "balance_remaining": voucher.remaining_balance,
-                    }
+                if voucher.remaining_balance > Decimal(0.00):
+                    logger.info(
+                        f"Voucher remaining balance: {voucher.remaining_balance}.",
+                        extra={"className": self.__class__.__name__},
+                    )
+                    return Response(
+                        {
+                            "is_voucher_code_valid": True,
+                            "balance_remaining": voucher.remaining_balance,
+                        }
+                    )
+                logger.info(
+                    f"Voucher exists: {voucher} but has no remaining balance. Returning is_voucher_code_valid=false.",
+                    extra={"className": self.__class__.__name__},
                 )
         return Response({"is_voucher_code_valid": False})

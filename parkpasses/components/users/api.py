@@ -59,7 +59,6 @@ class UserDataView(APIView):
 
                 user_data["user"]["retailer_groups"] = retailer_groups_list
 
-            logger.debug("retailer_groups" + str(list(retailer_groups)))
         else:
             user_data["authorisation_level"] = "external"
 

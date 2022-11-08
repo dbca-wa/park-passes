@@ -111,7 +111,6 @@ class ParkGroup(models.Model):
             .values_list("id", flat=True)
             .distinct()
         )
-        logger.debug(lga_ids)
         return ParkGroup.objects.filter(lgas__id__in=lga_ids).distinct()
 
     @classmethod

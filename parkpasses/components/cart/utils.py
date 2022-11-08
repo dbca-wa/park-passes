@@ -36,10 +36,6 @@ class CartUtils:
         order, order_items = cart.create_order()
         for order_item in order_items:
             if settings.DEBUG:
-                logger.debug(
-                    f"Rounding price for order item {order_item}.",
-                    extra={"className": self.__class__.__name__},
-                )
                 order_item.amount = int(order_item.amount)
                 order_item.description += " (Price rounded for dev env)"
 

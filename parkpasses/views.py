@@ -34,10 +34,8 @@ class RetailerSellAPassView(UserPassesTestMixin, TemplateView):
 
     def get(self, *args, **kwargs):
         cart_item_count = self.request.session.get("cart_item_count", None)
-        logger.debug("cart_item_count = " + str(cart_item_count))
 
         if cart_item_count and cart_item_count > 0:
-            logger.debug("Redirecting")
             return redirect(reverse("user-cart"))
 
         return super().get(*args, **kwargs)
