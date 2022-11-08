@@ -613,7 +613,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "exceptiongroup"
-version = "1.0.0"
+version = "1.0.1"
 description = "Backport of PEP 654 (exception groups)"
 category = "main"
 optional = false
@@ -797,7 +797,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "ledger-api-client"
-version = "1.13"
+version = "1.14"
 description = "Ledger API Client"
 category = "main"
 optional = false
@@ -808,7 +808,7 @@ develop = false
 type = "git"
 url = "https://github.com/dbca-wa/ledger_api_client.git"
 reference = "master"
-resolved_reference = "9cf0f504e917bbcb2f54b2af96bedd7502d6f554"
+resolved_reference = "62a1d30465a2ed48705ccb0a8ce8470b5efc3121"
 
 [[package]]
 name = "lxml"
@@ -960,15 +960,15 @@ tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "pa
 
 [[package]]
 name = "platformdirs"
-version = "2.5.2"
-description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+version = "2.5.3"
+description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-docs = ["furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx-autodoc-typehints (>=1.12)", "sphinx (>=4)"]
-test = ["appdirs (==1.4.4)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)", "pytest (>=6)"]
+docs = ["furo (>=2022.9.29)", "proselint (>=0.13)", "sphinx-autodoc-typehints (>=1.19.4)", "sphinx (>=5.3)"]
+test = ["appdirs (==1.4.4)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "pytest (>=7.2)"]
 
 [[package]]
 name = "pluggy"
@@ -984,7 +984,7 @@ dev = ["tox", "pre-commit"]
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.31"
+version = "3.0.32"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
@@ -1116,7 +1116,7 @@ testing = ["django", "django-configurations (>=2.0)"]
 
 [[package]]
 name = "pytest-sugar"
-version = "0.9.5"
+version = "0.9.6"
 description = "pytest-sugar is a plugin for pytest that changes the default look and feel of pytest (e.g. progressbar, show tests that fail instantly)."
 category = "main"
 optional = false
