@@ -124,7 +124,7 @@ export default {
 
                         var passCancellationFormModalModal = bootstrap.Modal.getInstance(document.getElementById('passCancellationModal'));
                         passCancellationFormModalModal.hide();
-                        loading = false;
+                        vm.loading = false;
                     }
                 })
                 .catch(error => {
