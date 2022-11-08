@@ -229,8 +229,6 @@ class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelView
     renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     def get_serializer_class(self):
-        logger.debug("self.action = " + str(self.action))
-        logger.debug("self.request.data = " + str(self.request.data))
         if "create" == self.action:
             return InternalCreatePricingWindowSerializer
         return InternalPricingWindowSerializer
@@ -242,7 +240,6 @@ class CurrentOptionsForPassType(generics.ListAPIView):
 
     def get_queryset(self):
         pass_type_id = self.request.query_params.get("pass_type_id")
-        logger.debug("pass_type_id = " + pass_type_id)
         options = PassTypePricingWindowOption.get_current_options_by_pass_type_id(
             int(pass_type_id)
         )

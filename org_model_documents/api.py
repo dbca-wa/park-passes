@@ -14,7 +14,6 @@ class DocumentCreateView(generics.CreateAPIView):
     serializer_class = DocumentSerializer
 
     def post(self, request, *args, **kwargs):
-        logger.debug("request.data ----> " + str(request.data))
         return super().post(request, *args, **kwargs)
 
 
