@@ -293,17 +293,17 @@ else:
         },
         "loggers": {
             "parkpasses": {
-                "handlers": ["console", "rotating_file", "mail_admins"],
+                "handlers": ["rotating_file", "mail_admins"],
                 "level": "INFO",
                 "propagate": False,
             },
             "org_model_documents": {
-                "handlers": ["console"],
+                "handlers": ["rotating_file"],
                 "level": "INFO",
                 "propagate": False,
             },
             "org_model_logs": {
-                "handlers": ["console"],
+                "handlers": ["rotating_file"],
                 "level": "INFO",
                 "propagate": False,
             },
