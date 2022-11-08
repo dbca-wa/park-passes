@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import status
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework_datatables.renderers import DatatablesRenderer
@@ -14,11 +15,11 @@ from org_model_logs.api import (
 from org_model_logs.api import UserActionList as BaseUserActionList
 from org_model_logs.api import UserActionViewSet as BaseUserActionViewSet
 from org_model_logs.models import CommunicationsLogEntry
-from org_model_logs.serializers import (
+from org_model_logs.serializers import EntryTypeSerializer
+from parkpasses.components.main.serializers import (
     CommunicationsLogEntrySerializer,
-    EntryTypeSerializer,
+    UserActionSerializer,
 )
-from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.permissions import IsInternal, IsInternalAPIView
 
 logger = logging.getLogger(__name__)
@@ -30,11 +31,16 @@ so can't be included in the org_model_documents or org_model_logs apps as it wou
 
 class CustomDatatablesRenderer(DatatablesRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
+        """Uses the DatatablesRenderer render method when format=datatables is
+        specified but if not uses the JSONRenderer render method"""
         if "view" in renderer_context and hasattr(
             renderer_context["view"], "_datatables_total_count"
         ):
             data["recordsTotal"] = renderer_context["view"]._datatables_total_count
-        return super().render(data, accepted_media_type, renderer_context)
+        requested_format = renderer_context["request"].data.get("format", None)
+        if requested_format and "datatables" == requested_format:
+            return super().render(data, accepted_media_type, renderer_context)
+        return JSONRenderer().render(data, accepted_media_type, renderer_context)
 
 
 class CustomDatatablesListMixin:
