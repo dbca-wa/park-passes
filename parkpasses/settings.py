@@ -67,7 +67,7 @@ REST_FRAMEWORK = {
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
     "DEFAULT_FILTER_BACKENDS": (
-        "rest_framework_datatables.filters.DatatablesFilterBackend",
+        # "rest_framework_datatables.filters.DatatablesFilterBackend",
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 20,
@@ -249,7 +249,7 @@ if DEBUG:
             },
             "django.template": {
                 "handlers": ["console"],
-                "level": "DEBUG",
+                "level": "INFO",
             },
             "parkpasses": {
                 "handlers": ["console", "rotating_file", "mail_admins"],
@@ -419,6 +419,7 @@ ACTION_UPDATE = "Update {} {}"
 ACTION_PARTIAL_UPDATE = "Partial Update {} {}"
 ACTION_DESTROY = "Destroy {} {}"
 ACTION_CANCEL = "Cancel {} {}"
+ACTION_INVALIDATE = "Invalidate {} {}"
 
 
 PARKPASSES_VOUCHER_EXPIRY_IN_DAYS = 365 * 2
