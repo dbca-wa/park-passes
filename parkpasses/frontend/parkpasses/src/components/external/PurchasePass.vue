@@ -340,7 +340,7 @@
                                 <span v-else class="form-text text-dark align-middle">{{pass.option_name}}</span>
                                 </template>
                                 <template v-else>
-                                    <BootstrapSpinner :isLoading="true" :centerOfScreen="false" />
+                                    <BootstrapSpinner :isLoading="true" :centerOfScreen="false" :small="true" />
                                 </template>
                             </div>
                         </div>
@@ -353,7 +353,7 @@
                                     <input type="text" readonly class="form-control-plaintext fw-bold" id="price" name="price" :value="'$'+totalPrice">
                                 </template>
                                 <template v-else>
-                                    <BootstrapSpinner :isLoading="true" :centerOfScreen="false" />
+                                    <BootstrapSpinner :isLoading="true" :centerOfScreen="false" :small="true" />
                                 </template>
                             </div>
                         </div>

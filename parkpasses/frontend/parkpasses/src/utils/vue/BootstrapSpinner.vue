@@ -5,7 +5,7 @@
     </div>
   </div>
   <div v-else>
-    <div :class="spinnerClass" class="spinner-border org-primary" style="width: 3rem; height: 3rem;" role="status">
+    <div :class="spinnerClass" class="spinner-border org-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
@@ -22,20 +22,28 @@ export default {
       centerOfScreen:{
           type: Boolean,
           default: true
-      }
+      },
+      small:{
+          type: Boolean,
+          default: false
+      },
   },
   data: function () {
     return {
-      spinnerClass: '',
     };
   },
-  created: function () {
-    if(!this.centerOfScreen){
-      this.spinnerClass = 'spinner-center-component';
-    } else {
-      this.spinnerClass = 'spinner-center-screen';
-    }
-  }
+  computed: {
+    spinnerClass: function () {
+      let className = 'spinner-center-screen';
+      if(!this.centerOfScreen){
+        className = 'spinner-center-component';
+      }
+      if(this.small){
+        className += ' spinner-border-sm';
+      }
+      return className;
+    },
+  },
 }
 </script>
 
