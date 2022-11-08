@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
@@ -32,12 +33,12 @@ class ConcessionViewSet(viewsets.ModelViewSet):
         else:
             return ExternalConcessionSerializer
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def retrieve(self, request, pk=None):
         response = super().retrieve(request, pk=pk)
         return response
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def list(self, request, pk=None):
         response = super().list(request, pk=pk)
         return response

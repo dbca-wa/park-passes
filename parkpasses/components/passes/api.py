@@ -17,7 +17,7 @@ from ledger_api_client.utils import create_basket_session, create_checkout_sessi
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
@@ -91,6 +91,7 @@ logger = logging.getLogger(__name__)
 class PassTypesDistinct(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def get(self, request, format=None):
         pass_types = [
             {"code": pass_type.id, "description": pass_type.display_name}
@@ -102,6 +103,7 @@ class PassTypesDistinct(APIView):
 class PassProcessingStatusesDistinct(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def get(self, request, format=None):
         if request.query_params.get("for_filter", ""):
             processing_status_choices = [
@@ -128,11 +130,11 @@ class ExternalPassTypeViewSet(
     ordering = "display_order"
     serializer_class = PassTypeSerializer
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def retrieve(self, request, slug=None):
         return super().retrieve(request, slug=slug)
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def list(self, request, slug=None):
         return super().list(request, slug=slug)
 
@@ -147,11 +149,11 @@ class RetailerPassTypeViewSet(
     serializer_class = PassTypeSerializer
     permission_classes = [IsRetailer]
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def retrieve(self, request, slug=None):
         return super().retrieve(request, slug=slug)
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def list(self, request, slug=None):
         return super().list(request, slug=slug)
 
@@ -168,11 +170,11 @@ class InternalPassTypeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInternal]
     serializer_class = InternalPassTypeSerializer
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def retrieve(self, request, slug=None):
         return super().retrieve(request, slug=slug)
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def list(self, request, slug=None):
         return super().list(request, slug=slug)
 
@@ -235,7 +237,6 @@ class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelView
 
 
 class CurrentOptionsForPassType(generics.ListAPIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = OptionSerializer
 
     def get_queryset(self):
@@ -247,7 +248,7 @@ class CurrentOptionsForPassType(generics.ListAPIView):
             return options
         return PassTypePricingWindowOption.objects.none()
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def get(self, *args, **kwargs):
         return super().get(*args, **kwargs)
 
@@ -266,7 +267,7 @@ class DefaultOptionsForPassType(generics.ListAPIView):
             )
         return PassTypePricingWindowOption.objects.none()
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def get(self, *args, **kwargs):
         return super().get(*args, **kwargs)
 
