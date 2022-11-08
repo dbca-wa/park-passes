@@ -97,6 +97,9 @@ module.exports = {
     discountCodesXlsx: function (discount_code_batch_id) {
         return                          `/api/discount-codes/internal/discount-codes-xlsx/${discount_code_batch_id}/`;
     },
+    internalInvalidateDiscountCodeBatch: function (discountCodeBatchId) {
+        return `/api/discount-codes/internal/discount-code-batches/${discountCodeBatchId}/invalidate-discount-code-batch/`;
+    },
 
     /* ========================= Vouchers ===============================================*/
     vouchersInternalPaginatedList:      '/api/vouchers/internal/vouchers/',
@@ -226,11 +229,11 @@ module.exports = {
 
     entryTypes:                         '/api/org-model-logs/entry-types',
     listUserActionsLog: function (appLabel, model, objectId) {
-        return                          `/api/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&objectId=${objectId}&format=datatables`;
+        return                          `/api/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
     },
     createCommunicationsLogEntry:       '/api/internal/org-model-logs/communications-log-entries',
     listCommunicationsLogEntries: function (appLabel, model, objectId) {
-        return                          `/api/internal/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&objectId=${objectId}&format=datatables`;
+        return                          `/api/internal/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
     },
 
 
