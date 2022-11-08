@@ -174,15 +174,15 @@
 </template>
 
 <script>
-import { apiEndpoints, constants, helpers } from '@/utils/hooks'
-import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
+import { apiEndpoints, constants, helpers, utils } from '@/utils/hooks';
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue';
 import { forEach } from 'jszip';
 
 export default {
     name: 'DiscountCodeBatchFormModal',
     emits: ['saveSuccess'],
     props: {
-        selectedDiscountCodeBatch: {
+        selectedDiscountCodeBatchId: {
             type: Number,
             default: null,
         },
@@ -201,9 +201,9 @@ export default {
         }
     },
     watch: {
-        selectedDiscountCodeBatch: function(newValue, oldValue) {
-            console.log('selectedDiscountCodeBatch.oldValue = ' + oldValue);
-            console.log('selectedDiscountCodeBatch.newValue = ' + newValue);
+        selectedDiscountCodeBatchId: function(newValue, oldValue) {
+            console.log('selectedDiscountCodeBatchId.oldValue = ' + oldValue);
+            console.log('selectedDiscountCodeBatchId.newValue = ' + newValue);
             if (newValue) {
                 this.fetchDiscountCodeBatch(newValue);
             } else {
@@ -377,6 +377,11 @@ export default {
                             discountCodeBatch: data,
                         }
                     );
+
+                    let files = $('#reasonFiles')[0].files;
+                    console.log('data = ' + JSON.stringify(data));
+                    utils.uploadOrgModelDocuments(data.user_action.user_action_content_type_id, data.user_action.id, files);
+
                     $('#successMessageAlert').show();
                     vm.discountCodeBatch = vm.getDiscountCodeBatchInitialState();
                     var discountCodeBatchModal = bootstrap.Modal.getInstance(document.getElementById('discountCodeBatchModal'));
