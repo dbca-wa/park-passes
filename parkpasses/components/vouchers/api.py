@@ -9,6 +9,7 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
@@ -171,7 +172,7 @@ class InternalVoucherViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     serializer_class = InternalVoucherSerializer
     filter_backends = (VoucherFilterBackend,)
     filterset_class = VoucherFilter
-    renderer_classes = (CustomDatatablesRenderer,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
     def retrieve_invoice(self, request, *args, **kwargs):

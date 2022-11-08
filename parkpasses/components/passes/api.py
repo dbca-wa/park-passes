@@ -18,6 +18,7 @@ from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
@@ -225,7 +226,7 @@ class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelView
     queryset = PassTypePricingWindow.objects.all()
     permission_classes = [IsInternal]
     filter_backends = (PricingWindowFilterBackend,)
-    renderer_classes = (CustomDatatablesRenderer,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     def get_serializer_class(self):
         logger.debug("self.action = " + str(self.action))
@@ -800,7 +801,7 @@ class RetailerPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
     pagination_class = DatatablesPageNumberPagination
     permission_classes = [IsRetailer]
     filter_backends = (PassFilterBackend,)
-    renderer_classes = (CustomDatatablesRenderer,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
     http_method_names = ["get", "post", "head", "put", "patch"]
 
     def get_serializer_class(self):
@@ -856,7 +857,7 @@ class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
     queryset = Pass.objects.exclude(in_cart=True)
     permission_classes = [IsInternal]
     filter_backends = (PassFilterBackend,)
-    renderer_classes = (CustomDatatablesRenderer,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     def get_serializer_class(self):
         if "retrieve" == self.action:

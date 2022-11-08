@@ -7,6 +7,7 @@ from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
@@ -150,7 +151,7 @@ class RetailerRetailerGroupUserViewSet(
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerGroupUserFilterBackend,)
-    renderer_classes = (CustomDatatablesRenderer,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     def get_queryset(self):
         if RetailerGroupUser.objects.filter(
@@ -214,7 +215,7 @@ class InternalRetailerGroupUserViewSet(
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerGroupUserFilterBackend,)
-    renderer_classes = (CustomDatatablesRenderer,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     @action(methods=["PUT"], detail=True, url_path="toggle-active")
     def toggle_active(self, request, *args, **kwargs):
@@ -330,7 +331,7 @@ class InternalRetailerGroupInviteViewSet(
     serializer_class = InternalRetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerGroupUserInviteFilterBackend,)
-    renderer_classes = (CustomDatatablesRenderer,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     @action(methods=["PUT"], detail=True, url_path="resend-retailer-group-user-invite")
     def resend_retailer_group_user_invite(self, request, *args, **kwargs):
@@ -384,7 +385,7 @@ class RetailerRetailerGroupInviteViewSet(
     serializer_class = RetailerRetailerGroupInviteSerializer
     pagination_class = DatatablesPageNumberPagination
     filter_backends = (RetailerGroupUserInviteFilterBackend,)
-    renderer_classes = (CustomDatatablesRenderer,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     def perform_create(self, serializer):
         serializer.save(initiated_by=RetailerGroupInvite.RETAILER_USER)
