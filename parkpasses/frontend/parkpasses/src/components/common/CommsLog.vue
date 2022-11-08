@@ -135,7 +135,7 @@ export default {
                         data: "documents",
                         orderable: false,
                         mRender:function(data,type,full){
-                            if(full.documents && 1<full.documents.length){
+                            if(full.documents && 0<full.documents.length){
                                 console.log(full.documents)
                                 let documentsHtml = '';
                                 // Need to add a call to an api here to access documents in protected media
@@ -337,7 +337,7 @@ export default {
                         title: 'Documents',
                         data: 'documents',
                         mRender:function(data,type,full){
-                            if(full.documents && 1<full.documents.length){
+                            if(full.documents && 0<full.documents.length){
                                 console.log(full.documents)
                                 let documentsHtml = '';
                                 // Need to add a call to an api here to access documents in protected media
