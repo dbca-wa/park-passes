@@ -25,7 +25,7 @@
                 <div v-if="faqs" class="accordion my-3" id="faqAccordian">
 
                     <div v-for="(faq, index) in faqs" class="accordion-item">
-                        <h2 class="accordion-header" :id="'heading' + index">
+                        <h2 class="accordion-header text-white" :id="'heading' + index">
                             <button class="accordion-button" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapse' + index" :aria-expanded="index==0" :aria-controls="'collapse' + index">
                                 {{ index+1 }}. {{ faq.question }}
                             </button>
@@ -39,7 +39,7 @@
 
                 </div>
                 <div v-else>
-                    <BootstrapSpinner isLoading="true" />
+                    <BootstrapSpinner :isLoading="true" />
                 </div>
             </div>
         </div>

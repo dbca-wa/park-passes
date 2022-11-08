@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 
 import requests
 from django.conf import settings
@@ -9,6 +10,7 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
@@ -16,6 +18,10 @@ from rest_framework_datatables.django_filters.filterset import DatatablesFilterS
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
 from parkpasses.components.cart.models import Cart, CartItem
+from parkpasses.components.main.api import (
+    CustomDatatablesListMixin,
+    CustomDatatablesRenderer,
+)
 from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.components.vouchers.serializers import (
@@ -60,7 +66,7 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
 
         cart = Cart.get_or_create_cart(self.request)
         logger.info(
-            f"Retrieving cart for user {self.request.user}",
+            f"Retrieving cart for user: {self.request.user.id} ({self.request.user})",
             extra={"className": self.__class__.__name__},
         )
 
@@ -82,14 +88,24 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
             logger.info(
-                f"Assigned date first added to {cart.datetime_first_added_to} -> {cart}",
+                f"Assigned date first added to: {cart.datetime_first_added_to} to {cart}",
                 extra={"className": self.__class__.__name__},
             )
 
         cart.datetime_last_added_to = timezone.now()
+        logger.info(
+            f"Assigned date last added to: {cart.datetime_first_added_to} to {cart}",
+            extra={"className": self.__class__.__name__},
+        )
+        logger.info(
+            f"Saving cart: {cart_item_count}",
+            extra={"className": self.__class__.__name__},
+        )
         cart.save()
-
-        logger.info(f"Cart saved {cart}", extra={"className": self.__class__.__name__})
+        logger.info(
+            "Cart saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
     def has_object_permission(self, request, view, obj):
         if "create" == view.action:
@@ -145,7 +161,7 @@ class VoucherFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalVoucherViewSet(viewsets.ModelViewSet):
+class InternalVoucherViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     """
     A ViewSet for internal users to perform actions on vouchers.
     """
@@ -157,6 +173,7 @@ class InternalVoucherViewSet(viewsets.ModelViewSet):
     serializer_class = InternalVoucherSerializer
     filter_backends = (VoucherFilterBackend,)
     filterset_class = VoucherFilter
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
     def retrieve_invoice(self, request, *args, **kwargs):
@@ -222,6 +239,12 @@ class ValidateVoucherView(APIView):
         pin = request.query_params.get("pin", None)
 
         if email and code and pin:
+            logger.info(
+                "Validating voucher with email: {}, code: {}, pin: {}".format(
+                    email, code, pin
+                ),
+                extra={"className": self.__class__.__name__},
+            )
             if Voucher.objects.filter(
                 in_cart=False,
                 recipient_email=email,
@@ -236,13 +259,23 @@ class ValidateVoucherView(APIView):
                     pin=pin,
                     processing_status=Voucher.DELIVERED,
                 )
-                logger.debug(
-                    "voucher.remaining_balance = " + str(voucher.remaining_balance)
+                logger.info(
+                    f"Voucher exists: {voucher}.",
+                    extra={"className": self.__class__.__name__},
                 )
-                return Response(
-                    {
-                        "is_voucher_code_valid": True,
-                        "balance_remaining": voucher.remaining_balance,
-                    }
+                if voucher.remaining_balance > Decimal(0.00):
+                    logger.info(
+                        f"Voucher remaining balance: {voucher.remaining_balance}.",
+                        extra={"className": self.__class__.__name__},
+                    )
+                    return Response(
+                        {
+                            "is_voucher_code_valid": True,
+                            "balance_remaining": voucher.remaining_balance,
+                        }
+                    )
+                logger.info(
+                    f"Voucher exists: {voucher} but has no remaining balance. Returning is_voucher_code_valid=false.",
+                    extra={"className": self.__class__.__name__},
                 )
         return Response({"is_voucher_code_valid": False})

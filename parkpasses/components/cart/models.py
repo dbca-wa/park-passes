@@ -53,14 +53,34 @@ class Cart(models.Model):
 
     @classmethod
     def get_or_create_cart(self, request):
+        logger.info(
+            f"Calling get_or_create_cart for user: {request.user.id} ({request.user})",
+            extra={"className": self.__class__.__name__},
+        )
         cart_id = request.session.get("cart_id", None)
+        logger.info(
+            f"cart_id = {cart_id}",
+            extra={"className": self.__class__.__name__},
+        )
         if cart_id and Cart.objects.filter(id=cart_id).exists():
+            logger.info(
+                f"Cart with cart_id of {cart_id} exists.",
+                extra={"className": self.__class__.__name__},
+            )
             cart = Cart.objects.get(id=cart_id)
             # There is an edge case here where a user has a cart in db but is browsing the site
             # anonymously and adds one or more items to their cart. When they log in we need to move
             # the items from their anonymous cart to their already existing cart...
             if Cart.objects.filter(user=request.user.id).exclude(id=cart.id).exists():
+                logger.info(
+                    f"Anonymous cart items exist for user: {request.user.id} ({request.user})",
+                    extra={"className": self.__class__.__name__},
+                )
                 anon_cart = copy(cart)
+                logger.info(
+                    f"Selecting existing cart for user: {request.user.id} ({request.user}).",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart = (
                     Cart.objects.filter(user=request.user.id)
                     .exclude(id=cart.id)
@@ -68,13 +88,49 @@ class Cart(models.Model):
                     .first()
                 )
                 if anon_cart.items.all().exists():
+                    logger.info(
+                        f"Assigning anonymous cart items to existing cart: {cart}",
+                        extra={"className": self.__class__.__name__},
+                    )
                     anon_cart.items.all().update(cart=cart)
+                    logger.info(
+                        f"Deleting anonymous cart: {anon_cart}",
+                        extra={"className": self.__class__.__name__},
+                    )
                     anon_cart.delete()
+                    logger.info(
+                        f"Anonymous cart: {anon_cart} deleted.",
+                        extra={"className": self.__class__.__name__},
+                    )
             else:
+                logger.info(
+                    f"No Anonymous cart items exists for user: {request.user.id} ({request.user})",
+                    extra={"className": self.__class__.__name__},
+                )
                 if not cart.user:
+                    logger.info(
+                        f"Assigning user: {request.user.id} ({request.user}) to cart: {cart}.",
+                        extra={"className": self.__class__.__name__},
+                    )
                     cart.user = request.user.id
+                    logger.info(
+                        f"Saving cart: {cart}",
+                        extra={"className": self.__class__.__name__},
+                    )
                     cart.save()
+                    logger.info(
+                        f"Cart: {cart} saved.",
+                        extra={"className": self.__class__.__name__},
+                    )
         else:
+            logger.info(
+                f"No cart with id: {cart_id} exists for user: {request.user.id} ({request.user})",
+                extra={"className": self.__class__.__name__},
+            )
+            logger.info(
+                f"Checking if user: {request.user.id} ({request.user}) has any carts.",
+                extra={"className": self.__class__.__name__},
+            )
             if Cart.objects.filter(user=request.user.id).exists():
                 cart = (
                     Cart.objects.filter(user=request.user.id)
@@ -82,27 +138,94 @@ class Cart(models.Model):
                     .first()
                 )
             else:
+                logger.info(
+                    f"User: {request.user.id} ({request.user}) has no carts. Creating new cart.",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart = Cart.objects.create()
-        request.session["cart_item_count"] = CartItem.objects.filter(cart=cart).count()
+                logger.info(
+                    f"New cart: {cart} created.",
+                    extra={"className": self.__class__.__name__},
+                )
+        cart_item_count = CartItem.objects.filter(cart=cart).count()
+        request.session["cart_item_count"] = cart_item_count
+        logger.info(
+            f"cart_item_count session variable for cart: {cart} set to {cart_item_count}",
+            extra={"className": self.__class__.__name__},
+        )
         request.session["cart_id"] = cart.id
+        logger.info(
+            f"cart_id session variable for cart: {cart} set to {cart.id}",
+            extra={"className": self.__class__.__name__},
+        )
+
+        logger.info(
+            f"Returning cart: {cart} to caller",
+            extra={"className": self.__class__.__name__},
+        )
         return cart
 
     def set_user_for_cart_and_items(self, user_id):
+        logger.info(
+            f"Calling set_user_for_cart_and_items for user: {user_id}.",
+            extra={"className": self.__class__.__name__},
+        )
         self.user = user_id
+        logger.info(
+            f"Assigning user with id: {user_id} to cart: {self}",
+            extra={"className": self.__class__.__name__},
+        )
         self.save()
-        logger.debug("Selecting vouchers")
+        logger.info(
+            f"Cart: {self} saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
         voucher_ids = list(CartItem.vouchers.filter(cart=self))
         vouchers = Voucher.objects.filter(id__in=voucher_ids)
-        for voucher in vouchers:
-            voucher.purchaser = user_id
-            voucher.save()
+        if vouchers:
+            logger.info(
+                f"Vouchers exist for cart: {self}.",
+                extra={"className": self.__class__.__name__},
+            )
+            for voucher in vouchers:
+                voucher.purchaser = user_id
+                logger.info(
+                    f"Voucher: {voucher} purchaser field set to: {user_id}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    f"Saving Voucher: {voucher}",
+                    extra={"className": self.__class__.__name__},
+                )
+                voucher.save()
+                logger.info(
+                    f"Voucher: {voucher} saved.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         park_pass_ids = list(CartItem.passes.filter(cart=self))
         park_passes = Pass.objects.filter(id__in=park_pass_ids)
-        for park_pass in park_passes:
-            park_pass.user = user_id
-            park_pass.save()
+        if park_passes:
+            logger.info(
+                f"Park passes exist for cart: {self}.",
+                extra={"className": self.__class__.__name__},
+            )
+            for park_pass in park_passes:
+                logger.info(
+                    f"Park pass: {park_pass} user field set to: {user_id}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    f"Saving Park pass: {park_pass}",
+                    extra={"className": self.__class__.__name__},
+                )
+                park_pass.user = user_id
+                park_pass.save()
+                logger.info(
+                    f"Park pass: {park_pass} saved.",
+                    extra={"className": self.__class__.__name__},
+                )
 
     @property
     def email_user(self):
@@ -125,19 +248,35 @@ class Cart(models.Model):
         order to submit to leger and wait until that order is confirmed before we add
         the order to the park passes database.
         """
-        logger.info(f"Creating order from cart {self}")
         logger.info(
-            f"Saving order to database = {str(save_order_to_db_and_delete_cart)}"
+            f"Creating order from cart: {self}",
+            extra={"className": self.__class__.__name__},
+        )
+        logger.info(
+            f"Saving order to database = {str(save_order_to_db_and_delete_cart)}",
+            extra={"className": self.__class__.__name__},
         )
         if Order.objects.filter(uuid=self.uuid).exists():
-            logger.info(f"Order with uuid {self.uuid} already exists.")
+            logger.info(
+                f"Order with uuid {self.uuid} already exists.",
+                extra={"className": self.__class__.__name__},
+            )
             order = Order.objects.get(uuid=self.uuid)
-            logger.info(f"Order {str(order)} selected.")
+            logger.info(
+                f"Order: {str(order)} selected.",
+                extra={"className": self.__class__.__name__},
+            )
             order.user = self.user
         else:
-            logger.info(f"Order with uuid {self.uuid} doesn't exist.")
+            logger.info(
+                f"Order with uuid {self.uuid} doesn't exist.",
+                extra={"className": self.__class__.__name__},
+            )
             order = Order(user=self.user)
-            logger.info(f"Order {str(order)} created.")
+            logger.info(
+                f"Order {str(order)} created.",
+                extra={"className": self.__class__.__name__},
+            )
 
         order_items = []
         if save_order_to_db_and_delete_cart:
@@ -146,17 +285,23 @@ class Cart(models.Model):
                     "If save_order_to_db_and_delete_cart is True then \
                     the cart must have a uuid and an invoice_reference must be passed in."
                 )
-            logger.info("Populating Order")
+            logger.info(
+                "Populating Order", extra={"className": self.__class__.__name__}
+            )
             order.uuid = self.uuid
             order.invoice_reference = invoice_reference
             order.is_no_payment = self.is_no_payment
             if self.retailer_group:
                 order.retailer_group = self.retailer_group
             order.save()
-            logger.info("Transferring cart items to order items.")
+            logger.info(
+                "Transferring cart items to order items.",
+                extra={"className": self.__class__.__name__},
+            )
         for cart_item in self.items.all():
             logger.info(
-                f"Creating new order item with data from cart item {cart_item}."
+                f"Creating new order item with data from cart item: {cart_item}.",
+                extra={"className": self.__class__.__name__},
             )
             order_item = OrderItem()
             order_item.object_id = cart_item.object_id
@@ -164,7 +309,10 @@ class Cart(models.Model):
             order_item.order = order
             order_item.oracle_code = cart_item.oracle_code
             if cart_item.is_voucher_purchase():
-                logger.info("Cart item is a voucher purchase.")
+                logger.info(
+                    "Cart item is a voucher purchase.",
+                    extra={"className": self.__class__.__name__},
+                )
                 voucher = Voucher.objects.get(pk=cart_item.object_id)
                 order_item.description = CartUtils.get_voucher_purchase_description(
                     voucher.voucher_number
@@ -175,9 +323,16 @@ class Cart(models.Model):
                     voucher.in_cart = False
                     voucher.save()
                     order_item.save()
-                    logger.info(f"Order item {order_item} saved to database.")
+                    logger.info(
+                        f"Order item {order_item} saved.",
+                        extra={"className": self.__class__.__name__},
+                    )
 
             else:
+                logger.info(
+                    "Cart item is a park pass purchase.",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass = Pass.objects.get(pk=cart_item.object_id)
                 order_item.description = CartUtils.get_pass_purchase_description(
                     park_pass.pass_number
@@ -188,19 +343,36 @@ class Cart(models.Model):
                     park_pass.in_cart = False
                     park_pass.save()
                     order_item.save()
+                    logger.info(
+                        f"Order item {order_item} saved.",
+                        extra={"className": self.__class__.__name__},
+                    )
 
                 if cart_item.concession_usage:
-                    # A conession discount is being applied to this pass purchase
+                    logger.info(
+                        f"Concession Usage exists for cart_item {cart_item}.",
+                        extra={"className": self.__class__.__name__},
+                    )
+                    # A concession discount is being applied to this pass purchase
                     concession = cart_item.concession_usage.concession
                     concession_discount = concession.discount_as_amount(
                         park_pass.option.price
                     )
                     if concession_discount > Decimal(0.00):
+                        logger.info(
+                            "Concession discount is greater than 0.00. Proceeding.",
+                            extra={"className": self.__class__.__name__},
+                        )
                         order_item = OrderItem()
                         order_item.order = order
                         order_item.description = CartUtils.get_concession_description(
                             concession.concession_type
                         )
+                        logger.info(
+                            f"Concession order item description: {order_item.description}",
+                            extra={"className": self.__class__.__name__},
+                        )
+
                         # The ledger checkout doesn't round a negative balance to zero so in order to avoid
                         # processing a refund we have to make sure the discount is no more than the total pass price
                         if concession_discount >= park_pass.price:
@@ -211,16 +383,37 @@ class Cart(models.Model):
                             order_item.amount = -abs(
                                 concession_discount.quantize(Decimal("0.01"))
                             )
+                        logger.info(
+                            f"Concession order item amount: {order_item.amount}",
+                            extra={"className": self.__class__.__name__},
+                        )
+
                         order_items.append(order_item)
+                        logger.info(
+                            "Concession order item appended to order items.",
+                            extra={"className": self.__class__.__name__},
+                        )
                         if save_order_to_db_and_delete_cart:
                             order_item.save()
+                            logger.info(
+                                f"Concession order item saved: {order_item}.",
+                                extra={"className": self.__class__.__name__},
+                            )
 
                 if cart_item.discount_code_usage:
+                    logger.info(
+                        f"Discount Code Usage exists for cart_item {cart_item}.",
+                        extra={"className": self.__class__.__name__},
+                    )
                     # A discount code is being applied to this pass purchase
                     discount_code_discount = (
                         cart_item.get_discount_code_discount_as_amount()
                     )
                     if discount_code_discount > 0.00:
+                        logger.info(
+                            "Discount Code discount is greater than 0.00. Proceeding.",
+                            extra={"className": self.__class__.__name__},
+                        )
                         order_item = OrderItem()
                         order_item.order = order
                         order_item.description = (
@@ -228,6 +421,11 @@ class Cart(models.Model):
                                 cart_item.discount_code_usage.discount_code.code
                             )
                         )
+                        logger.info(
+                            f"Discount Code order item description: {order_item.description}",
+                            extra={"className": self.__class__.__name__},
+                        )
+
                         # The ledger checkout doesn't round a negative balance to zero so in order to avoid
                         # processing a refund we have to make sure the discount is no more than the total pass price
                         if discount_code_discount >= park_pass.price:
@@ -238,11 +436,29 @@ class Cart(models.Model):
                             order_item.amount = -abs(
                                 discount_code_discount.quantize(Decimal("0.01"))
                             )
+                        logger.info(
+                            f"Discount Code order item amount: {order_item.amount}",
+                            extra={"className": self.__class__.__name__},
+                        )
+
                         order_items.append(order_item)
+                        logger.info(
+                            "Discount Code order item appended to order items.",
+                            extra={"className": self.__class__.__name__},
+                        )
+
                         if save_order_to_db_and_delete_cart:
                             order_item.save()
+                            logger.info(
+                                f"Discount Code order item saved: {order_item}.",
+                                extra={"className": self.__class__.__name__},
+                            )
 
                 if cart_item.voucher_transaction:
+                    logger.info(
+                        f"Voucher Transaction exists for cart_item {cart_item}.",
+                        extra={"className": self.__class__.__name__},
+                    )
                     # A voucher is being used for this pass purchase
                     voucher_transaction_balance = (
                         cart_item.voucher_transaction.balance()
@@ -252,22 +468,58 @@ class Cart(models.Model):
                     order_item.description = CartUtils.get_voucher_code_description(
                         cart_item.voucher_transaction.voucher.code
                     )
+                    logger.info(
+                        f"Voucher transaction order item description: {order_item.description}",
+                        extra={"className": self.__class__.__name__},
+                    )
+
                     order_item.amount = voucher_transaction_balance.quantize(
                         Decimal("0.01")
                     )
+                    logger.info(
+                        f"Voucher transaction order item amount: {order_item.amount}",
+                        extra={"className": self.__class__.__name__},
+                    )
+
                     order_items.append(order_item)
                     if save_order_to_db_and_delete_cart:
                         order_item.save()
+                        logger.info(
+                            f"Voucher transaction order item saved: {order_item}.",
+                            extra={"className": self.__class__.__name__},
+                        )
 
         if save_order_to_db_and_delete_cart:
+            logger.info(
+                f"Deleting Cart {self}.", extra={"className": self.__class__.__name__}
+            )
             self.delete()
+            logger.info("Cart Deleted.", extra={"className": self.__class__.__name__})
 
+        logger.info(
+            f"Returning order {order} and order items.",
+            extra={"className": self.__class__.__name__},
+        )
         return order, order_items
 
     def save(self, *args, **kwargs):
+        logger.info(
+            f"Saving Cart: {self}.", extra={"className": self.__class__.__name__}
+        )
         if not self.uuid:
+            logger.info(
+                "Cart has no uuid", extra={"className": self.__class__.__name__}
+            )
             self.uuid = uuid.uuid4()
+            logger.info(
+                f"Cart assigned uuid: {self.uuid}",
+                extra={"className": self.__class__.__name__},
+            )
+        logger.info(
+            f"Saving Cart: {self}.", extra={"className": self.__class__.__name__}
+        )
         super().save(*args, **kwargs)
+        logger.info("Cart Saved.", extra={"className": self.__class__.__name__})
 
 
 class CartItemVoucherManager(models.Manager):
@@ -340,23 +592,54 @@ class CartItem(models.Model):
         return f"Content Type: {self.content_type} | Object ID: {self.object_id} Total Price: {self.get_total_price()}"
 
     def save(self, *args, **kwargs):
-        logger.debug(
-            "PARKPASSES_VALID_CART_CONTENT_TYPES = "
-            + str(settings.PARKPASSES_VALID_CART_CONTENT_TYPES)
+        logger.info(
+            f"Saving Cart Item: {self}.", extra={"className": self.__class__.__name__}
         )
-        logger.debug("self.content_type = " + str(self.content_type))
+
         if str(self.content_type) not in settings.PARKPASSES_VALID_CART_CONTENT_TYPES:
             logger.error(
                 f"Attempting to add invalid content type {self.content_type} \
-                    to cart {self.cart.pk} for user {self.cart.user}"
+                    to cart {self.cart.pk} for user {self.cart.user}",
+                extra={"className": self.__class__.__name__},
             )
-            raise ValueError("A Cart Item can only contain a Voucher or a Pass")
+            raise ValueError(
+                "A Cart Item can only contain a Voucher or a Pass",
+                extra={"className": self.__class__.__name__},
+            )
         datetime_item_added = timezone.now()
+        logger.info(
+            "Checking if parent Cart has been added to in the past?",
+            extra={"className": self.__class__.__name__},
+        )
         if not self.cart.datetime_first_added_to and not self.cart.items.count():
+            logger.info(
+                "Parent Cart has not been added to in the past.",
+                extra={"className": self.__class__.__name__},
+            )
             self.cart.datetime_first_added_to = datetime_item_added
+            logger.info(
+                f"Assigned date time first added to: {self.cart.datetime_first_added_to}.",
+                extra={"className": self.__class__.__name__},
+            )
+
         self.cart.datetime_last_added_to = datetime_item_added
+        logger.info(
+            f"Assigned date time last added to: {self.cart.datetime_last_added_to}.",
+            extra={"className": self.__class__.__name__},
+        )
+
+        logger.info(
+            f"Saving parent Cart: {self.cart}.",
+            extra={"className": self.__class__.__name__},
+        )
         self.cart.save()
+        logger.info("Parent Cart saved.", extra={"className": self.__class__.__name__})
+
+        logger.info(
+            f"Saving Cart Item: {self}.", extra={"className": self.__class__.__name__}
+        )
         super().save(*args, **kwargs)
+        logger.info("Cart Item saved.", extra={"className": self.__class__.__name__})
 
     def is_voucher_purchase(self):
         return "parkpasses | voucher" == str(self.content_type)
@@ -365,25 +648,93 @@ class CartItem(models.Model):
         return "parkpasses | pass" == str(self.content_type)
 
     def delete(self, *args, **kwargs):
+        logger.info(
+            f"Deleting Cart Item: {self}.", extra={"className": self.__class__.__name__}
+        )
         if self.is_voucher_purchase():
-            Voucher.objects.filter(id=self.object_id).delete()
+            logger.info(
+                "Cart Item is a voucher purchase.",
+                extra={"className": self.__class__.__name__},
+            )
+            if Voucher.objects.filter(id=self.object_id, in_cart=True).exists():
+                logger.info(
+                    f"Selected Voucher with id: {self.object_id}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                voucher = Voucher.objects.get(id=self.object_id)
+                logger.info(
+                    f"Deleting associated voucher: {voucher}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                voucher.delete()
+                logger.info(
+                    "Associated voucher deleted.",
+                    extra={"className": self.__class__.__name__},
+                )
+
         elif self.is_pass_purchase():
+            logger.info(
+                "Cart Item is a Park Pass purchase.",
+                extra={"className": self.__class__.__name__},
+            )
             if Pass.objects.filter(id=self.object_id, in_cart=True).exists():
+                logger.info(
+                    f"Selected Pass with id: {self.object_id}.",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass = Pass.objects.get(id=self.object_id)
+
+                logger.info(
+                    "Removing concession usage, discount code usage and voucher transaction from cart item.",
+                    extra={"className": self.__class__.__name__},
+                )
                 self.concession_usage = None
                 self.discount_code_usage = None
                 self.voucher_transaction = None
+                logger.info(
+                    "Concession usage, discount code usage and voucher transaction removed.",
+                    extra={"className": self.__class__.__name__},
+                )
+
+                logger.info(
+                    f"Saving cart item: {self}.",
+                    extra={"className": self.__class__.__name__},
+                )
                 self.save()
+                logger.info(
+                    "Cart Item saved.", extra={"className": self.__class__.__name__}
+                )
+
+                logger.info(
+                    "Deleting concession usage, discount code usage and voucher transaction.",
+                    extra={"className": self.__class__.__name__},
+                )
                 ConcessionUsage.objects.filter(park_pass=park_pass).delete()
                 DiscountCodeUsage.objects.filter(park_pass=park_pass).delete()
                 VoucherTransaction.objects.filter(park_pass=park_pass).delete()
+                logger.info(
+                    "Doncession usage, discount code usage and voucher transaction deleted.",
+                    extra={"className": self.__class__.__name__},
+                )
+
+                logger.info(
+                    f"Deleting park pass: {park_pass}.",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass.delete()
+                logger.info(
+                    "Park Pass deleted.", extra={"className": self.__class__.__name__}
+                )
+
+        logger.info(
+            "Returning from Cart Item delete.",
+            extra={"className": self.__class__.__name__},
+        )
         return super().delete(*args, **kwargs)
 
     def get_price_before_discounts(self):
         """Does not take concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
-        logger.debug("model_type = " + str(model_type))
         if "parkpasses | voucher" == model_type:
             return Voucher.objects.get(pk=self.object_id).amount
         elif "parkpasses | pass" == model_type:
@@ -400,8 +751,6 @@ class CartItem(models.Model):
     def get_total_price(self):
         """Takes concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
-        logger.debug("model_type = " + str(model_type))
-        logger.debug("object_id = " + str(self.object_id))
         if "parkpasses | voucher" == model_type:
             return Voucher.objects.get(pk=self.object_id).amount
         elif "parkpasses | pass" == model_type:

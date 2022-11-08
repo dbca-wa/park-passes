@@ -20,7 +20,7 @@
 
             <div v-else class="col-md-3">
                 <div class="card">
-                    <h5 class="card-header">What Next?</h5>
+                    <h5 class="card-header text-white">What Next?</h5>
                     <div class="card-body">
                         <p class="card-text"><a href="/your-park-passes">View Your Park Passes</a></p>
                         <p class="card-text"><a href="/your-orders">View Your Orders</a></p>
@@ -31,8 +31,8 @@
 
             <div class="col-md-8">
 
-                <div v-if="order" class="card bg-white">
-                    <div class="card-header checkout-success-item-header">
+                <div v-if="order" class="card">
+                    <div class="card-header checkout-success-item-header text-white">
                         <span class="heading">Order Placed</span>
                         <span class="d-none d-sm-block">{{ formattedOrderDate }}</span>
                         <span class="d-bloack d-sm-none">{{ formattedOrderDateShort }}</span>
@@ -48,7 +48,7 @@
                     </div>
                     <div class="card-body">
 
-                        <div v-for="orderItem in order.items" class="card bg-white mb-3">
+                        <div v-for="orderItem in order.items" class="mb-3">
                             <div class="card-header order-item">
                                 <span>{{ orderItem.description }}</span>
                                 <span>${{ orderItem.amount }}</span>
@@ -129,6 +129,10 @@ export default {
 </script>
 
 <style scoped>
+
+    .card-header{
+        background-color: #003e52;
+    }
     .checkout-success-item-header {
         /* create a grid */
         display: grid;
@@ -140,7 +144,7 @@ export default {
         align-items: center;
         justify-content: center;
         grid-gap: 2px 3px;
-        color: #565959;
+
         font-size:12px;
     }
 
@@ -152,6 +156,7 @@ export default {
         display: grid;
         grid-template-columns: 21fr max-content;
         font-size:0.8em;
+        background-color: #EDE5D9;
     }
 
     @media (min-width: 425px) {
@@ -183,7 +188,7 @@ export default {
         }
 
         .checkout-success-item-header .heading{
-            font-weight: normal;
+            font-weight: bold;
         }
 
         .order-item {

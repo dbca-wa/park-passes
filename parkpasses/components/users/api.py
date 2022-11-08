@@ -11,7 +11,11 @@ from rest_framework.views import APIView
 
 from parkpasses.components.retailers.models import RetailerGroupUser
 from parkpasses.components.users.serializers import BasicEmailUserSerializer
-from parkpasses.helpers import is_internal, is_retailer
+from parkpasses.helpers import (
+    is_internal,
+    is_parkpasses_discount_code_percentage_user,
+    is_retailer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +35,9 @@ class UserDataView(APIView):
             user_data["user"]["last_name"] = emailuser.last_name
         if is_internal(request):
             user_data["authorisation_level"] = "internal"
+            user_data["user"][
+                "can_create_percentage_discounts"
+            ] = is_parkpasses_discount_code_percentage_user(request)
 
         elif is_retailer(request):
             user_data["authorisation_level"] = "retailer"
@@ -52,7 +59,6 @@ class UserDataView(APIView):
 
                 user_data["user"]["retailer_groups"] = retailer_groups_list
 
-            logger.debug("retailer_groups" + str(list(retailer_groups)))
         else:
             user_data["authorisation_level"] = "external"
 

@@ -122,12 +122,9 @@ export default {
   cursor:pointer;
 }
 
-.card i:hover {
+.card:hover {
   cursor: pointer;
   opacity: 0.8;
 }
 
-.help-card i.fa-solid-question {
-
-}
 </style>

@@ -188,7 +188,7 @@
         </div>
     </footer>
     <div v-if="!pass">
-        <BootstrapSpinner isLoading="true" />
+        <BootstrapSpinner :isLoading="true" />
     </div>
 </template>
 

@@ -6,7 +6,7 @@
                     <slot name="header">
                         <div class="modal-header">
                             <h4 class="modal-title"><slot name="title">{{title}}</slot></h4>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="cancel"></button>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" @click="cancel"></button>
                         </div>
                     </slot>
                     <div class="modal-body">
@@ -146,6 +146,9 @@
     .modal-header {
         border-top-left-radius: .3rem;
         border-top-right-radius: .3rem;
+        background-color: #003e52;
+        color: #eee;
+        border: 1px solid white;
     }
     .modal-body {
         background-color: #efefef;
@@ -170,6 +173,9 @@
     }
     .modal-enter .modal-backdrop, .modal-leave .modal-backdrop {
         opacity: 0;
+    }
+    .btn-close {
+        color: #eee;
     }
     .close {
         font-size: 2.5rem;

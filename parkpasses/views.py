@@ -1,15 +1,15 @@
 import logging
 
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.management import call_command
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.generic.base import TemplateView
 
 from parkpasses.forms import LoginForm
 from parkpasses.helpers import is_internal, is_retailer, is_retailer_admin
 
-logger = logging.getLogger("payment_checkout")
+logger = logging.getLogger(__name__)
 
 
 class InternalView(UserPassesTestMixin, TemplateView):
@@ -18,14 +18,6 @@ class InternalView(UserPassesTestMixin, TemplateView):
     def test_func(self):
         return is_internal(self.request)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
-        return context
-
 
 class RetailerView(UserPassesTestMixin, TemplateView):
     template_name = "parkpasses/retailer/index.html"
@@ -33,13 +25,20 @@ class RetailerView(UserPassesTestMixin, TemplateView):
     def test_func(self):
         return is_retailer(self.request)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
-        return context
+
+class RetailerSellAPassView(UserPassesTestMixin, TemplateView):
+    template_name = "parkpasses/retailer/index.html"
+
+    def test_func(self):
+        return is_retailer(self.request)
+
+    def get(self, *args, **kwargs):
+        cart_item_count = self.request.session.get("cart_item_count", None)
+
+        if cart_item_count and cart_item_count > 0:
+            return redirect(reverse("user-cart"))
+
+        return super().get(*args, **kwargs)
 
 
 class RetailerAdminView(UserPassesTestMixin, TemplateView):
@@ -48,25 +47,9 @@ class RetailerAdminView(UserPassesTestMixin, TemplateView):
     def test_func(self):
         return is_retailer_admin(self.request)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
-        return context
-
 
 class ExternalView(LoginRequiredMixin, TemplateView):
     template_name = "parkpasses/dash/index.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
-        return context
 
 
 class ParkPassesRoutingView(TemplateView):

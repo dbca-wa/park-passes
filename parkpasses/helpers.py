@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroupPermission
 
+from parkpasses.components.passes.models import Pass
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,16 @@ def is_internal(request):
         cache.set(cache_key, is_internal, settings.CACHE_TIMEOUT_2_HOURS)
     logger.debug(f"{cache_key}:{is_internal}", extra={"className": ""})
     return is_internal
+
+
+def test_async(var):
+    print("var = " + str(var))
+
+
+def generate_park_pass_pdf_from_id(id):
+    park_pass = Pass.objects.get(id=id)
+    park_pass.generate_park_pass_pdf()
+    park_pass.update()
 
 
 def is_parkpasses_admin(request):

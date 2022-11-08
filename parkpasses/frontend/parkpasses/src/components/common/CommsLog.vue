@@ -92,7 +92,7 @@ export default {
                 responsive: true,
                 deferRender: true,
                 autowidth: true,
-                order: [[4, 'desc']], // order the non-formatted date as a hidden column
+                order: [[2, 'desc']], // order the non-formatted date as a hidden column
                 dom:
                     "<'row'<'col-sm-4'l><'col-sm-8'f>>" +
                     "<'row'<'col-sm-12'tr>>" +
@@ -117,7 +117,7 @@ export default {
                     {
                         title: 'When',
                         data:"when",
-                        orderable: false,
+                        orderable: true,
                         mRender:function(data,type,full){
                             return moment(data).format(vm.dateFormat);
                         }
@@ -135,11 +135,12 @@ export default {
                         data: "documents",
                         orderable: false,
                         mRender:function(data,type,full){
-                            if(full.documents && 1<full.documents.length){
+                            if(full.documents && 0<full.documents.length){
                                 console.log(full.documents)
                                 let documentsHtml = '';
+                                // Need to add a call to an api here to access documents in protected media
                                 for(let i=0;i<full.documents.length;i++){
-                                    documentsHtml += `<a href="">${full.documents[i].file_name}</a><br />`;
+                                    documentsHtml += `<a href="${apiEndpoints.retrieveOrgModelDocument(full.documents[i].id)}" target="_blank">${full.documents[i].file_name}</a><br />`;
                                 }
                                 return documentsHtml;
                             } else {
@@ -335,30 +336,18 @@ export default {
                     {
                         title: 'Documents',
                         data: 'documents',
-                        'render': function (values) {
-                            var result = '';
-                            _.forEach(values, function (value) {
-                                // We expect an array [docName, url]
-                                // if it's a string it is the url
-                                var docName = '',
-                                    url = '';
-                                if (_.isArray(value) && value.length > 1){
-                                    docName = value[0];
-                                    url = value[1];
+                        mRender:function(data,type,full){
+                            if(full.documents && 0<full.documents.length){
+                                console.log(full.documents)
+                                let documentsHtml = '';
+                                // Need to add a call to an api here to access documents in protected media
+                                for(let i=0;i<full.documents.length;i++){
+                                    documentsHtml += `<a href="${apiEndpoints.retrieveOrgModelDocument(full.documents[i].id)}" target="_blank">${full.documents[i].file_name}</a><br />`;
                                 }
-                                if (typeof s === 'string'){
-                                    url = value;
-                                    // display the first  chars of the filename
-                                    docName = _.last(value.split('/'));
-                                    docName = _.truncate(docName, {
-                                        length: 18,
-                                        omission: '...',
-                                        separator: ' '
-                                    });
-                                }
-                                result += '<a href="' + url + '" target="_blank"><p>' + docName+ '</p></a><br>';
-                            });
-                            return result;
+                                return documentsHtml;
+                            } else {
+                                return 'No Files'
+                            }
                         }
                     },
                     {
@@ -500,4 +489,6 @@ export default {
 .actionBtn {
     cursor: pointer;
 }
+
+
 </style>

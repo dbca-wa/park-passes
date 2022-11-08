@@ -259,7 +259,6 @@ class RetailerGroupInvite(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        logger.debug("self.status -> " + str(self.status))
         if RetailerGroupInvite.NEW == self.status:
             with transaction.atomic():
                 message = (
@@ -284,7 +283,6 @@ class RetailerGroupInvite(models.Model):
                 .filter(retailer_group=self.retailer_group, emailuser=self.user)
                 .first()
             )
-            logger.debug("is_admin = " + str(is_admin))
             RetailerEmails.send_retailer_group_user_approved_notification_email(
                 self, is_admin
             )

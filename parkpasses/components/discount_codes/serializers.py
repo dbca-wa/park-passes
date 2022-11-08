@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -8,6 +9,7 @@ from parkpasses.components.discount_codes.models import (
     DiscountCodeBatchValidPassType,
     DiscountCodeBatchValidUser,
 )
+from parkpasses.helpers import is_parkpasses_discount_code_percentage_user
 
 
 class InternalDiscountCodeXlsxSerializer(serializers.ModelSerializer):
@@ -84,6 +86,10 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
     datetime_start = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
     datetime_expiry = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
     status = serializers.SerializerMethodField()
+    user_can_create_percentage_discounts = serializers.SerializerMethodField(
+        read_only=True
+    )
+    content_type = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = DiscountCodeBatch
@@ -104,11 +110,16 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
             "valid_pass_types",
             "valid_users",
             "discount_codes",
+            "user_can_create_percentage_discounts",
+            "content_type",
         ]
         read_only_fields = [
             "created_by_name",
         ]
-        datatables_always_serialize = ("id",)
+        datatables_always_serialize = [
+            "id",
+            "user_can_create_percentage_discounts",
+        ]
 
     def get_status(self, obj):
         if obj.datetime_start >= timezone.now():
@@ -117,6 +128,12 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
             return "Expired"
         else:
             return "Current"
+
+    def get_user_can_create_percentage_discounts(self, obj):
+        return is_parkpasses_discount_code_percentage_user(self.context["request"])
+
+    def get_content_type(self, obj):
+        return ContentType.objects.get_for_model(obj).id
 
 
 class InternalDiscountCodeBatchCommentSerializer(serializers.ModelSerializer):

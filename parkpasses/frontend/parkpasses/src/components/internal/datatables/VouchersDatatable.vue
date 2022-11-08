@@ -91,8 +91,10 @@ export default {
 
             statuses: [
                 {id:'N', value:'New'},
-                {id:'D', value:'Delivered'},
-                {id:'ND', value:'Not Delivered'},
+                {id:'NDP', value:'Not Delivered to Purchaser'},
+                {id:'PN', value:'Purchaser Notified'},
+                {id:'NDR', value:'Not Delivered to Recipient'},
+                {id:'DR', value:'Delivered to Recipient'},
             ],
 
             dateFormat: 'DD/MM/YYYY',

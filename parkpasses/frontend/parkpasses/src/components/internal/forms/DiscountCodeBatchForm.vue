@@ -76,13 +76,13 @@
                                         <div class="form-check form-check-inline">
                                             <input @change="discountTypeChanged" type="radio" class="form-check-input"
                                                 id="discountTypePercentage" name="discountType" v-model="discountCodeBatch.discount_type" value="percentage"
-                                                aria-describedby="validationServerDiscountTypeFeedback" required :disabled="startDateHasPassed" />
+                                                aria-describedby="validationServerDiscountTypeFeedback" required :disabled="fieldDisabled" />
                                             <label for="discountTypePercentage" class="col-form-label">Percentage</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input @change="discountTypeChanged" type="radio" class="form-check-input"
                                                 id="discountTypeAmount" name="discountType" v-model="discountCodeBatch.discount_type" value="amount"
-                                                aria-describedby="validationServerDiscountTypeFeedback" required :disabled="startDateHasPassed" />
+                                                aria-describedby="validationServerDiscountTypeFeedback" required :disabled="fieldDisabled" />
                                             <label for="discountTypeAmount" class="col-form-label">Amount</label>
                                         </div>
                                     </div>
@@ -92,10 +92,10 @@
                                     <div>
                                         <input v-if="'percentage'==discountCodeBatch.discount_type" type="number" class="form-control" :class="errors.discount_percentage ? 'is-invalid' : ''" id="discountPercentage"
                                             name="discountPercentage" placeholder="Percentage" v-model="discountCodeBatch.discount_percentage"
-                                            aria-describedby="validationServerNameFeedback" min="1" max="100" required :disabled="startDateHasPassed" />
+                                            aria-describedby="validationServerNameFeedback" min="1" max="100" required :disabled="fieldDisabled" />
                                         <input v-if="'amount'==discountCodeBatch.discount_type" type="number" class="form-control" :class="errors.discount_amount ? 'is-invalid' : ''" id="discountAmount"
                                             name="discountAmount" placeholder="Amount" v-model="discountCodeBatch.discount_amount"
-                                            aria-describedby="validationServerNameFeedback" min="1" required :disabled="startDateHasPassed" />
+                                            aria-describedby="validationServerNameFeedback" min="1" required :disabled="fieldDisabled" />
                                         <div v-if="errors.discount_amount" id="validationServerDiscountTypeFeedback" class="invalid-feedback">
                                             <p v-for="(error, index) in errors.discount_amount" :key="index">{{ error }}</p>
                                         </div>
@@ -209,7 +209,7 @@
         </div>
     </footer>
     <div v-if="!discountCodeBatch">
-        <BootstrapSpinner isLoading="true" />
+        <BootstrapSpinner :isLoading="true" />
     </div>
 </template>
 
@@ -252,6 +252,9 @@ export default {
             let now = new Date();
             let startDate = new Date(this.discountCodeBatch.datetime_start);
             return startDate <= now;
+        },
+        fieldDisabled: function () {
+            return this.startDateHasPassed || !this.discountCodeBatch.user_can_create_percentage_discounts;
         },
         badgeClass: function () {
             return helpers.getStatusBadgeClass(this.discountCodeBatch.status);

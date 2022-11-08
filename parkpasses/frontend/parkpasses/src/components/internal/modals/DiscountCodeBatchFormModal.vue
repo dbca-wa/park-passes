@@ -43,7 +43,7 @@
                                 <div class="col-md-4">
                                     <label for="discountType" class="col-form-label">Discount:</label>
                                     <div>
-                                        <div class="form-check form-check-inline">
+                                        <div v-if="userCanCreatePercentageDiscounts" class="form-check form-check-inline">
                                             <input @change="discountTypeChanged" type="radio" class="form-check-input"
                                                 id="discountTypePercentage" name="discountType" v-model="discountCodeBatch.discount_type" value="percentage"
                                                 aria-describedby="validationServerDiscountTypeFeedback" required />
@@ -52,7 +52,7 @@
                                         <div class="form-check form-check-inline">
                                             <input @change="discountTypeChanged" type="radio" class="form-check-input"
                                                 id="discountTypeAmount" name="discountType" v-model="discountCodeBatch.discount_type" value="amount"
-                                                aria-describedby="validationServerDiscountTypeFeedback" required />
+                                                aria-describedby="validationServerDiscountTypeFeedback" required :checked="userCanCreatePercentageDiscounts ? false : true" />
                                             <label for="discountTypeAmount" class="col-form-label">Amount</label>
                                         </div>
                                     </div>
@@ -174,17 +174,22 @@
 </template>
 
 <script>
-import { apiEndpoints, constants, helpers } from '@/utils/hooks'
-import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
+import { apiEndpoints, constants, helpers, utils } from '@/utils/hooks';
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue';
 import { forEach } from 'jszip';
 
 export default {
     name: 'DiscountCodeBatchFormModal',
     emits: ['saveSuccess'],
     props: {
-        selectedDiscountCodeBatch: {
+        selectedDiscountCodeBatchId: {
             type: Number,
             default: null,
+        },
+        userCanCreatePercentageDiscounts: {
+            type: Boolean,
+            default: false,
+            required: false
         }
     },
     data() {
@@ -196,9 +201,9 @@ export default {
         }
     },
     watch: {
-        selectedDiscountCodeBatch: function(newValue, oldValue) {
-            console.log('selectedDiscountCodeBatch.oldValue = ' + oldValue);
-            console.log('selectedDiscountCodeBatch.newValue = ' + newValue);
+        selectedDiscountCodeBatchId: function(newValue, oldValue) {
+            console.log('selectedDiscountCodeBatchId.oldValue = ' + oldValue);
+            console.log('selectedDiscountCodeBatchId.newValue = ' + newValue);
             if (newValue) {
                 this.fetchDiscountCodeBatch(newValue);
             } else {
@@ -272,11 +277,16 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.discountCodeBatch = Object.assign({}, data);
-                if(vm.discountCodeBatch.discount_percentage) {
-                    vm.discountCodeBatch.discount_type = 'percentage';
+                if(vm.userCanCreatePercentageDiscounts){
+                    if(vm.discountCodeBatch.discount_percentage) {
+                        vm.discountCodeBatch.discount_type = 'percentage';
+                    } else {
+                        vm.discountCodeBatch.discount_type = 'amount';
+                    }
                 } else {
                     vm.discountCodeBatch.discount_type = 'amount';
                 }
+
                 console.log("valid_pass_types = " + JSON.stringify(vm.discountCodeBatch.valid_pass_types));
 
                 vm.discountCodeBatch.valid_pass_types =
@@ -367,6 +377,11 @@ export default {
                             discountCodeBatch: data,
                         }
                     );
+
+                    let files = $('#reasonFiles')[0].files;
+                    console.log('data = ' + JSON.stringify(data));
+                    utils.uploadOrgModelDocuments(data.user_action.user_action_content_type_id, data.user_action.id, files);
+
                     $('#successMessageAlert').show();
                     vm.discountCodeBatch = vm.getDiscountCodeBatchInitialState();
                     var discountCodeBatchModal = bootstrap.Modal.getInstance(document.getElementById('discountCodeBatchModal'));
@@ -398,6 +413,9 @@ export default {
     },
     mounted: function () {
         this.initialiseValidUsersSelect2();
+        if(!this.userCanCreatePercentageDiscounts){
+            this.discountCodeBatch.discount_type = 'amount';
+        }
     }
 }
 </script>

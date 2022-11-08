@@ -99,7 +99,6 @@ class DiscountCodeBatch(models.Model):
         existing_discount_codes = DiscountCode.objects.filter(
             discount_code_batch=self
         ).count()
-        logger.debug("self.codes_to_generate = " + str(self.codes_to_generate))
         if existing_discount_codes < self.codes_to_generate:
             difference = self.codes_to_generate - existing_discount_codes
             for i in range(difference):
@@ -129,13 +128,9 @@ class DiscountCodeBatch(models.Model):
             super().save(force_insert=False)
 
     def valid_pass_type_ids(self):
-        logger.debug(
-            "valid_pass_types" + str(self.valid_pass_types.values_list("id", flat=True))
-        )
         return list(self.valid_pass_types.values_list("pass_type_id", flat=True))
 
     def valid_user_ids(self):
-        logger.debug("valid_users" + str(self.valid_users.values_list("id", flat=True)))
         return list(self.valid_users.values_list("user", flat=True))
 
 

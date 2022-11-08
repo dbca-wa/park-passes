@@ -258,8 +258,6 @@ class PassTypePricingWindowOption(models.Model):
 
     @classmethod
     def get_current_options_by_pass_type_id(self, pass_type_id):
-        logger.debug("pass_type_id = " + str(pass_type_id))
-
         try:
             pass_type = PassType.objects.get(id=pass_type_id)
         except ObjectDoesNotExist:
@@ -269,10 +267,6 @@ class PassTypePricingWindowOption(models.Model):
         pricing_windows_for_pass_count = PassTypePricingWindow.objects.filter(
             pass_type=pass_type
         ).count()
-
-        logger.debug(
-            "pricing_windows_for_pass_count = " + str(pricing_windows_for_pass_count)
-        )
 
         if 0 == pricing_windows_for_pass_count:
             logger.critical(
@@ -295,9 +289,7 @@ class PassTypePricingWindowOption(models.Model):
                 )
                 .count()
             )
-            logger.debug(
-                "current_pricing_window_count = " + str(current_pricing_window_count)
-            )
+
             # If there are none just get the default pricing window
             if 0 == current_pricing_window_count:
                 pricing_window = PassTypePricingWindow.objects.get(
@@ -435,9 +427,6 @@ class Pass(models.Model):
     CANCELLED = "CA"
     VALID = "VA"
     PROCESSING_STATUS_CHOICES = [
-        (FUTURE, "Future"),
-        (CURRENT, "Current"),
-        (EXPIRED, "Expired"),
         (CANCELLED, "Cancelled"),
         (VALID, "Valid"),
     ]
@@ -621,7 +610,10 @@ class Pass(models.Model):
         return Decimal(amount).quantize(Decimal("0.00"))
 
     def generate_qrcode(self):
-        logger.info(f"Generating qr code for pass {self.pass_number}.")
+        logger.info(
+            f"Generating qr code for pass {self.pass_number}.",
+            extra={"className": self.__class__.__name__},
+        )
         from parkpasses.components.passes.serializers import (
             ExternalQRCodePassSerializer,
         )
@@ -643,7 +635,8 @@ class Pass(models.Model):
     def generate_park_pass_pdf(self):
         if not PassTemplate.objects.count():
             logger.critical(
-                "CRITICAL: The system can not find a Pass Template to use for generating park passes."
+                "CRITICAL: The system can not find a Pass Template to use for generating park passes.",
+                extra={"className": self.__class__.__name__},
             )
             raise PassTemplateDoesNotExist(
                 "CRITICAL: The system can not find a Pass Template to use for generating park passes."
@@ -678,55 +671,118 @@ class Pass(models.Model):
             )
 
     def set_processing_status(self):
+        logger.info(
+            f"Setting processing status for park pass: {self}.",
+            extra={"className": self.__class__.__name__},
+        )
         if PassCancellation.objects.filter(park_pass=self).count():
             self.processing_status = Pass.CANCELLED
-        elif self.date_start > timezone.now().date():
-            self.processing_status = Pass.FUTURE
-        elif self.date_expiry < timezone.now().date():
-            self.processing_status = Pass.EXPIRED
+            logger.info(
+                f"Processing status set as: {Pass.CANCELLED}.",
+                extra={"className": self.__class__.__name__},
+            )
         else:
-            self.processing_status = Pass.CURRENT
+            self.processing_status = Pass.VALID
+            logger.info(
+                f"Processing status set as: {Pass.VALID}.",
+                extra={"className": self.__class__.__name__},
+            )
 
     def save(self, *args, **kwargs):
-        logger.debug("Entered pass save method.")
+        logger.info(
+            f"Save pass called for park pass: {self}.",
+            extra={"className": self.__class__.__name__},
+        )
         self.date_expiry = self.date_start + timezone.timedelta(
             days=self.option.duration
         )
+        logger.info(
+            f"Pass expiry date set as: {self.date_expiry}.",
+            extra={"className": self.__class__.__name__},
+        )
+
         self.set_processing_status()
 
         if self.user:
+            logger.info(
+                f"Pass has a user id: {self.user}",
+                extra={"className": self.__class__.__name__},
+            )
             email_user = self.email_user
             self.first_name = email_user.first_name
             self.last_name = email_user.last_name
             self.email = email_user.email
+            logger.info(
+                "Populated pass details from ledger email user.",
+                extra={"className": self.__class__.__name__},
+            )
 
+        logger.info(
+            f"Saving park pass: {self}", extra={"className": self.__class__.__name__}
+        )
         super().save(*args, **kwargs)
+        logger.info(
+            f"Park pass: {self} saved.", extra={"className": self.__class__.__name__}
+        )
 
         if not self.pass_number:
+            logger.info(
+                "Park pass does not yet have a pass number.",
+                extra={"className": self.__class__.__name__},
+            )
             self.pass_number = f"PP{self.pk:06d}"
-
-        logger.debug("self.processing_status = " + str(self.processing_status))
+            logger.info(
+                f"Park pass assigned pass number: {self.pass_number}.",
+                extra={"className": self.__class__.__name__},
+            )
 
         if not Pass.CANCELLED == self.processing_status:
             if not self.in_cart:
+                logger.info(
+                    "Park pass has not been cancelled and is not in cart so generating park pass pdf.",
+                    extra={"className": self.__class__.__name__},
+                )
+
                 """Consider: Running generate_park_pass_pdf() with a message queue would be much better"""
                 self.generate_park_pass_pdf()
+
+                logger.info(
+                    "Park pass pdf generated.",
+                    extra={"className": self.__class__.__name__},
+                )
+
                 if not self.purchase_email_sent:
+                    logger.info(
+                        "Park pass purchase email has not yet been sent.",
+                        extra={"className": self.__class__.__name__},
+                    )
                     self.send_purchased_notification_email()
                     logger.info(
                         f"Pass purchased notification email sent for pass {self.pass_number}",
                         extra={"className": self.__class__.__name__},
                     )
                     self.purchase_email_sent = True
+                    logger.info(
+                        "Assigning purchase email as sent.",
+                        extra={"className": self.__class__.__name__},
+                    )
+
                 else:
+                    logger.info(
+                        "Park pass purchase email has already been sent.",
+                        extra={"className": self.__class__.__name__},
+                    )
                     self.send_updated_notification_email()
                     logger.info(
                         f"Pass update notification email sent for pass {self.pass_number}",
                         extra={"className": self.__class__.__name__},
                     )
 
-        logger.debug("Updating pass.")
+        logger.info(
+            f"Updating park pass: {self}.", extra={"className": self.__class__.__name__}
+        )
         super().save(force_update=True)
+        logger.info("Park pass updated.", extra={"className": self.__class__.__name__})
 
     def send_autorenew_notification_email(self):
         error_message = "An exception occured trying to run "

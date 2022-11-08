@@ -105,7 +105,7 @@
                 </div>
 
                 <div v-else>
-                    <BootstrapSpinner isLoading="true" />
+                    <BootstrapSpinner :isLoading="true" />
                 </div>
 
                 <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
@@ -265,4 +265,7 @@ export default {
 </script>
 
 <style scoped>
+.card {
+    background-color: #EDE5D9;
+}
 </style>

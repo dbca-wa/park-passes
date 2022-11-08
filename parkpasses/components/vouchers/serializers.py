@@ -51,7 +51,6 @@ class ExternalListVoucherSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         email_user = EmailUser.objects.get(id=instance.purchaser)
-        logger.debug("email_user = " + str(email_user))
         data.update({"purchaser": BasicEmailUserSerializer(email_user).data})
         return data
 

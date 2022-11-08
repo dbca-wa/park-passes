@@ -70,7 +70,9 @@ module.exports = {
     passTypeExternal: function (passTypeSlug) {
         return                          `/api/passes/external/pass-types/${passTypeSlug}/`;
     },
-
+    passTypeRetailer: function (passTypeSlug) {
+        return                          `/api/passes/retailer/pass-types/${passTypeSlug}/`;
+    },
     /* ========================= Pass Options ===========================================*/
 
     passOptions: function (passTypeId) {
@@ -94,6 +96,9 @@ module.exports = {
     },
     discountCodesXlsx: function (discount_code_batch_id) {
         return                          `/api/discount-codes/internal/discount-codes-xlsx/${discount_code_batch_id}/`;
+    },
+    internalInvalidateDiscountCodeBatch: function (discountCodeBatchId) {
+        return `/api/discount-codes/internal/discount-code-batches/${discountCodeBatchId}/invalidate-discount-code-batch/`;
     },
 
     /* ========================= Vouchers ===============================================*/
@@ -216,17 +221,19 @@ module.exports = {
 
     /* ========================= Org Model Documents ====================================*/
 
-    uploadOrgModelDocuments:            '/api/org-model-documents/upload-documents',
-
+    uploadOrgModelDocuments:            '/api/main/internal/org-model-documents/upload-documents',
+    retrieveOrgModelDocument:  function (documentId) {
+        return                          `/api/main/internal/org-model-documents/${documentId}/retrieve-document/`;
+    },
     /* ========================= Org Model Logs =========================================*/
 
-    entryTypes:                         '/api/org-model-logs/entry-types',
-    listUserActionsLog: function (appLabel, model, object_id) {
-        return                          `/api/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&object_id=${object_id}&format=datatables`;
+    entryTypes:                         '/api/main/org-model-logs/entry-types',
+    listUserActionsLog: function (appLabel, model, objectId) {
+        return                          `/api/main/org-model-logs/user-actions?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
     },
-    createCommunicationsLogEntry:       '/api/org-model-logs/communications-log-entries',
-    listCommunicationsLogEntries: function (appLabel, model, object_id) {
-        return                          `/api/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${object_id}&format=datatables`;
+    createCommunicationsLogEntry:       '/api/main/internal/org-model-logs/communications-log-entries',
+    listCommunicationsLogEntries: function (appLabel, model, objectId) {
+        return                          `/api/main/internal/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
     },
 
 

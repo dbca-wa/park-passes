@@ -17,7 +17,8 @@ from ledger_api_client.utils import create_basket_session, create_checkout_sessi
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
@@ -29,7 +30,11 @@ from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.concessions.models import Concession, ConcessionUsage
 from parkpasses.components.discount_codes.models import DiscountCode, DiscountCodeUsage
-from parkpasses.components.main.api import UserActionViewSet
+from parkpasses.components.main.api import (
+    CustomDatatablesListMixin,
+    CustomDatatablesRenderer,
+    UserActionViewSet,
+)
 from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
@@ -86,6 +91,7 @@ logger = logging.getLogger(__name__)
 class PassTypesDistinct(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def get(self, request, format=None):
         pass_types = [
             {"code": pass_type.id, "description": pass_type.display_name}
@@ -97,6 +103,7 @@ class PassTypesDistinct(APIView):
 class PassProcessingStatusesDistinct(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def get(self, request, format=None):
         if request.query_params.get("for_filter", ""):
             processing_status_choices = [
@@ -123,11 +130,11 @@ class ExternalPassTypeViewSet(
     ordering = "display_order"
     serializer_class = PassTypeSerializer
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def retrieve(self, request, slug=None):
         return super().retrieve(request, slug=slug)
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def list(self, request, slug=None):
         return super().list(request, slug=slug)
 
@@ -142,11 +149,11 @@ class RetailerPassTypeViewSet(
     serializer_class = PassTypeSerializer
     permission_classes = [IsRetailer]
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def retrieve(self, request, slug=None):
         return super().retrieve(request, slug=slug)
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def list(self, request, slug=None):
         return super().list(request, slug=slug)
 
@@ -163,11 +170,11 @@ class InternalPassTypeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInternal]
     serializer_class = InternalPassTypeSerializer
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def retrieve(self, request, slug=None):
         return super().retrieve(request, slug=slug)
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def list(self, request, slug=None):
         return super().list(request, slug=slug)
 
@@ -211,7 +218,7 @@ class PricingWindowFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalPricingWindowViewSet(viewsets.ModelViewSet):
+class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     search_fields = [
         # "pass_type_display_name",
         "name",
@@ -221,22 +228,19 @@ class InternalPricingWindowViewSet(viewsets.ModelViewSet):
     queryset = PassTypePricingWindow.objects.all()
     permission_classes = [IsInternal]
     filter_backends = (PricingWindowFilterBackend,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     def get_serializer_class(self):
-        logger.debug("self.action = " + str(self.action))
-        logger.debug("self.request.data = " + str(self.request.data))
         if "create" == self.action:
             return InternalCreatePricingWindowSerializer
         return InternalPricingWindowSerializer
 
 
 class CurrentOptionsForPassType(generics.ListAPIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = OptionSerializer
 
     def get_queryset(self):
         pass_type_id = self.request.query_params.get("pass_type_id")
-        logger.debug("pass_type_id = " + pass_type_id)
         options = PassTypePricingWindowOption.get_current_options_by_pass_type_id(
             int(pass_type_id)
         )
@@ -244,7 +248,7 @@ class CurrentOptionsForPassType(generics.ListAPIView):
             return options
         return PassTypePricingWindowOption.objects.none()
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def get(self, *args, **kwargs):
         return super().get(*args, **kwargs)
 
@@ -263,7 +267,7 @@ class DefaultOptionsForPassType(generics.ListAPIView):
             )
         return PassTypePricingWindowOption.objects.none()
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def get(self, *args, **kwargs):
         return super().get(*args, **kwargs)
 
@@ -319,7 +323,6 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
     @action(methods=["GET"], detail=True, url_path="retrieve-pass-template")
     def retrieve_park_pass_pdf(self, request, *args, **kwargs):
         pass_template = self.get_object()
-        logger.debug("user = " + str(self.request.user.id))
         if pass_template.template:
             return FileResponse(pass_template.template)
         raise Http404
@@ -380,9 +383,20 @@ class ExternalPassViewSet(
         return ExternalPassSerializer
 
     def perform_create(self, serializer):
-        logger.debug("perform create -------------\n\n")
-        logger.debug("serializer data = " + str(serializer.validated_data))
+        logger.info(
+            "Calling perform_create",
+            extra={"className": self.__class__.__name__},
+        )
+        logger.info(
+            f"serializer.validated_data = {serializer.validated_data}",
+            extra={"className": self.__class__.__name__},
+        )
 
+        logger.info(
+            "Popping rac_discount_code, discount_code, voucher_code, voucher_pin,\
+                 concession_id, concession_cart_number and sold_via.",
+            extra={"className": self.__class__.__name__},
+        )
         # Pop these values out so they don't mess with the model serializer
         rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
         if rac_discount_code:
@@ -394,26 +408,86 @@ class ExternalPassViewSet(
         concession_card_number = serializer.validated_data.pop(
             "concession_card_number", None
         )
-
         sold_via = serializer.validated_data.pop("sold_via", None)
+        logger.info(
+            "rac_discount_code, discount_code, voucher_code, voucher_pin, \
+                concession_id, concession_cart_number and sold_via popped.",
+            extra={"className": self.__class__.__name__},
+        )
+
         email_user_id = 0
         if is_retailer(self.request):
+            logger.info(
+                "This pass is being created by a retailer.",
+                extra={"className": self.__class__.__name__},
+            )
             # If the pass is being sold by a retailer, check if there is an existing email user
             # with the email address assigned to the pass
             email = serializer.validated_data["email"]
             if EmailUser.objects.filter(email=email).exists():
+                logger.info(
+                    f"User with email: {email} already exists in ledger.",
+                    extra={"className": self.__class__.__name__},
+                )
                 email_user = EmailUser.objects.get(email=email)
                 email_user_id = email_user.id
+                logger.info(
+                    f"Calling serializer.save(user={email_user_id})",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass = serializer.save(user=email_user_id)
+                logger.info(
+                    f"serializer.save(user={email_user_id}) called.",
+                    extra={"className": self.__class__.__name__},
+                )
             else:
+                logger.info(
+                    "User with email does not exist in ledger.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    "Calling serializer.save()",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass = serializer.save()
+                logger.info(
+                    "serializer.save() called.",
+                    extra={"className": self.__class__.__name__},
+                )
         elif is_customer(self.request):
-            logger.debug("request.user.id = " + str(self.request.user.id))
+            logger.info(
+                "This pass is being created by an external user.",
+                extra={"className": self.__class__.__name__},
+            )
             email_user_id = self.request.user.id
-            park_pass = serializer.save(user=self.request.user.id)
+            logger.info(
+                f"Calling serializer.save(user={email_user_id})",
+                extra={"className": self.__class__.__name__},
+            )
+            park_pass = serializer.save(user=email_user_id)
+            logger.info(
+                f"serializer.save(user={email_user_id}) called.",
+                extra={"className": self.__class__.__name__},
+            )
         else:
+            logger.warn(
+                "This pass is being created by a user that is not a retailer or an external user.",
+                extra={"className": self.__class__.__name__},
+            )
+            logger.info(
+                "Calling serializer.save()",
+                extra={"className": self.__class__.__name__},
+            )
             park_pass = serializer.save()
+            logger.info(
+                "serializer.save() called.",
+                extra={"className": self.__class__.__name__},
+            )
 
+        logger.info(
+            f"Logging user action for: {park_pass}",
+            extra={"className": self.__class__.__name__},
+        )
         UserAction.objects.log_action(
             object_id=park_pass.id,
             content_type=ContentType.objects.get_for_model(park_pass),
@@ -422,21 +496,60 @@ class ExternalPassViewSet(
                 park_pass._meta.model.__name__, park_pass.id
             ),
         )
+        logger.info(
+            "User action logged.",
+            extra={"className": self.__class__.__name__},
+        )
 
-        logger.debug("park_pass.sold_via = " + str(park_pass.sold_via))
-
+        logger.info(
+            f"Checking if sold_via: {sold_via} matches any retailer groups",
+            extra={"className": self.__class__.__name__},
+        )
         if sold_via and RetailerGroup.objects.filter(id=sold_via).exists():
-            park_pass.sold_via = RetailerGroup.objects.get(id=sold_via)
+            retailer_group = RetailerGroup.objects.get(id=sold_via)
+            logger.info(
+                f"sold_via: {sold_via} matches retailer group: {retailer_group}",
+                extra={"className": self.__class__.__name__},
+            )
+            park_pass.sold_via = retailer_group
+            logger.info(
+                f"sold_via: {sold_via} assigned to park pass: {park_pass}",
+                extra={"className": self.__class__.__name__},
+            )
         else:
+            logger.info(
+                f"sold_via: {sold_via} does not match any retailer groups",
+                extra={"className": self.__class__.__name__},
+            )
             park_pass.sold_via = RetailerGroup.get_dbca_retailer_group()
+            logger.info(
+                f"Default DBCA retailer group assigned to park pass: {park_pass}",
+                extra={"className": self.__class__.__name__},
+            )
 
+        logger.info(
+            f"Saving park pass: {park_pass}",
+            extra={"className": self.__class__.__name__},
+        )
         park_pass.save()
+        logger.info(
+            f"Park pass: {park_pass} saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
+        logger.info(
+            f"Getting cart for user: {self.request.user.id} ({self.request.user}).",
+            extra={"className": self.__class__.__name__},
+        )
         cart = Cart.get_or_create_cart(self.request)
 
         content_type = ContentType.objects.get_for_model(park_pass)
         oracle_code = CartUtils.get_oracle_code(
             self.request, content_type, park_pass.id
+        )
+        logger.info(
+            f"Oracle code: {oracle_code} will be used for this park pass.",
+            extra={"className": self.__class__.__name__},
         )
         cart_item = CartItem(
             cart=cart,
@@ -445,31 +558,76 @@ class ExternalPassViewSet(
             oracle_code=oracle_code,
         )
 
+        logger.info(
+            f"Cart item: {cart_item} created in memory.",
+            extra={"className": self.__class__.__name__},
+        )
+
         """ If the user deletes a cart item, any objects that can be attached to a cart item
         (concession usage, discount code usage and voucher transaction)
         are deleted in the cart item's delete method  """
         if concession_id and concession_card_number:
             if Concession.objects.filter(id=concession_id).exists():
                 concession = Concession.objects.get(id=concession_id)
+                logger.info(
+                    f"This pass purchase includes a concession: {concession}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    "Creating concession usage.",
+                    extra={"className": self.__class__.__name__},
+                )
                 concession_usage = ConcessionUsage.objects.create(
                     concession=concession,
                     park_pass=park_pass,
                     concession_card_number=concession_card_number,
                 )
+                logger.info(
+                    "Concession usage: {concession_usage} created.",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart_item.concession_usage = concession_usage
+                logger.info(
+                    "Concession usage assigned to cart item: {cart_item}.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         if discount_code:
             pass_type_id = park_pass.option.pricing_window.pass_type.id
             if DiscountCode.is_valid(discount_code, self.request.user.id, pass_type_id):
                 discount_code = DiscountCode.objects.get(code=discount_code)
+                logger.info(
+                    f"This pass purchase includes a discount code: {discount_code}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    "Creating discount code usage.",
+                    extra={"className": self.__class__.__name__},
+                )
                 discount_code_usage = DiscountCodeUsage.objects.create(
                     discount_code=discount_code, park_pass=park_pass
                 )
+                logger.info(
+                    "Discount code usage: {discount_code_usage} created.",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart_item.discount_code_usage = discount_code_usage
+                logger.info(
+                    "Discount code usage assigned to cart item: {cart_item}.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         if voucher_code:
             if Voucher.is_valid(voucher_code, voucher_pin):
                 voucher = Voucher.objects.get(code=voucher_code, pin=voucher_pin)
+                logger.info(
+                    f"This pass purchase includes a voucher transaction for voucher: {voucher}.",
+                    extra={"className": self.__class__.__name__},
+                )
+                logger.info(
+                    "Creating voucher transaction.",
+                    extra={"className": self.__class__.__name__},
+                )
                 voucher_transaction = VoucherTransaction.objects.create(
                     voucher=voucher,
                     park_pass=park_pass,
@@ -478,12 +636,32 @@ class ExternalPassViewSet(
                     ),
                     credit=Decimal(0.00),
                 )
+                logger.info(
+                    f"Voucher transaction: {voucher_transaction} created.",
+                    extra={"className": self.__class__.__name__},
+                )
                 cart_item.voucher_transaction = voucher_transaction
+                logger.info(
+                    f"Voucher transaction assigned to cart item: {cart_item}.",
+                    extra={"className": self.__class__.__name__},
+                )
 
         # Save to apply any concession usages, discount code usages or voucher transactions to the cart item
+        logger.info(
+            f"Saving cart item: {cart_item}.",
+            extra={"className": self.__class__.__name__},
+        )
         cart_item.save()
+        logger.info(
+            f"Cart item: {cart_item} saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
         if is_customer(self.request):
+            logger.info(
+                "User is an external user so will increment cart item count.",
+                extra={"className": self.__class__.__name__},
+            )
             cart_item_count = CartUtils.increment_cart_item_count(self.request)
             logger.info(
                 f"Incremented cart item count to {cart_item_count} -> {cart}",
@@ -492,9 +670,26 @@ class ExternalPassViewSet(
 
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
+            logger.info(
+                f"Assigned datetime_first_added_to {cart.datetime_first_added_to} for cart: {cart}.",
+                extra={"className": self.__class__.__name__},
+            )
+
         cart.datetime_last_added_to = timezone.now()
+        logger.info(
+            f"Assigned datetime_last_added_to {cart.datetime_last_added_to} for cart: {cart}.",
+            extra={"className": self.__class__.__name__},
+        )
+
+        logger.info(
+            f"Saving cart: {cart}.",
+            extra={"className": self.__class__.__name__},
+        )
         cart.save()
-        logger.debug(str(self.request.session))
+        logger.info(
+            f"Cart: {cart} saved.",
+            extra={"className": self.__class__.__name__},
+        )
 
     def perform_update(self, serializer):
         park_pass = serializer.save()
@@ -516,7 +711,6 @@ class ExternalPassViewSet(
     @action(methods=["GET"], detail=True, url_path="retrieve-park-pass-pdf")
     def retrieve_park_pass_pdf(self, request, *args, **kwargs):
         park_pass = self.get_object()
-        logger.debug("user = " + str(self.request.user.id))
         if park_pass.user == self.request.user.id:
             if park_pass.park_pass_pdf:
                 return FileResponse(park_pass.park_pass_pdf)
@@ -525,7 +719,6 @@ class ExternalPassViewSet(
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice")
     def retrieve_invoice(self, request, *args, **kwargs):
         park_pass = self.get_object()
-        logger.debug("user = " + str(self.request.user.id))
         content_type = ContentType.objects.get_for_model(Pass)
         if OrderItem.objects.filter(
             object_id=park_pass.id, content_type=content_type
@@ -550,15 +743,28 @@ class PassFilterBackend(DatatablesFilterBackend):
         total_count = queryset.count()
 
         pass_type = request.GET.get("pass_type")
-        processing_status = request.GET.get("processing_status")
+        status = request.GET.get("status")
         start_date_from = request.GET.get("start_date_from")
         start_date_to = request.GET.get("start_date_to")
 
         if pass_type:
             queryset = queryset.filter(option__pricing_window__pass_type__id=pass_type)
 
-        if processing_status:
-            queryset = queryset.filter(processing_status=processing_status)
+        if status:
+            if Pass.CANCELLED == status:
+                queryset = queryset.filter(cancellation__isnull=False)
+
+            elif Pass.FUTURE == status:
+                queryset = queryset.filter(date_start__gt=timezone.now().date())
+
+            elif Pass.EXPIRED == status:
+                queryset = queryset.filter(date_expiry__lte=timezone.now().date())
+
+            elif Pass.CURRENT == status:
+                queryset = queryset.filter(
+                    date_start__lte=timezone.now().date(),
+                    date_expiry__gte=timezone.now().date(),
+                )
 
         if start_date_from:
             queryset = queryset.filter(date_start__gte=start_date_from)
@@ -578,7 +784,7 @@ class PassFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class RetailerPassViewSet(UserActionViewSet):
+class RetailerPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
     search_fields = [
         "pass_number",
         "first_name",
@@ -590,6 +796,7 @@ class RetailerPassViewSet(UserActionViewSet):
     pagination_class = DatatablesPageNumberPagination
     permission_classes = [IsRetailer]
     filter_backends = (PassFilterBackend,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
     http_method_names = ["get", "post", "head", "put", "patch"]
 
     def get_serializer_class(self):
@@ -624,15 +831,13 @@ class RetailerPassViewSet(UserActionViewSet):
                 emailuser__id=self.request.user.id
             ).values_list("retailer_group__id", flat=True)
             park_pass = self.get_object()
-            logger.debug("park_pass.sold_via = " + str(park_pass.sold_via.id))
-            logger.debug("list(retailer_groups) = " + str(list(retailer_groups)))
             if park_pass.sold_via.id in list(retailer_groups):
                 if park_pass.park_pass_pdf:
                     return FileResponse(park_pass.park_pass_pdf)
         raise Http404
 
 
-class InternalPassViewSet(UserActionViewSet):
+class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
     search_fields = [
         "pass_number",
         "first_name",
@@ -645,6 +850,7 @@ class InternalPassViewSet(UserActionViewSet):
     queryset = Pass.objects.exclude(in_cart=True)
     permission_classes = [IsInternal]
     filter_backends = (PassFilterBackend,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     def get_serializer_class(self):
         if "retrieve" == self.action:
@@ -740,7 +946,10 @@ class InternalPassViewSet(UserActionViewSet):
         checkout_parameters = CartUtils.get_checkout_parameters(
             request, return_url, return_preload_url, order.user, invoice_text
         )
-        logger.debug("\ncheckout_parameters = " + str(checkout_parameters))
+        logger.info(
+            "Checkout_parameters = " + str(checkout_parameters),
+            extra={"className": self.__class__.__name__},
+        )
 
         create_checkout_session(request, checkout_parameters)
 
@@ -749,7 +958,7 @@ class InternalPassViewSet(UserActionViewSet):
 
 class PassRefundSuccessView(APIView):
     def get(self, request, id, uuid, format=None):
-        """We don't actually need to do any processing here but ledger needs a valid rul for return_preload_url"""
+        """We don't actually need to do any processing here but ledger needs a valid url for return_preload_url"""
         logger.info(f"RefundSuccessView get method called with id {id} and uuid {uuid}")
 
 
@@ -836,7 +1045,6 @@ class RacDiscountCodeView(APIView):
 
     def get(self, request, *args, **kwargs):
         email = kwargs["email"]
-        logger.debug("email = " + str(email))
         regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
         if not re.fullmatch(regex, email):
             raise ValidationError({"email": "Please pass a valid email address."})
@@ -845,7 +1053,6 @@ class RacDiscountCodeView(APIView):
     def post(self, request, *args, **kwargs):
         regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
         emails = request.data.get("emails").split(",")
-        logger.debug(emails)
         codes = []
         for email in emails:
             if not re.fullmatch(regex, email):

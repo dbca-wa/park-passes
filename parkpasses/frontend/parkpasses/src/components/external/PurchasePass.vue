@@ -328,23 +328,33 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-if="passOptions" class="row g-1 mb-2">
+                        <div class="row g-1 mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="passOption" class="col-form-label">Duration</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9 my-auto">
+                                <template v-if="passOptions">
                                 <select v-if="passOptions.length>1" @change="updatePrice" v-model="pass.option_id" ref="passOption" id="passOption" name="passOption" class="form-select" aria-label="Pass Option" required="required">
                                     <option v-for="passOption in passOptions" :value="passOption.id" :key="passOption.id">{{passOption.name}}</option>
                                 </select>
                                 <span v-else class="form-text text-dark align-middle">{{pass.option_name}}</span>
+                                </template>
+                                <template v-else>
+                                    <BootstrapSpinner :isLoading="true" :centerOfScreen="false" :small="true" />
+                                </template>
                             </div>
                         </div>
-                        <div v-if="totalPrice" class="row g-1 align-top mb-2">
+                        <div class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="price" class="col-form-label">Price</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
-                                <input type="text" readonly class="form-control-plaintext fw-bold" id="price" name="price" :value="'$'+totalPrice">
+                                <template v-if="totalPrice">
+                                    <input type="text" readonly class="form-control-plaintext fw-bold" id="price" name="price" :value="'$'+totalPrice">
+                                </template>
+                                <template v-else>
+                                    <BootstrapSpinner :isLoading="true" :centerOfScreen="false" :small="true" />
+                                </template>
                             </div>
                         </div>
                         <div v-if="racDiscountCodeDiscount" class="row g-1 align-top mb-2">
@@ -424,7 +434,7 @@
             </div>
 
             <div v-else>
-                <BootstrapSpinner isLoading="true" />
+                <BootstrapSpinner :isLoading="true" />
             </div>
 
             <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
@@ -467,7 +477,11 @@ export default {
     props: {
         passTypeSlug: {
             type: [String]
-        }
+        },
+        isRetailer: {
+            type: Boolean,
+            default: false
+        },
     },
     data: function () {
         return {
@@ -487,8 +501,6 @@ export default {
                 park_group: null,
                 park_group_id: null,
             },
-
-            isRetailer: false,
 
             passType: null,
             passOptions: null,
@@ -531,7 +543,7 @@ export default {
         getHeading() {
             if(this.passType){
                 if(this.isRetailer){
-                    return `Sell a ${this.passType.display_name}`;
+                    return `Sell ${this.indefiniteArticle} ${this.passType.display_name}`;
                 } else {
                     return `Buy ${this.indefiniteArticle} ${this.passType.display_name}`;
                 }
@@ -673,7 +685,11 @@ export default {
         },
         fetchPassType: function () {
             let vm = this;
-            fetch(apiEndpoints.passTypeExternal(vm.passTypeSlug))
+            let endPoint = apiEndpoints.passTypeExternal(vm.passTypeSlug);
+            if(vm.isRetailer){
+                endPoint = apiEndpoints.passTypeRetailer(vm.passTypeSlug);
+            }
+            fetch(endPoint)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -1124,9 +1140,8 @@ export default {
         }
     },
     created: function () {
-        this.fetchPassType();
         this.fetchConcessions();
-
+        this.fetchPassType();
     },
     mounted: function () {
         let vm = this;
@@ -1136,10 +1151,10 @@ export default {
                 vm.pass.last_name = vm.store.userData.user.last_name
                 vm.pass.email = vm.store.userData.user.email
             }
-            if('retailer'==vm.store.userData.authorisation_level) {
-                vm.isRetailer = true;
-                vm.fetchRetailerGroupsForUser();
-            }
+
+        }
+        if(vm.isRetailer) {
+            vm.fetchRetailerGroupsForUser();
         }
     }
 };

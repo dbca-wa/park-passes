@@ -1,17 +1,21 @@
 import logging
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from drf_excel.mixins import XLSXFileMixin
 from drf_excel.renderers import XLSXRenderer
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from org_model_logs.models import UserAction
 from org_model_logs.utils import BaseUserActionViewSet
 from parkpasses.components.discount_codes.models import (
     DiscountCode,
@@ -25,6 +29,10 @@ from parkpasses.components.discount_codes.serializers import (
     InternalDiscountCodeBatchSerializer,
     InternalDiscountCodeSerializer,
     InternalDiscountCodeXlsxSerializer,
+)
+from parkpasses.components.main.api import (
+    CustomDatatablesListMixin,
+    CustomDatatablesRenderer,
 )
 from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.permissions import IsInternal
@@ -118,36 +126,56 @@ class DiscountCodeBatchFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class InternalDiscountCodeBatchViewSet(BaseUserActionViewSet):
+class InternalDiscountCodeBatchViewSet(
+    CustomDatatablesListMixin, BaseUserActionViewSet
+):
     model = DiscountCodeBatch
     pagination_class = DatatablesPageNumberPagination
     queryset = DiscountCodeBatch.objects.all()
     permission_classes = [IsInternal]
     serializer_class = InternalDiscountCodeBatchSerializer
     filter_backends = (DiscountCodeBatchFilterBackend,)
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
     def get_user_action_serializer_class(self):
         return UserActionSerializer
 
     def perform_create(self, serializer):
         new_discount_code_batch = serializer.save(created_by=self.request.user.id)
+
         valid_pass_types = self.request.data.get("valid_pass_types")
+        if valid_pass_types:
+            for valid_pass_type in valid_pass_types:
+                DiscountCodeBatchValidPassType.objects.create(
+                    discount_code_batch_id=new_discount_code_batch.id,
+                    pass_type_id=valid_pass_type,
+                )
 
-        for valid_pass_type in valid_pass_types:
-            DiscountCodeBatchValidPassType.objects.create(
-                discount_code_batch_id=new_discount_code_batch.id,
-                pass_type_id=valid_pass_type,
-            )
         valid_users = self.request.data.get("valid_users")
+        if valid_users:
+            for valid_user in valid_users:
+                DiscountCodeBatchValidUser.objects.create(
+                    discount_code_batch_id=new_discount_code_batch.id, user=valid_user
+                )
 
-        for valid_user in valid_users:
-            DiscountCodeBatchValidUser.objects.create(
-                discount_code_batch_id=new_discount_code_batch.id, user=valid_user
-            )
-
-    def perform_update(self, serializer):
-        logger.debug("update self.request.data = " + str(self.request.data))
-        return super().perform_update(serializer)
+    @action(methods=["PUT"], detail=True, url_path="invalidate-discount-code-batch")
+    def invalidate_discount_code_batch(self, request, *args, **kwargs):
+        discount_code_batch = self.get_object()
+        discount_code_batch.invalidated = True
+        discount_code_batch.save()
+        user_action = settings.ACTION_INVALIDATE
+        content_type = ContentType.objects.get_for_model(DiscountCodeBatch)
+        user_action = UserAction.objects.log_action(
+            object_id=discount_code_batch.id,
+            content_type=content_type,
+            who=request.user.id,
+            what=user_action.format(
+                DiscountCodeBatch._meta.model.__name__, discount_code_batch.id
+            ),
+            why=request.data["invalidation_reason"],
+        )
+        serializer = {"user_action": UserActionSerializer(user_action).data}
+        return Response(serializer, status=status.HTTP_201_CREATED)
 
 
 class DiscountCodeBatchCommentViewSet(viewsets.ModelViewSet):
@@ -167,6 +195,7 @@ class ValidateDiscountCodeView(APIView):
 
         if code and 8 == len(code) and email and pass_type_id:
             if DiscountCode.objects.filter(
+                invalidated=False,
                 code=code,
                 discount_code_batch__datetime_start__lte=timezone.now(),
                 discount_code_batch__datetime_expiry__gte=timezone.now(),

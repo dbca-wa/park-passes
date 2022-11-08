@@ -1,15 +1,16 @@
-import api from './api'
-import {helpers} from '@/utils/hooks'
+import { apiEndpoints, constants } from '@/utils/hooks'
 
 export default {
     uploadOrgModelDocuments: function(contentType, objectId, files){
+        console.log('uploadOrgModelDocuments', contentType, objectId, files);
         for(let i=0;i<files.length;i++){
             console.log(files[0]);
             let formData = new FormData();
             formData.append('content_type', contentType);
             formData.append('object_id', objectId);
             formData.append('_file', files[i]);
-            fetch(api.uploadOrgModelDocuments, {
+            console.log('fetching', apiEndpoints.uploadOrgModelDocuments);
+            fetch(apiEndpoints.uploadOrgModelDocuments, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

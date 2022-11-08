@@ -127,9 +127,7 @@ class PassEmails:
 
     @classmethod
     def send_gold_pass_details_to_pica(self, date, passes, gold_passes_excel_file_path):
-        logger.debug("send_gold_pass_details_to_pica")
         email = PassGoldPassDetailsForPICAEmail(date.strftime("%d/%m/%Y"))
-        logger.debug(str(email))
         from parkpasses.components.passes.serializers import ExternalPassSerializer
 
         serializer = ExternalPassSerializer(passes, many=True)
@@ -147,4 +145,3 @@ class PassEmails:
         )
         attachments.append(attachment)
         email.send(settings.PICA_EMAIL, context=context, attachments=attachments)
-        logger.debug("Email sent supposedly.")

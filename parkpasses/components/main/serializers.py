@@ -1,8 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
-from org_model_documents.models import Document
-from org_model_documents.serializers import DocumentSerializer
 from rest_framework import serializers
 
+from org_model_documents.models import Document
+from org_model_documents.serializers import DocumentSerializer
 from org_model_logs.serializers import (
     CommunicationsLogEntrySerializer as BaseCommunicationsLogEntrySerializer,
 )

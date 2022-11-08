@@ -4,7 +4,6 @@ import os
 import confy
 import dj_database_url
 from confy import env
-from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 confy.read_environment_file(BASE_DIR + "/.env")
@@ -52,6 +51,7 @@ INSTALLED_APPS += [
     "parkpasses.components.help",
     "parkpasses.components.emails",
     "parkpasses.components.reports",
+    "django_q",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -66,7 +66,9 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
-    # "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    "DEFAULT_FILTER_BACKENDS": (
+        # "rest_framework_datatables.filters.DatatablesFilterBackend",
+    ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 20,
     "SEARCH_PARAM": "search[value]",
@@ -126,10 +128,7 @@ STATICFILES_DIRS.extend(
         os.path.join(os.path.join(BASE_DIR, "parkpasses", "static")),
     ]
 )
-DEV_STATIC = env("DEV_STATIC", False)
-DEV_STATIC_URL = env("DEV_STATIC_URL")
-if DEV_STATIC and not DEV_STATIC_URL:
-    raise ImproperlyConfigured("If running in DEV_STATIC, DEV_STATIC_URL has to be set")
+
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 TEMPLATES[0]["OPTIONS"]["context_processors"].append(
@@ -312,9 +311,7 @@ else:
     }
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
-DEV_APP_BUILD_URL = env(
-    "DEV_APP_BUILD_URL"
-)  # URL of the Dev app.js served by webpack & express
+
 LOV_CACHE_TIMEOUT = 10800
 
 CACHE_TIMEOUT_2_HOURS = 60 * 60 * 2  # 2 HOURS
@@ -422,6 +419,7 @@ ACTION_UPDATE = "Update {} {}"
 ACTION_PARTIAL_UPDATE = "Partial Update {} {}"
 ACTION_DESTROY = "Destroy {} {}"
 ACTION_CANCEL = "Cancel {} {}"
+ACTION_INVALIDATE = "Invalidate {} {}"
 
 
 PARKPASSES_VOUCHER_EXPIRY_IN_DAYS = 365 * 2
@@ -472,6 +470,19 @@ LEDGER_UI_ACCOUNTS_MANAGEMENT = [
     {"phone_number": {"options": {"view": True, "edit": True}}},
     {"mobile_number": {"options": {"view": True, "edit": True}}},
 ]
+
+
+""" ==================== DJANDO Q ======================== """
+
+Q_CLUSTER = {
+    "name": "DjangORM",
+    "workers": 4,
+    "timeout": 90,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+}
 
 
 """ ==================== CKEDITOR CONFIGS ======================== """

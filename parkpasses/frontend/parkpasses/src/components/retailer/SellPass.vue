@@ -5,13 +5,13 @@
 
             <div class="col-4">
 
-                <ShopSideMenu is-retailer="true" @purchase-pass="purchasePass" />
+                <ShopSideMenu :is-retailer="true" @purchase-pass="purchasePass" />
 
             </div>
 
             <div class="col">
 
-                <PurchasePass v-if="showPurchasePass" :passTypeSlug="passTypeSlug" :key="passTypeSlug" />
+                <PurchasePass v-if="showPurchasePass" :is-retailer="true" :passTypeSlug="passTypeSlug" :key="passTypeSlug" />
                 <h1 v-else>&#8592; &#8592; &#8592; Select a Pass Type</h1>
             </div>
 
@@ -51,7 +51,7 @@ export default {
         },
     },
     created: function() {
-        if ('purchase-pass'==this.$route.name) {
+        if ('retailer-sell-a-pass-by-slug'==this.$route.name) {
             this.passTypeSlug = this.$route.params.passTypeSlug;
             this.showHomeContent = false;
             this.showPurchaseVoucher = false;
@@ -59,7 +59,7 @@ export default {
         }
     },
     mounted: function () {
-
+        console.log(this.$route.name);
     }
 }
 

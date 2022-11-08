@@ -25,6 +25,41 @@ class CartUtils:
             return ExternalPassSerializer(park_pass).data
 
     @classmethod
+    def get_ledger_order_lines(self, request, cart):
+        ledger_order_lines = []
+        logger.info(
+            f"Settings line_status to default from settings: {settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS}.",
+            extra={"className": self.__class__.__name__},
+        )
+        line_status = settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS
+
+        order, order_items = cart.create_order()
+        for order_item in order_items:
+            if settings.DEBUG:
+                order_item.amount = int(order_item.amount)
+                order_item.description += " (Price rounded for dev env)"
+
+            ledger_order_line = {
+                "ledger_description": order_item.description,
+                "quantity": 1,
+                "price_incl_tax": str(order_item.amount),
+                "oracle_code": CartUtils.get_oracle_code(
+                    request, order_item.content_type, order_item.object_id
+                ),
+                "line_status": line_status,
+            }
+            logger.info(
+                f"Ledger order line: {ledger_order_line} created.",
+                extra={"className": self.__class__.__name__},
+            )
+            ledger_order_lines.append(ledger_order_line)
+            logger.info(
+                f"Appended ledger order line: {ledger_order_line} to ledger order lines list.",
+                extra={"className": self.__class__.__name__},
+            )
+        return ledger_order_lines
+
+    @classmethod
     def get_basket_parameters(
         self,
         lines,
@@ -77,27 +112,67 @@ class CartUtils:
 
     @classmethod
     def get_oracle_code(self, request, content_type, object_id):
+        logger.info(
+            f"Calling get_oracle_code with content_type: {content_type} and object_id: {object_id}",
+            extra={"className": self.__class__.__name__},
+        )
         # Check if the request user belongs to retailer group and if so assign their oracle code
         if is_retailer(request):
+            logger.info(
+                f"User: {request.user.id} ({request.user}) is a retailer.",
+                extra={"className": self.__class__.__name__},
+            )
             user = request.user
-            retailer_group_user = RetailerGroupUser.objects.filter(
-                emailuser=user
-            ).first()
+            retailer_group_user = (
+                RetailerGroupUser.objects.filter(emailuser=user)
+                .order_by("-datetime_created")
+                .first()
+            )
             if retailer_group_user:
+                logger.info(
+                    f"Retailer Group User: {retailer_group_user} exists.",
+                    extra={"className": self.__class__.__name__},
+                )
                 retailer_group = retailer_group_user.retailer_group
                 if retailer_group.oracle_code:
+                    logger.info(
+                        f"Returning Retailer Group oracle code: {retailer_group.oracle_code}.",
+                        extra={"className": self.__class__.__name__},
+                    )
                     return retailer_group.oracle_code
+                logger.info(
+                    f"No oracle code found for Retailer Group: {retailer_group}.",
+                    extra={"className": self.__class__.__name__},
+                )
+
         # If not, assign the oracle code for the pass type
         pass_content_type = ContentType.objects.get(
             app_label="parkpasses", model="pass"
         )
         if pass_content_type == content_type:
+            logger.info(
+                f"Content type is : {pass_content_type}.",
+                extra={"className": self.__class__.__name__},
+            )
             if Pass.objects.filter(id=object_id).exists():
+                logger.info(
+                    f"Park pass with object_id: {object_id} exists.",
+                    extra={"className": self.__class__.__name__},
+                )
                 park_pass = Pass.objects.get(id=object_id)
                 pass_type = park_pass.option.pricing_window.pass_type
                 if pass_type.oracle_code:
+                    logger.info(
+                        f"Returning Pass Type: {pass_type} oracle code: {pass_type.oracle_code}.",
+                        extra={"className": self.__class__.__name__},
+                    )
                     return pass_type.oracle_code
 
+        logger.info(
+            f"No retailer group or pass type oracle code found, returning default oracle code from settings:\
+                 {settings.PARKPASSES_DEFAULT_ORACLE_CODE} .",
+            extra={"className": self.__class__.__name__},
+        )
         # If not then just fall back to the default code from settings.
         return settings.PARKPASSES_DEFAULT_ORACLE_CODE
 
@@ -125,26 +200,34 @@ class CartUtils:
     def increment_cart_item_count(self, request):
         cart_item_count = request.session.get("cart_item_count", None)
         if cart_item_count:
-            request.session["cart_item_count"] = cart_item_count + 1
-            return cart_item_count + 1
-
-        request.session["cart_item_count"] = 1
-        return 1
+            cart_item_count = cart_item_count + 1
+        else:
+            cart_item_count = 1
+        request.session["cart_item_count"] = cart_item_count
+        return cart_item_count
 
     @classmethod
     def decrement_cart_item_count(self, request):
         cart_item_count = request.session.get("cart_item_count", None)
-        if cart_item_count:
-            request.session["cart_item_count"] = cart_item_count - 1
-            return cart_item_count - 1
-
-        request.session["cart_item_count"] = 0
-        return 0
+        if cart_item_count and 0 < cart_item_count:
+            cart_item_count = cart_item_count - 1
+        else:
+            cart_item_count = 0
+        request.session["cart_item_count"] = cart_item_count
+        return cart_item_count
 
     @classmethod
     def reset_cart_item_count(self, request):
+        logger.info(
+            "Resetting cart_item_count session variable to 0.",
+            extra={"className": self.__class__.__name__},
+        )
         request.session["cart_item_count"] = 0
 
     @classmethod
     def remove_cart_id_from_session(self, request):
+        logger.info(
+            "Removing cart_id variable from session.",
+            extra={"className": self.__class__.__name__},
+        )
         del request.session["cart_id"]

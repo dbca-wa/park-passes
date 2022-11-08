@@ -36,10 +36,13 @@ class UserActionList(generics.ListAPIView):
         app_label = self.request.query_params.get("app_label", None)
         model = self.request.query_params.get("model", None)
         object_id = self.request.query_params.get("object_id", None)
+        logger.info(
+            "app_label: %s, model: %s, object_id: %s", app_label, model, object_id
+        )
         if app_label and model and object_id:
             if ContentType.objects.filter(app_label=app_label, model=model).exists():
                 content_type = ContentType.objects.get(app_label=app_label, model=model)
-                logger.debug("content_type = " + str(content_type))
+                logger.info("content_type = " + str(content_type))
                 return UserAction.objects.filter(
                     content_type=content_type, object_id=object_id
                 )
@@ -60,9 +63,10 @@ class UserActionList(generics.ListAPIView):
 class UserActionViewSet(BaseUserActionViewSet):
     model = UserAction
     serializer_class = UserActionSerializer
+    queryset = UserAction.objects.all().order_by("-when")
 
 
-class CreateCommunicationsLogEntry(generics.ListCreateAPIView):
+class ListCreateCommunicationsLogEntry(generics.ListCreateAPIView):
     model = CommunicationsLogEntry
     filter_backends = (DatatablesFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
@@ -97,10 +101,11 @@ class CreateCommunicationsLogEntry(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         app_label = serializer.validated_data.pop("app_label", None)
         model = serializer.validated_data.pop("model", None)
-        logger.debug(str(serializer.validated_data))
+        logger.info("app_label: %s, model: %s", app_label, model)
         if not ContentType.objects.filter(app_label=app_label, model=model).exists():
             raise ValidationError(
                 f"There is no content_type with app_label={app_label} and model={model}"
             )
         content_type = ContentType.objects.get(app_label=app_label, model=model)
+        logger.info("content_type = " + str(content_type))
         serializer.save(content_type=content_type, staff=self.request.user.id)

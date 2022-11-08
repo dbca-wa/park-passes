@@ -1,7 +1,5 @@
 import logging
-import pprint
 
-from django.conf import settings
 from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -86,7 +84,7 @@ class CartView(APIView):
 
     def get(self, request, format=None):
         logger.info(
-            f"Retrieving cart for user {request.user}",
+            f"Retrieving cart for user: {request.user.id} ({request.user})",
             extra={"className": self.__class__.__name__},
         )
 
@@ -111,72 +109,127 @@ class CartView(APIView):
 
 
 class LedgerCheckoutView(APIView):
-    def get_ledger_order_lines(self, cart):
-        ledger_order_lines = []
-        line_status = settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS
-
-        order, order_items = cart.create_order()
-        for order_item in order_items:
-            if settings.DEBUG:
-                order_item.amount = int(order_item.amount)
-                order_item.description += " (Price rounded for dev env)"
-            ledger_order_line = {
-                "ledger_description": order_item.description,
-                "quantity": 1,
-                "price_incl_tax": str(order_item.amount),
-                "oracle_code": CartUtils.get_oracle_code(
-                    self.request, order_item.content_type, order_item.object_id
-                ),
-                "line_status": line_status,
-            }
-            ledger_order_lines.append(ledger_order_line)
-            logger.debug(pprint.pformat(ledger_order_line))
-        return ledger_order_lines
-
     def post(self, request, format=None):
         cart = Cart.get_or_create_cart(request)
-        logger.debug("cart = " + str(cart))
         if not cart.items.all().exists():
-            return redirect(reverse("cart"))
+            logger.info(
+                f"Cart: {cart} is empty. Redirecting to cart page.",
+                extra={"className": self.__class__.__name__},
+            )
+            return redirect(reverse("user-cart"))
 
         if is_retailer(request):
+            logger.info(
+                "User is a retailer.",
+                extra={"className": self.__class__.__name__},
+            )
             retailer_group_id = self.request.POST.get("retailer_group_id", None)
-            if retailer_group_id:
-                if RetailerGroup.objects.filter(id=retailer_group_id).exists():
-                    retailer_group = RetailerGroup.objects.get(id=retailer_group_id)
-                    cart.retailer_group = retailer_group
-                    cart.save()
-                    cart_item = cart.items.first()
-                    if Pass.objects.filter(id=cart_item.object_id).exists():
-                        # Mark the pass as no longer in cart this will prevent it
-                        # being deleted when the cart item is deleted
-                        park_pass = Pass.objects.get(id=cart_item.object_id)
-                        park_pass.in_cart = False
-                        park_pass.save()
+            logger.info(
+                f"Retailer group id: {retailer_group_id}.",
+                extra={"className": self.__class__.__name__},
+            )
+            if not (
+                retailer_group_id
+                and RetailerGroup.objects.filter(id=retailer_group_id).exists()
+            ):
+                logger.info(
+                    f"Retailer group with id: {retailer_group_id} does not exist. Redirecting user to cart page.",
+                    extra={"className": self.__class__.__name__},
+                )
+                return redirect(reverse("user-cart"))
 
-                        # Remove the cart item and cart and reset the cart details
-                        cart_item.delete()
-                        cart.delete()
-                        CartUtils.reset_cart_item_count(request)
-                        CartUtils.remove_cart_id_from_session(request)
+            logger.info(
+                f"Retailer group with id: {retailer_group_id} exists.",
+                extra={"className": self.__class__.__name__},
+            )
+            retailer_group = RetailerGroup.objects.get(id=retailer_group_id)
+            cart.retailer_group = retailer_group
+            logger.info(
+                f"Retailer group with id: {retailer_group_id} assigned to cart: {cart}.",
+                extra={"className": self.__class__.__name__},
+            )
+            logger.info(
+                f"Saving cart: {cart}.",
+                extra={"className": self.__class__.__name__},
+            )
+            cart.save()
+            logger.info(
+                f"Cart: {cart} saved.",
+                extra={"className": self.__class__.__name__},
+            )
+            # A retailer cart should only ever have one pass in it
+            cart_item = cart.items.first()
+            if not Pass.objects.filter(id=cart_item.object_id).exists():
+                return redirect(reverse("user-cart"))
 
-                        return redirect(
-                            reverse(
-                                "retailer-pass-created-successfully",
-                                kwargs={"id": park_pass.id},
-                            )
-                        )
+            # Mark the pass as no longer in cart this will prevent it
+            # being deleted when the cart item is deleted
+            park_pass = Pass.objects.get(id=cart_item.object_id)
+            park_pass.in_cart = False
+            logger.info(
+                f"Park pass: {park_pass} set as in_cart = False.",
+                extra={"className": self.__class__.__name__},
+            )
+            logger.info(
+                f"Saving Park pass: {park_pass}.",
+                extra={"className": self.__class__.__name__},
+            )
+            park_pass.save()
+            logger.info(
+                f"Park pass: {park_pass} saved.",
+                extra={"className": self.__class__.__name__},
+            )
 
-        ledger_order_lines = self.get_ledger_order_lines(cart)
+            # Remove the cart item and cart and reset the cart details
+            logger.info(
+                f"Deleting cart item: {cart_item}.",
+                extra={"className": self.__class__.__name__},
+            )
+            cart_item.delete()
+            logger.info(
+                f"Cart item: {cart_item} deleted.",
+                extra={"className": self.__class__.__name__},
+            )
+            logger.info(
+                f"Deleting cart: {cart}.",
+                extra={"className": self.__class__.__name__},
+            )
+            cart.delete()
+            logger.info(
+                f"Cart: {cart} deleted.",
+                extra={"className": self.__class__.__name__},
+            )
+            CartUtils.reset_cart_item_count(request)
+            CartUtils.remove_cart_id_from_session(request)
 
+            logger.info(
+                f"Redirecting retailer to form for park pass {park_pass} with success message.",
+                extra={"className": self.__class__.__name__},
+            )
+            return redirect(
+                reverse(
+                    "retailer-pass-created-successfully",
+                    kwargs={"id": park_pass.id},
+                )
+            )
+
+        ledger_order_lines = CartUtils.get_ledger_order_lines(request, cart)
+
+        logger.info(
+            "Getting basket parameters.",
+            extra={"className": self.__class__.__name__},
+        )
         basket_parameters = CartUtils.get_basket_parameters(
             ledger_order_lines, cart.uuid, is_no_payment=False
         )
-        logger.debug("\nbasket_parameters = " + str(basket_parameters))
 
+        logger.info(
+            f"Creating basket session with basket parameters: {basket_parameters}",
+            extra={"className": self.__class__.__name__},
+        )
         create_basket_session(request, request.user.id, basket_parameters)
+
         invoice_text = f"Park Passes Order: {cart.uuid}"
-        logger.debug("\ninvoice_text = " + invoice_text)
         return_url = request.build_absolute_uri(
             reverse("checkout-success", kwargs={"uuid": cart.uuid})
         )
@@ -186,10 +239,16 @@ class LedgerCheckoutView(APIView):
         checkout_parameters = CartUtils.get_checkout_parameters(
             request, return_url, return_preload_url, cart.user, invoice_text
         )
-        logger.debug("\ncheckout_parameters = " + str(checkout_parameters))
-
+        logger.info(
+            f"Creating checkout session with checkout parameters: {checkout_parameters}",
+            extra={"className": self.__class__.__name__},
+        )
         create_checkout_session(request, checkout_parameters)
 
+        logger.info(
+            "Redirecting user to ledgergw payment details page.",
+            extra={"className": self.__class__.__name__},
+        )
         return redirect(reverse("ledgergw-payment-details"))
 
 
@@ -198,23 +257,35 @@ class SuccessView(APIView):
     throttle_classes = [AnonRateThrottle]
 
     def get(self, request, uuid, format=None):
-        logger.debug("\n\nParkPasses SuccessView get method called.\n\n")
+        logger.info(
+            "Park passes Cart API SuccessView get method called.",
+            extra={"className": self.__class__.__name__},
+        )
+
         invoice_reference = request.GET.get("invoice", "false")
-        logger.debug(f"uuid:{uuid} invoice_reference: {invoice_reference} \n")
+
         if uuid and invoice_reference:
-            # TODO: decide what to do if that cart has expired and been deleted
+            logger.info(
+                f"Invoice reference: {invoice_reference} and uuid: {uuid}.",
+                extra={"className": self.__class__.__name__},
+            )
+            if not Cart.objects.filter(uuid=uuid).exists():
+                return redirect(reverse("user-cart"))
+
             cart = Cart.objects.get(uuid=uuid)
-            # Create the order and order lines, save them to the database and then delete the cart.
-            logger.debug("\n\ncart = " + str(cart))
+
             order, order_items = cart.create_order(
                 save_order_to_db_and_delete_cart=True,
                 invoice_reference=invoice_reference,
             )
 
-            logger.debug(f"uuid: \n{uuid} invoice_reference: {invoice_reference} \n")
-
             CartUtils.reset_cart_item_count(request)
             CartUtils.remove_cart_id_from_session(request)
+
+            logger.info(
+                "Returning status.HTTP_204_NO_CONTENT. Order created successfully.",
+                extra={"className": self.__class__.__name__},
+            )
             # this end-point is called by an unmonitored get request in ledger so there is no point having a
             # a response body however we will return a status in case this is used on the ledger end in future
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -222,4 +293,8 @@ class SuccessView(APIView):
         CartUtils.reset_cart_item_count(request)
         # If there is no uuid to identify the cart then send a bad request status back in case ledger can
         # do something with this in future
+        logger.info(
+            "Returning status.HTTP_400_BAD_REQUEST bad request as there was not a uuid and invoice_reference.",
+            extra={"className": self.__class__.__name__},
+        )
         return Response(status=status.HTTP_400_BAD_REQUEST)

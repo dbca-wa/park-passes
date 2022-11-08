@@ -94,7 +94,7 @@
     </div>
 
     <div v-if="!retailerGroupInvite">
-        <BootstrapSpinner isLoading="true" />
+        <BootstrapSpinner :isLoading="true" />
     </div>
 </template>
 

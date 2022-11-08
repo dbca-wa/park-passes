@@ -1,63 +1,205 @@
+@font-face {
+    font-family: 'proxima-nova-bold';
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Bold-webfont.eot");
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Bold-webfont.eot?#iefix") format("embedded-opentype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Bold-webfont.woff") format("woff"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Bold-webfont.ttf") format("truetype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Bold-webfont.svg#proxima_nova_rgbold") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'proxima-nova-semibold';
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.eot");
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.eot?#iefix") format("embedded-opentype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.woff") format("woff"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.ttf") format("truetype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Sbold-webfont.svg#proxima_nova_ltsemibold") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'proxima-nova-thin';
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.eot");
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.eot?#iefix") format("embedded-opentype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.woff") format("woff"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.ttf") format("truetype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Thin-webfont.svg#proxima_nova_ththin") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'proxima-nova';
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.eot");
+    src: url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.eot?#iefix") format("embedded-opentype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.woff") format("woff"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.ttf") format("truetype"),
+    url("/static/parkpasses/fonts/proxima-nova/ProximaNova-Reg-webfont.svg#proxima_nova_rgregular") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+body {
+    font-family: 'proxima-nova', Fallback, sans-serif;
+    color: #003e52;
+}
 
 /* Bring app content inline with header logo and navbar */
-div#app .container{
-    padding:0 36px 0 36px;
+div#app .container {
+    padding: 0 36px 0 36px;
 }
 
-.parks_bg_banner .col-lg-9 {
+.park-passes-bg-banner {
+    padding:0px;
+}
+
+.park-passes-bg-banner .wrapper {
+    padding: 30px 48px 32px 24px;
     display: flex;
     align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+
 }
-.parks_bg_banner .col-lg-9 h1 {
-    font-size: 3em;
+
+@media screen {
+
+}
+
+.park-passes-bg-banner .wrapper section {
+    padding-right: 32px;
+}
+
+.park-passes-bg-banner {
+    height:100%;
+    background-color: #003e52;
+}
+
+.park-passes-bg-banner .logo-container {
+    display: flex;
+    align-items: center;
+    /*border:1px solid black;*/
+}
+
+.logo-container-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.site-title {
+    padding: 18px 0 10px 0;
+    margin-bottom: 0px;
+}
+
+.site-title h1 {
+    color:#eee;
+    margin:0px;
 }
 
 .licensing-btn-primary {
-    color:#fff;
-    background-color:#337ab7;
+    color: #fff;
+    background-color: #003e52;
 }
 
 .licensing-btn-primary:hover {
-    color:#fff;
-    background-color:#286090;
+    color: #fff;
+    background-color: #00818F;
 }
 
-.org-primary{
-    color:#337ab7;
+.org-primary {
+    color: #003e52;
 }
 
 .org-icon-primary {
-    color:#337ab7;
+    color: #003e52;
 }
 
 .org-icon-primary:hover {
-    color:#286090;
+    color: #00818F;
 }
 
 .org-error-message {
-    color:#dc3545;
+    color: #dc3545;
     margin-top: 0.25rem;
     font-size: 0.875em;
 }
 
 .org-form-switch-primary:checked {
-    background-color: #337ab7;
-    border-color: #337ab7;
+    background-color: #00818F;
+    border-color: #00818F;
 }
 
 .org-badge-primary {
     color: #fff;
-    background-color: #337ab7;
+    background-color: #00818F;
 }
 
 .fa-cart-shopping {
-    color:#337ab7;
+    color: #00818F;
 }
 
 .fa-cart-shopping:hover {
-    color:#286090;;
+    color: #003e52;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #003e52;
+    color: #eee;
+}
+
+.accordion-button.collapsed {
+    background-color: #003e52;
+    color: #eee;
+}
+
+.accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+select:focus,
+textarea:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="datetime"]:focus,
+input[type="datetime-local"]:focus,
+input[type="date"]:focus,
+input[type="month"]:focus,
+input[type="time"]:focus,
+input[type="week"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="color"]:focus,
+input[type="file"]:focus,
+.uneditable-input:focus {
+  border-color: #00818F !important;
+  box-shadow: 0 1px 1px #eee inset, 0 0 8px #00818F !important;
+  outline: 0 none !important;
+}
+
+button:focus {
+    border-color: #00818F !important;
+    box-shadow: inset 0 1px 0 #eee, 0 1px 1px #00818F;
+    outline: 0 none !important;
+}
+
+.popover-header {
+    background-color: #003e52;
+    color: #eee;
+    border: 1px solid #eee;
 }
 
 div.dataTables_processing div:last-child div {
     display: none;
-  }
+}
