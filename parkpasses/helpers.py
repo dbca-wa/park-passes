@@ -48,7 +48,7 @@ def is_internal(request):
             or is_parkpasses_discount_code_percentage_user(request)
         )
         cache.set(cache_key, is_internal, settings.CACHE_TIMEOUT_2_HOURS)
-    logger.debug(f"{cache_key}:{is_internal}", extra={"className": ""})
+    logger.debug(f"{cache_key}:{is_internal}")
     return is_internal
 
 
@@ -93,7 +93,7 @@ def is_retailer(request):
             active=True, retailer_group__active=True, emailuser_id=request.user.id
         ).exists()
         cache.set(cache_key, is_retailer, settings.CACHE_TIMEOUT_2_HOURS)
-    logger.debug(f"{cache_key}:{is_retailer}", extra={"className": ""})
+    logger.debug(f"{cache_key}:{is_retailer}")
     return is_retailer
 
 
@@ -113,7 +113,7 @@ def is_retailer_admin(request):
             emailuser_id=request.user.id,
         ).exists()
         cache.set(cache_key, is_retailer_admin, settings.CACHE_TIMEOUT_2_HOURS)
-    logger.debug(f"{cache_key}:{is_retailer_admin}", extra={"className": ""})
+    logger.debug(f"{cache_key}:{is_retailer_admin}")
     return is_retailer_admin
 
 
@@ -127,7 +127,7 @@ def get_retailer_group_ids_for_user(request):
             .order_by("id")
         )
         cache.set(cache_key, retailer_group_ids, settings.CACHE_TIMEOUT_2_HOURS)
-    logger.debug(f"{cache_key}:{retailer_group_ids}", extra={"className": ""})
+    logger.debug(f"{cache_key}:{retailer_group_ids}")
     return retailer_group_ids
 
 

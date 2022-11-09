@@ -49,7 +49,6 @@ class Command(BaseCommand):
                 voucher.save()
                 logger.info(
                     f"Notification email sent to recipient and purchser of Voucher: {voucher}",
-                    extra={"className": self.__class__.__name__},
                 )
 
         """ Second: Send any vouchers that to recipients that are due to be sent today """
@@ -78,5 +77,4 @@ class Command(BaseCommand):
                 voucher.send_voucher_sent_notification_emails()
                 logger.info(
                     f"Notification email sent to recipient and purchser of Voucher: {voucher}",
-                    extra={"className": self.__class__.__name__},
                 )

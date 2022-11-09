@@ -64,7 +64,6 @@ class CartItemViewSet(viewsets.ModelViewSet):
             CartUtils.decrement_cart_item_count(request)
             logger.info(
                 f"Destroyed Cart Item {cart_item} {cart_item.cart}",
-                extra={"className": self.__class__.__name__},
             )
             return super().destroy(request, *args, **kwargs)
         except Http404:
@@ -83,10 +82,7 @@ class CartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        logger.info(
-            f"Retrieving cart for user: {request.user.id} ({request.user})",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Retrieving cart for user: {request.user.id} ({request.user})")
 
         cart = Cart.get_or_create_cart(request)
         logger.info(f"{cart} retrieved", extra={"className": self.__class__.__name__})
@@ -100,10 +96,7 @@ class CartView(APIView):
             item["cart_id"] = cart.id
             cart_items.append(item)
 
-        logger.info(
-            f"Cart items in {cart}: {cart_items}",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Cart items in {cart}: {cart_items}")
 
         return Response(cart_items)
 
@@ -114,19 +107,16 @@ class LedgerCheckoutView(APIView):
         if not cart.items.all().exists():
             logger.info(
                 f"Cart: {cart} is empty. Redirecting to cart page.",
-                extra={"className": self.__class__.__name__},
             )
             return redirect(reverse("user-cart"))
 
         if is_retailer(request):
             logger.info(
                 "User is a retailer.",
-                extra={"className": self.__class__.__name__},
             )
             retailer_group_id = self.request.POST.get("retailer_group_id", None)
             logger.info(
                 f"Retailer group id: {retailer_group_id}.",
-                extra={"className": self.__class__.__name__},
             )
             if not (
                 retailer_group_id
@@ -134,28 +124,23 @@ class LedgerCheckoutView(APIView):
             ):
                 logger.info(
                     f"Retailer group with id: {retailer_group_id} does not exist. Redirecting user to cart page.",
-                    extra={"className": self.__class__.__name__},
                 )
                 return redirect(reverse("user-cart"))
 
             logger.info(
                 f"Retailer group with id: {retailer_group_id} exists.",
-                extra={"className": self.__class__.__name__},
             )
             retailer_group = RetailerGroup.objects.get(id=retailer_group_id)
             cart.retailer_group = retailer_group
             logger.info(
                 f"Retailer group with id: {retailer_group_id} assigned to cart: {cart}.",
-                extra={"className": self.__class__.__name__},
             )
             logger.info(
                 f"Saving cart: {cart}.",
-                extra={"className": self.__class__.__name__},
             )
             cart.save()
             logger.info(
                 f"Cart: {cart} saved.",
-                extra={"className": self.__class__.__name__},
             )
             # A retailer cart should only ever have one pass in it
             cart_item = cart.items.first()
@@ -168,43 +153,35 @@ class LedgerCheckoutView(APIView):
             park_pass.in_cart = False
             logger.info(
                 f"Park pass: {park_pass} set as in_cart = False.",
-                extra={"className": self.__class__.__name__},
             )
             logger.info(
                 f"Saving Park pass: {park_pass}.",
-                extra={"className": self.__class__.__name__},
             )
             park_pass.save()
             logger.info(
                 f"Park pass: {park_pass} saved.",
-                extra={"className": self.__class__.__name__},
             )
 
             # Remove the cart item and cart and reset the cart details
             logger.info(
                 f"Deleting cart item: {cart_item}.",
-                extra={"className": self.__class__.__name__},
             )
             cart_item.delete()
             logger.info(
                 f"Cart item: {cart_item} deleted.",
-                extra={"className": self.__class__.__name__},
             )
             logger.info(
                 f"Deleting cart: {cart}.",
-                extra={"className": self.__class__.__name__},
             )
             cart.delete()
             logger.info(
                 f"Cart: {cart} deleted.",
-                extra={"className": self.__class__.__name__},
             )
             CartUtils.reset_cart_item_count(request)
             CartUtils.remove_cart_id_from_session(request)
 
             logger.info(
                 f"Redirecting retailer to form for park pass {park_pass} with success message.",
-                extra={"className": self.__class__.__name__},
             )
             return redirect(
                 reverse(
@@ -215,17 +192,13 @@ class LedgerCheckoutView(APIView):
 
         ledger_order_lines = CartUtils.get_ledger_order_lines(request, cart)
 
-        logger.info(
-            "Getting basket parameters.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info("Getting basket parameters.")
         basket_parameters = CartUtils.get_basket_parameters(
             ledger_order_lines, cart.uuid, is_no_payment=False
         )
 
         logger.info(
-            f"Creating basket session with basket parameters: {basket_parameters}",
-            extra={"className": self.__class__.__name__},
+            f"Creating basket session with basket parameters: {basket_parameters}"
         )
         create_basket_session(request, request.user.id, basket_parameters)
 
@@ -240,15 +213,11 @@ class LedgerCheckoutView(APIView):
             request, return_url, return_preload_url, cart.user, invoice_text
         )
         logger.info(
-            f"Creating checkout session with checkout parameters: {checkout_parameters}",
-            extra={"className": self.__class__.__name__},
+            f"Creating checkout session with checkout parameters: {checkout_parameters}"
         )
         create_checkout_session(request, checkout_parameters)
 
-        logger.info(
-            "Redirecting user to ledgergw payment details page.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info("Redirecting user to ledgergw payment details page.")
         return redirect(reverse("ledgergw-payment-details"))
 
 
@@ -257,17 +226,13 @@ class SuccessView(APIView):
     throttle_classes = [AnonRateThrottle]
 
     def get(self, request, uuid, format=None):
-        logger.info(
-            "Park passes Cart API SuccessView get method called.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info("Park passes Cart API SuccessView get method called.")
 
         invoice_reference = request.GET.get("invoice", "false")
 
         if uuid and invoice_reference:
             logger.info(
                 f"Invoice reference: {invoice_reference} and uuid: {uuid}.",
-                extra={"className": self.__class__.__name__},
             )
             if not Cart.objects.filter(uuid=uuid).exists():
                 return redirect(reverse("user-cart"))
@@ -284,7 +249,6 @@ class SuccessView(APIView):
 
             logger.info(
                 "Returning status.HTTP_204_NO_CONTENT. Order created successfully.",
-                extra={"className": self.__class__.__name__},
             )
             # this end-point is called by an unmonitored get request in ledger so there is no point having a
             # a response body however we will return a status in case this is used on the ledger end in future
@@ -294,7 +258,6 @@ class SuccessView(APIView):
         # If there is no uuid to identify the cart then send a bad request status back in case ledger can
         # do something with this in future
         logger.info(
-            "Returning status.HTTP_400_BAD_REQUEST bad request as there was not a uuid and invoice_reference.",
-            extra={"className": self.__class__.__name__},
+            "Returning status.HTTP_400_BAD_REQUEST bad request as there was not a uuid and invoice_reference."
         )
         return Response(status=status.HTTP_400_BAD_REQUEST)

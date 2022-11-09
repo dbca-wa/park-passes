@@ -197,7 +197,6 @@ class Voucher(models.Model):
                 self.processing_status = Voucher.PURCHASER_NOTIFIED
                 logger.info(
                     f"Voucher purchased notification email sent for voucher {self.voucher_number}",
-                    extra={"className": self.__class__.__name__},
                 )
             except SendVoucherRecipientEmailNotificationFailed(
                 error_message.format(self.id, timezone.now(), e)
@@ -217,7 +216,6 @@ class Voucher(models.Model):
                 self.save()
                 logger.info(
                     f"Voucher sent notification emails sent for voucher {self.voucher_number}",
-                    extra={"className": self.__class__.__name__},
                 )
             except SendVoucherRecipientEmailNotificationFailed(
                 error_message.format(self.id, timezone.now(), e)
