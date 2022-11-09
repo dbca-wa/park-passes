@@ -66,46 +66,33 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
 
         cart = Cart.get_or_create_cart(self.request)
         logger.info(
-            f"Retrieving cart for user: {self.request.user.id} ({self.request.user})",
-            extra={"className": self.__class__.__name__},
+            f"Retrieving cart for user: {self.request.user.id} ({self.request.user})"
         )
 
         content_type = ContentType.objects.get_for_model(voucher)
         cart_item = CartItem(cart=cart, object_id=voucher.id, content_type=content_type)
         cart_item.save()
-        logger.info(
-            f"Added cart item: {cart_item}",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Added cart item: {cart_item}")
 
         if is_customer(self.request):
             cart_item_count = CartUtils.increment_cart_item_count(self.request)
             logger.info(
                 f"Incremented cart item count to {cart_item_count} -> {cart}",
-                extra={"className": self.__class__.__name__},
             )
 
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
             logger.info(
                 f"Assigned date first added to: {cart.datetime_first_added_to} to {cart}",
-                extra={"className": self.__class__.__name__},
             )
 
         cart.datetime_last_added_to = timezone.now()
         logger.info(
-            f"Assigned date last added to: {cart.datetime_first_added_to} to {cart}",
-            extra={"className": self.__class__.__name__},
+            f"Assigned date last added to: {cart.datetime_first_added_to} to {cart}"
         )
-        logger.info(
-            f"Saving cart: {cart_item_count}",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Saving cart: {cart_item_count}")
         cart.save()
-        logger.info(
-            "Cart saved.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info("Cart saved.")
 
     def has_object_permission(self, request, view, obj):
         if "create" == view.action:
@@ -243,7 +230,6 @@ class ValidateVoucherView(APIView):
                 "Validating voucher with email: {}, code: {}, pin: {}".format(
                     email, code, pin
                 ),
-                extra={"className": self.__class__.__name__},
             )
             if Voucher.objects.filter(
                 in_cart=False,
@@ -261,12 +247,10 @@ class ValidateVoucherView(APIView):
                 )
                 logger.info(
                     f"Voucher exists: {voucher}.",
-                    extra={"className": self.__class__.__name__},
                 )
                 if voucher.remaining_balance > Decimal(0.00):
                     logger.info(
                         f"Voucher remaining balance: {voucher.remaining_balance}.",
-                        extra={"className": self.__class__.__name__},
                     )
                     return Response(
                         {
@@ -276,6 +260,5 @@ class ValidateVoucherView(APIView):
                     )
                 logger.info(
                     f"Voucher exists: {voucher} but has no remaining balance. Returning is_voucher_code_valid=false.",
-                    extra={"className": self.__class__.__name__},
                 )
         return Response({"is_voucher_code_valid": False})

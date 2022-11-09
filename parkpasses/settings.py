@@ -1,9 +1,13 @@
 import hashlib
+import logging
 import os
 
 import confy
 import dj_database_url
 from confy import env
+
+logger = logging.getLogger(__name__)
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 confy.read_environment_file(BASE_DIR + "/.env")
@@ -81,7 +85,7 @@ MIDDLEWARE_CLASSES += [
 MIDDLEWARE = MIDDLEWARE_CLASSES
 MIDDLEWARE_CLASSES = None
 
-if SHOW_DEBUG_TOOLBAR:
+if DEBUG and SHOW_DEBUG_TOOLBAR:
 
     def show_toolbar(request):
         if request:
@@ -220,7 +224,7 @@ if DEBUG:
         "disable_existing_loggers": True,
         "formatters": {
             "verbose": {
-                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s][%(className)s.%(funcName)s] %(message)s"
+                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s][%(funcName)s] %(message)s"
             },
         },
         "handlers": {
@@ -228,10 +232,24 @@ if DEBUG:
                 "class": "logging.StreamHandler",
                 "level": "DEBUG",
             },
-            "rotating_file": {
+            "parkpasses_rotating_file": {
                 "level": "INFO",
                 "class": "logging.handlers.RotatingFileHandler",
                 "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
+                "formatter": "verbose",
+                "maxBytes": 5242880,
+            },
+            "org_model_documents_rotating_file": {
+                "level": "INFO",
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": os.path.join(BASE_DIR, "logs", "org_model_documents.log"),
+                "formatter": "verbose",
+                "maxBytes": 5242880,
+            },
+            "org_model_logs_rotating_file": {
+                "level": "INFO",
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": os.path.join(BASE_DIR, "logs", "org_model_logs.log"),
                 "formatter": "verbose",
                 "maxBytes": 5242880,
             },
@@ -242,72 +260,63 @@ if DEBUG:
             },
         },
         "loggers": {
-            "": {
-                "handlers": ["console"],
-                "level": "DEBUG",
-                "propagate": True,
-            },
-            "django.template": {
-                "handlers": ["console"],
-                "level": "INFO",
-            },
             "parkpasses": {
-                "handlers": ["console", "rotating_file", "mail_admins"],
+                "handlers": ["console", "parkpasses_rotating_file", "mail_admins"],
                 "level": "DEBUG",
                 "propagate": False,
             },
             "org_model_documents": {
-                "handlers": ["console"],
+                "handlers": ["console", "org_model_documents_rotating_file"],
                 "level": "DEBUG",
                 "propagate": False,
             },
             "org_model_logs": {
-                "handlers": ["console"],
+                "handlers": ["console", "org_model_logs_rotating_file"],
                 "level": "DEBUG",
                 "propagate": False,
             },
         },
     }
 else:
-    LOGGING = {
-        "version": 1,
-        "formatters": {
-            "verbose": {
-                "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s] \
-                    [%(className)s.%(funcName)s] %(message)s"
-            },
-        },
-        "handlers": {
-            "rotating_file": {
-                "level": "INFO",
-                "class": "logging.handlers.TimedRotatingFileHandler",
-                "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
-                "formatter": "verbose",
-                "when": "D",
-                "interval": 1,
-            },
-            "mail_admins": {
-                "level": "ERROR",
-                "class": "django.utils.log.AdminEmailHandler",
-            },
-        },
-        "loggers": {
-            "parkpasses": {
-                "handlers": ["console", "rotating_file", "mail_admins"],
-                "level": "INFO",
-                "propagate": False,
-            },
-            "org_model_documents": {
-                "handlers": ["console"],
-                "level": "INFO",
-                "propagate": False,
-            },
-            "org_model_logs": {
-                "handlers": ["console"],
-                "level": "INFO",
-                "propagate": False,
-            },
-        },
+    LOGGING["formatters"]["verbose"] = {
+        "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s][%(funcName)s] %(message)s"
+    }
+    LOGGING["handlers"]["parkpasses_rotating_file"] = {
+        "level": "INFO",
+        "class": "logging.handlers.RotatingFileHandler",
+        "filename": os.path.join(BASE_DIR, "logs", "parkpasses.log"),
+        "formatter": "verbose",
+        "maxBytes": 5242880,
+    }
+    LOGGING["handlers"]["org_model_documents_rotating_file"] = {
+        "level": "INFO",
+        "class": "logging.handlers.RotatingFileHandler",
+        "filename": os.path.join(BASE_DIR, "logs", "org_model_documents.log"),
+        "formatter": "verbose",
+        "maxBytes": 5242880,
+    }
+    LOGGING["handlers"]["org_model_logs_rotating_file"] = {
+        "level": "INFO",
+        "class": "logging.handlers.RotatingFileHandler",
+        "filename": os.path.join(BASE_DIR, "logs", "org_model_logs.log"),
+        "formatter": "verbose",
+        "maxBytes": 5242880,
+    }
+    LOGGING["handlers"]["mail_admins"] = {
+        "level": "WARNING",
+        "class": "django.utils.log.AdminEmailHandler",
+    }
+    LOGGING["loggers"]["parkpasses"] = {
+        "handlers": ["console", "parkpasses_rotating_file", "mail_admins"],
+        "level": "INFO",
+    }
+    LOGGING["loggers"]["org_model_documents"] = {
+        "handlers": ["org_model_documents_rotating_file", "mail_admins"],
+        "level": "INFO",
+    }
+    LOGGING["loggers"]["org_model_logs"] = {
+        "handlers": ["org_model_logs_rotating_file", "mail_admins"],
+        "level": "INFO",
     }
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

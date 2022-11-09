@@ -383,19 +383,12 @@ class ExternalPassViewSet(
         return ExternalPassSerializer
 
     def perform_create(self, serializer):
-        logger.info(
-            "Calling perform_create",
-            extra={"className": self.__class__.__name__},
-        )
-        logger.info(
-            f"serializer.validated_data = {serializer.validated_data}",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info("Calling perform_create")
+        logger.info(f"serializer.validated_data = {serializer.validated_data}")
 
         logger.info(
             "Popping rac_discount_code, discount_code, voucher_code, voucher_pin,\
-                 concession_id, concession_cart_number and sold_via.",
-            extra={"className": self.__class__.__name__},
+                 concession_id, concession_cart_number and sold_via."
         )
         # Pop these values out so they don't mess with the model serializer
         rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
@@ -411,15 +404,13 @@ class ExternalPassViewSet(
         sold_via = serializer.validated_data.pop("sold_via", None)
         logger.info(
             "rac_discount_code, discount_code, voucher_code, voucher_pin, \
-                concession_id, concession_cart_number and sold_via popped.",
-            extra={"className": self.__class__.__name__},
+                concession_id, concession_cart_number and sold_via popped."
         )
 
         email_user_id = 0
         if is_retailer(self.request):
             logger.info(
                 "This pass is being created by a retailer.",
-                extra={"className": self.__class__.__name__},
             )
             # If the pass is being sold by a retailer, check if there is an existing email user
             # with the email address assigned to the pass
@@ -427,67 +418,52 @@ class ExternalPassViewSet(
             if EmailUser.objects.filter(email=email).exists():
                 logger.info(
                     f"User with email: {email} already exists in ledger.",
-                    extra={"className": self.__class__.__name__},
                 )
                 email_user = EmailUser.objects.get(email=email)
                 email_user_id = email_user.id
                 logger.info(
                     f"Calling serializer.save(user={email_user_id})",
-                    extra={"className": self.__class__.__name__},
                 )
                 park_pass = serializer.save(user=email_user_id)
                 logger.info(
                     f"serializer.save(user={email_user_id}) called.",
-                    extra={"className": self.__class__.__name__},
                 )
             else:
                 logger.info(
                     "User with email does not exist in ledger.",
-                    extra={"className": self.__class__.__name__},
                 )
                 logger.info(
                     "Calling serializer.save()",
-                    extra={"className": self.__class__.__name__},
                 )
                 park_pass = serializer.save()
                 logger.info(
                     "serializer.save() called.",
-                    extra={"className": self.__class__.__name__},
                 )
         elif is_customer(self.request):
             logger.info(
                 "This pass is being created by an external user.",
-                extra={"className": self.__class__.__name__},
             )
             email_user_id = self.request.user.id
             logger.info(
                 f"Calling serializer.save(user={email_user_id})",
-                extra={"className": self.__class__.__name__},
             )
             park_pass = serializer.save(user=email_user_id)
             logger.info(
                 f"serializer.save(user={email_user_id}) called.",
-                extra={"className": self.__class__.__name__},
             )
         else:
             logger.warn(
                 "This pass is being created by a user that is not a retailer or an external user.",
-                extra={"className": self.__class__.__name__},
             )
             logger.info(
                 "Calling serializer.save()",
-                extra={"className": self.__class__.__name__},
             )
             park_pass = serializer.save()
             logger.info(
                 "serializer.save() called.",
-                extra={"className": self.__class__.__name__},
             )
 
-        logger.info(
-            f"Logging user action for: {park_pass}",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Logging user action for: {park_pass}")
         UserAction.objects.log_action(
             object_id=park_pass.id,
             content_type=ContentType.objects.get_for_model(park_pass),
@@ -496,50 +472,33 @@ class ExternalPassViewSet(
                 park_pass._meta.model.__name__, park_pass.id
             ),
         )
-        logger.info(
-            "User action logged.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info("User action logged.")
 
-        logger.info(
-            f"Checking if sold_via: {sold_via} matches any retailer groups",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Checking if sold_via: {sold_via} matches any retailer groups")
         if sold_via and RetailerGroup.objects.filter(id=sold_via).exists():
             retailer_group = RetailerGroup.objects.get(id=sold_via)
             logger.info(
                 f"sold_via: {sold_via} matches retailer group: {retailer_group}",
-                extra={"className": self.__class__.__name__},
             )
             park_pass.sold_via = retailer_group
             logger.info(
                 f"sold_via: {sold_via} assigned to park pass: {park_pass}",
-                extra={"className": self.__class__.__name__},
             )
         else:
             logger.info(
                 f"sold_via: {sold_via} does not match any retailer groups",
-                extra={"className": self.__class__.__name__},
             )
             park_pass.sold_via = RetailerGroup.get_dbca_retailer_group()
             logger.info(
                 f"Default DBCA retailer group assigned to park pass: {park_pass}",
-                extra={"className": self.__class__.__name__},
             )
 
-        logger.info(
-            f"Saving park pass: {park_pass}",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Saving park pass: {park_pass}")
         park_pass.save()
-        logger.info(
-            f"Park pass: {park_pass} saved.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Park pass: {park_pass} saved.")
 
         logger.info(
-            f"Getting cart for user: {self.request.user.id} ({self.request.user}).",
-            extra={"className": self.__class__.__name__},
+            f"Getting cart for user: {self.request.user.id} ({self.request.user})."
         )
         cart = Cart.get_or_create_cart(self.request)
 
@@ -547,10 +506,7 @@ class ExternalPassViewSet(
         oracle_code = CartUtils.get_oracle_code(
             self.request, content_type, park_pass.id
         )
-        logger.info(
-            f"Oracle code: {oracle_code} will be used for this park pass.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Oracle code: {oracle_code} will be used for this park pass.")
         cart_item = CartItem(
             cart=cart,
             object_id=park_pass.id,
@@ -558,10 +514,7 @@ class ExternalPassViewSet(
             oracle_code=oracle_code,
         )
 
-        logger.info(
-            f"Cart item: {cart_item} created in memory.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Cart item: {cart_item} created in memory.")
 
         """ If the user deletes a cart item, any objects that can be attached to a cart item
         (concession usage, discount code usage and voucher transaction)
@@ -571,11 +524,9 @@ class ExternalPassViewSet(
                 concession = Concession.objects.get(id=concession_id)
                 logger.info(
                     f"This pass purchase includes a concession: {concession}.",
-                    extra={"className": self.__class__.__name__},
                 )
                 logger.info(
                     "Creating concession usage.",
-                    extra={"className": self.__class__.__name__},
                 )
                 concession_usage = ConcessionUsage.objects.create(
                     concession=concession,
@@ -584,12 +535,10 @@ class ExternalPassViewSet(
                 )
                 logger.info(
                     "Concession usage: {concession_usage} created.",
-                    extra={"className": self.__class__.__name__},
                 )
                 cart_item.concession_usage = concession_usage
                 logger.info(
                     "Concession usage assigned to cart item: {cart_item}.",
-                    extra={"className": self.__class__.__name__},
                 )
 
         if discount_code:
@@ -598,23 +547,19 @@ class ExternalPassViewSet(
                 discount_code = DiscountCode.objects.get(code=discount_code)
                 logger.info(
                     f"This pass purchase includes a discount code: {discount_code}.",
-                    extra={"className": self.__class__.__name__},
                 )
                 logger.info(
                     "Creating discount code usage.",
-                    extra={"className": self.__class__.__name__},
                 )
                 discount_code_usage = DiscountCodeUsage.objects.create(
                     discount_code=discount_code, park_pass=park_pass
                 )
                 logger.info(
                     "Discount code usage: {discount_code_usage} created.",
-                    extra={"className": self.__class__.__name__},
                 )
                 cart_item.discount_code_usage = discount_code_usage
                 logger.info(
                     "Discount code usage assigned to cart item: {cart_item}.",
-                    extra={"className": self.__class__.__name__},
                 )
 
         if voucher_code:
@@ -622,11 +567,9 @@ class ExternalPassViewSet(
                 voucher = Voucher.objects.get(code=voucher_code, pin=voucher_pin)
                 logger.info(
                     f"This pass purchase includes a voucher transaction for voucher: {voucher}.",
-                    extra={"className": self.__class__.__name__},
                 )
                 logger.info(
                     "Creating voucher transaction.",
-                    extra={"className": self.__class__.__name__},
                 )
                 voucher_transaction = VoucherTransaction.objects.create(
                     voucher=voucher,
@@ -638,58 +581,40 @@ class ExternalPassViewSet(
                 )
                 logger.info(
                     f"Voucher transaction: {voucher_transaction} created.",
-                    extra={"className": self.__class__.__name__},
                 )
                 cart_item.voucher_transaction = voucher_transaction
                 logger.info(
                     f"Voucher transaction assigned to cart item: {cart_item}.",
-                    extra={"className": self.__class__.__name__},
                 )
 
         # Save to apply any concession usages, discount code usages or voucher transactions to the cart item
-        logger.info(
-            f"Saving cart item: {cart_item}.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Saving cart item: {cart_item}.")
         cart_item.save()
-        logger.info(
-            f"Cart item: {cart_item} saved.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Cart item: {cart_item} saved.")
 
         if is_customer(self.request):
             logger.info(
                 "User is an external user so will increment cart item count.",
-                extra={"className": self.__class__.__name__},
             )
             cart_item_count = CartUtils.increment_cart_item_count(self.request)
             logger.info(
                 f"Incremented cart item count to {cart_item_count} -> {cart}",
-                extra={"className": self.__class__.__name__},
             )
 
         if not cart.datetime_first_added_to:
             cart.datetime_first_added_to = timezone.now()
             logger.info(
                 f"Assigned datetime_first_added_to {cart.datetime_first_added_to} for cart: {cart}.",
-                extra={"className": self.__class__.__name__},
             )
 
         cart.datetime_last_added_to = timezone.now()
         logger.info(
-            f"Assigned datetime_last_added_to {cart.datetime_last_added_to} for cart: {cart}.",
-            extra={"className": self.__class__.__name__},
+            f"Assigned datetime_last_added_to {cart.datetime_last_added_to} for cart: {cart}."
         )
 
-        logger.info(
-            f"Saving cart: {cart}.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Saving cart: {cart}.")
         cart.save()
-        logger.info(
-            f"Cart: {cart} saved.",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Cart: {cart} saved.")
 
     def perform_update(self, serializer):
         park_pass = serializer.save()
@@ -946,10 +871,7 @@ class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
         checkout_parameters = CartUtils.get_checkout_parameters(
             request, return_url, return_preload_url, order.user, invoice_text
         )
-        logger.info(
-            "Checkout_parameters = " + str(checkout_parameters),
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info("Checkout_parameters = " + str(checkout_parameters))
 
         create_checkout_session(request, checkout_parameters)
 

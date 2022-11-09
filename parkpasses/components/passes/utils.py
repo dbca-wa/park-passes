@@ -77,10 +77,7 @@ class PassUtils:
             ]
         )
 
-        logger.info(
-            f"Subprocess output = {output}",
-            extra={"className": self.__class__.__name__},
-        )
+        logger.info(f"Subprocess output = {output}")
 
         park_pass_pdf_file_name = "ParkPass.pdf"
         park_pass_pdf_path = park_pass_file_path + park_pass_pdf_file_name

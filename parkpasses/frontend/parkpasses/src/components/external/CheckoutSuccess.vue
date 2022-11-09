@@ -55,6 +55,10 @@
                             </div>
                         </div>
 
+                        <BootstrapAlert>
+                            You may check your email for further confirmation of purchase.
+                        </BootstrapAlert>
+
                     </div>
                 </div>
 
@@ -68,6 +72,7 @@
 <script>
 import { useStore } from '@/stores/state'
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
+import BootstrapAlert from '@/utils/vue/BootstrapAlert.vue'
 
 export default {
     name: "CheckoutSuccess",
@@ -82,7 +87,7 @@ export default {
         };
     },
     components: {
-
+        BootstrapAlert
     },
     methods: {
         invoiceURL: function(orderId) {

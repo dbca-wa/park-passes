@@ -118,7 +118,6 @@ class Command(BaseCommand):
                 PassEmails.send_gold_pass_details_to_pica(date, passes, file_path)
                 logger.info(
                     "Email of new Gold Pass Information sent to PICA.",
-                    extra={"className": self.__class__.__name__},
                 )
             except Exception as e:
                 raise SendGoldPassDetailsToPICAEmailFailed(
