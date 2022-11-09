@@ -321,7 +321,7 @@ class PassTemplateViewSet(viewsets.ModelViewSet):
     permission_classes = [IsInternal]
 
     @action(methods=["GET"], detail=True, url_path="retrieve-pass-template")
-    def retrieve_park_pass_pdf(self, request, *args, **kwargs):
+    def retrieve_pass_template(self, request, *args, **kwargs):
         pass_template = self.get_object()
         if pass_template.template:
             return FileResponse(pass_template.template)
