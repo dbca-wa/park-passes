@@ -1,4 +1,4 @@
-{% extends "webtemplate_dbca/base_b5.html" %}
+{% extends "webtemplate_dbca/base_b5_auth_session.html" %}
 {% load static %}
 {% load users %}
 {% load utils %}
@@ -11,7 +11,7 @@
     {% endblock %}
 
     {% block title %}
-    Park Passes - Department of Biodiversity, Conservation and Attractions
+        Park Passes - Department of Biodiversity, Conservation and Attractions
     {% endblock %}
 
     <body>
@@ -156,8 +156,6 @@
         {% block menu_spacer %}
             <br>
         {% endblock %}
-
-
 
     </body>
 </html>
