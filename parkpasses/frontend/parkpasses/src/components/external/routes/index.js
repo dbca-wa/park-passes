@@ -5,7 +5,6 @@ import Help from '@/components/external/Help.vue'
 import Contact from '@/components/external/Contact.vue'
 import YourParkPasses from '@/components/external/YourParkPasses.vue'
 import YourOrders from '@/components/external/YourOrders.vue'
-import YourVouchers from '@/components/external/YourVouchers.vue'
 import Cart from '@/components/external/Cart.vue'
 import CheckoutSuccess from '@/components/external/CheckoutSuccess.vue'
 
@@ -43,11 +42,6 @@ export default {
             path: '/your-park-passes/',
             component: YourParkPasses,
             name: 'your-park-passes'
-        },
-        {
-            path: '/your-vouchers/',
-            component: YourVouchers,
-            name: 'your-vouchers'
         },
         {
             path: '/your-orders/',
