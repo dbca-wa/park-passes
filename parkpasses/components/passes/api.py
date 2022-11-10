@@ -80,7 +80,12 @@ from parkpasses.helpers import (
     is_internal,
     is_retailer,
 )
-from parkpasses.permissions import HasRetailerGroupAPIKey, IsInternal, IsRetailer
+from parkpasses.permissions import (
+    HasRetailerGroupAPIKey,
+    IsInternal,
+    IsInternalAPIView,
+    IsRetailer,
+)
 
 # from rest_framework_datatables.filters import DatatablesFilterBackend
 
@@ -256,7 +261,7 @@ class CurrentOptionsForPassType(generics.ListAPIView):
 class DefaultOptionsForPassType(generics.ListAPIView):
     """Updated docstring"""
 
-    permission_classes = [IsInternal]
+    permission_classes = [IsInternalAPIView]
     serializer_class = OptionSerializer
 
     def get_queryset(self):
