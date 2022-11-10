@@ -427,7 +427,7 @@ export default {
                 if (result.isConfirmed) {
                     vm.updateProcessingStatus(id, reportNumber, 'P', 'paid');
                 }
-            })
+            }).catch(console.error).then(console.log);
         },
         markUnPaid: function (id, reportNumber) {
             let vm = this;
@@ -442,7 +442,7 @@ export default {
                 if (result.isConfirmed) {
                     vm.updateProcessingStatus(id, reportNumber, 'U', 'unpaid');
                 }
-            })
+            }).catch(console.error).then(console.log);
         },
         addEventListeners: function(){
             let vm = this
