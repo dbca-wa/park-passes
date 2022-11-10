@@ -30,26 +30,24 @@ class Command(BaseCommand):
         path_to_cvs_file = options["path_to_cvs_file"][0]
         self.stdout.write("path_to_cvs_file = %s" % path_to_cvs_file)
 
-        try:
-            open(path_to_cvs_file)
-        except ValueError:
-            raise CommandError(f"No import file exists at {path_to_cvs_file}.")
-
         records_processed = 0
 
-        with open(path_to_cvs_file) as csvfile:
-            datareader = csv.DictReader(csvfile)
-            for row in datareader:
-                self.stdout.write(
-                    self.style.SUCCESS("{} {}".format(row["lga"], row["postcode"]))
-                )
-                lga, lga_created = LGA.objects.get_or_create(name=row["lga"])
-                postcode, postcode_created = Postcode.objects.get_or_create(
-                    postcode=row["postcode"]
-                )
-                lga.postcodes.add(postcode)
-                records_processed += 1
+        try:
+            with open(path_to_cvs_file) as csvfile:
+                datareader = csv.DictReader(csvfile)
+                for row in datareader:
+                    self.stdout.write(
+                        self.style.SUCCESS("{} {}".format(row["lga"], row["postcode"]))
+                    )
+                    lga, lga_created = LGA.objects.get_or_create(name=row["lga"])
+                    postcode, postcode_created = Postcode.objects.get_or_create(
+                        postcode=row["postcode"]
+                    )
+                    lga.postcodes.add(postcode)
+                    records_processed += 1
 
-        self.stdout.write(
-            self.style.SUCCESS(f"Finished processing {records_processed} records.")
-        )
+            self.stdout.write(
+                self.style.SUCCESS(f"Finished processing {records_processed} records.")
+            )
+        except ValueError:
+            raise CommandError(f"No import file exists at {path_to_cvs_file}.")
