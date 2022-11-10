@@ -214,6 +214,8 @@ import SectionToggle from '@/components/forms/SectionToggle.vue'
 import CommsLog from '@/components/common/CommsLog.vue'
 import StatusPanel from '@/components/common/StatusPanel.vue'
 
+import DOMPurify from 'dompurify'
+
 import Swal from 'sweetalert2'
 
 export default {
@@ -368,6 +370,7 @@ export default {
             }).finally(() =>{
                 vm.initialiseValidUsersSelect2();
                 vm.discountCodeBatch.valid_users.forEach(function(validUser){
+                    validUser = DOMPurify.sanitize(validUser);
                     var option = new Option(
                         validUser.display_name,
                         validUser.user,
