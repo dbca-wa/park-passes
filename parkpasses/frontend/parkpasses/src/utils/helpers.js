@@ -42,11 +42,7 @@ module.exports = {
         if (resp.status === 400) {
             if (Array.isArray(resp.body)){
                 text = resp.body[0];
-            }
-            else if (typeof resp.body == 'object'){
-                text = resp.body;
-            }
-            else{
+            } else {
                 text = resp.body;
             }
 
@@ -197,10 +193,10 @@ module.exports = {
         $(formElement).submit();
     },
     enablePopovers: function(){
-        let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-        let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-            let popover = new bootstrap.Popover(popoverTriggerEl)
-        })
+        let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.array.forEach(element => {
+            new bootstrap.Popover(element);
+        });
     },
     getDatetimeLocalFormat() {
         return 'yyyy-MM-DDTHH:mm:ss.SSS';
@@ -242,17 +238,11 @@ module.exports = {
      getStatusBadgeClass(status){
         switch(status) {
             case 'Current':
-                return 'bg-success'
-                break;
+                return 'bg-success';
             case 'Future':
                 return 'bg-info';
-                break;
-            case 'Expired':
+            case 'Expired': case 'Cancelled':
                 return 'bg-danger';
-                break;
-            case 'Cancelled':
-                return 'bg-danger';
-                break;
             default:
                 return 'org-badge-primary';
         }
