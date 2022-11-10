@@ -686,7 +686,7 @@ class PassFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(date_expiry__lte=timezone.now().date())
 
             elif Pass.CURRENT == status:
-                queryset = queryset.filter(
+                queryset = queryset.exclude(processing_status=Pass.CANCELLED).filter(
                     date_start__lte=timezone.now().date(),
                     date_expiry__gte=timezone.now().date(),
                 )
