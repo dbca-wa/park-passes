@@ -3,7 +3,7 @@
 
     <h2 class="pb-3">Your Park Passes</h2>
 
-    <div v-if="passes" id="passes" class="passes row row-cols-1 row-cols-sm-1 row-cols-md-1 row-cols-lg-1 row-cols-xl-1 row-cols-xxl-2 g-4">
+    <div v-if="passes && passes.length > 0" id="passes" class="passes row row-cols-1 row-cols-sm-1 row-cols-md-1 row-cols-lg-1 row-cols-xl-1 row-cols-xxl-2 g-4">
         <div v-for="pass in passes" class="pass col-xs">
           <div class="card border-bottom-0 rounded-0 rounded-top">
             <img v-show="allImagesLoaded" @load="imageLoaded()" :src="pass.pass_type_image" class="img-fluid float-left" width="300" height="150" />
@@ -53,6 +53,11 @@
             </div>
 
           </div>
+        </div>
+    </div>
+    <div v-else class="no-passes mb-4 col-12">
+        <div>
+            <span>You have not purchased any park passes yet.</span>
         </div>
     </div>
 
@@ -140,14 +145,10 @@ export default {
         return true;
     },
     passCurrentOrFuture: function (pass) {
-      switch (pass.status) {
-        case 'CU':
+        if('CU'==pass.status ||'FU'==pass.status){
           return true;
-        case 'FU':
-          return true;
-        default:
-          return false;
-      }
+        }
+        return false;
     },
     canUpdateVehicleDetails: function (pass) {
       if(constants.PINJAR_PASS_NAME==pass.pass_type_name){
@@ -279,12 +280,12 @@ export default {
   }
 
   .card-text {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 5px;
-  background-color: #fff;
-  color: #444;
-  font-size: 0.9em;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 5px;
+    background-color: #fff;
+    color: #444;
+    font-size: 0.9em;
   }
 
   .card-footer {
@@ -370,6 +371,13 @@ export default {
     background-color:#EDE5D9;
     color: #444;
   }
+
+.no-passes {
+    background-color: #EDE5D9;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
 
 .skeleton-block {
   display: block;

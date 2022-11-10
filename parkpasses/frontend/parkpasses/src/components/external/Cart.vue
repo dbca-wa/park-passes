@@ -80,8 +80,8 @@
 
                         </template>
                         <template v-else>
-                            <div class="card mb-1">
-                                <div class="card-header checkout-item-header">
+                            <div class="no-passes mb-4 col-12">
+                                <div class="no-items">
                                     There are no items in your cart.
                                 </div>
                             </div>
@@ -161,11 +161,11 @@ export default {
                             console.log('cartItem.price_after_voucher_applied = ' + cartItem.price_after_voucher_applied);
                             total = currency(total).add(cartItem.price_after_voucher_applied);
                         }
-                        console.log('total = ' + total);
-                        if(0.00 >= total){
-                            return currency(0.00);
-                        }
                     });
+                    console.log('total = ' + total);
+                    if(0.00 >= total){
+                        return currency(0.00);
+                    }
                     return total;
                 }
             }
@@ -255,5 +255,11 @@ export default {
 <style scoped>
 .card {
     background-color: #EDE5D9;
+}
+.no-items{
+    background-color: #EDE5D9;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.125);
 }
 </style>
