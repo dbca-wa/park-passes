@@ -22,6 +22,7 @@ SYSTEM_MAINTENANCE_WARNING = env("SYSTEM_MAINTENANCE_WARNING", 24)  # hours
 DISABLE_EMAIL = env("DISABLE_EMAIL", False)
 SHOW_TESTS_URL = env("SHOW_TESTS_URL", False)
 SHOW_DEBUG_TOOLBAR = env("SHOW_DEBUG_TOOLBAR", False)
+
 BUILD_TAG = env(
     "BUILD_TAG", hashlib.sha256(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
@@ -84,6 +85,11 @@ MIDDLEWARE_CLASSES += [
 ]
 MIDDLEWARE = MIDDLEWARE_CLASSES
 MIDDLEWARE_CLASSES = None
+
+# MIDDLEWARE.insert(0, "django.middleware.gzip.GZipMiddleware")
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
 
 if DEBUG and SHOW_DEBUG_TOOLBAR:
 
