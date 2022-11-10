@@ -329,8 +329,12 @@ export default {
                 searchable: false,
                 visible: true,
                 'render': function(row, type, full){
+                    let editLink = vm.$router.resolve({
+                        name: 'internal-pricing-window-form',
+                        params: { pricingWindowId: full.id }
+                    });
                     let links = '';
-                    links +=  `<a href="javascript:void(0)" data-item-id="${full.id}" data-action="edit">Edit</a>`;
+                    links +=  `<a href="${editLink.href}">Edit</a>`;
                     const startDate = new Date(full.date_start);
                     if(full.date_expiry && startDate > new Date()) {
                         links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-name="${full.name}" data-action="delete">Delete</a>`;
@@ -402,12 +406,9 @@ export default {
                      "<'d-flex align-items-center'<'me-auto'i>p>",
                 buttons: buttons,
                 order: [[1, 'asc']],
-
                 columns: columns,
                 processing: true,
                 pagingType: "full_numbers",
-                initComplete: function() {
-                },
             }
         }
     },
@@ -449,8 +450,6 @@ export default {
         },
         fetchFilterLists: function(){
             let vm = this;
-
-            // Pass Types
             fetch(apiEndpoints.passTypesDistinct)
             .then(async response => {
                 const data = await response.json();
@@ -467,50 +466,17 @@ export default {
         },
         addEventListeners: function(){
             let vm = this
+            vm.$refs.pricingWindowDatatable.vmDataTable.on('click', 'a[data-action="edit"]', function(e) {
+                e.preventDefault();
+                let id = $(this).attr('data-item-id');
+                vm.deletePricingWindow({'id':id, 'name':name})
+            });
             vm.$refs.pricingWindowDatatable.vmDataTable.on('click', 'a[data-action="delete"]', function(e) {
                 e.preventDefault();
                 let id = $(this).attr('data-item-id');
                 let name = $(this).attr('data-name');
                 vm.deletePricingWindow({'id':id, 'name':name})
             });
-            // Listener for the row
-            vm.$refs.pricingWindowDatatable.vmDataTable.on('click', 'td', function(e) {
-                let td_link = $(this)
-
-                if (!(td_link.hasClass(vm.tdExpandClassName) || td_link.hasClass(vm.tdCollapseClassName))){
-                    // This row is not configured as expandable row (at the rowCallback)
-                    return
-                }
-
-                // Get <tr> element as jQuery object
-                let tr = td_link.closest('tr')
-
-                // Retrieve id from the id of the <tr>
-                let tr_id = tr.attr('id')
-                let proposal_id = tr_id.replace('pricingWindowId', '')
-
-                let first_td = tr.children().first()
-                if(first_td.hasClass(vm.tdExpandClassName)){
-                    // Expand
-
-                    // If we don't need to retrieve the data from the server, follow the code below
-                    let contents = '<div><strong>Site:</strong> (site name here)</div><div><strong>Group:</strong> (group name here)</div>'
-
-                    // Change icon class name to vm.tdCollapseClassName
-                    first_td.removeClass(vm.tdExpandClassName).addClass(vm.tdCollapseClassName)
-                } else {
-                    let nextElem = tr.next()
-                    // Collapse
-                    if(nextElem.is('tr') & nextElem.hasClass(vm.expandableRowClassName)){
-                        // Sticker details row is already shown.  Remove it.
-                        nextElem.fadeOut(500, function(){
-                            nextElem.remove()
-                        })
-                    }
-                    // Change icon class name to vm.tdExpandClassName
-                    first_td.removeClass(vm.tdCollapseClassName).addClass(vm.tdExpandClassName)
-                }
-            })
         },
     },
     created: function(){
