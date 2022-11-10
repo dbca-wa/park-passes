@@ -57,6 +57,7 @@ const notMobile = breakpoints.greaterOrEqual('sm');
 
                 <div class="container">
                     <div class="row">
+                        <div class="col-12 col-sm-6 fw-bold border-bottom">Pass Number</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.pass_number}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Pass Type</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.pass_type}}</div>
                         <div v-if="cartItem.park_group" class="col-12 col-sm-6 fw-bold border-bottom">Park Group</div><div v-if="cartItem.park_group" class="col-12 col-sm-6 border-bottom">{{cartItem.park_group}}</div>
                         <div v-if="cartItem.duration" class="col-12 col-sm-6 fw-bold border-bottom">Duration</div><div v-if="cartItem.duration" class="col-12 col-sm-6 border-bottom">{{cartItem.duration}}</div>
