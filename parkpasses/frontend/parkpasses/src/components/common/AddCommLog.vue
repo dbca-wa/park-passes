@@ -3,8 +3,6 @@
         <div class="container">
             <div class="row">
                 <form id="commsForm" class="needs-validation" novalidate>
-
-                    <alert :show.sync="showError" type="danger"><strong>{{ errorString }}</strong></alert>
                     <div class="col">
                         <div class="container">
 
@@ -75,14 +73,12 @@
 <script>
 
 import Modal from '@vue-utils/BootstrapModal.vue'
-import Alert from '@vue-utils/Alert.vue'
 import { constants, utils, apiEndpoints } from "@/utils/hooks.js"
 
 export default {
     name: 'AddCommLog',
     components: {
         Modal,
-        Alert
     },
     props: {
         url: {
@@ -116,7 +112,6 @@ export default {
             addingComms: false,
             validation_form: null,
             errors: false,
-            errorString: '',
             successString: '',
             success: false,
             datepickerOptions: {
