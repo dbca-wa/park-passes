@@ -493,7 +493,7 @@ export default {
             passType: null,
             passOptions: null,
             passOptionsLength: null,
-            passPrice: '',
+            passPrice: 0,
             parkGroups: [],
             loadingParkGroups: false,
             concessionDiscountPercentage: 0,
@@ -641,7 +641,7 @@ export default {
             if(Number(this.voucherBalanceRemaining) >= this.totalPriceAfterDiscounts){
                 return Math.max(this.totalPriceAfterDiscounts, 0.00).toFixed(2);
             } else {
-                return Math.max(this.voucherBalanceRemaining, 0.00).toFixed(2);;
+                return Math.max(this.voucherBalanceRemaining, 0.00).toFixed(2);
             }
         },
         voucherBalanceRemainingIfUsedForThisPurchase() {
