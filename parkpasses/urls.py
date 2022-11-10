@@ -98,6 +98,13 @@ urlpatterns = [
         name="internal-discount-code-batch-detail",
     ),
     url(
+        r"^internal/pricing-window/(?P<id>.+)$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal View/Edit Pricing Window"}
+        ),
+        name="internal-pricing-window-detail",
+    ),
+    url(
         r"^internal/retailer-group-users$",
         views.InternalView.as_view(extra_context={"title": "Internal Retail Users"}),
         name="internal-retailer-group-users",
