@@ -132,6 +132,9 @@ module.exports = {
 
     /* ========================= Pricing Windows ========================================*/
 
+    retrievePricingWindowInternal: function (pricingWindowId) {
+        return                          `/api/passes/internal/pricing-windows/${pricingWindowId}/`;
+    },
     pricingWindowsPaginatedList:        '/api/passes/internal/pricing-windows/',
     savePricingWindow:                  '/api/passes/internal/pricing-windows/',
     deletePricingWindow: function (id) {
@@ -183,7 +186,6 @@ module.exports = {
     },
     /* ========================= Retailer Group Invites ===================================*/
 
-    retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-invites/',
     createRetailerGroupInviteInternal:  '/api/retailers/internal/retailer-group-invites/',
     createRetailerGroupInviteRetailer:  '/api/retailers/retailer/retailer-group-invites/',
     retailerGroupInviteRetrieveExternal: function (uuid) {
