@@ -169,7 +169,6 @@ module.exports = {
     retailerGroupRetrieveInternal: function (retailerGroupId) {
         `/api/retailers/internal/retailer-groups/${retailerGroupId}/`;
     },
-    retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-reports/',
 
     /* ========================= Retailer Group Users =====================================*/
 
@@ -186,6 +185,7 @@ module.exports = {
     },
     /* ========================= Retailer Group Invites ===================================*/
 
+    retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-invites/',
     createRetailerGroupInviteInternal:  '/api/retailers/internal/retailer-group-invites/',
     createRetailerGroupInviteRetailer:  '/api/retailers/retailer/retailer-group-invites/',
     retailerGroupInviteRetrieveExternal: function (uuid) {
