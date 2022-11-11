@@ -1,1 +1,3 @@
 0 1 * * * root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py runcrons >> /app/logs/cronjob.log 2>&1
+0 8 * * * root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py voucher_send_notification_emails >> /app/logs/cronjob.log 2>&1
+0 0 1 * * root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py retailers_generate_monthly_invoices >> /app/logs/cronjob.log 2>&1
