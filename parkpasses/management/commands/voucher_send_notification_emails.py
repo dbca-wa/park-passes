@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
         """ Second: Send any vouchers that to recipients that are due to be sent today """
         today = timezone.now().date()
-        vouchers = Voucher.objects.filter(
+        vouchers = Voucher.objects.exclude(in_cart=True).filter(
             datetime_to_email__date=today,
             processing_status__in=[
                 Voucher.PURCHASER_NOTIFIED,

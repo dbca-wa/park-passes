@@ -1,6 +1,6 @@
 """
-This management commands sends emails to customers who have have a pass that is about
-to expire.
+This management commands sends autorenewal and expire warning notification emails
+ to customers who have have a pass that will expire in settings.PASS_REMINDER_DAYS_PRIOR days.
 
 Usage: ./manage.sh pass_send_autorenew_notification_emails
         (this command should be run by a cron job or task runner not manually)
@@ -34,13 +34,12 @@ class Command(BaseCommand):
         )
         today = timezone.now()
         pass_expiry_datetime = today + timezone.timedelta(
-            days=settings.PASS_AUTORENEW_REMINDER_DAYS_PRIOR
+            days=settings.PASS_REMINDER_DAYS_PRIOR
         )
         pass_expiry_date = pass_expiry_datetime.date()
-        # Don't bother doing more expensive query if there are no passes that satisfy the basic criteria
         if (
             Pass.objects.exclude(
-                cancellation__isnull=False,  # to exclude cancelled passes
+                processing_status=Pass.CANCELLED,  # to exclude cancelled passes
             )
             .filter(
                 in_cart=False,
@@ -68,7 +67,13 @@ class Command(BaseCommand):
                         )
                     )
                 else:
-                    park_pass.send_expiry_notification_emails()
-                    logger.info(
-                        f"Notification email sent to recipient of Pass: {park_pass}"
-                    )
+                    if park_pass.renew_automatically:
+                        park_pass.send_autorenew_notification_email()
+                        logger.info(
+                            f"Autorenew notification email sent for Pass: {park_pass}"
+                        )
+                    else:
+                        park_pass.send_expiry_notification_email()
+                        logger.info(
+                            f"Expiry notification email sent for Pass: {park_pass}"
+                        )

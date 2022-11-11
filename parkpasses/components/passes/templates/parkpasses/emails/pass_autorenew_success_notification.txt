@@ -5,19 +5,23 @@
 {% endblock %}
 
 {%  block content %}
-            You have purchased a park pass with the following details:
+            Your park pass auto renewal was processed successfully.
 
-            Pass Number: {{pass.pass_number}}
-            Pass Type: {{pass.pass_type_display_name}}
-            Duration: {{pass.duration}}
-            Price: {{pass.price}}
-            Start Date: {{pass.date_start|date:'d-m-Y'}}
-            Expiry Date: {{pass.date_expiry|date:'d-m-Y'}}
+            Note: You may continue to use your existing pass until it expires.
+
+            Your new pass has the following details:
+
+            Pass Number:{{pass.pass_number}}
+            Pass Type:{{pass.pass_type_display_name}}
+            Duration:{{pass.duration}}
+            Price:{{pass.price}}
+            Start Date:{{pass.date_start|date:'d-m-Y'}}
+            Expiry Date:{{pass.date_expiry|date:'d-m-Y'}}
             {% if pass.park_group %}
-            Park Group: {{pass.park_group}}
+            Park Group:{{pass.park_group}}
             {% endif %}
             {% if pass.drivers_licence_number %}
-            Driver's Licence Number: {{pass.drivers_licence_number}}
+            Driver's Licence Number:{{pass.drivers_licence_number}}
             {% endif %}
 
             Your park pass pdf is attached to this email.

@@ -33,7 +33,10 @@ from parkpasses.components.passes.exceptions import (
     MultipleDefaultPricingWindowsExist,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
+    SendPassAutoRenewFailureNotificationEmailFailed,
     SendPassAutoRenewNotificationEmailFailed,
+    SendPassAutoRenewSuccessNotificationEmailFailed,
+    SendPassExpiredNotificationEmailFailed,
     SendPassExpiryNotificationEmailFailed,
     SendPassPurchasedEmailNotificationFailed,
     SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed,
@@ -770,6 +773,26 @@ class Pass(models.Model):
                 error_message.format(self.id, e)
             )
 
+    def send_autorenew_success_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += "send_autorenew_success_notification_email for Pass with id {}. Exception {}"
+        try:
+            PassEmails.send_pass_autorenew_success_notification_email(self)
+        except Exception as e:
+            raise SendPassAutoRenewSuccessNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
+
+    def send_autorenew_failure_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += "send_autorenew_failure_notification_email for Pass with id {}. Exception {}"
+        try:
+            PassEmails.send_pass_autorenew_failure_notification_email(self)
+        except Exception as e:
+            raise SendPassAutoRenewFailureNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
+
     def send_expiry_notification_email(self):
         error_message = "An exception occured trying to run "
         error_message += (
@@ -779,6 +802,18 @@ class Pass(models.Model):
             PassEmails.send_pass_expiry_notification_email(self)
         except Exception as e:
             raise SendPassExpiryNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
+
+    def send_expired_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += (
+            "send_expired_notification_email for Pass with id {}. Exception {}"
+        )
+        try:
+            PassEmails.send_pass_expired_notification_email(self)
+        except Exception as e:
+            raise SendPassExpiredNotificationEmailFailed(
                 error_message.format(self.id, e)
             )
 

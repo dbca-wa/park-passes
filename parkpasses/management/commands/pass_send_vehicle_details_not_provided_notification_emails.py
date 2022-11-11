@@ -42,7 +42,7 @@ class Command(BaseCommand):
         # Don't bother doing more expensive query if there are no passes that satisfy the basic criteria
         if (
             Pass.objects.exclude(
-                cancellation__isnull=False,  # to exclude cancelled passes
+                processing_status=Pass.CANCELLED,  # to exclude cancelled passes
             )
             .filter(
                 in_cart=False,
