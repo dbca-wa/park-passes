@@ -17,10 +17,28 @@ logger = logging.getLogger(__name__)
 
 
 class IsInternal(BasePermission):
+    """APIs with this permission can't destroy objects"""
+
     def has_permission(self, request, view):
         if is_internal(request):
             if view.action in ["destroy"]:
                 return False
+            if view.action in ["retrieve", "list"]:
+                return True
+            if (
+                request.user.is_superuser
+                or is_parkpasses_payments_officer(request)
+                or is_parkpasses_officer(request)
+            ):
+                return True
+        return False
+
+
+class IsInternalDestroyer(BasePermission):
+    """APIs with this permission can destroy objects"""
+
+    def has_permission(self, request, view):
+        if is_internal(request):
             if view.action in ["retrieve", "list"]:
                 return True
             if (
