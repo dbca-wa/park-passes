@@ -137,8 +137,11 @@ module.exports = {
     },
     pricingWindowsPaginatedList:        '/api/passes/internal/pricing-windows/',
     savePricingWindow:                  '/api/passes/internal/pricing-windows/',
-    deletePricingWindow: function (id) {
-        return                          `/api/passes/internal/pricing-windows/${id}/`;
+    updatePricingWindowInternal: function (pricingWindowId) {
+        return                          `/api/passes/internal/pricing-windows/${pricingWindowId}/`;
+    },
+    deletePricingWindow: function (pricingWindowId) {
+        return                          `/api/passes/internal/pricing-windows/${pricingWindowId}/`;
     },
 
     /* ========================= FAQs ===================================================*/
