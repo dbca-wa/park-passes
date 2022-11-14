@@ -11,7 +11,7 @@
                         <div class="mb-3">
                             <label for="pass-type" class="col-form-label">Pass Type:</label>
                             <select @change="fetchDefaultOptionsForPassType" class="form-control" :class="errors.pass_type ? 'is-invalid' : ''"
-                                v-model="pricing_window.pass_type" aria-describedby="validationServerPassTypeFeedback"
+                                v-model="pricingWindow.pass_type" aria-describedby="validationServerPassTypeFeedback"
                                 required>
                                 <option value="0" selected="selected" disabled="disabled">Select a Pass Type</option>
                                 <option v-for="passType in passTypesDistinct" :value="passType.code">{{
@@ -28,7 +28,7 @@
                         <div class="mb-3">
                             <label for="name" class="col-form-label">Name:</label>
                             <input type="text" class="form-control" :class="errors.name ? 'is-invalid' : ''" id="name"
-                                name="name" v-model="pricing_window.name"
+                                name="name" v-model="pricingWindow.name"
                                 aria-describedby="validationServerNameFeedback" required />
                             <div v-if="errors.name" id="validationServerNameFeedback" class="invalid-feedback">
                                 <p v-for="(error, index) in errors.name" :key="index">{{ error }}</p>
@@ -38,11 +38,11 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="datetimeStart" class="col-form-label">Date Start</label>
-                            <input type="date" class="form-control"
-                                :class="errors.date_start ? 'is-invalid' : ''" id="datetimeStart"
-                                name="datetimeStart" v-model="pricing_window.date_start" required="required"
-                                :min="startDate()" aria-describedby="validationServerDateStartFeedback">
+                            <label for="dateStart" class="col-form-label">Start Date</label>
+                            <input @change="updateMinEndDate()" type="date" class="form-control"
+                                :class="errors.date_start ? 'is-invalid' : ''" id="dateStart"
+                                name="dateStart" v-model="pricingWindow.date_start" required="required"
+                                :min="defaultStartDate()" aria-describedby="validationServerDateStartFeedback">
                             <div v-if="errors.date_start"  id="validationServerDateStartFeedback" class="invalid-feedback">
                                 <p v-for="(error, index) in errors.date_start" :key="index">{{ error }}</p>
                             </div>
@@ -51,10 +51,10 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="datetimeExpiry" class="col-form-label">Date End</label>
+                            <label for="dateExpiry" class="col-form-label">End Date</label>
                             <input type="date" class="form-control"
-                                :class="errors.date_expiry ? 'is-invalid' : ''" id="datetimeExpiry"
-                                name="datetimeExpiry" v-model="pricing_window.date_expiry" required="required"
+                                :class="errors.date_expiry ? 'is-invalid' : ''" id="dateExpiry"
+                                name="dateExpiry" v-model="pricingWindow.date_expiry" required="required"
                                 :min="minEndDate" aria-describedby="validationServerDateExpiryFeedback">
                             <div v-if="errors.date_expiry"  id="validationServerDateExpiryFeedback" class="invalid-feedback">
                                 <p v-for="(error, index) in errors.date_expiry" :key="index">{{ error }}</p>
@@ -65,26 +65,28 @@
                         </div>
                         <div v-if="defaultPassOptions">
                          <label for="" class="col-form-label">Options</label>
-                            <table class="table table-sm">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Duration</th>
-                                    <th>Price</th>
-                                </tr>
-                            <template v-for="(option, index) in defaultPassOptions">
-                                <tr>
-                                    <td>{{ option.name }}</td>
-                                    <td>{{ option.duration }} days</td>
-                                    <td>
-                                        <input type="text" class="form-control" name="options" v-model="pricing_window.pricing_options[index]" required="required" />
-                                        <div id="validationOptionsFeedback" class="invalid-feedback">
-                                            You must specify a price for this pricing option.
-                                        </div>
-                                    </td>
-
-                                </tr>
-                            </template>
+                            <table v-if="defaultPassOptions && defaultPassOptions.length > 0" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Duration</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(option, index) in defaultPassOptions">
+                                        <td>{{ option.name }}</td>
+                                        <td>{{ option.duration }} days</td>
+                                        <td>
+                                            <input type="text" class="form-control" name="options" v-model="pricingWindow.pricing_options[index]" required="required" />
+                                            <div id="validationOptionsFeedback" class="invalid-feedback">
+                                                You must specify a price for this pricing option.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </table>
+                            <span v-else class="form-text">Pricing window has no options. THIS IS BAD.</span>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -108,29 +110,41 @@ export default {
     },
     data() {
         return {
-            pricing_window: this.getPricingWindowInitialState(),
+            pricingWindow: this.getPricingWindowInitialState(),
             defaultPassOptions: null,
             errors: {},
         }
     },
     computed: {
+        startDate: function () {
+            let startDate;
+            if(this.pricingWindow.date_start) {
+                startDate = new Date(this.pricingWindow.date_start);
+            } else {
+                startDate = new Date();
+            }
+            return startDate.toISOString().split('T')[0];
+        },
         minEndDate: function () {
-            let endDate = new Date(this.pricing_window.date_start);
+            let endDate = new Date(this.startDate);
             endDate.setDate(endDate.getDate() + 1);
-            return endDate;
-        }
+            console.log('endDate', endDate.toISOString().split('T')[0]);
+            return endDate.toISOString().split('T')[0];
+        },
     },
     methods: {
-        startDate: function () {
-            const today = new Date();
-            return today.toISOString().split('T')[0];
+        defaultStartDate: function () {
+            return new Date().toISOString().split('T')[0];
+        },
+        updateMinEndDate: function () {
+            this.pricingWindow.date_expiry = this.minEndDate;
         },
         getPricingWindowInitialState() {
             return {
                 pass_type: 0,
                 name: '',
-                date_start: this.startDate(),
-                date_expiry: '',
+                date_start: this.defaultStartDate(),
+                date_expiry: this.minEndDate,
                 pricing_options: [
 
                 ],
@@ -138,8 +152,8 @@ export default {
         },
         fetchDefaultOptionsForPassType: function () {
             let vm = this;
-            console.log('vm.pricing_window.pass_type = ' + vm.pricing_window.pass_type);
-            fetch(apiEndpoints.defaultPassOptions(vm.pricing_window.pass_type))
+            console.log('vm.pricingWindow.pass_type = ' + vm.pricingWindow.pass_type);
+            fetch(apiEndpoints.defaultPassOptions(vm.pricingWindow.pass_type))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -161,12 +175,11 @@ export default {
         },
         submitForm: function () {
             let vm = this;
-            vm.pricing_window.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
-            alert(JSON.stringify(vm.pricing_window));
+            vm.pricingWindow.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(vm.pricing_window)
+                body: JSON.stringify(vm.pricingWindow)
             };
             fetch(apiEndpoints.savePricingWindow, requestOptions).then(async response => {
                 const data = await response.json();
@@ -182,7 +195,7 @@ export default {
                     }
                 );
                 $('#successMessageAlert').show();
-                vm.pricing_window = vm.getPricingWindowInitialState();
+                vm.pricingWindow = vm.getPricingWindowInitialState();
                 var PricingWindowFormModalModal = bootstrap.Modal.getInstance(document.getElementById('pricingWindowModal'));
                 PricingWindowFormModalModal.hide();
             })
@@ -206,6 +219,9 @@ export default {
                 });
             return false;
         }
-    }
+    },
+    created() {
+        this.updateMinEndDate();
+    },
 }
 </script>

@@ -334,7 +334,13 @@ export default {
                         params: { pricingWindowId: full.id }
                     });
                     let links = '';
-                    links +=  `<a href="${editLink.href}">Edit</a>`;
+                    const expiryDate = new Date(full.date_expiry);
+                    if(full.date_expiry && expiryDate < new Date()) {
+                        links +=  '';
+                    } else {
+                        links +=  `<a href="${editLink.href}">Edit</a>`;
+
+                    }
                     const startDate = new Date(full.date_start);
                     if(full.date_expiry && startDate > new Date()) {
                         links +=  ` | <a href="javascript:void(0)" data-item-id="${full.id}" data-name="${full.name}" data-action="delete">Delete</a>`;
