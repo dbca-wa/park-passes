@@ -33,7 +33,7 @@
                 </div>
             </div>
         </div>
-        <div v-else class="card mb-4">
+        <div v-if="orders && orders.length==0" class="card mb-4">
             <div class="card-header no-orders">
                 <span>You have not placed any orders yet.</span>
             </div>
