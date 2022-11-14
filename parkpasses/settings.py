@@ -88,6 +88,8 @@ MIDDLEWARE_CLASSES = None
 
 # MIDDLEWARE.insert(0, "django.middleware.gzip.GZipMiddleware")
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 
@@ -222,6 +224,7 @@ CONSOLE_EMAIL_BACKEND = env("CONSOLE_EMAIL_BACKEND", False)
 if CONSOLE_EMAIL_BACKEND:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+CRON_EMAIL_FILE_NAME = "cron_email.log"
 
 # Add a debug level logger for development
 if DEBUG:
