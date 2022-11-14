@@ -76,6 +76,13 @@ urlpatterns = [
         name="internal-pass-detail",
     ),
     url(
+        r"^internal/passes/upload-personnel-passes$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal Upload Personnel Passes"}
+        ),
+        name="internal-uploader-personnel-passes",
+    ),
+    url(
         r"^internal/pricing-windows$",
         views.InternalView.as_view(extra_context={"title": "Internal Pricing Windows"}),
         name="internal-pricing-windows",
