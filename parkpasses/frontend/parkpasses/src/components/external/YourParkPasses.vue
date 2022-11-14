@@ -55,7 +55,7 @@
           </div>
         </div>
     </div>
-    <div v-else class="no-passes mb-4 col-12">
+    <div v-if="passes && passes.length==0" class="no-passes mb-4 col-12">
         <div>
             <span>You have not purchased any park passes yet.</span>
         </div>
