@@ -84,6 +84,7 @@ from parkpasses.permissions import (
     HasRetailerGroupAPIKey,
     IsInternal,
     IsInternalAPIView,
+    IsInternalDestroyer,
     IsRetailer,
 )
 
@@ -231,7 +232,7 @@ class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelView
     model = PassTypePricingWindow
     pagination_class = DatatablesPageNumberPagination
     queryset = PassTypePricingWindow.objects.all()
-    permission_classes = [IsInternal]
+    permission_classes = [IsInternalDestroyer]
     filter_backends = (PricingWindowFilterBackend,)
     renderer_classes = (JSONRenderer, BrowsableAPIRenderer, CustomDatatablesRenderer)
 
@@ -239,6 +240,13 @@ class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelView
         if "create" == self.action:
             return InternalCreatePricingWindowSerializer
         return InternalPricingWindowSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.date_start > timezone.now():
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CurrentOptionsForPassType(generics.ListAPIView):
