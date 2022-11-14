@@ -6,6 +6,8 @@ module.exports = {
     PARKPASSES_MODELS_DISCOUNT_CODE_BATCH:  'discountcodebatch',
     PARKPASSES_MODELS_PRICING_WINDOW:       'passtypepricingwindow',
 
+    PARKAPSSES_DEFAULT_PRICING_WINDOW_NAME: 'Default',
+
     TITLE_SUFFIX: ' - Park Passes - Department of Biodiversity, Conservation and Attractions',
 
     HOLIDAY_PASS_NAME: 'HOLIDAY_PASS',
