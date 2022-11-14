@@ -2,28 +2,20 @@
     <div v-if="pricingWindow" class="container" id="internalPricingWindow">
         <div class="row px-4">
             <div class="col-sm-12 mb-4">
-                <strong>{{ pricingWindow.pass_type_display_name }}: [{{ pricingWindow.name }}] Pricing Window</strong>
+                <strong>{{ pricingWindowTitle() }}</strong>
             </div>
         </div>
         <div class="row px-4">
             <div class="col-sm-12">
                 <div class="row">
                     <div class="col-md-3">
-                        <CommsLog
-                            :commsUrl="listCommsUrl"
-                            :logsUrl="listUserActionsLogUrl"
-                            :commAddUrl="createCommUrl"
-                            :appLabel="appLabel"
-                            :model="model"
-                            :customerId="null"
-                            :objectId="pricingWindow.id" />
                         <StatusPanel :status="pricingWindow.status" :badge="true" :badgeClass="badgeClass" class="pt-3" />
                     </div>
                     <div class="col-md-1">
 
                     </div>
                     <div class="col-md-8">
-                        <SectionToggle :label="pricingWindow.pass_type_display_name + ': [' + pricingWindow.name + '] Pricing Window'">
+                        <SectionToggle :label="pricingWindow.name">
                             <form @submit.prevent="validateForm" class="needs-validation" novalidate>
                             <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Pass Type</label>
@@ -32,20 +24,27 @@
                                 </div>
                             </div>
                             <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">name</label>
+                                <div class="col-sm-8">
+                                    <span v-if="isDefaultPricingWindow" class="form-text">{{ pricingWindow.name }}</span>
+                                    <input v-else class="form-control" name="name" type="text" v-model="pricingWindow.name" required>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
                                 <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" name="startDate" type="date" v-model="pricingWindow.date_start" :disabled="hasPricingWindowExpired">
+                                        <input class="form-control" ref="startDate" name="startDate" type="date" v-model="pricingWindow.date_start" :disabled="hasPricingWindowExpired" :max="maxStartDate" required>
                                     </span>
                                 </div>
                             </div>
                             <div class="row mb-1">
-                                <label for="expiryDate" class="col-sm-4 col-form-label">Expiry Date</label>
+                                <label for="expiryDate" class="col-sm-4 col-form-label">End Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input v-if="pricingWindow.date_expiry" class="form-control" name="expiryDate" type="date" v-model="pricingWindow.date_expiry">
+                                        <input v-if="pricingWindow.date_expiry" class="form-control" name="expiryDate" type="date" v-model="pricingWindow.date_expiry" :required="!isDefaultPricingWindow">
                                         <span v-else class="form-text">
-                                            <span class="form-text">Default Pricing Windows Never Expire</span>
+                                            <span class="form-text">Default Pricing Windows Never End</span>
                                         </span>
                                     </span>
                                 </div>
@@ -53,12 +52,33 @@
                             <div class="row mb-1">
                                 <label for="options" class="col-sm-4 col-form-label">Options</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">
-
-                                    </span>
+                                    <template v-if="pricingWindow.options && pricingWindow.options.length > 0">
+                                        <table class="table table-stiped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Duration (Days)</th>
+                                                    <th>Price</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(option, index) in pricingWindow.options" :key="option.id">
+                                                    <td>
+                                                        <span class="form-text">{{ option.name }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="form-text">{{ option.duration }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <input @change="addDecimalPlaces(option.price, index)" class="form-control" :id="'option' + option.id" :name="'option' + option.id" type="number" v-model="option.price" required>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </template>
+                                    <span v-else class="form-text">Pricing window has no options. THIS IS BAD.</span>
                                 </div>
                             </div>
-
                             </form>
                         </SectionToggle>
 
@@ -113,6 +133,7 @@ export default {
             pricingWindow: null,
             listUserActionsLogUrl: null,
             listCommsUrl: null,
+            maxStartDate: null,
             createCommUrl: apiEndpoints.createCommunicationsLogEntry,
             pdfUrl: null,
             appLabel: constants.PARKPASSES_APP_LABEL,
@@ -121,6 +142,10 @@ export default {
         }
     },
     computed: {
+        isDefaultPricingWindow: function () {
+            return constants.PARKAPSSES_DEFAULT_PRICING_WINDOW_NAME === this.pricingWindow.name;
+        },
+
         hasPricingWindowExpired: function () {
             return constants.PASS_STATUS_EXPIRED==this.pricingWindow.processing_status_display_name;
         },
@@ -139,6 +164,17 @@ export default {
         returnToPricingWindowDash: function() {
             this.$router.push({name: 'internal-pricing-windows'});
         },
+        pricingWindowTitle: function () {
+            let originalPricingWindow = Object.assign({}, this.pricingWindow);
+            let name = originalPricingWindow.name;
+            const title = `${name} Pricing Window for ${originalPricingWindow.pass_type_display_name}`;
+            return title;
+        },
+        addDecimalPlaces: function (price, index) {
+            if (price) {
+                this.pricingWindow.options[index].price = parseFloat(price).toFixed(2);
+            }
+        },
         fetchPricingWindow: function (pricingWindowId) {
             let vm = this;
             fetch(apiEndpoints.retrievePricingWindowInternal(pricingWindowId))
@@ -150,6 +186,7 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.pricingWindow = data
+                //vm.pricingWindow.options = Object.assign({}, data.options)
                 console.log(vm.pricingWindow);
 
                 vm.listUserActionsLogUrl = apiEndpoints.listUserActionsLog(
@@ -162,6 +199,11 @@ export default {
                     constants.PARKPASSES_MODELS_PRICING_WINDOW,
                     vm.pricingWindow.id
                 )
+                if(constants.PARKAPSSES_DEFAULT_PRICING_WINDOW_NAME==vm.pricingWindow.name){
+                    let yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    this.maxStartDate = yesterday.toLocaleDateString('en-ca');
+                }
             })
             .catch(error => {
                 this.systemErrorMessage = constants.ERRORS.NETWORK;
@@ -189,12 +231,12 @@ export default {
 
                     Swal.fire({
                         title: 'Success',
-                        text: 'Park PricingWindow updated successfully.',
+                        text: 'Park Pricing Window updated successfully.',
                         icon: 'success',
                         confirmButtonText: 'OK'
                     })
                     if(exitAfter) {
-                        vm.$router.push({name: 'internal-dash'});
+                        vm.returnToPricingWindowDash();
                     }
                     vm.pricingWindow.date_expiry = data.date_expiry
                     var forms = document.querySelectorAll('.needs-validation');
@@ -231,7 +273,6 @@ export default {
         this.fetchPricingWindow(route.params['pricingWindowId']);
     },
     mounted: function () {
-
     }
 }
 </script>
