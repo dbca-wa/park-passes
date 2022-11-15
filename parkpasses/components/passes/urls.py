@@ -20,6 +20,7 @@ from parkpasses.components.passes.api import (
     RetailerApiAccessViewSet,
     RetailerPassTypeViewSet,
     RetailerPassViewSet,
+    UploadPersonnelPasses,
 )
 
 router = routers.SimpleRouter()
@@ -62,6 +63,7 @@ urlpatterns = [
         RacDiscountCodeCheckView.as_view(),
     ),
     url(r"cancel-pass", CancelPass.as_view()),
+    url(r"upload-personnel-passes", UploadPersonnelPasses.as_view()),
     url(
         r"ledger-api-refund-success-callback/(?P<id>.+)/(?P<uuid>.+)$",
         PassRefundSuccessView.as_view(),
