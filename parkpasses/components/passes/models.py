@@ -621,6 +621,7 @@ class Pass(models.Model):
         qr = qrcode.QRCode()
         serializer = ExternalQRCodePassSerializer(self)
         # replace this line with the real encryption server at a later date
+        logger.debug(f"serializer.data: {serializer.data}")
         encrypted_pass_data = self.imaginary_encryption_endpoint(serializer.data)
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
@@ -629,10 +630,15 @@ class Pass(models.Model):
         qr_image_path += f"{self._meta.model.__name__}/passes/{self.user}/{self.pk}"
         if not os.path.exists(qr_image_path):
             os.makedirs(qr_image_path)
+        logger.info(
+            f"Saving qr code for pass {self.pass_number} to {qr_image_path}/qr_image.png."
+        )
         qr_image.save(f"{qr_image_path}/qr_image.png")
+        logger.info(f"Qr code for pass {self.pass_number} saved.")
         return f"{qr_image_path}/qr_image.png"
 
     def generate_park_pass_pdf(self):
+        logger.info(f"Generating pdf for pass {self.pass_number}.")
         if not PassTemplate.objects.count():
             logger.critical(
                 "CRITICAL: The system can not find a Pass Template to use for generating park passes.",
@@ -703,13 +709,9 @@ class Pass(models.Model):
                 "Populated pass details from ledger email user.",
             )
 
-        logger.info(
-            f"Saving park pass: {self}", extra={"className": self.__class__.__name__}
-        )
+        logger.info(f"Saving park pass: {self}")
         super().save(*args, **kwargs)
-        logger.info(
-            f"Park pass: {self} saved.", extra={"className": self.__class__.__name__}
-        )
+        logger.info(f"Park pass: {self} saved.")
 
         if not self.pass_number:
             logger.info(
@@ -755,11 +757,9 @@ class Pass(models.Model):
                         f"Pass update notification email sent for pass {self.pass_number}",
                     )
 
-        logger.info(
-            f"Updating park pass: {self}.", extra={"className": self.__class__.__name__}
-        )
+        logger.info(f"Updating park pass: {self}.")
         super().save(force_update=True)
-        logger.info("Park pass updated.", extra={"className": self.__class__.__name__})
+        logger.info("Park pass updated.")
 
     def send_autorenew_notification_email(self):
         error_message = "An exception occured trying to run "
