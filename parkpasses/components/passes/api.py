@@ -1,8 +1,11 @@
 import logging
+import pickle
 import re
+import sys
 import uuid
 from decimal import Decimal
 
+import openpyxl
 import requests
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -922,6 +925,118 @@ class CancelPass(APIView):
             return Response(extended_serializer, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UploadPersonnelPasses(APIView):
+    permission_classes = [IsInternal]
+    action = "put"
+
+    def put(self, request, format=None):
+        logger.debug("files: " + str(request.FILES))
+        personnel_data_file = request.FILES["personnelDataFile"]
+        wrkbk = openpyxl.load_workbook(personnel_data_file, read_only=True)
+        sh = wrkbk.active
+
+        total_row_count = sh.max_row
+        logger.info(f"total_row_count: {total_row_count}")
+
+        if total_row_count <= 1:
+            raise ValidationError(
+                "The file you have uploaded doesn't have enough rows .xlsx file."
+            )
+
+        column_count = sh.max_column
+        logger.info(f"column_count: {column_count}")
+        if not column_count == 4:
+            raise ValidationError(
+                "The file .xlsx file needs to have 4 columns (First Name, Last Name, Email Address, Start Date)."
+            )
+
+        column_headings = []
+        for cell in sh[1]:
+            if cell.value:
+                column_headings.append(cell.value)
+
+        if "First Name" not in column_headings:
+            raise ValidationError("'First Name' column must be present in .xlsx file.")
+
+        if "Last Name" not in column_headings:
+            raise ValidationError("'Last Name' column must be present in .xlsx file.")
+
+        if "Email Address" not in column_headings:
+            raise ValidationError(
+                "'Email Address' column must be present in .xlsx file."
+            )
+
+        if "Start Date" not in column_headings:
+            raise ValidationError("'Start Date' column must be present in .xlsx file.")
+
+        logger.debug("Column Headings: " + str(column_headings))
+
+        if not PassType.objects.filter(name=settings.PERSONNEL_PASS).exists():
+            error = "Personnel Pass Type does not exist."
+            logger.critical(error)
+            raise ValidationError(error)
+
+        pass_type = PassType.objects.get(name=settings.PERSONNEL_PASS)
+        default_option = (
+            PassTypePricingWindowOption.get_default_options_by_pass_type_id(
+                pass_type.id
+            ).first()
+        )
+        default_sold_via = RetailerGroup.get_dbca_retailer_group()
+
+        park_passes_created = 0
+        park_passes_duplicates = 0
+        park_passes_errors = []
+
+        data_row_count = total_row_count - 1
+
+        # iterate through excel and display data
+        for row in sh.iter_rows(min_row=2, max_col=4):
+            logger.info(
+                f"Attempting to create park pass for row: { row[0].value} {row[1].value} {row[2].value} {row[3].value}"
+            )
+            if Pass.objects.filter(
+                first_name=row[0].value,
+                last_name=row[1].value,
+                email=row[2].value,
+                date_start=row[3].value,
+            ).exists():
+                logger.warning(
+                    f"Pass already exists for: \
+                    { row[0].value} {row[1].value} {row[2].value} {row[3].value} - skipping row."
+                )
+                park_passes_duplicates += 1
+                continue
+            else:
+                try:
+                    aware_date = timezone.make_aware(row[3].value).date()
+                    logger.debug("type(aware_date): " + str(type(aware_date)))
+                    Pass.objects.create(
+                        first_name=row[0].value,
+                        last_name=row[1].value,
+                        email=row[2].value,
+                        date_start=aware_date,
+                        option=default_option,
+                        in_cart=False,
+                        sold_via=default_sold_via,
+                    )
+                    park_passes_created += 1
+                except Exception as e:
+                    logger.error(e)
+                    park_passes_errors.append(pickle.dumps(sys.exc_info()))
+
+        results = {
+            "data_row_count": data_row_count,
+            "park_passes_created": park_passes_created,
+            "park_passes_duplicates": park_passes_duplicates,
+            "park_passes_errors": park_passes_errors,
+        }
+
+        logger.info("UploadPersonnelPasses results: " + str(results))
+
+        return Response({"results": results}, status=status.HTTP_201_CREATED)
 
 
 class RetailerApiAccessViewSet(UserActionViewSet):
