@@ -19,7 +19,12 @@ To install Poetry, issue these commands:
 ## Django app
 In the root of the cloned repository, `poetry install` will create a .venv folder similar to virtualenv.
 
-Start the Django app with `./run_dev.sh <port number>`.  Convenience scripts `collectstatic.sh` and `shell_plus.sh` are also available.
+A convenience script `manage.sh` is available so that you can run any django command without
+having to type 'poetry run python manage.py' before the command:
+
+e.g.    ./manage.sh runserver 8010
+        ./manage.sh collectstatic
+        etc.
 
 ## Ledger
 A Ledger server must be run prior to the Park Passes Django application.
@@ -32,16 +37,29 @@ Creating a new user or changing a user password must be done in the Ledger app/d
 ## Vue JS
 - also see README.md in frontend root
 
-Root of the Vue Js folder has package.json, which has the list of packages to be installed plus commands on to build the software and start the dev server.
+The following assumes you have navigated to the `parkpasses/frontend/parkpasses` folder.
+
+This folder has a package.json file which has the list of packages and rules for installing them
+plus commands on to build the software and start the dev server.
+
+If a package-lock.json exists, npm install will use those exact package versions when installing. It's
+very important to retain this file especially for legacy projects as installing updated packages may
+break the build.
 
 In the root folder, install packages with `npm install`.
 
-Then, run `npm run build` to build the software and move the output files to `parkpassesparkpassparkpasses
+While in development you should use the dev server because it has live reloading which will speed up
+development time drastically.
 
-The build files are made available to the Django app by running `./collectstatic.sh`.
+To run the dev server type `npm run serve`
 
-If the `DEV_APP_BUILD_URL` is not set, the Django app will serve static Javascript from `staticfiles/parkpassesapp.js`,
-else the Vue app will be served from the url provided.  Start the dev server with `npm run serve`.
+When you would like to test how the project will perform in production you need to run a build.
+
+Kill the dev server with ctrl-c and then,
+
+Type: `npm run build` to build the software and move the output files to `parkpasses/static/parkpasses_vue`
+
+The build files are made available to the Django app in production when `./manage.sh collectstatic` is run.
 
 # Environment variables
 
