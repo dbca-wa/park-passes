@@ -60,6 +60,7 @@ module.exports = {
     checkRacDiscountCode: function (discountHash, email) {
         return                          `/api/passes/check-hash-matches-email/${discountHash}/${email}/`
     },
+    uploadPersonnelPasses:              '/api/passes/upload-personnel-passes/',
 
     /* ========================= Pass Types =============================================*/
 
