@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
-                    <button class="dt-button buttons-csv buttons-html5 btn licensing-btn-primary">Upload Personnel Passes</button>
+                    <a href="/internal/passes/upload-personnel-passes" class="dt-button buttons-csv buttons-html5 btn licensing-btn-primary" role="button">Upload Personnel Passes</a>
                 </div>
             </div>
             <div class="row mb-3">
