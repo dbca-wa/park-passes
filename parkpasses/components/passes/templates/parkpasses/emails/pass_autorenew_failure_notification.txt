@@ -1,0 +1,13 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            Dear {{first_name}} {{last_name}},
+{% endblock %}
+
+{%  block content %}
+            Your park pass auto renewal has failed.
+
+            To update your credit card details please go to [!!Todo: Insert url here when available]
+
+            To purchase a new park pass please go to <a href="{{site_url}}">{{site_url}}</a>
+{%  endblock %}

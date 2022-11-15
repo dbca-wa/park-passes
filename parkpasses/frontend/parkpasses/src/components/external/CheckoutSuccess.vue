@@ -74,6 +74,8 @@ import { useStore } from '@/stores/state'
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import BootstrapAlert from '@/utils/vue/BootstrapAlert.vue'
 
+import DOMPurify from 'dompurify'
+
 export default {
     name: "CheckoutSuccess",
     data: function () {
@@ -119,7 +121,7 @@ export default {
         },
     },
     created: function() {
-        this.orderUUID = this.$route.params.uuid;
+        this.orderUUID = DOMPurify.sanitize(this.$route.params.uuid);
         this.fetchOrder(this.orderUUID);
     },
     mounted: function() {

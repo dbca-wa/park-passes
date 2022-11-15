@@ -67,6 +67,8 @@ class OptionSerializer(serializers.ModelSerializer):
 
 
 class InternalOptionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+
     class Meta:
         model = PassTypePricingWindowOption
         fields = "__all__"
@@ -141,6 +143,26 @@ class InternalPricingWindowSerializer(serializers.ModelSerializer):
             "id",
             "options",
         ]
+
+    def update(self, instance, validated_data):
+        options = validated_data.pop("options")
+        validated_data.pop("status")  # read-only field
+        instance = super().update(instance, validated_data)
+
+        # update each option
+        for option_data in options:
+            option_id = option_data.get("id", None)
+            if (
+                option_id
+                and PassTypePricingWindowOption.objects.filter(pk=option_id).exists()
+            ):
+                option = PassTypePricingWindowOption.objects.get(pk=option_id)
+                option.name = option_data.get("name", option.name)
+                option.duration = option_data.get("duration", option.duration)
+                option.price = option_data.get("price", option.price)
+                option.save()
+
+        return instance
 
 
 class PassTemplateSerializer(serializers.ModelSerializer):

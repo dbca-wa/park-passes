@@ -60,6 +60,7 @@ module.exports = {
     checkRacDiscountCode: function (discountHash, email) {
         return                          `/api/passes/check-hash-matches-email/${discountHash}/${email}/`
     },
+    uploadPersonnelPasses:              '/api/passes/upload-personnel-passes/',
 
     /* ========================= Pass Types =============================================*/
 
@@ -72,6 +73,9 @@ module.exports = {
     },
     passTypeRetailer: function (passTypeSlug) {
         return                          `/api/passes/retailer/pass-types/${passTypeSlug}/`;
+    },
+    passTypeInternal: function (passTypeSlug) {
+        return                          `/api/passes/internal/pass-types/${passTypeSlug}/`;
     },
     /* ========================= Pass Options ===========================================*/
 
@@ -132,10 +136,16 @@ module.exports = {
 
     /* ========================= Pricing Windows ========================================*/
 
+    retrievePricingWindowInternal: function (pricingWindowId) {
+        return                          `/api/passes/internal/pricing-windows/${pricingWindowId}/`;
+    },
     pricingWindowsPaginatedList:        '/api/passes/internal/pricing-windows/',
     savePricingWindow:                  '/api/passes/internal/pricing-windows/',
-    deletePricingWindow: function (id) {
-        return                          `/api/passes/internal/pricing-windows/${id}/`;
+    updatePricingWindowInternal: function (pricingWindowId) {
+        return                          `/api/passes/internal/pricing-windows/${pricingWindowId}/`;
+    },
+    deletePricingWindow: function (pricingWindowId) {
+        return                          `/api/passes/internal/pricing-windows/${pricingWindowId}/`;
     },
 
     /* ========================= FAQs ===================================================*/
@@ -166,7 +176,6 @@ module.exports = {
     retailerGroupRetrieveInternal: function (retailerGroupId) {
         `/api/retailers/internal/retailer-groups/${retailerGroupId}/`;
     },
-    retailerGroupInviteListInternal:    '/api/retailers/internal/retailer-group-reports/',
 
     /* ========================= Retailer Group Users =====================================*/
 

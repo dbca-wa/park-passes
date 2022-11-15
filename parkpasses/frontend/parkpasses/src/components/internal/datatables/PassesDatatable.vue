@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
-                    <button class="dt-button buttons-csv buttons-html5 btn licensing-btn-primary">Upload Personnel Passes</button>
+                    <a href="/internal/passes/upload-personnel-passes" class="dt-button buttons-csv buttons-html5 btn licensing-btn-primary" role="button">Upload Personnel Passes</a>
                 </div>
             </div>
             <div class="row mb-3">
@@ -333,7 +333,6 @@ export default {
         columnAction: function(){
             let vm = this
             return {
-                // 8. Action
                 data: "id",
                 orderable: false,
                 searchable: false,
@@ -411,11 +410,6 @@ export default {
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML
                 },
-                rowCallback: function (row, pass){
-                    let row_jq = $(row)
-                    row_jq.attr('id', 'pass_id_' + pass.id)
-                    //row_jq.children().first().addClass(vm.tdExpandClassName)
-                },
                 responsive: true,
                 serverSide: true,
                 searching: true,
@@ -436,12 +430,9 @@ export default {
                      "<'d-flex align-items-center'<'me-auto'i>p>",
                 buttons: buttons,
                 order: [[1, 'desc']],
-
                 columns: columns,
                 processing: true,
                 pagingType: "full_numbers",
-                initComplete: function() {
-                },
             }
         }
     },
@@ -468,8 +459,6 @@ export default {
         },
         fetchFilterLists: function(){
             let vm = this;
-
-            // Pass Types
             fetch(apiEndpoints.passTypesDistinct)
             .then(async response => {
                 const data = await response.json();
@@ -514,12 +503,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-    i.fa-check {
-        color:green;
-    }
-    i.fa-cross {
-        color:red;
-    }
-</style>

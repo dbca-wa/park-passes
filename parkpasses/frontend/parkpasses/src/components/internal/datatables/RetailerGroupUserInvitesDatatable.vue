@@ -106,7 +106,7 @@ export default {
     data() {
         let vm = this;
         return {
-            datatableId: 'reports-datatable-' + uuid(),
+            datatableId: 'retailer-group-user-invites-datatable-' + uuid(),
 
             filterRetailerGroups: sessionStorage.getItem(vm.filterRetailerGroupsCacheName) ? sessionStorage.getItem(vm.filterRetailerGroupsCacheName) : '',
             filterStatus: sessionStorage.getItem(vm.filterStatusCacheName) ? sessionStorage.getItem(vm.filterStatusCacheName) : '',
@@ -445,7 +445,7 @@ export default {
 
                 // Retrieve id from the id of the <tr>
                 let tr_id = tr.attr('id')
-                let proposal_id = tr_id.replace('reportId', '')
+                let proposal_id = tr_id.replace('retailerGroupUserInvitesId', '')
 
                 let first_td = tr.children().first()
                 if(first_td.hasClass(vm.td_expand_class_name)){

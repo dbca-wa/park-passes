@@ -5,7 +5,11 @@
 {% endblock %}
 
 {%  block content %}
-            <p>You have purchased a park pass with the following details:</p>
+            <p>Your park pass auto renewal was processed successfully.</p>
+
+            <p>Note: You may continue to use your existing pass until it expires.</p>
+
+            <p>Your new pass has the following details:</p>
 
             <table>
                 <tr><th>Pass Number:</th><td>{{pass.pass_number}}</td>
@@ -28,4 +32,4 @@
 
             <p>Once you have added your vehicle details to your park pass, please print it out and display it on
             your vehicle dashboard when entering a national park.</p>
-{%  endblock %}
+{% endblock %}

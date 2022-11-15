@@ -3,7 +3,7 @@
 
         <h2 class="pb-3">Your Orders</h2>
 
-        <div v-if="orders" id="orders" class="orders row row-cols-1 row-cols-sm-1 row-cols-md-1 row-cols-lg-1 row-cols-xl-2 row-cols-xxl-2 g-4 pb-5">
+        <div v-if="orders && orders.length > 0" id="orders" class="orders row row-cols-1 row-cols-sm-1 row-cols-md-1 row-cols-lg-1 row-cols-xl-2 row-cols-xxl-2 g-4 pb-5">
             <div v-for="order in orders" class="order col-xs">
                 <div class="card-header order-list-item-header">
                     <span class="heading">Order Placed</span>
@@ -31,6 +31,11 @@
                     </div>
 
                 </div>
+            </div>
+        </div>
+        <div v-if="orders && orders.length==0" class="card mb-4">
+            <div class="card-header no-orders">
+                <span>You have not placed any orders yet.</span>
             </div>
         </div>
 
@@ -152,6 +157,11 @@ export default {
         color: #565959;
         background-color: #EDE5D9;
         font-size:12px;
+    }
+
+    .no-orders {
+        background-color: #EDE5D9;
+        border-bottom: 0px;
     }
 
     .order-list-item-header .heading{

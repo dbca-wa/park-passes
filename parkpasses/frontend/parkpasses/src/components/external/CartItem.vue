@@ -11,8 +11,8 @@ const notMobile = breakpoints.greaterOrEqual('sm');
     <div v-if="cartItem.hasOwnProperty('voucher_number')" class="card mb-1" :id="cartItem.cart_item_id">
         <div class="card-header checkout-item-header">
             <span class="item-type"><template v-if="notMobile">Park Pass </template>Voucher</span>
-            <a class="accordian-header-note text-secondary d-none d-sm-block" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show more details</a>
-            <a class="accordian-header-note text-secondary d-block d-sm-none" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">More...</a>
+            <a class="accordian-header-note text-white d-none d-sm-block" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">Click to show more details</a>
+            <a class="accordian-header-note text-white d-block d-sm-none" data-bs-toggle="collapse" :href="'#collapse' + $.vnode.key" role="button" aria-expanded="false" :aria-controls="'collapse' + $.vnode.key">More...</a>
             <span class="item-amount">${{cartItem.amount}}</span>
             <span class="delete-button"><i @click="deleteCartItem($event, cartItem.cart_item_id)" class="fa fa-trash org-primary" aria-hidden="true"></i></span>
         </div>
@@ -57,6 +57,7 @@ const notMobile = breakpoints.greaterOrEqual('sm');
 
                 <div class="container">
                     <div class="row">
+                        <div class="col-12 col-sm-6 fw-bold border-bottom">Pass Number</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.pass_number}}</div>
                         <div class="col-12 col-sm-6 fw-bold border-bottom">Pass Type</div><div class="col-12 col-sm-6 border-bottom">{{cartItem.pass_type}}</div>
                         <div v-if="cartItem.park_group" class="col-12 col-sm-6 fw-bold border-bottom">Park Group</div><div v-if="cartItem.park_group" class="col-12 col-sm-6 border-bottom">{{cartItem.park_group}}</div>
                         <div v-if="cartItem.duration" class="col-12 col-sm-6 fw-bold border-bottom">Duration</div><div v-if="cartItem.duration" class="col-12 col-sm-6 border-bottom">{{cartItem.duration}}</div>

@@ -1,8 +1,7 @@
 """
-This management commands sends emails to customers who have have a pass that is about
-to expire.
+This management commands sends emails to customers who have have a pass that expires today.
 
-Usage: ./manage.sh pass_send_expiry_notification_emails
+Usage: ./manage.sh pass_send_expired_notification_emails
         (this command should be run by a cron job or task runner not manually)
 
 """
@@ -33,10 +32,9 @@ class Command(BaseCommand):
             email=settings.NO_REPLY_EMAIL, password=""
         )
         today = timezone.now().date()
-        # Don't bother doing more expensive query if there are no passes that satisfy the basic criteria
         if (
             Pass.objects.exclude(
-                cancellation__isnull=False,  # to exclude cancelled passes
+                processing_status=Pass.CANCELLED,
             )
             .filter(
                 in_cart=False,
@@ -44,33 +42,22 @@ class Command(BaseCommand):
             )
             .exists()
         ):
-            passes = Pass.objects.exclude(
-                processing_status=Pass.CANCELLED,  # to exclude cancelled passes
-            ).filter(
+            passes = Pass.objects.exclude(processing_status=Pass.CANCELLED,).filter(
                 in_cart=False,
                 date_expiry=today,
             )
-            if options["test"]:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Found {len(passes)} park passes that expire today."
-                    )
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Found {len(passes)} park passes that expire today."
                 )
+            )
             for park_pass in passes:
                 if options["test"]:
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f"TEST: pretending to call send_expiry_notification_emails on Pass: {park_pass}"
+                            f"TEST: pretending to call send_expired_notification_emails on Pass: {park_pass}"
                         )
                     )
                 else:
-                    if park_pass.renew_automatically:
-                        park_pass.send_autorenew_notification_emails()
-                        logger.info(
-                            f"Notification email sent to recipient of Pass: {park_pass}"
-                        )
-                    else:
-                        park_pass.send_expiry_notification_emails()
-                        logger.info(
-                            f"Notification email sent to recipient of Pass: {park_pass}"
-                        )
+                    park_pass.send_expired_notification_email()
+                    logger.info(f"Expiry notification email sent for Pass: {park_pass}")

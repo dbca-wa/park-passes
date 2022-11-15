@@ -149,4 +149,11 @@ module.exports = {
              float:right;
         }
     }
+
+    i.fa-check {
+        color:green;
+    }
+    i.fa-cross {
+        color:red;
+    }
 </style>

@@ -296,13 +296,14 @@ export default {
 
                 vm.discountCodeBatch.valid_users.forEach(function(validUser){
                     console.log("validUser.display_name = " + validUser.display_name);
+                    validUser = DOMPurify.sanitize(validUser);
                     var option = new Option(
                         validUser.display_name,
                         validUser.user.toString(),
                         true,
                         true
                     );
-                    console.log(JSON.stringify(option))
+                    console.log(JSON.stringify(option));
                     $(vm.$refs.validUsers).append(option);
                 });
 

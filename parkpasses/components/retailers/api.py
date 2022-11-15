@@ -84,7 +84,7 @@ class RetailerGroupFilterBackend(DatatablesFilterBackend):
 
 class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
     """
-    A ViewSet for internal users to perform actions on reports.
+    A ViewSet for internal users to perform actions on retailer groups.
     """
 
     model = RetailerGroup

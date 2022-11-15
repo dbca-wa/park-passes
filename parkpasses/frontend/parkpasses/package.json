@@ -15,19 +15,16 @@
     "@fortawesome/fontawesome-free": "^6.0.0",
     "@vue/cli-service": "^5.0.4",
     "@vueuse/core": "^9.2.0",
-    "babel-eslint": "^10.1.0",
     "currency.js": "^2.0.4",
     "datatables.net-bs5": "^1.12.1",
     "datatables.net-buttons-bs5": "^2.2.3",
     "datatables.net-responsive-bs5": "^2.3.0",
-    "express": "^4.17.3",
+    "dompurify": "^2.4.0",
     "jquery": "^3.6.0",
     "jquery-validation": "^1.19.3",
     "jszip": "^3.9.1",
-    "lodash": "^4.17.21",
     "moment": "^2.29.3",
     "moment-range": "^4.0.2",
-    "ol": "^6.3.1",
     "pinia": "^2.0.17",
     "select2": "^4.0.3",
     "select2-bootstrap-5-theme": "^1.2.0",
@@ -46,9 +43,6 @@
     "not ie <= 8"
   ],
   "devDependencies": {
-    "eslint": "^8.15.0",
-    "sass": "^1.53.0",
-    "sass-loader": "^13.0.2",
-    "vls": "^0.7.6"
+    "eslint": "^8.15.0"
   }
 }

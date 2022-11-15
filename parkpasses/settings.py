@@ -22,6 +22,7 @@ SYSTEM_MAINTENANCE_WARNING = env("SYSTEM_MAINTENANCE_WARNING", 24)  # hours
 DISABLE_EMAIL = env("DISABLE_EMAIL", False)
 SHOW_TESTS_URL = env("SHOW_TESTS_URL", False)
 SHOW_DEBUG_TOOLBAR = env("SHOW_DEBUG_TOOLBAR", False)
+
 BUILD_TAG = env(
     "BUILD_TAG", hashlib.sha256(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
@@ -84,6 +85,13 @@ MIDDLEWARE_CLASSES += [
 ]
 MIDDLEWARE = MIDDLEWARE_CLASSES
 MIDDLEWARE_CLASSES = None
+
+# MIDDLEWARE.insert(0, "django.middleware.gzip.GZipMiddleware")
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
 
 if DEBUG and SHOW_DEBUG_TOOLBAR:
 
@@ -216,6 +224,7 @@ CONSOLE_EMAIL_BACKEND = env("CONSOLE_EMAIL_BACKEND", False)
 if CONSOLE_EMAIL_BACKEND:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+CRON_EMAIL_FILE_NAME = "cron_email.log"
 
 # Add a debug level logger for development
 if DEBUG:
@@ -366,7 +375,7 @@ APPLICATION_TYPES = [
 GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
 
 template_title = "Park Passes"
-template_group = "parkswildlife"
+template_group = "parkpasses"
 
 # Use git commit hash for purging cache in browser for deployment changes
 GIT_COMMIT_HASH = ""
@@ -399,6 +408,7 @@ ALL_PARKS_PASS = "ALL_PARKS_PASS"
 GOLD_STAR_PASS = "GOLD_STAR_PASS"
 DAY_ENTRY_PASS = "DAY_ENTRY_PASS"
 PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS = "PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS"
+PERSONNEL_PASS = "PERSONNEL_PASS"
 
 PASS_TYPES = [
     (HOLIDAY_PASS, "Holiday Pass"),
@@ -406,10 +416,15 @@ PASS_TYPES = [
     (ALL_PARKS_PASS, "All Park Pass"),
     (GOLD_STAR_PASS, "Gold Star Pass"),
     (DAY_ENTRY_PASS, "Day Entry Pass"),
+    (
+        PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS,
+        "Pinjar Off Road Vehicle Area Annual Pass",
+    ),
+    (PERSONNEL_PASS, "Personnel Pass"),
 ]
 
 PASS_VEHICLE_REGO_REMINDER_DAYS_PRIOR = 7
-PASS_AUTORENEW_REMINDER_DAYS_PRIOR = 7
+PASS_REMINDER_DAYS_PRIOR = 7
 
 PRICING_WINDOW_DEFAULT_NAME = "Default"
 

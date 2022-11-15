@@ -76,6 +76,13 @@ urlpatterns = [
         name="internal-pass-detail",
     ),
     url(
+        r"^internal/passes/upload-personnel-passes$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal Upload Personnel Passes"}
+        ),
+        name="internal-uploader-personnel-passes",
+    ),
+    url(
         r"^internal/pricing-windows$",
         views.InternalView.as_view(extra_context={"title": "Internal Pricing Windows"}),
         name="internal-pricing-windows",
@@ -96,6 +103,13 @@ urlpatterns = [
             extra_context={"title": "Internal View/Edit Discount Code Batch"}
         ),
         name="internal-discount-code-batch-detail",
+    ),
+    url(
+        r"^internal/pricing-window/(?P<id>.+)$",
+        views.InternalView.as_view(
+            extra_context={"title": "Internal View/Edit Pricing Window"}
+        ),
+        name="internal-pricing-window-detail",
     ),
     url(
         r"^internal/retailer-group-users$",

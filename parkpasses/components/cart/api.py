@@ -85,7 +85,7 @@ class CartView(APIView):
         logger.info(f"Retrieving cart for user: {request.user.id} ({request.user})")
 
         cart = Cart.get_or_create_cart(request)
-        logger.info(f"{cart} retrieved", extra={"className": self.__class__.__name__})
+        logger.info(f"{cart} retrieved")
 
         cart_items = []
         for cart_item in cart.items.all():

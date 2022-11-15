@@ -4,6 +4,9 @@ module.exports = {
     PARKPASSES_MODELS_USERACTION:           'useraction',
     PARKPASSES_MODELS_PASS:                 'pass',
     PARKPASSES_MODELS_DISCOUNT_CODE_BATCH:  'discountcodebatch',
+    PARKPASSES_MODELS_PRICING_WINDOW:       'passtypepricingwindow',
+
+    PARKAPSSES_DEFAULT_PRICING_WINDOW_NAME: 'Default',
 
     TITLE_SUFFIX: ' - Park Passes - Department of Biodiversity, Conservation and Attractions',
 

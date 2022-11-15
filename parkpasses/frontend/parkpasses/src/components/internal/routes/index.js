@@ -4,7 +4,9 @@ import InternalDashboard from '@/components/internal/Dashboard.vue'
 
 import InternalPricingWindows from '@/components/internal/PricingWindows.vue'
 import InternalPassForm from '@/components/internal/forms/PassForm.vue'
+import InternalPricingWindowForm from '@/components/internal/forms/PricingWindowForm.vue'
 import InternalDiscountCodeBatchForm from '@/components/internal/forms/DiscountCodeBatchForm.vue'
+import InternalUploadPersonnelPasses from '@/components/internal/forms/UploadPersonnelPasses.vue'
 
 import InternalVouchers from '@/components/internal/Vouchers.vue'
 import InternalDiscountCodes from '@/components/internal/DiscountCodes.vue'
@@ -35,6 +37,16 @@ export default {
             path: '/internal/passes/:passId',
             component: InternalPassForm,
             name: 'internal-pass-form'
+        },
+        {
+            path: '/internal/passes/upload-personnel-passes',
+            component: InternalUploadPersonnelPasses,
+            name: 'internal-upload-personnel-passes'
+        },
+        {
+            path: '/internal/pricing-window/:pricingWindowId',
+            component: InternalPricingWindowForm,
+            name: 'internal-pricing-window-form'
         },
         {
             path: '/internal/vouchers',

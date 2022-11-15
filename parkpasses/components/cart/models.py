@@ -235,9 +235,7 @@ class Cart(models.Model):
                     "If save_order_to_db_and_delete_cart is True then \
                     the cart must have a uuid and an invoice_reference must be passed in."
                 )
-            logger.info(
-                "Populating Order", extra={"className": self.__class__.__name__}
-            )
+            logger.info("Populating Order")
             order.uuid = self.uuid
             order.invoice_reference = invoice_reference
             order.is_no_payment = self.is_no_payment
@@ -418,32 +416,24 @@ class Cart(models.Model):
                         )
 
         if save_order_to_db_and_delete_cart:
-            logger.info(
-                f"Deleting Cart {self}.", extra={"className": self.__class__.__name__}
-            )
+            logger.info(f"Deleting Cart {self}.")
             self.delete()
-            logger.info("Cart Deleted.", extra={"className": self.__class__.__name__})
+            logger.info("Cart Deleted.")
 
         logger.info(f"Returning order {order} and order items.")
         return order, order_items
 
     def save(self, *args, **kwargs):
-        logger.info(
-            f"Saving Cart: {self}.", extra={"className": self.__class__.__name__}
-        )
+        logger.info(f"Saving Cart: {self}.")
         if not self.uuid:
-            logger.info(
-                "Cart has no uuid", extra={"className": self.__class__.__name__}
-            )
+            logger.info("Cart has no uuid")
             self.uuid = uuid.uuid4()
             logger.info(
                 f"Cart assigned uuid: {self.uuid}",
             )
-        logger.info(
-            f"Saving Cart: {self}.", extra={"className": self.__class__.__name__}
-        )
+        logger.info(f"Saving Cart: {self}.")
         super().save(*args, **kwargs)
-        logger.info("Cart Saved.", extra={"className": self.__class__.__name__})
+        logger.info("Cart Saved.")
 
 
 class CartItemVoucherManager(models.Manager):
@@ -516,9 +506,7 @@ class CartItem(models.Model):
         return f"Content Type: {self.content_type} | Object ID: {self.object_id} Total Price: {self.get_total_price()}"
 
     def save(self, *args, **kwargs):
-        logger.info(
-            f"Saving Cart Item: {self}.", extra={"className": self.__class__.__name__}
-        )
+        logger.info(f"Saving Cart Item: {self}.")
 
         if str(self.content_type) not in settings.PARKPASSES_VALID_CART_CONTENT_TYPES:
             logger.error(
@@ -546,13 +534,11 @@ class CartItem(models.Model):
 
         logger.info(f"Saving parent Cart: {self.cart}.")
         self.cart.save()
-        logger.info("Parent Cart saved.", extra={"className": self.__class__.__name__})
+        logger.info("Parent Cart saved.")
 
-        logger.info(
-            f"Saving Cart Item: {self}.", extra={"className": self.__class__.__name__}
-        )
+        logger.info(f"Saving Cart Item: {self}.")
         super().save(*args, **kwargs)
-        logger.info("Cart Item saved.", extra={"className": self.__class__.__name__})
+        logger.info("Cart Item saved.")
 
     def is_voucher_purchase(self):
         return "parkpasses | voucher" == str(self.content_type)
@@ -561,9 +547,7 @@ class CartItem(models.Model):
         return "parkpasses | pass" == str(self.content_type)
 
     def delete(self, *args, **kwargs):
-        logger.info(
-            f"Deleting Cart Item: {self}.", extra={"className": self.__class__.__name__}
-        )
+        logger.info(f"Deleting Cart Item: {self}.")
         if self.is_voucher_purchase():
             logger.info(
                 "Cart Item is a voucher purchase.",
@@ -605,9 +589,7 @@ class CartItem(models.Model):
                     f"Saving cart item: {self}.",
                 )
                 self.save()
-                logger.info(
-                    "Cart Item saved.", extra={"className": self.__class__.__name__}
-                )
+                logger.info("Cart Item saved.")
 
                 logger.info(
                     "Deleting concession usage, discount code usage and voucher transaction.",
@@ -623,9 +605,7 @@ class CartItem(models.Model):
                     f"Deleting park pass: {park_pass}.",
                 )
                 park_pass.delete()
-                logger.info(
-                    "Park Pass deleted.", extra={"className": self.__class__.__name__}
-                )
+                logger.info("Park Pass deleted.")
 
         logger.info("Returning from Cart Item delete.")
         return super().delete(*args, **kwargs)

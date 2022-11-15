@@ -392,16 +392,13 @@ export default {
                 searchable: false,
                 name: 'discount_codes',
                 'render': function (row, type, full) {
-                    let discountCodes = '';
                     if (1 == full.discount_codes.length) {
                         return '<span class="badge org-badge-primary">' + full.discount_codes[0].code + '</span>';
-
                     } else if (1 < full.discount_codes.length) {
                         return `<a data-id="${full.id}" data-action="view-discount-codes" href="${apiEndpoints.discountCodesXlsx(full.id)}">View ${full.discount_codes.length} Discount Codes</a>`;
                     } else {
-                        return '<span class="badge bg-danger">Error no codes were created</span>';
+                        return '<span class="badge bg-danger">ERROR: No codes were created.</span>';
                     }
-                    return discountCodes;
                 }
             }
         },
@@ -557,7 +554,9 @@ export default {
         editDiscountCodeBatch: function (id) {
             this.selectedDiscountCodeBatchId = id;
             console.log("selectedDiscountCodeBatchId = " + this.selectedDiscountCodeBatchId);
-            this.discountCodeBatchModal.show();
+            if(this.discountCodeBatchModal) {
+                this.discountCodeBatchModal.show();
+            }
         },
         invalidateDiscountCodeBatch: function (discountCodeBatch) {
             this.selectedDiscountCodeBatch = discountCodeBatch;
