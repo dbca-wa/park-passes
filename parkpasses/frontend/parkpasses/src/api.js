@@ -74,6 +74,9 @@ module.exports = {
     passTypeRetailer: function (passTypeSlug) {
         return                          `/api/passes/retailer/pass-types/${passTypeSlug}/`;
     },
+    passTypeInternal: function (passTypeSlug) {
+        return                          `/api/passes/internal/pass-types/${passTypeSlug}/`;
+    },
     /* ========================= Pass Options ===========================================*/
 
     passOptions: function (passTypeId) {
