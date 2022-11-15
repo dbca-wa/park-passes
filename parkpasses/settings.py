@@ -375,7 +375,7 @@ APPLICATION_TYPES = [
 GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
 
 template_title = "Park Passes"
-template_group = "parkswildlife"
+template_group = "parkpasses"
 
 # Use git commit hash for purging cache in browser for deployment changes
 GIT_COMMIT_HASH = ""

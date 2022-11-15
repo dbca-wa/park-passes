@@ -18,43 +18,6 @@
         {% block header_top_menu %}
         {% endblock %}
 
-        {% block main_header %}
-            <header class="park-passes-bg-banner" role="banner">
-                <div class="container">
-                    <div class="wrapper">
-                        <section>
-                            <a href="https://www.wa.gov.au/">
-                                <img class="mx-auto" src="{% static 'parkpasses/img/wa-gov-logo-white.svg' %}" width="62.92" height="60" alt="Western Australian State Government Logo" title="Western Australian State Government Logo" typeof="foaf:Image">
-                            </a>
-                        </section>
-                        <section>
-                            <a href="https://www.dbca.wa.gov.au/parks-and-wildlife-service">
-                                <img class="mx-auto" src="{% static 'parkpasses/img/parks-and-wildlife-service-logo-white.svg' %}" width="148.08" height="60" alt="Parks and Wildlife Service logo" title="Parks and Wildlife Service logo" typeof="foaf:Image">
-                            </a>
-                        </section>
-                        <section class="d-none d-sm-block">
-                            <a href="{% url 'home'%}">
-                                <img class="mx-auto" src="{% static 'parkpasses/img/explore-parks-wa-logo-white.svg' %}" width="219.56" height="60"  alt="Explore Parks logo" title="Explore Parks WA logo" typeof="foaf:Image">
-                            </a>
-                        </section>
-                        <section class="d-none d-lg-block site-title">
-                            <h1>Park Passes</h1>
-                        </section>
-                    </div>
-                </div>
-                <div class="container d-sm-none text-white text-center">
-                    <section class="mb-3">
-                        <a href="{% url 'home'%}">
-                            <img class="mx-auto" src="{% static 'parkpasses/img/explore-parks-wa-logo-white.svg' %}" width="219.56" height="60"  alt="Explore Parks logo" title="Explore Parks WA logo" typeof="foaf:Image">
-                        </a>
-                    </section>
-                    <section class="border-top">
-                        <h1 class="site-title">Park Passes</h1>
-                    </section>
-                </div>
-            </header>
-        {% endblock %}
-
         {% block menu_items_left_brand %}
         <a class="navbar-brand" href="{% url 'home'%}"><img src="{% static 'parkpasses/img/explore-parks-logo-small.png' %}"> Home</a>
         {% endblock %}
