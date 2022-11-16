@@ -440,6 +440,36 @@ Django = ">=2.2"
 tests = ["coverage"]
 
 [[package]]
+name = "django-org-model-documents"
+version = "1.0.0"
+description = "A Django app to allow attaching any number of documents to any model in a project."
+category = "main"
+optional = false
+python-versions = "*"
+develop = false
+
+[package.source]
+type = "git"
+url = "https://github.com/oakdbca/django-org-model-documents.git"
+reference = "HEAD"
+resolved_reference = "3a69eeafee847b831dee3d4e91f43e393b86e470"
+
+[[package]]
+name = "django-org-model-logs"
+version = "1.1.1"
+description = "A Django app to log actions and communications about models."
+category = "main"
+optional = false
+python-versions = "*"
+develop = false
+
+[package.source]
+type = "git"
+url = "https://github.com/oakdbca/django-org-model-logs.git"
+reference = "HEAD"
+resolved_reference = "3c8cb6041d3540298afd8b484d9a4aee4da6d6a9"
+
+[[package]]
 name = "django-phonenumber-field"
 version = "6.1.0"
 description = "An international phone number field for django models."
@@ -650,7 +680,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "exceptiongroup"
-version = "1.0.3"
+version = "1.0.4"
 description = "Backport of PEP 654 (exception groups)"
 category = "main"
 optional = false
@@ -1434,7 +1464,7 @@ python-versions = ">=3.4"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "041159ad42d22d44319d8916437094e2ddc299922e6099fd4985afd9f9a5f9c5"
+content-hash = "0a8353ae87729d2297702418f10c9ba7e0dd6d66b32eb64522010a0e76e3cd9d"
 
 [metadata.files]
 ansicon = [
@@ -1712,6 +1742,8 @@ django-js-asset = [
     {file = "django_js_asset-2.0.0-py3-none-any.whl", hash = "sha256:86f9f300d682537ddaf0487dc2ab356581b8f50c069bdba91d334a46e449f923"},
     {file = "django_js_asset-2.0.0.tar.gz", hash = "sha256:adc1ee1efa853fad42054b540c02205344bb406c9bddf87c9e5377a41b7db90f"},
 ]
+django-org-model-documents = []
+django-org-model-logs = []
 django-phonenumber-field = [
     {file = "django-phonenumber-field-6.1.0.tar.gz", hash = "sha256:b1ff950f90a8911ff323ccf77c8f6fe4299a9f671fa61c8734a6994359f07446"},
     {file = "django_phonenumber_field-6.1.0-py3-none-any.whl", hash = "sha256:897b902a1654b0eb21f6268498a3359e2c4eb90af9585cb8693af186ede8c5bb"},
@@ -1780,8 +1812,8 @@ et-xmlfile = [
     {file = "et_xmlfile-1.1.0.tar.gz", hash = "sha256:8eb9e2bc2f8c97e37a2dc85a09ecdcdec9d8a396530a6d5a33b30b9a92da0c5c"},
 ]
 exceptiongroup = [
-    {file = "exceptiongroup-1.0.3-py3-none-any.whl", hash = "sha256:6002703c7d31fb9950ddc8780840f67880c440895dc1151dd551553aa1246e4a"},
-    {file = "exceptiongroup-1.0.3.tar.gz", hash = "sha256:76cac74b5207c5997678a1c7105cb6f14213c9c63c096a38cfcb529d83ce5c02"},
+    {file = "exceptiongroup-1.0.4-py3-none-any.whl", hash = "sha256:542adf9dea4055530d6e1279602fa5cb11dab2395fa650b8674eaec35fc4a828"},
+    {file = "exceptiongroup-1.0.4.tar.gz", hash = "sha256:bd14967b79cd9bdb54d97323216f8fdf533e278df937aa2a90089e7d6e06e5ec"},
 ]
 executing = [
     {file = "executing-1.2.0-py2.py3-none-any.whl", hash = "sha256:0314a69e37426e3608aada02473b4161d4caf5a4b244d1d0c48072b8fee7bacc"},
