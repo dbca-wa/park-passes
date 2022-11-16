@@ -370,10 +370,10 @@ export default {
             }).finally(() =>{
                 vm.initialiseValidUsersSelect2();
                 vm.discountCodeBatch.valid_users.forEach(function(validUser){
-                    validUser = DOMPurify.sanitize(validUser);
+                    console.log(validUser)
                     var option = new Option(
-                        validUser.display_name,
-                        validUser.user,
+                        DOMPurify.sanitize(validUser.display_name),
+                        DOMPurify.sanitize(validUser.user),
                         true,
                         true
                     );
