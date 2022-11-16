@@ -533,6 +533,7 @@ class RetailerUpdatePassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pass
         fields = [
+            "id",
             "first_name",
             "last_name",
             "email",
@@ -543,6 +544,7 @@ class RetailerUpdatePassSerializer(serializers.ModelSerializer):
             "vehicle_registration_1",
             "vehicle_registration_2",
         ]
+        read_only_fields = ["id"]
 
 
 class InternalPassRetrieveSerializer(serializers.ModelSerializer):
