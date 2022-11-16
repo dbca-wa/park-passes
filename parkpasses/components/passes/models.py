@@ -180,9 +180,9 @@ class PassTypePricingWindow(models.Model):
     def status(self):
         if not self.date_expiry:
             return "Current"
-        if self.date_start >= timezone.now().date():
+        if self.date_start > timezone.now().date():
             return "Future"
-        elif self.date_expiry < timezone.now().date():
+        elif self.date_expiry <= timezone.now().date():
             return "Expired"
         else:
             return "Current"
