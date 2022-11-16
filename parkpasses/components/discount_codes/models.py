@@ -83,6 +83,17 @@ class DiscountCodeBatch(models.Model):
         ]
 
     @property
+    def status(self):
+        if self.invalidated:
+            return "Invalidated"
+        if self.datetime_start >= timezone.now():
+            return "Future"
+        elif self.datetime_expiry < timezone.now():
+            return "Expired"
+        else:
+            return "Current"
+
+    @property
     def get_created_by(self):
         return retrieve_email_user(self.created_by)
 

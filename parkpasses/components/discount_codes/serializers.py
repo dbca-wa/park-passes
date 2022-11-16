@@ -1,5 +1,4 @@
 from django.contrib.contenttypes.models import ContentType
-from django.utils import timezone
 from rest_framework import serializers
 
 from parkpasses.components.discount_codes.models import (
@@ -85,7 +84,7 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
     created_by_name = serializers.ReadOnlyField()
     datetime_start = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
     datetime_expiry = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
-    status = serializers.SerializerMethodField()
+    status = serializers.CharField()
     user_can_create_percentage_discounts = serializers.SerializerMethodField(
         read_only=True
     )
@@ -119,15 +118,8 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
         datatables_always_serialize = [
             "id",
             "user_can_create_percentage_discounts",
+            "invalidated",
         ]
-
-    def get_status(self, obj):
-        if obj.datetime_start >= timezone.now():
-            return "Future"
-        elif obj.datetime_expiry < timezone.now():
-            return "Expired"
-        else:
-            return "Current"
 
     def get_user_can_create_percentage_discounts(self, obj):
         return is_parkpasses_discount_code_percentage_user(self.context["request"])
