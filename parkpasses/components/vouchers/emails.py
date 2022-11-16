@@ -3,8 +3,8 @@ import logging
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-
 from org_model_logs.models import CommunicationsLogEntry, EntryType
+
 from parkpasses.components.emails.emails import TemplateEmailBase
 
 logger = logging.getLogger(__name__)

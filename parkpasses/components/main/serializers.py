@@ -1,12 +1,12 @@
 from django.contrib.contenttypes.models import ContentType
-from rest_framework import serializers
-
 from org_model_documents.models import Document
 from org_model_documents.serializers import DocumentSerializer
 from org_model_logs.serializers import (
     CommunicationsLogEntrySerializer as BaseCommunicationsLogEntrySerializer,
 )
 from org_model_logs.serializers import UserActionSerializer as BaseUserActionSerializer
+from rest_framework import serializers
+
 from parkpasses.ledger_api_utils import retrieve_email_user
 
 

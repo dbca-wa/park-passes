@@ -1,12 +1,6 @@
 import logging
 
 from django.contrib.contenttypes.models import ContentType
-from rest_framework import status
-from rest_framework.renderers import JSONRenderer
-from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
-from rest_framework_datatables.renderers import DatatablesRenderer
-
 from org_model_documents.api import DocumentCreateView, DocumentViewSet
 from org_model_logs.api import EntryTypeList as BaseEntryTypeList
 from org_model_logs.api import (
@@ -16,6 +10,12 @@ from org_model_logs.api import UserActionList as BaseUserActionList
 from org_model_logs.api import UserActionViewSet as BaseUserActionViewSet
 from org_model_logs.models import CommunicationsLogEntry
 from org_model_logs.serializers import EntryTypeSerializer
+from rest_framework import status
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
+from rest_framework_datatables.renderers import DatatablesRenderer
+
 from parkpasses.components.main.serializers import (
     CommunicationsLogEntrySerializer,
     UserActionSerializer,
