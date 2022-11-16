@@ -17,6 +17,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import create_basket_session, create_checkout_session
+from org_model_logs.models import UserAction
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -28,7 +29,6 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from org_model_logs.models import UserAction
 from parkpasses.components.cart.models import Cart, CartItem
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.concessions.models import Concession, ConcessionUsage
@@ -229,7 +229,6 @@ class PricingWindowFilterBackend(DatatablesFilterBackend):
 
 class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     search_fields = [
-        # "pass_type_display_name",
         "name",
     ]
     model = PassTypePricingWindow
@@ -246,7 +245,7 @@ class InternalPricingWindowViewSet(CustomDatatablesListMixin, viewsets.ModelView
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.date_start > timezone.now():
+        if instance.date_start > timezone.now().date():
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
