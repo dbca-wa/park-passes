@@ -63,7 +63,6 @@ export default {
             vm.loading = true;
             vm.invalidation.csrfmiddlewaretoken = helpers.getCookie('csrftoken');
             vm.invalidation.discount_code_batch_id = vm.discountCodeBatch.id
-            alert(JSON.stringify(vm.invalidation), $('#reasonFiles')[0].files);
             const requestOptions = {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -82,14 +81,15 @@ export default {
                     let files = $('#invalidationReasonFiles')[0].files;
                     utils.uploadOrgModelDocuments(data.user_action.user_action_content_type_id, data.user_action.id, files);
 
-                    vm.$emit('invalidateSuccess')
-
                     Swal.fire({
                         title: 'Success',
                         text: 'Discount Code Batch invalidated successfully.',
                         icon: 'success',
-                        confirmButtonText: 'OK'
+                        showConfirmButton: false,
+                        timer: 1500
                     });
+
+                    vm.$emit('invalidateSuccess')
 
                     var discountCodeBatchInvalidationFormModalModal = bootstrap.Modal.getInstance(document.getElementById('discountCodeBatchInvalidationModal'));
                     discountCodeBatchInvalidationFormModalModal.hide();
