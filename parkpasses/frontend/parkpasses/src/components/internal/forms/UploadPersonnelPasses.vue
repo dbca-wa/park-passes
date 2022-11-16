@@ -57,6 +57,9 @@
                                 </div>
                             </div>
                         </div>
+                        <div v-else>
+                            <BootstrapSpinner :loading="true" :centerOfScreen="false" />
+                        </div>
 
                     </div>
 
@@ -112,6 +115,7 @@
 
 <script>
 import { apiEndpoints, constants } from '@/utils/hooks'
+import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
 import BootstrapAlert from '@/utils/vue/BootstrapAlert.vue'
 import Swal from 'sweetalert2'
@@ -126,6 +130,7 @@ export default {
         return {
             personnelDataFile: null,
             personnelPassType: null,
+            loadingPersonnelPassType: false,
             loading: false,
             errors: ''
         }
@@ -135,6 +140,7 @@ export default {
     },
     components: {
         SectionToggle,
+        BootstrapSpinner,
         BootstrapButtonSpinner,
         BootstrapAlert,
     },
@@ -144,6 +150,7 @@ export default {
         },
         fetchPersonnelPass: function() {
             let vm = this;
+            vm.loadingPersonnelPassType = true;
             fetch(apiEndpoints.passTypeInternal("personnel-pass")).then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -169,7 +176,7 @@ export default {
                     console.log(error)
                     return Promise.reject(error);
                 }
-
+                vm.loadingPersonnelPassType = false;
                 if(data.results.length > 0) {
                     vm.personnelPassType.options = data.results
                 } else {
