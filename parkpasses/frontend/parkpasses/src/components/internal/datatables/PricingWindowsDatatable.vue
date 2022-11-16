@@ -426,33 +426,18 @@ export default {
         collapsibleComponentMounted: function(){
             this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
         },
-        saveSuccess: function({message, pricingWindow}) {
+        saveSuccess: function() {
             window.scrollTo(0,0);
-            this.successMessage = message;
-            console.log(pricingWindow.name);
-            this.$nextTick(() => {
-                $('#successMessageAlert').fadeOut(4000, function(){
-                    this.successMessage = null;
-                });
-            });
-            this.$refs.pricingWindowDatatable.vmDataTable.search(pricingWindow.name).draw();
+            this.$refs.pricingWindowDatatable.vmDataTable.draw();
         },
         deletePricingWindow: function(pricingWindow) {
             this.selectedPricingWindow = pricingWindow;
             let pricingWindowConfirmDeleteModal = new bootstrap.Modal(document.getElementById('pricingWindowConfirmDeleteModal'), {});
             pricingWindowConfirmDeleteModal.show();
         },
-        deleteSuccess: function({message, pricingWindow}) {
+        deleteSuccess: function() {
             window.scrollTo(0,0);
-            this.successMessage = message;
-            console.log(pricingWindow.name);
             this.$refs.pricingWindowDatatable.vmDataTable.draw();
-            console.log('#successMessageAlert.length = ' + $('#successMessageAlert').length);
-            this.$nextTick(() => {
-                $('#successMessageAlert').fadeOut(4000, function(){
-                    this.successMessage = null;
-                });
-            });
         },
         fetchFilterLists: function(){
             let vm = this;

@@ -101,6 +101,7 @@
 
 <script>
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
+import Swal from 'sweetalert2'
 
 export default {
     name: 'PricingWindowFormModal',
@@ -189,12 +190,20 @@ export default {
                     return Promise.reject(error);
                 }
                 console.log('data = ' + JSON.stringify(data));
+
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Pricing Window created successfully.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
                 this.$emit("saveSuccess", {
                         message: 'Pricing Window created successfully.',
                         pricingWindow: data,
                     }
                 );
-                $('#successMessageAlert').show();
                 vm.pricingWindow = vm.getPricingWindowInitialState();
                 var PricingWindowFormModalModal = bootstrap.Modal.getInstance(document.getElementById('pricingWindowModal'));
                 PricingWindowFormModalModal.hide();
