@@ -189,6 +189,11 @@ class DiscountCodeBatchValidUser(models.Model):
         return f"{email_user.first_name} {email_user.last_name} ({email_user.email})"
 
 
+class DiscountCodeManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("discount_code_usages")
+
+
 class DiscountCode(models.Model):
     """A class to represent a discount code
 
@@ -197,6 +202,8 @@ class DiscountCode(models.Model):
     be used that amount of times, otherwise it can be used
     any number of times.
     """
+
+    objects = DiscountCodeManager()
 
     discount_code_batch = models.ForeignKey(
         DiscountCodeBatch, related_name="discount_codes", on_delete=models.CASCADE
