@@ -93,14 +93,21 @@ class DiscountCodeBatchFilterBackend(DatatablesFilterBackend):
         datetime_expiry_from = request.GET.get("datetime_expiry_from")
         datetime_expiry_to = request.GET.get("datetime_expiry_to")
 
+        if "Invalidated" == status:
+            queryset = queryset.filter(invalidated=True)
+
         if "Expired" == status:
-            queryset = queryset.filter(datetime_expiry__lte=timezone.now())
+            queryset = queryset.exclude(invalidated=True).filter(
+                datetime_expiry__lte=timezone.now()
+            )
         if "Current" == status:
-            queryset = queryset.filter(
+            queryset = queryset.exclude(invalidated=True).filter(
                 datetime_start__lte=timezone.now(), datetime_expiry__gte=timezone.now()
             )
         if "Future" == status:
-            queryset = queryset.filter(datetime_start__gt=timezone.now())
+            queryset = queryset.exclude(invalidated=True).filter(
+                datetime_start__gt=timezone.now()
+            )
 
         if datetime_start_from:
             queryset = queryset.filter(datetime_start__gte=datetime_start_from)
