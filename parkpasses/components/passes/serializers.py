@@ -3,7 +3,7 @@ import os
 
 from rest_framework import serializers
 
-from parkpasses.components.concessions.serializers import InternalConcessionSerializer
+from parkpasses.components.concessions.serializers import ExternalConcessionSerializer
 from parkpasses.components.discount_codes.serializers import (
     ExternalDiscountCodeSerializer,
 )
@@ -447,7 +447,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     def get_concession(self, obj):
         if hasattr(obj, "concession_usage"):
             concession = obj.concession_usage.concession
-            serializer = InternalConcessionSerializer(concession)
+            serializer = ExternalConcessionSerializer(concession)
             return serializer.data
         return None
 
