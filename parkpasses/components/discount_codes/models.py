@@ -94,6 +94,12 @@ class DiscountCodeBatch(models.Model):
             return "Current"
 
     @property
+    def discount_type(self):
+        if self.discount_percentage:
+            return "percentage"
+        return "amount"
+
+    @property
     def get_created_by(self):
         return retrieve_email_user(self.created_by)
 

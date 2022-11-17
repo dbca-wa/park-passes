@@ -31,7 +31,7 @@ class InternalDiscountCodeSerializer(serializers.ModelSerializer):
 
 
 class ExternalDiscountCodeSerializer(serializers.ModelSerializer):
-    discount_type = serializers.SerializerMethodField()
+    discount_type = serializers.CharField()
     discount = serializers.SerializerMethodField()
 
     class Meta:
@@ -41,11 +41,6 @@ class ExternalDiscountCodeSerializer(serializers.ModelSerializer):
             "discount_type",
             "discount",
         ]
-
-    def get_discount_type(self, obj):
-        if obj.discount_code_batch.discount_percentage:
-            return "percentage"
-        return "amount"
 
     def get_discount(self, obj):
         if obj.discount_code_batch.discount_percentage:
@@ -84,11 +79,12 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
     created_by_name = serializers.ReadOnlyField()
     datetime_start = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
     datetime_expiry = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
-    status = serializers.CharField()
+    status = serializers.CharField(read_only=True)
     user_can_create_percentage_discounts = serializers.SerializerMethodField(
         read_only=True
     )
     content_type = serializers.SerializerMethodField(read_only=True)
+    discount_type = serializers.CharField(read_only=True)
 
     class Meta:
         model = DiscountCodeBatch
@@ -101,6 +97,7 @@ class InternalDiscountCodeBatchSerializer(serializers.ModelSerializer):
             "codes_to_generate",
             "times_each_code_can_be_used",
             "invalidated",
+            "discount_type",
             "discount_amount",
             "discount_percentage",
             "datetime_created",
