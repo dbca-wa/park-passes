@@ -151,6 +151,7 @@ export default {
                 'Future',
                 'Current',
                 'Expired',
+                'Invalidated',
             ],
 
             datepickerOptions: {
