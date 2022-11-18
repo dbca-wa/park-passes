@@ -445,7 +445,7 @@ export default {
             let vm = this;
 
             // Pass Types
-            fetch(apiEndpoints.passTypesDistinct)
+            fetch(apiEndpoints.retailerPassTypesDistinct)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -453,21 +453,6 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.passTypesDistinct = data
-            })
-            .catch(error => {
-                //this.errorMessage = error;
-                console.error("There was an error!", error);
-            });
-
-            // Pass Processing Statuses
-            fetch(apiEndpoints.passProcessingStatusesDistinct)
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    return Promise.reject(error);
-                }
-                vm.passProcessingStatusesDistinct = data
             })
             .catch(error => {
                 //this.errorMessage = error;

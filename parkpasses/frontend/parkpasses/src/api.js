@@ -65,6 +65,7 @@ module.exports = {
     /* ========================= Pass Types =============================================*/
 
     passTypesDistinct:                  '/api/passes/pass-types-distinct/',
+    retailerPassTypesDistinct:          '/api/passes/retailer-pass-types/',
     passTypesExternal:                  '/api/passes/external/pass-types/',
     passTypesRetailer:                  '/api/passes/retailer/pass-types/',
     passTypesInternal:                  '/api/passes/internal/pass-types/',
