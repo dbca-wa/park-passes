@@ -109,6 +109,18 @@ class PassTypesDistinct(APIView):
         return Response(pass_types)
 
 
+class RetailerPassTypesDistinct(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
+    def get(self, request, format=None):
+        pass_types = [
+            {"code": pass_type.id, "description": pass_type.display_name}
+            for pass_type in PassType.objects.filter(display_retailer=True)
+        ]
+        return Response(pass_types)
+
+
 class PassProcessingStatusesDistinct(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -164,6 +176,7 @@ class RetailerPassTypeViewSet(
 
     @method_decorator(cache_page(settings.CACHE_TIMEOUT_2_HOURS))
     def list(self, request, slug=None):
+        logger.debug("RetailerPassTypeViewSet.list")
         return super().list(request, slug=slug)
 
 
