@@ -33,11 +33,6 @@
                         <label for="">Start Date From</label>
                         <div class="input-group date" ref="proposalDateFromPicker">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeStartFrom">
-                            <!--
-                            <span class="input-group-addon">
-                                <span class="fa fa-calendar"></span>
-                            </span>
-                            -->
                         </div>
                     </div>
                 </div>

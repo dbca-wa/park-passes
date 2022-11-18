@@ -28,9 +28,6 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-6 text-end">
-                    <button class="dt-button buttons-csv buttons-html5 btn licensing-btn-primary">Upload Personnel Passes</button>
-                </div>
             </div>
             <div class="row mb-3">
                 <div class="col-md-3">
@@ -38,11 +35,6 @@
                         <label for="">Start Date From</label>
                         <div class="input-group date" ref="proposalDateFromPicker">
                             <input type="date" class="form-control" placeholder="DD/MM/YYYY" v-model="filterDatetimeStartFrom">
-                            <!--
-                            <span class="input-group-addon">
-                                <span class="fa fa-calendar"></span>
-                            </span>
-                            -->
                         </div>
                     </div>
                 </div>
