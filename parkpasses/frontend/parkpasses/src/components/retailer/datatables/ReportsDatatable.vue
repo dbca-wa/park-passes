@@ -158,9 +158,9 @@ export default {
             return [
                 'id',
                 'Number',
-                'Retailer',
                 'Monthly Report',
                 'Invoice',
+                'Unique Identifier',
                 'Payment Status',
                 'Date Generated',
             ]
@@ -184,13 +184,6 @@ export default {
                 visible: true,
                 name: 'report_number',
                 orderable: true,
-            }
-        },
-        columnRetailerGroup: function(){
-            return {
-                data: "retailer_group",
-                visible: true,
-                name: 'retailer_group',
             }
         },
         columnReport: function(){
@@ -222,11 +215,19 @@ export default {
                     }
 
                     if('P'===full.processing_status && full.invoice_reference) {
-                        html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Invoice Receipt</a>`;
+                        html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
                     }
 
                     return html;
                 }
+            }
+        },
+        columnUUID: function(){
+            return {
+                data: "uuid",
+                visible: true,
+                name: 'uuid',
+                orderable: false,
             }
         },
         columnProcessingStatusDisplay: function(){
@@ -279,9 +280,9 @@ export default {
             columns = [
                 vm.columnId,
                 vm.columnReportNumber,
-                vm.columnRetailerGroup,
                 vm.columnReport,
                 vm.columnInvoice,
+                vm.columnUUID,
                 vm.columnProcessingStatusDisplay,
                 vm.columnDatetimeCreated,
             ]
