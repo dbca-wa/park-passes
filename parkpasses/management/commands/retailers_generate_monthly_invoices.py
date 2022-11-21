@@ -8,6 +8,7 @@ Usage: ./manage.sh retailers_generate_monthly_invoices
 import logging
 import os
 import subprocess
+import uuid
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -17,6 +18,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Count, F, Sum
 from django.utils import timezone
+from django.utils.text import slugify
 from docxtpl import DocxTemplate
 
 from parkpasses.components.passes.models import Pass
@@ -62,82 +64,74 @@ class Command(BaseCommand):
             f"\nGenerating Reports for date range: {first_day_of_previous_month} to {last_day_of_previous_month}\n\n"
         )
 
-        retailer_groups = RetailerGroup.objects.all()
+        retailer_groups = RetailerGroup.objects.exclude(
+            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+        )
 
         for retailer_group in retailer_groups:
             self.stdout.write(f"\tGenerating Invoice for {retailer_group}")
             if options["test"]:
                 # To make sure we have records when testing just select all no_payment_orders
                 # regardless of the date
-                passes = Pass.objects.exclude(cancellation__isnull=True).filter(
+                passes = Pass.objects.filter(
                     sold_via=retailer_group,
-                )
-                cancellations = Pass.objects.filter(
-                    cancellation__isnull=True,
-                    sold_via=retailer_group,
-                    cancellation__null=True,
-                )
+                    datetime_created__range=(
+                        first_day_of_previous_month,
+                        last_day_of_previous_month,
+                    ),
+                ).order_by("datetime_created")
             else:
                 passes = Pass.objects.filter(
-                    cancellation__isnull=True,
                     sold_via=retailer_group,
-                    datetime_created__gte=first_day_of_previous_month,
-                    datetime_created__lte=last_day_of_previous_month,
-                )
-                cancellations = Pass.objects.filter(
-                    sold_via=retailer_group,
-                    cancellation__isnull=False,
-                    cancellation__datetime_cancelled__gte=first_day_of_previous_month,
-                    cancellation__datetime_cancelled__lte=last_day_of_previous_month,
-                ).order_by("cancellation__datetime_cancelled")
+                    datetime_created__range=(
+                        first_day_of_previous_month,
+                        last_day_of_previous_month,
+                    ),
+                ).order_by("datetime_created")
 
             pass_count = len(passes)
-            cancellation_count = len(cancellations)
-            self.stdout.write(
-                f"\t -- Found {pass_count} Passes and {cancellation_count} cancellations.\n\n"
-            )
+            self.stdout.write(f"\t -- Found {pass_count} Passes.\n\n")
 
             if 0 == pass_count:
                 continue
 
+            invoice_uuid = uuid.uuid4()
+
             total_sales = Decimal(0.00)
             for park_pass in passes:
-                total_sales += park_pass.price
+                total_sales += park_pass.price_after_concession_applied.quantize(
+                    Decimal("0.01")
+                )
 
-            total_refunds = Decimal(0.00)
-            for park_pass in cancellations:
-                total_refunds += park_pass.pro_rata_refund_amount
-
-            grand_total = total_sales - total_refunds
+            total_sales = total_sales.quantize(Decimal("0.01"))
 
             commission_amount = Decimal(
-                grand_total * (retailer_group.commission_percentage / 100)
+                total_sales * (retailer_group.commission_percentage / 100)
             ).quantize(Decimal("0.01"))
 
-            total_payable = Decimal(grand_total - commission_amount).quantize(
+            total_payable = Decimal(total_sales - commission_amount).quantize(
                 Decimal("0.01")
             )
 
             context = {
+                "invoice_uuid": invoice_uuid,
                 "organisation": organisation,
                 "retailer_group": retailer_group,
                 "passes": passes,
-                "cancellations": cancellations,
-                "date": today,
+                "date_invoice": first_day_of_previous_month,
+                "date_generated": today,
                 "commission_percentage": f"{retailer_group.commission_percentage}%",
                 "commission_amount": f"${commission_amount}",
                 "total_sales": f"${total_sales}",
-                "total_refunds": f"${total_refunds}",
-                "grand_total": f"${grand_total}",
                 "total_payable": f"${total_payable}",
             }
             invoice_template_docx.render(context)
             invoice_filename = f"Park Passes Invoice - {retailer_group.name} - {first_day_of_previous_month.date()} "
             invoice_filename += f"{last_day_of_previous_month.date()}.docx"
-            invoice_path = f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{retailer_group.id}/{invoice_filename}"
-            Path(f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{retailer_group.id}").mkdir(
-                parents=True, exist_ok=True
-            )
+            invoice_path = f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(retailer_group.name)}/{invoice_filename}"
+            Path(
+                f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(retailer_group.name)}"
+            ).mkdir(parents=True, exist_ok=True)
             invoice_template_docx.save(invoice_path)
             subprocess.run(
                 [
@@ -146,7 +140,7 @@ class Command(BaseCommand):
                     "pdf",
                     invoice_path,
                     "--outdir",
-                    f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{retailer_group.id}",
+                    f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(retailer_group.name)}",
                 ]
             )
 
@@ -164,21 +158,20 @@ class Command(BaseCommand):
                 "organisation": organisation,
                 "rg": retailer_group,
                 "total_sales_by_pass_type": total_sales_by_pass_type,
-                "date": today,
+                "date_report": first_day_of_previous_month,
+                "date_generated": today,
                 "commission_percentage": f"{retailer_group.commission_percentage}%",
                 "commission_amount": f"${commission_amount}",
                 "total_sales": f"${total_sales}",
-                "total_refunds": f"${total_refunds}",
-                "grand_total": f"${grand_total}",
                 "total_payable": f"${total_payable}",
             }
             report_template_docx.render(context)
             report_filename = f"Park Passes Report - {retailer_group.name} - {first_day_of_previous_month.date()} "
             report_filename += f"{last_day_of_previous_month.date()}.docx"
-            report_path = f"{settings.RETAILER_GROUP_REPORT_ROOT}/{retailer_group.id}/{report_filename}"
-            Path(f"{settings.RETAILER_GROUP_REPORT_ROOT}/{retailer_group.id}").mkdir(
-                parents=True, exist_ok=True
-            )
+            report_path = f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(retailer_group.name)}/{report_filename}"
+            Path(
+                f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(retailer_group.name)}"
+            ).mkdir(parents=True, exist_ok=True)
             report_template_docx.save(report_path)
             subprocess.run(
                 [
@@ -187,7 +180,7 @@ class Command(BaseCommand):
                     "pdf",
                     report_path,
                     "--outdir",
-                    f"{settings.RETAILER_GROUP_REPORT_ROOT}/{retailer_group.id}",
+                    f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(retailer_group.name)}",
                 ]
             )
 
@@ -204,6 +197,7 @@ class Command(BaseCommand):
                 )
             else:
                 report = Report.objects.create(retailer_group=retailer_group)
+            report.uuid = invoice_uuid
             report.report.name = report_path.replace("docx", "pdf")
             report.invoice.name = invoice_path.replace("docx", "pdf")
             report.save()
