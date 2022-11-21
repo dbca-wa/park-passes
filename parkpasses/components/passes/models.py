@@ -545,7 +545,7 @@ class Pass(models.Model):
     @property
     def price_after_all_discounts(self):
         """Convenience method that makes more descriptive sense"""
-        return self.price_after_voucher_applied
+        return self.price_after_voucher_applied.quantize(Decimal("0.00"))
 
     @property
     def price_display(self):
