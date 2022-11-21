@@ -27,6 +27,7 @@ BUILD_TAG = env(
     "BUILD_TAG", hashlib.sha256(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
 
+TIME_ZONE = "Australia/Perth"
 
 STATIC_URL = "/static/"
 
