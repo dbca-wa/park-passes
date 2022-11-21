@@ -368,6 +368,7 @@ export default {
         payNow: function (id) {
             var form = document.createElement("form");
             var csrftoken = document.createElement("input");
+            csrftoken.setAttribute("type", "hidden");
 
             form.method = "POST";
             form.action = apiEndpoints.retailerPayInvoice(id);
