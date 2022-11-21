@@ -30,7 +30,7 @@
             <div v-else></div>
             <div v-if="passCurrentOrFuture(pass)" class="link"><a :href="passURL(pass.id)" target="blank">Download Pass PDF</a> <i class="fa-solid fa-file-pdf fa-lg ps-1"></i></div>
             <div v-else></div>
-            <div v-if="soldViaDBCA(pass)" class="link"><a target="_blank" rel="noopener" :href="invoiceURL(pass.id)">Download Invoice</a> <i class="fa-solid fa-file-invoice fa-lg ps-1"></i></div>
+            <div v-if="showInvoiceLink(pass)" class="link"><a target="_blank" rel="noopener" :href="invoiceURL(pass.id)">Download Invoice</a> <i class="fa-solid fa-file-invoice fa-lg ps-1"></i></div>
             <div v-else class="link"> <a href="/contact/">Contact DBCA</a> <i class="fa-solid fa-phone fa-lg ps-1"></i></div>
 
           </div>
@@ -134,12 +134,19 @@ export default {
     soldViaDBCA: function(pass) {
         return constants.DEFAULT_SOLD_VIA == pass.sold_via_name;
     },
+    showInvoiceLink: function(pass) {
+      if(constants.PERSONNEL_PASS_NAME==pass.pass_type_name){
+        return false;
+      }
+        return this.soldViaDBCA(pass);
+    },
     showAutoRenewalOption: function(pass) {
         if('EX' == pass.processing_status){
             return false;
         }
         if('DAY_ENTRY_PASS' == pass.pass_type_name ||
-        'HOLIDAY_PASS' == pass.pass_type_name) {
+        'HOLIDAY_PASS' == pass.pass_type_name ||
+        constants.PERSONNEL_PASS_NAME==pass.pass_type_name) {
             return false;
         }
         return true;
@@ -151,7 +158,7 @@ export default {
         return false;
     },
     canUpdateVehicleDetails: function (pass) {
-      if(constants.PINJAR_PASS_NAME==pass.pass_type_name){
+      if(constants.PINJAR_PASS_NAME==pass.pass_type_name||constants.PERSONNEL_PASS_NAME==pass.pass_type_name){
           return false;
       }
       if(pass.prevent_further_vehicle_updates){
