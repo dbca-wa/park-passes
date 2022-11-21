@@ -171,7 +171,7 @@ class PassTypePricingWindow(models.Model):
                 raise ValidationError(
                     "The start date must occur before the expiry date."
                 )
-            if self.date_expiry <= timezone.now().date():
+            if self.date_expiry.date() <= timezone.now().date():
                 raise ValidationError("The expiry date must be in the future.")
 
         super().save(*args, **kwargs)
@@ -493,7 +493,9 @@ class Pass(models.Model):
         ordering = ["-datetime_created"]
 
     def __str__(self):
-        return f"{self.pass_number}"
+        if self.pass_number:
+            return f"{self.pass_number}"
+        return "Pass number not yet assigned."
 
     @property
     def email_user(self):
@@ -697,17 +699,17 @@ class Pass(models.Model):
 
         self.set_processing_status()
 
-        if self.user:
-            logger.info(
-                f"Pass has a user id: {self.user}",
-            )
-            email_user = self.email_user
-            self.first_name = email_user.first_name
-            self.last_name = email_user.last_name
-            self.email = email_user.email
-            logger.info(
-                "Populated pass details from ledger email user.",
-            )
+        # if self.user:
+        #     logger.info(
+        #         f"Pass has a user id: {self.user}",
+        #     )
+        #     email_user = self.email_user
+        #     self.first_name = email_user.first_name
+        #     self.last_name = email_user.last_name
+        #     self.email = email_user.email
+        #     logger.info(
+        #         "Populated pass details from ledger email user.",
+        #     )
 
         logger.info(f"Saving park pass: {self}")
         super().save(*args, **kwargs)
