@@ -212,6 +212,9 @@ module.exports = {
     /* ========================= Reports =================================================*/
 
     reportsListRetailer:                '/api/reports/retailer/reports',
+    retailerPayInvoice: function (reportId) {
+        return                          `/api/reports/retailer/reports/${reportId}/pay-invoice/`;
+    },
     reportsListInternal:                '/api/reports/internal/reports',
     reportUpdateInternal:  function (reportId) {
         return                          `/api/reports/internal/reports/${reportId}/`;
