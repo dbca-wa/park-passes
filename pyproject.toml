@@ -50,8 +50,8 @@ django-redis = "^5.2.0"
 kolo = "^1.8.0"
 django-resized = "^1.0.1"
 drf-renderer-xlsx = "^1.0.0"
-django-org-model-logs = {git = "https://github.com/oakdbca/django-org-model-logs.git"}
-django-org-model-documents = {git = "https://github.com/oakdbca/django-org-model-documents.git"}
+django-org-model-logs = {git = "https://github.com/dbca-wa/django-org-model-logs.git"}
+django-org-model-documents = {git = "https://github.com/dbca-wa/django-org-model-documents.git"}
 django-autoslug = "^1.9.8"
 XlsxWriter = "^3.0.3"
 djangorestframework-api-key = "^2.2.0"
