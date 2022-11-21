@@ -46,7 +46,7 @@
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints, constants } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import Swal from 'sweetalert2'
 
@@ -230,7 +230,7 @@ export default {
                     if('Paid'==full.processing_status_display){
                         html = `<span class="badge bg-success">Paid</span>`;
                     } else {
-                        html = `<span class="badge bg-danger">Unpaid</span>`;
+                        html = `<span class="badge bg-danger">Unpaid</span> | <a href="javascript:void(0);" data-id="${full.id}" data-action="pay-now">Pay Now</a>`;
                     }
                     return html;
                 }
@@ -356,6 +356,20 @@ export default {
                 console.error("There was an error!", error);
             });
         },
+        payNow: function (id) {
+            var form = document.createElement("form");
+            var csrftoken = document.createElement("input");
+
+            form.method = "POST";
+            form.action = apiEndpoints.retailerPayInvoice(id);
+
+            csrftoken.value=helpers.getCookie('csrftoken');
+            csrftoken.name="csrfmiddlewaretoken";
+            form.appendChild(csrftoken);
+
+            document.body.appendChild(form);
+            form.submit();
+        },
         markPaid: function (id, reportNumber) {
             let vm = this;
             Swal.fire({
@@ -388,6 +402,11 @@ export default {
         },
         addEventListeners: function(){
             let vm = this
+            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="pay-now"]', function(e) {
+                e.preventDefault();
+                let id = $(this).attr('data-id');
+                vm.payNow(id)
+            });
             vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="mark-paid"]', function(e) {
                 e.preventDefault();
                 let id = $(this).attr('data-id');
