@@ -1,6 +1,7 @@
 import logging
 from decimal import Decimal
 
+import requests
 from django.conf import settings
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect
@@ -9,9 +10,9 @@ from django.utils import timezone
 from ledger_api_client.utils import create_basket_session, create_checkout_session
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
@@ -113,6 +114,16 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
                     return FileResponse(report.report)
         raise Http404
 
+    @action(methods=["GET"], detail=True, url_path="retrieve-invoice-receipt")
+    def retrieve_invoice_receipt(self, request, *args, **kwargs):
+        report = self.get_object()
+        invoice_url = report.invoice_link
+        if invoice_url:
+            response = requests.get(invoice_url)
+            return FileResponse(response, content_type="application/pdf")
+
+        raise Http404
+
     @action(methods=["POST"], detail=True, url_path="pay-invoice")
     def pay_invoice(self, request, *args, **kwargs):
         logger.info("Pay Invoice")
@@ -179,14 +190,16 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
         invoice_text = f"Unique Identifier: {booking_reference}"
         return_url = request.build_absolute_uri(
             reverse(
-                "retailer-reports",
+                "retailer-reports-pay-invoice-success",
+                kwargs={
+                    "report_number": report.report_number,
+                },
             )
         )
         return_preload_url = request.build_absolute_uri(
             reverse(
                 "ledger-api-retailer-invoice-success-callback",
                 kwargs={
-                    "id": report.id,
                     "uuid": booking_reference,
                 },
             )
@@ -202,7 +215,7 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
 
 
 class PayInvoiceSuccessCallbackView(APIView):
-    permission_classes = [IsAuthenticated]
+    throttle_classes = [AnonRateThrottle]
 
     def get(self, request, uuid, format=None):
         logger.info("Park passes Pay Invoice Success View get method called.")
@@ -296,4 +309,14 @@ class InternalReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
         report = self.get_object()
         if report.report:
             return FileResponse(report.report)
+        raise Http404
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-invoice-receipt")
+    def retrieve_invoice_receipt(self, request, *args, **kwargs):
+        report = self.get_object()
+        invoice_url = report.invoice_link
+        if invoice_url:
+            response = requests.get(invoice_url)
+            return FileResponse(response, content_type="application/pdf")
+
         raise Http404

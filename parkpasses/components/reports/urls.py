@@ -14,7 +14,7 @@ router.register(r"internal/reports", InternalReportViewSet, basename="reports-in
 
 urlpatterns = [
     url(
-        r"ledger-api-retailer-invoice-success-callback/(?P<id>.+)/(?P<uuid>.+)$",
+        r"ledger-api-retailer-invoice-success-callback/(?P<uuid>.+)$",
         PayInvoiceSuccessCallbackView.as_view(),
         name="ledger-api-retailer-invoice-success-callback",
     ),

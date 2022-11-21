@@ -222,7 +222,6 @@ class LedgerCheckoutView(APIView):
 
 
 class SuccessView(APIView):
-    # permission_classes = [IsAuthenticated]
     throttle_classes = [AnonRateThrottle]
 
     def get(self, request, uuid, format=None):

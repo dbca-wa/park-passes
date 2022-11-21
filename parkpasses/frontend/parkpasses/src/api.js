@@ -222,6 +222,12 @@ module.exports = {
     retrieveReportInvoicePdfRetailer:   function (reportId) {
         return                          `/api/reports/retailer/reports/${reportId}/retrieve-invoice-pdf/`;
     },
+    retrieveReportInvoiceReceiptPdfRetailer:   function (reportId) {
+        return                          `/api/reports/retailer/reports/${reportId}/retrieve-invoice-receipt/`;
+    },
+    retrieveReportInvoiceReceiptPdfInternal:   function (reportId) {
+        return                          `/api/reports/internal/reports/${reportId}/retrieve-invoice-receipt/`;
+    },
     retrieveReportInvoicePdfInternal:   function (reportId) {
         return                          `/api/reports/internal/reports/${reportId}/retrieve-invoice-pdf/`;
     },

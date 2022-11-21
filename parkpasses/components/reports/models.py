@@ -55,3 +55,13 @@ class Report(models.Model):
         if not self.report_number:
             self.report_number = f"IMR{self.pk:06d}"
             super().save(force_update=True)
+
+    @property
+    def invoice_link(self):
+        return (
+            settings.LEDGER_API_URL
+            + "/ledgergw/invoice-pdf/"
+            + settings.LEDGER_API_KEY
+            + "/"
+            + self.invoice_reference
+        )

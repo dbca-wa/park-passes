@@ -175,6 +175,13 @@ urlpatterns = [
         name="retailer-reports",
     ),
     url(
+        r"^retailer/reports/(?P<report_number>.+)/payment-success$",
+        views.RetailerView.as_view(
+            extra_context={"title": "Retailer Invoices and Monthly Reports"}
+        ),
+        name="retailer-reports-pay-invoice-success",
+    ),
+    url(
         r"^retailer/invite-a-user$",
         views.RetailerView.as_view(extra_context={"title": "Invite a User"}),
         name="retailer-invite-a-user",
