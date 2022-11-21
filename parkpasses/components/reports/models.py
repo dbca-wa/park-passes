@@ -25,6 +25,9 @@ class Report(models.Model):
     invoice = models.FileField(
         null=True, blank=True, max_length=500, storage=upload_protected_files_storage
     )
+    invoice_reference = models.CharField(max_length=36, blank=True, null=True)
+    uuid = models.CharField(max_length=36, blank=True, null=True)
+
     PAID = "P"
     UNPAID = "U"
     PROCESSING_STATUS_CHOICES = [
