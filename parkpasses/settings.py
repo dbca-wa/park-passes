@@ -110,7 +110,7 @@ if DEBUG and SHOW_DEBUG_TOOLBAR:
 
     # this dict removes check to dtermine if toolbar should display --> works for rks docker container
     DEBUG_TOOLBAR_CONFIG = {
-        "SHOW_TOOLBAR_CALLBACK": show_toolbar,
+        # "SHOW_TOOLBAR_CALLBACK": show_toolbar,
         "INTERCEPT_REDIRECTS": False,
     }
 
