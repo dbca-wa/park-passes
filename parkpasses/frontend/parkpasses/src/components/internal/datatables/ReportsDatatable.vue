@@ -182,7 +182,6 @@ export default {
                 'Invoice',
                 'Payment Status',
                 'Date Generated',
-                'Action'
             ]
         },
         columnId: function(){
@@ -234,9 +233,15 @@ export default {
                 name: 'invoice_filename',
                 'render': function(row, type, full){
                     let html = '';
+
                     if(full.invoice_filename){
-                        html = `<a href="${apiEndpoints.retrieveReportInvoicePdfInternal(full.id)}" target="_blank">Invoice.pdf</a>`;
+                        html += `<a href="${apiEndpoints.retrieveReportInvoicePdfInternal(full.id)}" target="_blank">Invoice.pdf</a>`;
                     }
+
+                    if('P'===full.processing_status && full.invoice_reference) {
+                        html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfInternal(full.id)}" target="_blank">Invoice Receipt</a>`;
+                    }
+
                     return html;
                 }
             }
@@ -262,23 +267,6 @@ export default {
                 data: "datetime_created",
                 visible: true,
                 name: 'datetime_created'
-            }
-        },
-        columnAction: function(){
-            let vm = this
-            return {
-                data: "processing_status",
-                orderable: false,
-                searchable: false,
-                visible: true,
-                'render': function(row, type, full){
-                    let links = '';
-                    console.log('full.processing_status = ' + full.processing_status)
-                    if('U'==full.processing_status){
-                        links +=  `<a href="javascript:void(0)" data-id="${full.id}" data-number="${full.report_number}" data-action="mark-paid">Mark as Paid</a><br/>`;
-                    }
-                    return links;
-                }
             }
         },
         dtOptions: function(){
@@ -313,7 +301,6 @@ export default {
                 vm.columnInvoice,
                 vm.columnProcessingStatusDisplay,
                 vm.columnDatetimeCreated,
-                vm.columnAction,
             ]
             search = true
 
