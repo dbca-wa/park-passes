@@ -3,9 +3,8 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from rest_framework import serializers
-
 from org_model_logs.models import CommunicationsLogEntry, EntryType
+from rest_framework import serializers
 
 
 def handle_validation_error(e):

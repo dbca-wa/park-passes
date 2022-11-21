@@ -5,6 +5,7 @@ import os
 import confy
 import dj_database_url
 from confy import env
+from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ BUILD_TAG = env(
     "BUILD_TAG", hashlib.sha256(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
 
+TIME_ZONE = "Australia/Perth"
 
 STATIC_URL = "/static/"
 
@@ -109,7 +111,7 @@ if DEBUG and SHOW_DEBUG_TOOLBAR:
 
     # this dict removes check to dtermine if toolbar should display --> works for rks docker container
     DEBUG_TOOLBAR_CONFIG = {
-        "SHOW_TOOLBAR_CALLBACK": show_toolbar,
+        # "SHOW_TOOLBAR_CALLBACK": show_toolbar,
         "INTERCEPT_REDIRECTS": False,
     }
 
@@ -361,10 +363,12 @@ PICA_GOLD_STAR_PASS_ROOT = env(
     "RETAILER_GROUP_REPORT_ROOT", PROTECTED_MEDIA_ROOT + "/pica_gold_star_pass"
 )
 
-PICA_EMAIL = env("PICA_EMAIL", "oak.mcilwain@gmail.com")
+PICA_EMAIL = env("PICA_EMAIL")
+if not PICA_EMAIL:
+    raise ImproperlyConfigured("PICA_EMAIL is not set")
 
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
-    "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", PROTECTED_MEDIA_ROOT
+    "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", "protected_media"
 )
 
 APPLICATION_TYPE_PARK_PASSES = "park_passes"

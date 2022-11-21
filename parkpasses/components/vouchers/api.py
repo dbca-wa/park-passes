@@ -90,7 +90,7 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
         logger.info(
             f"Assigned date last added to: {cart.datetime_first_added_to} to {cart}"
         )
-        logger.info(f"Saving cart: {cart_item_count}")
+        logger.info(f"Saving cart: {cart}")
         cart.save()
         logger.info("Cart saved.")
 

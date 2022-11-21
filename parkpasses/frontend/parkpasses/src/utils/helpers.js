@@ -241,7 +241,7 @@ module.exports = {
                 return 'bg-success';
             case 'Future':
                 return 'bg-info';
-            case 'Expired': case 'Cancelled':
+            case 'Expired': case 'Cancelled': case 'Invalidated':
                 return 'bg-danger';
             default:
                 return 'org-badge-primary';

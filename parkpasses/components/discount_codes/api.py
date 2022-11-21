@@ -5,6 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from drf_excel.mixins import XLSXFileMixin
 from drf_excel.renderers import XLSXRenderer
+from org_model_logs.models import UserAction
+from org_model_logs.utils import BaseUserActionViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -15,8 +17,6 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from org_model_logs.models import UserAction
-from org_model_logs.utils import BaseUserActionViewSet
 from parkpasses.components.discount_codes.models import (
     DiscountCode,
     DiscountCodeBatch,
@@ -93,14 +93,21 @@ class DiscountCodeBatchFilterBackend(DatatablesFilterBackend):
         datetime_expiry_from = request.GET.get("datetime_expiry_from")
         datetime_expiry_to = request.GET.get("datetime_expiry_to")
 
+        if "Invalidated" == status:
+            queryset = queryset.filter(invalidated=True)
+
         if "Expired" == status:
-            queryset = queryset.filter(datetime_expiry__lte=timezone.now())
+            queryset = queryset.exclude(invalidated=True).filter(
+                datetime_expiry__lte=timezone.now()
+            )
         if "Current" == status:
-            queryset = queryset.filter(
+            queryset = queryset.exclude(invalidated=True).filter(
                 datetime_start__lte=timezone.now(), datetime_expiry__gte=timezone.now()
             )
         if "Future" == status:
-            queryset = queryset.filter(datetime_start__gt=timezone.now())
+            queryset = queryset.exclude(invalidated=True).filter(
+                datetime_start__gt=timezone.now()
+            )
 
         if datetime_start_from:
             queryset = queryset.filter(datetime_start__gte=datetime_start_from)
@@ -157,6 +164,59 @@ class InternalDiscountCodeBatchViewSet(
                 DiscountCodeBatchValidUser.objects.create(
                     discount_code_batch_id=new_discount_code_batch.id, user=valid_user
                 )
+
+    def perform_update(self, serializer):
+        updated_discount_code_batch = serializer.save()
+
+        valid_pass_types = self.request.data.get("valid_pass_types")
+        if valid_pass_types:
+            # Delete any pass types that are no longer valid
+            if (
+                DiscountCodeBatchValidPassType.objects.filter(
+                    discount_code_batch_id=updated_discount_code_batch.id
+                )
+                .exclude(pass_type_id__in=valid_pass_types)
+                .exists()
+            ):
+                DiscountCodeBatchValidPassType.objects.filter(
+                    discount_code_batch_id=updated_discount_code_batch.id
+                ).exclude(pass_type_id__in=valid_pass_types).delete()
+
+            # Create any newly added pass types that are valid
+            for valid_pass_type in valid_pass_types:
+                if not DiscountCodeBatchValidPassType.objects.filter(
+                    discount_code_batch_id=updated_discount_code_batch.id,
+                    pass_type_id=valid_pass_type,
+                ).exists():
+                    DiscountCodeBatchValidPassType.objects.create(
+                        discount_code_batch_id=updated_discount_code_batch.id,
+                        pass_type_id=valid_pass_type,
+                    )
+
+        valid_users = self.request.data.get("valid_users")
+        if valid_users:
+            # Delete any users that are no longer valid
+            if (
+                DiscountCodeBatchValidUser.objects.filter(
+                    discount_code_batch_id=updated_discount_code_batch.id
+                )
+                .exclude(user__in=valid_users)
+                .exists()
+            ):
+                DiscountCodeBatchValidUser.objects.filter(
+                    discount_code_batch_id=updated_discount_code_batch.id
+                ).exclude(user__in=valid_users).delete()
+
+            # Create any newly added users that are valid
+            for valid_user in valid_users:
+                if not DiscountCodeBatchValidUser.objects.filter(
+                    discount_code_batch_id=updated_discount_code_batch.id,
+                    user=valid_user,
+                ).exists():
+                    DiscountCodeBatchValidUser.objects.create(
+                        discount_code_batch_id=updated_discount_code_batch.id,
+                        user=valid_user,
+                    )
 
     @action(methods=["PUT"], detail=True, url_path="invalidate-discount-code-batch")
     def invalidate_discount_code_batch(self, request, *args, **kwargs):

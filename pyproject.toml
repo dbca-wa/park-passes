@@ -20,12 +20,9 @@ reportlab = "3.5.55"
 requests = "2.28.1"
 setuptools = "45.2.0"
 six = "1.14.0"
-# git+https://github.com/dbca-wa/webtemplate2.git#egg=webtemplate_dbca
-# git+https://github.com/dbca-wa/dbca-utils@1.1.1#egg=dbca-utils
 dbca-utils = {git = "https://github.com/dbca-wa/dbca-utils.git", rev = "1.1.1"}
 psycopg2-binary = "2.8.5"
 django-extensions = "3.1.5"
-# git+https://github.com/xzzy/ledger_api_client.git#egg=ledger_api_client
 ledger_api_client = {git = "https://github.com/dbca-wa/ledger_api_client.git"}
 whitenoise = {extras = ["brotli"], version = "^6.2.0"}
 djangorestframework = "3.13.1"
@@ -53,8 +50,8 @@ django-redis = "^5.2.0"
 kolo = "^1.8.0"
 django-resized = "^1.0.1"
 drf-renderer-xlsx = "^1.0.0"
-#django-org-model-logs = "^1.1.1"
-#django-org-model-documents = "^1.0.0"
+django-org-model-logs = {git = "https://github.com/dbca-wa/django-org-model-logs.git"}
+django-org-model-documents = {git = "https://github.com/dbca-wa/django-org-model-documents.git"}
 django-autoslug = "^1.9.8"
 XlsxWriter = "^3.0.3"
 djangorestframework-api-key = "^2.2.0"

@@ -21,7 +21,7 @@
 # 'is_authenticated':True,
 # 'is_anonymous': False,
 # 'is_superuser': False,
-# 'email': 'oak.mcilwain@gmail.com',
+# 'email': 'test.user@gmail.com',
 # 'first_name': 'Oak2',
 # 'last_name': 'McIlwain2',
 # 'is_staff': False,

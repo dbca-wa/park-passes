@@ -12,11 +12,13 @@ module.exports = {
 
     HOLIDAY_PASS_NAME: 'HOLIDAY_PASS',
     PINJAR_PASS_NAME: 'PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS',
+    PERSONNEL_PASS_NAME: 'PERSONNEL_PASS',
 
     DEFAULT_SOLD_VIA: 'DBCA Website',
 
     PASS_PROCESSING_STATUS_CANCELLED: 'CA',
     PASS_STATUS_EXPIRED: 'Expired',
+    DISCOUNT_CODE_BATCH_STATUS_INVALIDATED: 'Invalidated',
 
     DATATABLE_PROCESSING_HTML: '<div class="spinner-border org-primary align-items-center" style="width: 3rem; height: 3rem; margin-top:45px;" role="status"><span class="visually-hidden">Loading...</span></div>',
 

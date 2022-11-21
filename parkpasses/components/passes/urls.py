@@ -18,6 +18,7 @@ from parkpasses.components.passes.api import (
     RacDiscountCodeCheckView,
     RacDiscountCodeView,
     RetailerApiAccessViewSet,
+    RetailerPassTypesDistinct,
     RetailerPassTypeViewSet,
     RetailerPassViewSet,
     UploadPersonnelPasses,
@@ -52,6 +53,7 @@ router.register(
 )
 
 urlpatterns = [
+    url(r"retailer-pass-types/$", RetailerPassTypesDistinct.as_view()),
     url(r"pass-types-distinct", PassTypesDistinct.as_view()),
     url(r"pass-processing-statuses-distinct", PassProcessingStatusesDistinct.as_view()),
     url(r"default-pass-options-by-pass-type-id", DefaultOptionsForPassType.as_view()),

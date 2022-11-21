@@ -171,7 +171,7 @@ class PassTypePricingWindow(models.Model):
                 raise ValidationError(
                     "The start date must occur before the expiry date."
                 )
-            if self.date_expiry <= timezone.now().date():
+            if self.date_expiry.date() <= timezone.now().date():
                 raise ValidationError("The expiry date must be in the future.")
 
         super().save(*args, **kwargs)
@@ -180,9 +180,9 @@ class PassTypePricingWindow(models.Model):
     def status(self):
         if not self.date_expiry:
             return "Current"
-        if self.date_start >= timezone.now().date():
+        if self.date_start > timezone.now().date():
             return "Future"
-        elif self.date_expiry < timezone.now().date():
+        elif self.date_expiry <= timezone.now().date():
             return "Expired"
         else:
             return "Current"
@@ -493,7 +493,9 @@ class Pass(models.Model):
         ordering = ["-datetime_created"]
 
     def __str__(self):
-        return f"{self.pass_number}"
+        if self.pass_number:
+            return f"{self.pass_number}"
+        return "Pass number not yet assigned."
 
     @property
     def email_user(self):
@@ -545,7 +547,7 @@ class Pass(models.Model):
     @property
     def price_after_all_discounts(self):
         """Convenience method that makes more descriptive sense"""
-        return self.price_after_voucher_applied
+        return self.price_after_voucher_applied.quantize(Decimal("0.00"))
 
     @property
     def price_display(self):
@@ -697,17 +699,17 @@ class Pass(models.Model):
 
         self.set_processing_status()
 
-        if self.user:
-            logger.info(
-                f"Pass has a user id: {self.user}",
-            )
-            email_user = self.email_user
-            self.first_name = email_user.first_name
-            self.last_name = email_user.last_name
-            self.email = email_user.email
-            logger.info(
-                "Populated pass details from ledger email user.",
-            )
+        # if self.user:
+        #     logger.info(
+        #         f"Pass has a user id: {self.user}",
+        #     )
+        #     email_user = self.email_user
+        #     self.first_name = email_user.first_name
+        #     self.last_name = email_user.last_name
+        #     self.email = email_user.email
+        #     logger.info(
+        #         "Populated pass details from ledger email user.",
+        #     )
 
         logger.info(f"Saving park pass: {self}")
         super().save(*args, **kwargs)

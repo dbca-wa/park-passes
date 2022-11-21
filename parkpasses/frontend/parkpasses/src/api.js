@@ -65,6 +65,7 @@ module.exports = {
     /* ========================= Pass Types =============================================*/
 
     passTypesDistinct:                  '/api/passes/pass-types-distinct/',
+    retailerPassTypesDistinct:          '/api/passes/retailer-pass-types/',
     passTypesExternal:                  '/api/passes/external/pass-types/',
     passTypesRetailer:                  '/api/passes/retailer/pass-types/',
     passTypesInternal:                  '/api/passes/internal/pass-types/',
@@ -211,12 +212,21 @@ module.exports = {
     /* ========================= Reports =================================================*/
 
     reportsListRetailer:                '/api/reports/retailer/reports',
+    retailerPayInvoice: function (reportId) {
+        return                          `/api/reports/retailer/reports/${reportId}/pay-invoice/`;
+    },
     reportsListInternal:                '/api/reports/internal/reports',
     reportUpdateInternal:  function (reportId) {
         return                          `/api/reports/internal/reports/${reportId}/`;
     },
     retrieveReportInvoicePdfRetailer:   function (reportId) {
         return                          `/api/reports/retailer/reports/${reportId}/retrieve-invoice-pdf/`;
+    },
+    retrieveReportInvoiceReceiptPdfRetailer:   function (reportId) {
+        return                          `/api/reports/retailer/reports/${reportId}/retrieve-invoice-receipt/`;
+    },
+    retrieveReportInvoiceReceiptPdfInternal:   function (reportId) {
+        return                          `/api/reports/internal/reports/${reportId}/retrieve-invoice-receipt/`;
     },
     retrieveReportInvoicePdfInternal:   function (reportId) {
         return                          `/api/reports/internal/reports/${reportId}/retrieve-invoice-pdf/`;

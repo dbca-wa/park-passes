@@ -151,6 +151,7 @@ export default {
                 'Future',
                 'Current',
                 'Expired',
+                'Invalidated',
             ],
 
             datepickerOptions: {
@@ -374,11 +375,15 @@ export default {
                         name: 'internal-discount-code-batch-form',
                         params: { discountCodeBatchId: full.id }
                     });
-                    if (today < expiryDate) {
-                        links += `<a href="${editLink.href}">Edit</a> | `;
-                        links += `<a href="javascript:void(0)" data-item-id="${full.id}" data-item-discount-code-batch-number="${full.discount_code_batch_number}" data-item-id="${full.id}" data-action="invalidate">Invalidate</a>`;
-                    } else {
-                        links += 'Discount code batch has expired.'
+                    if(full.invalidated){
+                        links += `<a href="${editLink.href}">View</a>`;
+                    } else{
+                        if (today < expiryDate) {
+                            links += `<a href="${editLink.href}">Edit</a> | `;
+                            links += `<a href="javascript:void(0)" data-item-id="${full.id}" data-item-discount-code-batch-number="${full.discount_code_batch_number}" data-item-id="${full.id}" data-action="invalidate">Invalidate</a>`;
+                        } else {
+                            links += `<a href="${editLink.href}">View</a>`;
+                        }
                     }
                     return links;
                 }
@@ -534,14 +539,8 @@ export default {
         collapsibleComponentMounted: function () {
             this.$refs.CollapsibleFilters.showWarningIcon(this.filterApplied)
         },
-        saveSuccess: function ({ message, discountCodeBatch }) {
+        saveSuccess: function () {
             window.scrollTo(0, 0);
-            this.successMessage = message;
-            this.$nextTick(() => {
-                $('#successMessageAlert').fadeOut(4000, function () {
-                    this.successMessage = null;
-                });
-            });
             this.$refs.discountCodeBatchDatatable.vmDataTable.ajax.reload();
         },
         invalidateSuccess: function() {

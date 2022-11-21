@@ -15,6 +15,9 @@ class RetailerReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = "__all__"
+        datatables_always_serialize = [
+            "invoice_reference",
+        ]
 
     def get_processing_status_display(self, obj):
         return obj.get_processing_status_display()

@@ -1,0 +1,20 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            Dear {{pass.first_name}} {{pass.last_name}},
+{% endblock %}
+
+{%  block content %}
+            DBCA has issued you with a personnel park pass:
+
+            Pass Number: {{pass.pass_number}}
+            Pass Type: {{pass.pass_type_display_name}}
+            Duration: {{pass.duration}}
+            Price: {{pass.price}}
+            Start Date: {{pass.date_start|date:'d-m-Y'}}
+            Expiry Date: {{pass.date_expiry|date:'d-m-Y'}}
+
+            Your park pass pdf is attached to this email.
+
+            Please print it out and display it on your vehicle dashboard when entering a national park.
+{%  endblock %}

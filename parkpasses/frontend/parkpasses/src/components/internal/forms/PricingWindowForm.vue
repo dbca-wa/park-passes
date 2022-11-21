@@ -44,7 +44,7 @@
                                     <span class="form-text">
                                         <input v-if="pricingWindow.date_expiry" class="form-control" name="expiryDate" type="date" v-model="pricingWindow.date_expiry" :required="!isDefaultPricingWindow">
                                         <span v-else class="form-text">
-                                            <span class="form-text">Default Pricing Windows Never End</span>
+                                            <span class="form-text">A Default Pricing Window never ends.</span>
                                         </span>
                                     </span>
                                 </div>

@@ -1,16 +1,28 @@
 import logging
+from decimal import Decimal
 
+import requests
+from django.conf import settings
 from django.http import FileResponse, Http404
-from rest_framework import viewsets
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.utils import timezone
+from ledger_api_client.utils import create_basket_session, create_checkout_session
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
+from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.main.api import (
     CustomDatatablesListMixin,
     CustomDatatablesRenderer,
 )
+from parkpasses.components.passes.models import Pass
 from parkpasses.components.reports.models import Report
 from parkpasses.components.reports.serializers import (
     InternalReportSerializer,
@@ -102,6 +114,136 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
                     return FileResponse(report.report)
         raise Http404
 
+    @action(methods=["GET"], detail=True, url_path="retrieve-invoice-receipt")
+    def retrieve_invoice_receipt(self, request, *args, **kwargs):
+        report = self.get_object()
+        invoice_url = report.invoice_link
+        if invoice_url:
+            response = requests.get(invoice_url)
+            return FileResponse(response, content_type="application/pdf")
+
+        raise Http404
+
+    @action(methods=["POST"], detail=True, url_path="pay-invoice")
+    def pay_invoice(self, request, *args, **kwargs):
+        logger.info("Pay Invoice")
+        report = self.get_object()
+        retailer_group = report.retailer_group
+
+        date_invoice_generated = report.datetime_created.date()
+        first_day_of_this_month = date_invoice_generated.replace(day=1)
+        last_day_of_previous_month = first_day_of_this_month - timezone.timedelta(
+            days=1
+        )
+        first_day_of_previous_month = last_day_of_previous_month.replace(day=1)
+        month_year = first_day_of_previous_month.strftime("%B %Y")
+        ledger_description = f"Park Passes Sales for the Month of { month_year }"
+
+        passes = Pass.objects.filter(
+            sold_via=retailer_group,
+            datetime_created__range=(
+                first_day_of_previous_month,
+                last_day_of_previous_month,
+            ),
+        )
+
+        invoice_amount = Decimal(0.00)
+        for park_pass in passes:
+            invoice_amount += park_pass.price_after_concession_applied
+
+        if invoice_amount <= Decimal(0.00):
+            return redirect(reverse("retailer-reports"))
+
+        commission_amount = (
+            Decimal(invoice_amount / 100).quantize(Decimal("0.01"))
+            * retailer_group.commission_percentage
+        )
+
+        if settings.DEBUG:
+            invoice_amount = int(invoice_amount)
+            ledger_description += " (Price rounded for dev env)"
+
+        ledger_order_lines = [
+            {
+                "ledger_description": ledger_description,
+                "quantity": 1,
+                "price_incl_tax": str(invoice_amount),
+                "oracle_code": retailer_group.oracle_code,
+                "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
+            },
+            {
+                "ledger_description": f"Commission on sales ({retailer_group.commission_percentage}%)",
+                "quantity": 1,
+                "price_incl_tax": str(-abs(commission_amount)),
+                "oracle_code": retailer_group.oracle_code,
+                "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
+            },
+        ]
+        booking_reference = report.uuid
+        basket_parameters = CartUtils.get_basket_parameters(
+            ledger_order_lines,
+            booking_reference,
+            is_no_payment=False,
+        )
+        create_basket_session(request, request.user.id, basket_parameters)
+
+        invoice_text = f"Unique Identifier: {booking_reference}"
+        return_url = request.build_absolute_uri(
+            reverse(
+                "retailer-reports-pay-invoice-success",
+                kwargs={
+                    "report_number": report.report_number,
+                },
+            )
+        )
+        return_preload_url = request.build_absolute_uri(
+            reverse(
+                "ledger-api-retailer-invoice-success-callback",
+                kwargs={
+                    "uuid": booking_reference,
+                },
+            )
+        )
+        checkout_parameters = CartUtils.get_checkout_parameters(
+            request, return_url, return_preload_url, request.user.id, invoice_text
+        )
+        logger.info("Checkout_parameters = " + str(checkout_parameters))
+
+        create_checkout_session(request, checkout_parameters)
+
+        return redirect(reverse("ledgergw-payment-details"))
+
+
+class PayInvoiceSuccessCallbackView(APIView):
+    throttle_classes = [AnonRateThrottle]
+
+    def get(self, request, uuid, format=None):
+        logger.info("Park passes Pay Invoice Success View get method called.")
+        invoice_reference = request.GET.get("invoice", "false")
+
+        if uuid and invoice_reference and Report.objects.filter(uuid=uuid).exists():
+            logger.info(
+                f"Invoice reference: {invoice_reference} and uuid: {uuid}.",
+            )
+            report = Report.objects.get(uuid=uuid)
+            report.invoice_reference = invoice_reference
+            report.processing_status = Report.PAID
+            report.save()
+
+            logger.info(
+                "Returning status.HTTP_204_NO_CONTENT. Report marked as paid successfully.",
+            )
+            # this end-point is called by an unmonitored get request in ledger so there is no point having a
+            # a response body however we will return a status in case this is used on the ledger end in future
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        # If there is no uuid to identify the cart then send a bad request status back in case ledger can
+        # do something with this in future
+        logger.info(
+            "Returning status.HTTP_400_BAD_REQUEST bad request as there was not a uuid and invoice_reference."
+        )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class ReportFilterBackend(DatatablesFilterBackend):
     """
@@ -146,7 +288,9 @@ class InternalReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     """
 
     model = Report
-    queryset = Report.objects.all()
+    queryset = Report.objects.exclude(
+        retailer_group__name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+    )
     permission_classes = [IsInternal]
     serializer_class = InternalReportSerializer
     pagination_class = DatatablesPageNumberPagination
@@ -165,4 +309,14 @@ class InternalReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
         report = self.get_object()
         if report.report:
             return FileResponse(report.report)
+        raise Http404
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-invoice-receipt")
+    def retrieve_invoice_receipt(self, request, *args, **kwargs):
+        report = self.get_object()
+        invoice_url = report.invoice_link
+        if invoice_url:
+            response = requests.get(invoice_url)
+            return FileResponse(response, content_type="application/pdf")
+
         raise Http404

@@ -32,6 +32,15 @@ class PassPurchasedNotificationEmail(TemplateEmailBase):
         self.txt_template = "parkpasses/emails/pass_purchased_notification.txt"
 
 
+class PassCreatedPersonnelNotificationEmail(TemplateEmailBase):
+    def __init__(self):
+        self.subject = "DBCA has issued you with a Personnel Park Pass"
+        self.html_template = (
+            "parkpasses/emails/pass_created_personnel_notification.html"
+        )
+        self.txt_template = "parkpasses/emails/pass_created_personnel_notification.txt"
+
+
 class PassUpdatedNotificationEmail(TemplateEmailBase):
     def __init__(self):
         self.subject = "Your Park Pass has Been Updated"
@@ -94,6 +103,8 @@ class PassEmails:
     @classmethod
     def send_pass_purchased_notification_email(self, park_pass):
         email = PassPurchasedNotificationEmail()
+        if settings.PERSONNEL_PASS == park_pass.option.pricing_window.pass_type.name:
+            email = PassCreatedPersonnelNotificationEmail()
         from parkpasses.components.passes.serializers import ExternalPassSerializer
 
         serializer = ExternalPassSerializer(park_pass)

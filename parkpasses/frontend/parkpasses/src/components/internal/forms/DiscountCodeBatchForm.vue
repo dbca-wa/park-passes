@@ -26,7 +26,14 @@
                         <SectionToggle :label="'Discount Code Batch - ' + discountCodeBatch.discount_code_batch_number">
                             <form @submit.prevent="validateForm" class="needs-validation" novalidate>
                         <div class="container">
-                            <div v-if="startDateHasPassed" class="row">
+                            <div v-if="hasBeenInvalidated" class="row">
+                                <div class="col">
+                                    <BootstrapAlert type="warning" icon="exclamation-triangle-fill">
+                                        This discount code batch can't be updated as it has been invalidated.
+                                    </BootstrapAlert>
+                                </div>
+                            </div>
+                            <div v-else-if="startDateHasPassed" class="row">
                                 <div class="col">
                                     <BootstrapAlert type="warning" icon="exclamation-triangle-fill">
                                         This discount code batch is already active so only the expiry date can be modified.
@@ -51,7 +58,7 @@
                                     <label for="datetimeExpiry" class="col-form-label">Valid To</label>
                                     <input type="datetime-local" class="form-control"
                                         :class="errors.datetime_expiry ? 'is-invalid' : ''" id="datetimeExpiry"
-                                        name="datetimeExpiry" v-model="discountCodeBatch.datetime_expiry" required="required"
+                                        name="datetimeExpiry" v-model="discountCodeBatch.datetime_expiry" :disabled="hasBeenInvalidated" required="required"
                                         :min="minEndDate" aria-describedby="validationServerDateExpiryFeedback">
                                     <div v-if="errors.datetime_expiry"  id="validationServerDateExpiryFeedback" class="invalid-feedback">
                                         <p v-for="(error, index) in errors.datetime_expiry" :key="index">{{ error }}</p>
@@ -160,7 +167,7 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
+                            <div v-if="!hasBeenInvalidated" class="mb-3">
                                 <label for="reason" class="col-form-label">Reason for <span v-if="discountCodeBatch.id">Updating {{ discountCodeBatch.discount_code_batch_number }}</span><span v-else>Creating Discount Code Batch</span>:</label>
                                 <textarea class="form-control" :class="errors.reason ? 'is-invalid' : ''" id="reason" name="reason" v-model="discountCodeBatch.why" aria-describedby="validationServerReasonFeedback" required></textarea>
                                 <div v-if="errors.reason" id="validationServerReasonFeedback" class="invalid-feedback">
@@ -172,7 +179,7 @@
                                     <span v-else>created</span>.
                                 </div>
                             </div>
-                            <div class="mb-3">
+                            <div v-if="!hasBeenInvalidated"  class="mb-3">
                                 <label for="reasonFiles" class="col-form-label">Files</label>
                                 <input class="form-control" type="file" id="reasonFiles" name="reasonFiles" multiple>
                             </div>
@@ -196,8 +203,8 @@
     <footer class="fixed-bottom mt-auto py-3 bg-light">
         <div class="container d-flex justify-content-end">
             <button @click="returnToDiscountCodeBatchDash" class="btn licensing-btn-primary me-2">Exit</button>
-            <button @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
-            <button @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
+            <button v-if="!hasBeenInvalidated" @click="validateForm(true)" class="btn licensing-btn-primary me-2">Save and Exit</button>
+            <button v-if="!hasBeenInvalidated" @click="validateForm(false)" class="btn licensing-btn-primary">Save and Continue Editing</button>
         </div>
     </footer>
     <div v-if="!discountCodeBatch">
@@ -251,6 +258,12 @@ export default {
         },
         fieldDisabled: function () {
             return this.startDateHasPassed || !this.discountCodeBatch.user_can_create_percentage_discounts;
+        },
+        hasBeenInvalidated: function () {
+            if(this.discountCodeBatch){
+                return this.discountCodeBatch.invalidated;
+            }
+            return false;
         },
         badgeClass: function () {
             return helpers.getStatusBadgeClass(this.discountCodeBatch.status);
@@ -332,11 +345,6 @@ export default {
                     return Promise.reject(error);
                 }
                 vm.discountCodeBatch = Object.assign({}, data);
-                if(vm.discountCodeBatch.discount_percentage) {
-                    vm.discountCodeBatch.discount_type = 'percentage';
-                } else {
-                    vm.discountCodeBatch.discount_type = 'amount';
-                }
 
                 vm.discountCodeBatch.valid_pass_types =
                 vm.discountCodeBatch.valid_pass_types.map(({pass_type_id}) => pass_type_id);
@@ -370,10 +378,10 @@ export default {
             }).finally(() =>{
                 vm.initialiseValidUsersSelect2();
                 vm.discountCodeBatch.valid_users.forEach(function(validUser){
-                    validUser = DOMPurify.sanitize(validUser);
+                    console.log(validUser)
                     var option = new Option(
-                        validUser.display_name,
-                        validUser.user,
+                        DOMPurify.sanitize(validUser.display_name),
+                        DOMPurify.sanitize(validUser.user),
                         true,
                         true
                     );
@@ -402,6 +410,8 @@ export default {
                     }
 
                     console.log(data);
+                    vm.discountCodeBatch = Object.assign({}, data);
+                    //vm.discountCodeBatch.status = data.status
                     let files = $('#reasonFiles')[0].files;
                     utils.uploadOrgModelDocuments(data.user_action.user_action_content_type_id, data.user_action.id, files);
                     Swal.fire({

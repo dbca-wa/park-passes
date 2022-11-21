@@ -176,7 +176,7 @@
 <script>
 import { apiEndpoints, constants, helpers, utils } from '@/utils/hooks';
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue';
-import { forEach } from 'jszip';
+import Swal from 'sweetalert2'
 
 export default {
     name: 'DiscountCodeBatchFormModal',
@@ -373,11 +373,16 @@ export default {
                         this.errors = data;
                         return Promise.reject(error);
                     }
-                    this.$emit("saveSuccess", {
-                            message: 'Discount code(s) created successfully.',
-                            discountCodeBatch: data,
-                        }
-                    );
+
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Discount code batch created successfully.',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    })
+
+                    this.$emit("saveSuccess");
 
                     let files = $('#reasonFiles')[0].files;
                     console.log('data = ' + JSON.stringify(data));

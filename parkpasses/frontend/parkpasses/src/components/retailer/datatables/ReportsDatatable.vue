@@ -46,9 +46,10 @@
 <script>
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
-import { apiEndpoints, constants } from '@/utils/hooks'
+import { apiEndpoints, constants, helpers } from '@/utils/hooks'
 import CollapsibleFilters from '@/components/forms/CollapsibleComponent.vue'
 import Swal from 'sweetalert2'
+import DOMPurify from 'dompurify'
 
 export default {
     name: 'ReportsDatatable',
@@ -157,9 +158,9 @@ export default {
             return [
                 'id',
                 'Number',
-                'Retailer',
                 'Monthly Report',
                 'Invoice',
+                'Unique Identifier',
                 'Payment Status',
                 'Date Generated',
             ]
@@ -185,13 +186,6 @@ export default {
                 orderable: true,
             }
         },
-        columnRetailerGroup: function(){
-            return {
-                data: "retailer_group",
-                visible: true,
-                name: 'retailer_group',
-            }
-        },
         columnReport: function(){
             return {
                 data: "report_filename",
@@ -212,12 +206,28 @@ export default {
                 visible: true,
                 name: 'invoice_filename',
                 'render': function(row, type, full){
+                    console.log(full.processing_status)
+                    console.log(full.invoice_reference)
                     let html = '';
+
                     if(full.invoice_filename){
-                        html = `<a href="${apiEndpoints.retrieveReportInvoicePdfRetailer(full.id)}" target="_blank">Invoice.pdf</a>`;
+                        html += `<a href="${apiEndpoints.retrieveReportInvoicePdfRetailer(full.id)}" target="_blank">Invoice.pdf</a>`;
                     }
+
+                    if('P'===full.processing_status && full.invoice_reference) {
+                        html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
+                    }
+
                     return html;
                 }
+            }
+        },
+        columnUUID: function(){
+            return {
+                data: "uuid",
+                visible: true,
+                name: 'uuid',
+                orderable: false,
             }
         },
         columnProcessingStatusDisplay: function(){
@@ -230,7 +240,7 @@ export default {
                     if('Paid'==full.processing_status_display){
                         html = `<span class="badge bg-success">Paid</span>`;
                     } else {
-                        html = `<span class="badge bg-danger">Unpaid</span>`;
+                        html = `<span class="badge bg-danger">Unpaid</span> | <a href="javascript:void(0);" data-id="${full.id}" data-action="pay-now">Pay Now</a>`;
                     }
                     return html;
                 }
@@ -270,9 +280,9 @@ export default {
             columns = [
                 vm.columnId,
                 vm.columnReportNumber,
-                vm.columnRetailerGroup,
                 vm.columnReport,
                 vm.columnInvoice,
+                vm.columnUUID,
                 vm.columnProcessingStatusDisplay,
                 vm.columnDatetimeCreated,
             ]
@@ -356,50 +366,29 @@ export default {
                 console.error("There was an error!", error);
             });
         },
-        markPaid: function (id, reportNumber) {
-            let vm = this;
-            Swal.fire({
-            title: `Mark Paid?`,
-            text: `Are you sure you want to mark invoice ${reportNumber} as paid?`,
-            confirmButtonText: 'Confirm',
-            confirmButtonColor: '#337ab7',
-            showCancelButton: true,
-            reverseButtons: true,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    vm.updateProcessingStatus(id, reportNumber, 'P', 'paid');
-                }
-            }).catch(console.error).then(console.log);
-        },
-        markUnPaid: function (id, reportNumber) {
-            let vm = this;
-            Swal.fire({
-            title: `Mark Unpaid?`,
-            text: `Are you sure you want to mark invoice ${reportNumber} as unpaid?`,
-            confirmButtonText: 'Confirm',
-            confirmButtonColor: '#337ab7',
-            showCancelButton: true,
-            reverseButtons: true,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    vm.updateProcessingStatus(id, reportNumber, 'U', 'unpaid');
-                }
-            }).catch(console.error).then(console.log);
+        payNow: function (id) {
+            var form = document.createElement("form");
+            var csrftoken = document.createElement("input");
+            csrftoken.setAttribute("type", "hidden");
+
+            form.method = "POST";
+            form.action = apiEndpoints.retailerPayInvoice(id);
+
+            csrftoken.value=helpers.getCookie('csrftoken');
+            csrftoken.name="csrfmiddlewaretoken";
+            form.appendChild(csrftoken);
+
+            document.body.appendChild(form);
+            form.submit();
         },
         addEventListeners: function(){
             let vm = this
-            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="mark-paid"]', function(e) {
+            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="pay-now"]', function(e) {
                 e.preventDefault();
                 let id = $(this).attr('data-id');
-                let reportNumber = $(this).attr('data-number');
-                vm.markPaid(id, reportNumber)
+                vm.payNow(id)
             });
-            vm.$refs.reportDatatable.vmDataTable.on('click', 'a[data-action="mark-unpaid"]', function(e) {
-                e.preventDefault();
-                let id = $(this).attr('data-id');
-                let reportNumber = $(this).attr('data-number');
-                vm.markUnPaid(id, reportNumber)
-            });
+
 
             // Listener for the row
             vm.$refs.reportDatatable.vmDataTable.on('click', 'td', function(e) {
@@ -448,6 +437,18 @@ export default {
         let vm = this;
         this.$nextTick(() => {
             vm.addEventListeners();
+            console.log(vm.$route.params)
+            if(vm.$route.params.reportNumber){
+                let reportNumber = DOMPurify.sanitize(vm.$route.params.reportNumber);
+                Swal.fire({
+                    title: 'Success',
+                    text: `Invoice ${reportNumber} paid successfully.`,
+                    icon: 'success',
+                    showConfirmButton: true,
+                }).then(function() {
+                    vm.$router.push({ name: 'retailer-reports' });
+                });
+            }
         });
     }
 }

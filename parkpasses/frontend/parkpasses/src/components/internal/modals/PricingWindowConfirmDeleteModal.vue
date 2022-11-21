@@ -27,6 +27,7 @@
 
 <script>
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
+import Swal from 'sweetalert2'
 
 export default {
     name: 'pricingWindowConfirmDeleteModal',
@@ -44,12 +45,16 @@ export default {
                     if (!response.ok) {
                         return Promise.reject(`ERROR: Unable to delete pricing window with id ${pricingWindowId}`);
                     }
-                    this.$emit("deleteSuccess", {
-                            message: 'Pricing Window deleted successfully.',
-                            pricingWindow: vm.pricingWindow,
-                        }
-                    );
-                    $('#successMessageAlert').show();
+
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Pricing Window deleted successfully.',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    })
+
+                    this.$emit("deleteSuccess");
                     var pricingWindowConfirmDeleteModalModal = bootstrap.Modal.getInstance(document.getElementById('pricingWindowConfirmDeleteModal'));
                     pricingWindowConfirmDeleteModalModal.hide();
                 })

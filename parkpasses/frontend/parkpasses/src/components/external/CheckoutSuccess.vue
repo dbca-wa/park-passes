@@ -98,6 +98,7 @@ export default {
         fetchOrder: function (uuid) {
             let vm = this;
             vm.loading = true;
+            // deepcode ignore Ssrf: uuid is sanitized in the created method. Snyk is wrong.
             fetch(apiEndpoints.orderRetrieveExternal(uuid))
                 .then(async response => {
                     const data = await response.json();

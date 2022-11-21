@@ -35,6 +35,11 @@ export default {
             name: 'retailer-reports'
         },
         {
+            path: '/retailer/reports/:reportNumber/payment-success',
+            component: RetailerReports,
+            name: 'retailer-reports-payment-success'
+        },
+        {
             path: '/retailer/users',
             component: RetailerGroupUsers,
             name: 'retailer-retailer-group-users'
