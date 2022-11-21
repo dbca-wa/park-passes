@@ -5,6 +5,7 @@ import os
 import confy
 import dj_database_url
 from confy import env
+from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger(__name__)
 
@@ -362,7 +363,9 @@ PICA_GOLD_STAR_PASS_ROOT = env(
     "RETAILER_GROUP_REPORT_ROOT", PROTECTED_MEDIA_ROOT + "/pica_gold_star_pass"
 )
 
-PICA_EMAIL = env("PICA_EMAIL", "oak.mcilwain@gmail.com")
+PICA_EMAIL = env("PICA_EMAIL")
+if not PICA_EMAIL:
+    raise ImproperlyConfigured("PICA_EMAIL is not set")
 
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
     "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", "protected_media"

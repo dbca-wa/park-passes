@@ -37,7 +37,7 @@
         "fields": {
             "voucher_number": "V000001",
             "recipient_name": "Atesta Persona",
-            "recipient_email": "oak.mcilwain@gmail.com",
+            "recipient_email": "atesta.persona@gmail.com",
             "datetime_to_email": "2022-06-19T22:00:00Z",
             "personal_message": "Thanks for all the hard work!",
             "amount": "95.00",
