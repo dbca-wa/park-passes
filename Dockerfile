@@ -60,7 +60,7 @@ RUN poetry install --no-dev --no-interaction --no-ansi
 RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
 #WORKDIR $REPO_NO_DASH/frontend/$REPO_NO_DASH/
-RUN npm install --omit=dev
+#RUN npm install --omit=dev
 #RUN npm run build
 #RUN rm -rf node_modules/
 RUN cd /app/parkpasses/frontend/parkpasses; npm install --omit=dev
