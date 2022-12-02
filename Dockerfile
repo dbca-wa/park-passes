@@ -57,14 +57,14 @@ ENV POETRY_VERSION=1.2.1
 RUN pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false 
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --only main --no-interaction --no-ansi
 RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
 #WORKDIR $REPO_NO_DASH/frontend/$REPO_NO_DASH/
 #RUN npm install --omit=dev
 #RUN npm run build
 #RUN rm -rf node_modules/
-RUN cd /app/parkpasses/frontend/parkpasses; npm install --only main
+RUN cd /app/parkpasses/frontend/parkpasses; npm install --omit=dev
 RUN cd /app/parkpasses/frontend/parkpasses; npm run build
 
 #WORKDIR /app
