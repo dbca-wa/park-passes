@@ -64,7 +64,7 @@ RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 #RUN npm install --omit=dev
 #RUN npm run build
 #RUN rm -rf node_modules/
-RUN cd /app/parkpasses/frontend/parkpasses; npm install --omit=dev
+RUN cd /app/parkpasses/frontend/parkpasses; npm install --only main
 RUN cd /app/parkpasses/frontend/parkpasses; npm run build
 
 #WORKDIR /app
