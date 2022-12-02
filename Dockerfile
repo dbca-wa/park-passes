@@ -38,7 +38,7 @@ RUN apt-get install --no-install-recommends -y vim postgresql-client htop libspa
 RUN apt-get install --no-install-recommends -y python3-setuptools python3-dev python3-pip tzdata cron rsyslog gunicorn
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr
-RUN apt-get install --no-install-recommends -y python-pil
+RUN apt-get install --no-install-recommends -y python3-pil
 RUN apt-get install --no-install-recommends -y libreoffice
 RUN update-ca-certificates
 # install node 16
