@@ -6,24 +6,24 @@ LABEL maintainer="asi@dbca.wa.gov.au"
 ENV DEBIAN_FRONTEND=noninteractive
 #ENV DEBUG=True
 ENV TZ=Australia/Perth
-ENV EMAIL_HOST="smtp.corporateict.domain"
-ENV PICA_EMAIL='no-reply@dbca.wa.gov.au'
+ENV EMAIL_HOST="emailserver"
+#ENV PICA_EMAIL='no-reply@dbca.wa.gov.au'
 ENV DEFAULT_FROM_EMAIL='no-reply@dbca.wa.gov.au'
-ENV NOTIFICATION_EMAIL='oak.mcilwain@dbca.wa.gov.au'
+#ENV NOTIFICATION_EMAIL='oak.mcilwain@dbca.wa.gov.au'
 ENV NON_PROD_EMAIL='none@none.com'
 ENV PRODUCTION_EMAIL=False
 ENV EMAIL_INSTANCE='DEV'
 ENV SECRET_KEY="ThisisNotRealKey"
-ENV SITE_PREFIX='parkpass-dev'
-ENV SITE_DOMAIN='dbca.wa.gov.au'
+#ENV SITE_PREFIX='parkpass-dev'
+#ENV SITE_DOMAIN='dbca.wa.gov.au'
 ENV OSCAR_SHOP_NAME='Park Passes'
 ENV BPAY_ALLOWED=False
-ARG BRANCH_ARG
-ARG REPO_ARG
-ARG REPO_NO_DASH_ARG
-ENV BRANCH=$BRANCH_ARG
-ENV REPO=$REPO_ARG
-ENV REPO_NO_DASH=$REPO_NO_DASH_ARG
+#ARG BRANCH_ARG
+#ARG REPO_ARG
+#ARG REPO_NO_DASH_ARG
+#ENV BRANCH=$BRANCH_ARG
+#ENV REPO=$REPO_ARG
+#ENV REPO_NO_DASH=$REPO_NO_DASH_ARG
 
 # Use Australian Mirrors
 RUN sed 's/archive.ubuntu.com/au.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list
