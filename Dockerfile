@@ -71,7 +71,8 @@ RUN cd /app/parkpasses/frontend/parkpasses; npm run build
 #WORKDIR /app
 RUN touch /app/.env
 RUN python manage.py collectstatic --no-input
-RUN git log --pretty=medium -30 > ./git_history_recent
+#RUN git log --pretty=medium -30 > ./git_history_recent
+COPY .git ./.git
 
 # Install the project (ensure that frontend projects have been built prior to this step).
 COPY ./timezone /etc/timezone
