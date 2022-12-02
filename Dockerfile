@@ -52,7 +52,7 @@ RUN pip install --upgrade pip
 WORKDIR /app
 #RUN git clone -v -b $BRANCH https://github.com/dbca-wa/$REPO.git .
 
-ENV POETRY_VERSION=1.1.13
+ENV POETRY_VERSION=1.2.1
 RUN pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false 
 COPY pyproject.toml poetry.lock ./
