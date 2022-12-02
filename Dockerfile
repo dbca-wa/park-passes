@@ -82,7 +82,7 @@ RUN patch /usr/local/lib/python3.8/dist-packages/django/contrib/admin/migrations
 
 RUN touch /app/rand_hash
 COPY ./cron /etc/cron.d/dockercron
-RUN service rsyslog start
+#RUN service rsyslog start
 RUN chmod 0644 /etc/cron.d/dockercron
 RUN crontab /etc/cron.d/dockercron
 RUN touch /var/log/cron.log
