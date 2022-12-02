@@ -24,6 +24,11 @@ ENV BRANCH=$BRANCH_ARG
 ENV REPO=$REPO_ARG
 ENV REPO_NO_DASH=$REPO_NO_DASH_ARG
 
+# Use Australian Mirrors
+RUN sed 's/archive.ubuntu.com/au.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list
+RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
+# Use Australian Mirrors
+
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
@@ -45,19 +50,21 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN pip install --upgrade pip
 
 WORKDIR /app
-RUN git clone -v -b $BRANCH https://github.com/dbca-wa/$REPO.git .
+#RUN git clone -v -b $BRANCH https://github.com/dbca-wa/$REPO.git .
 
 ENV POETRY_VERSION=1.1.13
 RUN pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
-WORKDIR $REPO_NO_DASH/frontend/$REPO_NO_DASH/
+#WORKDIR $REPO_NO_DASH/frontend/$REPO_NO_DASH/
 RUN npm install --omit=dev
-RUN npm run build
-RUN rm -rf node_modules/
+#RUN npm run build
+#RUN rm -rf node_modules/
+RUN cd /app/parkpasses/frontend/parkpasses; npm install --omit=dev
+RUN cd /app/parkpasses/frontend/parkpasses; npm run build
 
-WORKDIR /app
+#WORKDIR /app
 RUN touch /app/.env
 RUN python manage.py collectstatic --no-input
 RUN git log --pretty=medium -30 > ./git_history_recent
