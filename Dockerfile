@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 #ENV DEBUG=True
 ENV TZ=Australia/Perth
 ENV EMAIL_HOST="smtp.corporateict.domain"
+ENV PICA_EMAIL='no-reply@dbca.wa.gov.au'
 ENV DEFAULT_FROM_EMAIL='no-reply@dbca.wa.gov.au'
 ENV NOTIFICATION_EMAIL='oak.mcilwain@dbca.wa.gov.au'
 ENV NON_PROD_EMAIL='none@none.com'
