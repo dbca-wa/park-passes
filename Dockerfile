@@ -35,7 +35,7 @@ RUN apt-get upgrade -y
 RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils libproj-dev gdal-bin
 RUN apt-get -y install ca-certificates
 RUN apt-get install --no-install-recommends -y vim postgresql-client htop libspatialindex-dev
-RUN apt-get install --no-install-recommends -y python3-setuptools python3-dev python3-pip tzdata cron rsyslog python3.8-venv gunicorn
+RUN apt-get install --no-install-recommends -y python3-setuptools python3-dev python3-pip tzdata cron rsyslog gunicorn
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr
 RUN apt-get install --no-install-recommends -y python-pil
