@@ -12,7 +12,7 @@ RUN openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj  "/C=AU/ST=W
 RUN groupadd -g 1000 docker
 RUN useradd -g 1000 -u 1000 docker -s /bin/bash
 RUN mkdir /home/docker
-RUN chown docker.docker /home/docker
+RUN chown container.container /home/docker
 RUN cp /root/.bashrc /home/docker
 RUN cp /root/.profile /home/docker
 
