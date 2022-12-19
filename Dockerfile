@@ -56,7 +56,7 @@ COPY parkpasses ./parkpasses
 COPY gunicorn.ini manage.py ./
 ENV POETRY_VERSION=1.2.1
 RUN pip install "poetry==$POETRY_VERSION"
-RUN poetry config virtualenvs.create false 
+RUN poetry config virtualenvs.create false
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --only main --no-interaction --no-ansi
 RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
