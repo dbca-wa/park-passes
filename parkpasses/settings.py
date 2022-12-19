@@ -363,7 +363,7 @@ PICA_GOLD_STAR_PASS_ROOT = env(
     "RETAILER_GROUP_REPORT_ROOT", PROTECTED_MEDIA_ROOT + "/pica_gold_star_pass"
 )
 
-PICA_EMAIL = env("PICA_EMAIL")
+PICA_EMAIL = env("PICA_EMAIL", None)
 if not PICA_EMAIL:
     raise ImproperlyConfigured("PICA_EMAIL is not set")
 
