@@ -6,6 +6,7 @@ from django.utils.html import format_html
 from parkpasses import settings
 from parkpasses.components.passes.models import (
     Pass,
+    PassAutoRenewalAttempt,
     PassCancellation,
     PassTemplate,
     PassType,
@@ -23,6 +24,25 @@ class PassCancellationInline(admin.TabularInline):
         "datetime_cancelled",
     ]
     readonly_fields = ["datetime_cancelled"]
+
+
+class PassAutoRenewalAttemptInline(admin.TabularInline):
+    model = PassAutoRenewalAttempt
+    fields = [
+        "auto_renewal_succeeded",
+        "datetime_attempted",
+    ]
+    readonly_fields = [
+        "auto_renewal_succeeded",
+        "datetime_attempted",
+    ]
+    extra = 0
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request, obj=None):
+        return request.user.is_superuser
 
 
 class PassAdmin(admin.ModelAdmin):
@@ -83,7 +103,16 @@ class PassAdmin(admin.ModelAdmin):
     ]
     inlines = [
         PassCancellationInline,
+        PassAutoRenewalAttemptInline,
     ]
+
+    def get_inline_instances(self, request, obj=None):
+        to_return = super().get_inline_instances(request, obj)
+        if not obj or not obj.renew_automatically:
+            to_return = [
+                x for x in to_return if not isinstance(x, PassAutoRenewalAttemptInline)
+            ]
+        return to_return
 
     def get_fields(self, request, obj=None):
         if obj:

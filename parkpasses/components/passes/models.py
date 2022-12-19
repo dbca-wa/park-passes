@@ -884,7 +884,7 @@ class PassCancellation(models.Model):
         verbose_name_plural = "Pass Cancellations"
 
     def __str__(self):
-        return f"Cancellation for Pass: {self.park_pass.pass_number}(Date Cancelled: {self.datetime_cancelled})"
+        return f"Cancellation for Pass: {self.park_pass.pass_number} (Date Cancelled: {self.datetime_cancelled})"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -898,3 +898,26 @@ class PassCancellation(models.Model):
         park_pass.set_processing_status()
         park_pass.save()
         return deleted
+
+
+class PassAutoRenewalAttemptManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("park_pass")
+
+
+class PassAutoRenewalAttempt(models.Model):
+    objects = PassAutoRenewalAttemptManager()
+
+    park_pass = models.ForeignKey(
+        Pass, on_delete=models.PROTECT, related_name="auto_renewal_attempts"
+    )
+    auto_renewal_succeeded = models.BooleanField(null=False, blank=False, default=False)
+    datetime_attempted = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name_plural = "Pass Auto Renewal Attempts"
+
+    def __str__(self):
+        status = "Succeeded" if self.auto_renewal_succeeded else "Failed"
+        return f"Auto Renewal Attempt for Pass: {self.park_pass.pass_number} {status} at {self.datetime_attempted}"
