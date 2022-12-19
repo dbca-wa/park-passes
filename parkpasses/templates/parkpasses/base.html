@@ -82,7 +82,9 @@
             <span class='caret-above-menu hidden-sm' style=''><i class="bi bi-caret-up-fill fas ml-2"></i></span>
             {% block menu_dropdown %}
                 {% block menu_extra_dropdown_top %}
-
+                <li>
+                    <a class="dropdown-item" href="{% url 'account' %}">Account</a>
+                </li>
                 {% endblock %}
                 {% if request.user.is_staff %}
                     {% include 'webtemplate_dbca/includes/staff_menu.html' %}
