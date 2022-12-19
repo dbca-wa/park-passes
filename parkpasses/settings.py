@@ -394,6 +394,8 @@ if len(GIT_COMMIT_HASH) == 0:
 
 LEDGER_TEMPLATE = "bootstrap5"
 
+LEDGER_UI_CARDS_MANAGEMENT = True
+
 SESSION_COOKIE_NAME = "pp_sessionid"
 
 ORGANISATION = {
