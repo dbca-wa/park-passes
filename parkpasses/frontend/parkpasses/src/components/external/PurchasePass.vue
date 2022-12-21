@@ -576,6 +576,7 @@ export default {
         },
         showConcessionSwitch() {
             if(this.pass.rac_discount_code && this.pass.rac_discount_code.length>0){
+                this.eligibleForConcession = false;
                 return false;
             }
             return !this.isPinjarPass;
