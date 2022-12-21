@@ -224,6 +224,21 @@
                                 </div>
                             </div>
                         </div>
+                        <div v-if="eligibleForConcession" class="row g-1 align-top mb-2">
+                            <div class="col-12 col-lg-12 col-xl-3">
+                                <label for="concessionCardExpiry" class="col-form-label">Concession Card Expiry</label>
+                            </div>
+                            <div class="col-12 col-sm-3 col-lg-2 col-xl-1">
+                                <select id="concessionCardExpiryMonth" name="concessionCardExpiryMonth" v-model="pass.concession_card_expiry_month" class="form-select" required="required">
+                                    <option v-for="index in 12" :key="index" :value="index" :selected="1==index">{{index}}</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-4 col-lg-3 col-xl-2">
+                                <select id="concessionCardExpiryYear" name="concessionCardExpiryYear" v-model="pass.concession_card_expiry_year" class="form-select" required="required">
+                                    <option v-for="index in 10" :key="index+currentYear-1" :value="index+currentYear-1">{{index+currentYear-1}}</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="startDate" class="col-form-label">Start Date for Pass</label>
@@ -481,6 +496,8 @@ export default {
                 email: '',
                 confirmEmail: '',
                 concession_id: 0,
+                concession_card_expiry_month: 1,
+                concession_card_expiry_year: new Date().getFullYear()+1,
                 date_start: this.startDate(),
                 discount_code: '',
                 voucher_code: '',
@@ -501,6 +518,7 @@ export default {
             retailerGroupsForUser: null,
             confirmEmail: '',
             eligibleForConcession: false,
+            currentYear: new Date().getFullYear(),
             vehicleRegistrationNumbersKnown: true,
             extraVehicle: false,
             vehicleInputs: 1,
@@ -1104,7 +1122,7 @@ export default {
             vm.pass.option = vm.pass.option_id;
             vm.pass.pass_type_name = vm.passType.name;
             console.log('vm.pass = ' + JSON.stringify(vm.pass));
-            //alert('vm.pass = ' + JSON.stringify(vm.pass));
+            alert('vm.pass = ' + JSON.stringify(vm.pass));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

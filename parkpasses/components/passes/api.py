@@ -7,6 +7,7 @@ from decimal import Decimal
 
 import openpyxl
 import requests
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import FileResponse, Http404
@@ -429,6 +430,18 @@ class ExternalPassViewSet(
         concession_card_number = serializer.validated_data.pop(
             "concession_card_number", None
         )
+        concession_card_expiry_month = serializer.validated_data.pop(
+            "concession_card_expiry_month", None
+        )
+        concession_card_expiry_year = serializer.validated_data.pop(
+            "concession_card_expiry_year", None
+        )
+        logger.debug(
+            "concession_card_expiry_month = " + str(concession_card_expiry_month)
+        )
+        logger.debug(
+            "concession_card_expiry_year = " + str(concession_card_expiry_year)
+        )
         sold_via = serializer.validated_data.pop("sold_via", None)
         logger.info(
             "rac_discount_code, discount_code, voucher_code, voucher_pin, \
@@ -556,10 +569,21 @@ class ExternalPassViewSet(
                 logger.info(
                     "Creating concession usage.",
                 )
+                last_month_before_expiry = timezone.datetime(
+                    int(concession_card_expiry_year),
+                    int(concession_card_expiry_month),
+                    1,
+                )
+                # Get the first day of the next month
+                concession_card_expiry = last_month_before_expiry + relativedelta(
+                    months=1
+                )
+
                 concession_usage = ConcessionUsage.objects.create(
                     concession=concession,
                     park_pass=park_pass,
                     concession_card_number=concession_card_number,
+                    date_expiry=concession_card_expiry,
                 )
                 logger.info(
                     "Concession usage: {concession_usage} created.",
@@ -910,6 +934,42 @@ class PassRefundSuccessView(APIView):
     def get(self, request, id, uuid, format=None):
         """We don't actually need to do any processing here but ledger needs a valid url for return_preload_url"""
         logger.info(f"RefundSuccessView get method called with id {id} and uuid {uuid}")
+
+
+class PassAutoRenewSuccessView(APIView):
+    def get(self, request, uuid, format=None):
+        logger.info("Park passes Pass API PassAutoRenewSuccessView get method called.")
+
+        invoice_reference = request.GET.get("invoice", "false")
+
+        if uuid and invoice_reference:
+            logger.info(
+                f"Invoice reference: {invoice_reference} and uuid: {uuid}.",
+            )
+            if not Cart.objects.filter(uuid=uuid).exists():
+                return redirect(reverse("user-cart"))
+
+            cart = Cart.objects.get(uuid=uuid)
+
+            order, order_items = cart.create_order(
+                save_order_to_db_and_delete_cart=True,
+                invoice_reference=invoice_reference,
+            )
+
+            logger.info(
+                "Returning status.HTTP_204_NO_CONTENT. Order created successfully.",
+            )
+            # this end-point is called by an unmonitored get request in ledger so there is no point having a
+            # a response body however we will return a status in case this is used on the ledger end in future
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        CartUtils.reset_cart_item_count(request)
+        # If there is no uuid to identify the cart then send a bad request status back in case ledger can
+        # do something with this in future
+        logger.info(
+            "Returning status.HTTP_400_BAD_REQUEST bad request as there was not a uuid and invoice_reference."
+        )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class CancelPass(APIView):
