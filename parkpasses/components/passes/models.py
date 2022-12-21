@@ -261,16 +261,25 @@ class PassTypePricingWindowOption(models.Model):
             (Pricing Window: {self.pricing_window.name})"
 
     @classmethod
-    def get_current_options_by_pass_type_id(self, pass_type_id):
+    def get_options_by_pass_type_and_date(self, pass_type_id, date):
+        return self.get_current_options_by_pass_type_id(pass_type_id, date)
+
+    @classmethod
+    def get_current_options_by_pass_type_id(self, pass_type_id, date=None):
         try:
             pass_type = PassType.objects.get(id=pass_type_id)
         except ObjectDoesNotExist:
             logger.info(f"No Pass Type Exists with ID: {pass_type_id}.")
             return []
 
-        pricing_windows_for_pass_count = PassTypePricingWindow.objects.filter(
+        pricing_windows_for_pass = PassTypePricingWindow.objects.filter(
             pass_type=pass_type
-        ).count()
+        )
+
+        if date:
+            pricing_windows_for_pass.filter(date_start__lte=date, date_expiry__gte=date)
+
+        pricing_windows_for_pass_count = pricing_windows_for_pass.count()
 
         if 0 == pricing_windows_for_pass_count:
             logger.critical(
@@ -605,15 +614,37 @@ class Pass(models.Model):
 
     @property
     def is_cancelled(self):
-        if hasattr(self, "cancellation"):
-            return True
-        return False
+        return hasattr(self, "cancellation")
 
     @property
     def has_expired(self):
-        if self.date_expiry <= timezone.now().date():
-            return True
-        return False
+        return self.date_expiry <= timezone.now().date()
+
+    @property
+    def get_next_renewal_option(self):
+        """Customers are sent an email settings.PASS_REMINDER_DAYS_PRIOR to the autorenewal to
+        let them know how much the charge to their card will be. This is needed because the system
+        has dynamic pricing windows and if we didn't lock the price in at the time of the reminder
+        then the customer would have no warning of exactly how much their card was going to charged ."""
+        if not self.renew_automatically:
+            return None
+
+        reminder_date = self.date_expiry - timezone.timedelta(
+            days=settings.PASS_REMINDER_DAYS_PRIOR
+        )
+        options = PassTypePricingWindowOption.get_options_by_pass_type_and_date(
+            self.option.pricing_window.pass_type.id, reminder_date
+        )
+        return options.filter(duration=self.option.duration).first()
+
+    @property
+    def get_next_renewal_price(self):
+        option = self.get_next_renewal_option
+        if hasattr(self, "concession_usage"):
+            concession = self.concession_usage.concession
+            discount_amount = concession.discount_as_amount(option.price)
+            return option.price - discount_amount
+        return option.price
 
     def pro_rata_refund_percentage(self):
         if self.date_start >= timezone.now().date():

@@ -7,5 +7,9 @@
 {%  block content %}
             Your current {{pass.pass_type_display_name}} is due to renew automatically on {{pass.date_expiry}}.
 
+            The charge will be {{ next_renewal_option.price|currency }}
+
+            The pass will be valid for {{ next_renewal_option.duration }} days and will renew automatically upon expiry.
+
             If you do not want to renew your park pass, log in to your account at {{site_url}}{% url 'your-park-passes' %} and cancel the automatic renewal of your park pass.
 {%  endblock %}

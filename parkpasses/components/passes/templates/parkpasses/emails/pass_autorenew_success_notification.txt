@@ -7,8 +7,6 @@
 {%  block content %}
             Your park pass auto renewal was processed successfully.
 
-            Note: You may continue to use your existing pass until it expires.
-
             Your new pass has the following details:
 
             Pass Number:{{pass.pass_number}}

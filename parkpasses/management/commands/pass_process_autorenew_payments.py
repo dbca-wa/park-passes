@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Attempts to process payment for all passes that expired today and had autorenewal enabled."
+    help = "Attempts to process payment for all passes that expired recently and had autorenewal enabled."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -76,8 +76,8 @@ class Command(BaseCommand):
             if options["test"]:
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"Found {len(passes)} park passes that have expired with autorenewal enabled, \
-                            have no successful renewal attempts and have less than 3 unsuccessful renewal attempts."
+                        f"Found {len(passes)} park passes that have expired with autorenewal enabled,\
+have no successful renewal attempts and have less than 3 unsuccessful renewal attempts."
                     )
                 )
             for park_pass in passes:

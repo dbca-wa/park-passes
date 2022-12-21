@@ -195,8 +195,10 @@ class PassEmails:
         from parkpasses.components.passes.serializers import ExternalPassSerializer
 
         serializer = ExternalPassSerializer(park_pass)
+        next_renewal_option = park_pass.get_next_renewal_option()
         context = {
             "pass": serializer.data,
+            "next_renewal_option": next_renewal_option,
             "site_url": settings.SITE_URL,
         }
         message = email.send(park_pass.email, context=context)
