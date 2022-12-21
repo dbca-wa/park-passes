@@ -72,11 +72,13 @@ class PassAdmin(admin.ModelAdmin):
         "date_start",
         "date_expiry",
         "renew_automatically",
+        "park_pass_renewed_from",
         "datetime_created",
         "datetime_updated",
     ]
     list_display = (
         "pass_number",
+        "renew_automatically",  # remove later
         "sold_via",
         "park_pass_pdf_secure",
         "processing_status",
@@ -95,6 +97,7 @@ class PassAdmin(admin.ModelAdmin):
         "last_name",
         "email",
         "date_expiry",
+        "park_pass_renewed_from",
         "datetime_created",
         "datetime_updated",
     ]

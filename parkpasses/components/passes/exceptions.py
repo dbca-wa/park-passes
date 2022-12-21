@@ -38,6 +38,11 @@ class SendPassAutoRenewFailureNotificationEmailFailed(Exception):
     notification email"""
 
 
+class SendPassFinalAutoRenewFailureNotificationEmailFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the pass final autorenew failure
+    notification email"""
+
+
 class SendPassExpiryNotificationEmailFailed(Exception):
     """The exception to be thrown if an error occurs when sending the pass expiry
     notification email"""

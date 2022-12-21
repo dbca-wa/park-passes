@@ -38,6 +38,7 @@ from parkpasses.components.passes.exceptions import (
     SendPassAutoRenewSuccessNotificationEmailFailed,
     SendPassExpiredNotificationEmailFailed,
     SendPassExpiryNotificationEmailFailed,
+    SendPassFinalAutoRenewFailureNotificationEmailFailed,
     SendPassPurchasedEmailNotificationFailed,
     SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed,
 )
@@ -429,8 +430,10 @@ class Pass(models.Model):
     EXPIRED = "EX"
     CANCELLED = "CA"
     VALID = "VA"
+    AWAITING_AUTO_RENEWAL = "AR"
     PROCESSING_STATUS_CHOICES = [
         (CANCELLED, "Cancelled"),
+        (AWAITING_AUTO_RENEWAL, "Awaiting Auto Renewal"),
         (VALID, "Valid"),
     ]
 
@@ -470,6 +473,13 @@ class Pass(models.Model):
     date_start = models.DateField(null=False, blank=False)
     date_expiry = models.DateField(null=False, blank=False)
     renew_automatically = models.BooleanField(null=False, blank=False, default=False)
+    park_pass_renewed_from = models.OneToOneField(
+        "self",
+        on_delete=models.PROTECT,
+        related_name="renewed_pass",
+        null=True,
+        blank=True,
+    )
     prevent_further_vehicle_updates = models.BooleanField(
         null=False, blank=False, default=False
     )
@@ -571,7 +581,9 @@ class Pass(models.Model):
 
     @property
     def status(self):
-        if self.isCancelled:
+        if self.in_cart and self.park_pass_renewed_from:
+            return Pass.AWAITING_AUTO_RENEWAL
+        elif self.is_cancelled:
             return Pass.CANCELLED
         elif self.date_start > timezone.now().date():
             return Pass.FUTURE
@@ -582,7 +594,7 @@ class Pass(models.Model):
 
     @property
     def status_display(self):
-        if self.isCancelled:
+        if self.is_cancelled:
             return "Cancelled"
         elif self.date_start > timezone.now().date():
             return "Future"
@@ -592,8 +604,14 @@ class Pass(models.Model):
             return "Current"
 
     @property
-    def isCancelled(self):
+    def is_cancelled(self):
         if hasattr(self, "cancellation"):
+            return True
+        return False
+
+    @property
+    def has_expired(self):
+        if self.date_expiry <= timezone.now().date():
             return True
         return False
 
@@ -679,7 +697,12 @@ class Pass(models.Model):
 
     def set_processing_status(self):
         logger.info(f"Setting processing status for park pass: {self}.")
-        if PassCancellation.objects.filter(park_pass=self).count():
+        if self.in_cart and self.park_pass_renewed_from:
+            self.processing_status = Pass.AWAITING_AUTO_RENEWAL
+            logger.info(
+                f"Processing status set as: {Pass.AWAITING_AUTO_RENEWAL}.",
+            )
+        elif PassCancellation.objects.filter(park_pass=self).count():
             self.processing_status = Pass.CANCELLED
             logger.info(
                 f"Processing status set as: {Pass.CANCELLED}.",
@@ -724,7 +747,7 @@ class Pass(models.Model):
                 f"Park pass assigned pass number: {self.pass_number}.",
             )
 
-        if not Pass.CANCELLED == self.processing_status:
+        if not Pass.CANCELLED == self.processing_status and not self.has_expired:
             if not self.in_cart:
                 logger.info(
                     "Park pass has not been cancelled and is not in cart so generating park pass pdf.",
@@ -785,13 +808,25 @@ class Pass(models.Model):
                 error_message.format(self.id, e)
             )
 
-    def send_autorenew_failure_notification_email(self):
+    def send_autorenew_failure_notification_email(self, failure_count):
         error_message = "An exception occured trying to run "
         error_message += "send_autorenew_failure_notification_email for Pass with id {}. Exception {}"
         try:
-            PassEmails.send_pass_autorenew_failure_notification_email(self)
+            PassEmails.send_pass_autorenew_failure_notification_email(
+                self, failure_count
+            )
         except Exception as e:
             raise SendPassAutoRenewFailureNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
+
+    def send_final_autorenewal_failure_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += "send_final_autorenewal_failure_notification_email for Pass with id {}. Exception {}"
+        try:
+            PassEmails.send_pass_final_autorenew_failure_notification_email(self)
+        except Exception as e:
+            raise SendPassFinalAutoRenewFailureNotificationEmailFailed(
                 error_message.format(self.id, e)
             )
 
