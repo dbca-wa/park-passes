@@ -206,9 +206,6 @@ CRON_CLASSES = [
     "parkpasses.cron.OracleIntegrationCronJob",
 ]
 
-
-BASE_URL = env("BASE_URL")
-
 CKEDITOR_CONFIGS = {
     "default": {
         "toolbar": "full",
