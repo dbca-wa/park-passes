@@ -11,7 +11,6 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from parkpasses.components.passes.models import Pass
 
@@ -29,9 +28,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        no_reply_email_user, created = EmailUser.objects.get_or_create(
-            email=settings.NO_REPLY_EMAIL, password=""
-        )
         today = timezone.now()
         pass_expiry_datetime = today + timezone.timedelta(
             days=settings.PASS_REMINDER_DAYS_PRIOR
