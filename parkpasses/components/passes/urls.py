@@ -61,7 +61,7 @@ urlpatterns = [
     url(r"rac/generate-code-from-email/(?P<email>.+)$", RacDiscountCodeView.as_view()),
     url(r"rac/generate-code-from-email/$", RacDiscountCodeView.as_view()),
     url(
-        r"check-hash-matches-email/(?P<discount_hash>.+)/(?P<email>.+)/$",
+        r"rac/check-hash-matches-email/(?P<discount_hash>.+)/(?P<email>.+)/$",
         RacDiscountCodeCheckView.as_view(),
     ),
     url(r"cancel-pass", CancelPass.as_view()),
