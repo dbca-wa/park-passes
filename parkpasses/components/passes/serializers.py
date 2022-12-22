@@ -367,6 +367,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     )
     park_group = serializers.CharField()
     concession = serializers.SerializerMethodField()
+    rac_discount_percentage = serializers.SerializerMethodField()
     price_after_concession_applied = serializers.CharField()
     discount_code = serializers.SerializerMethodField()
     price_after_discount_code_applied = serializers.CharField()
@@ -408,6 +409,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "status_display",
             "datetime_created",
             "datetime_updated",
+            "rac_discount_percentage",
             "concession",
             "price_after_concession_applied",
             "discount_code",
@@ -451,6 +453,11 @@ class ExternalPassSerializer(serializers.ModelSerializer):
 
     def get_duration(self, obj):
         return f"{obj.option.duration} days"
+
+    def get_rac_discount_percentage(self, obj):
+        if hasattr(obj, "rac_discount_usage"):
+            return obj.rac_discount_usage.discount_percentage
+        return None
 
     def get_concession(self, obj):
         if hasattr(obj, "concession_usage"):
