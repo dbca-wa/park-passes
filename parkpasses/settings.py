@@ -393,8 +393,6 @@ LEDGER_TEMPLATE = "bootstrap5"
 
 LEDGER_UI_CARDS_MANAGEMENT = True
 
-SESSION_COOKIE_NAME = "pp_sessionid"
-
 ORGANISATION = {
     "name": "Department of Biodiversity, Conservation and Attractions",
     "address_line_1": "17 Dick Perry Ave",
