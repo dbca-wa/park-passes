@@ -10,10 +10,10 @@
 
         <div class="home-options">
 
-          <div v-if="store.userData && store.userData.is_authenticated" @click="redirectToSSOLogout()" class="card login-card mb-5">
+          <div v-if="store.userData && store.userData.is_authenticated" @click="redirectToSSOLogout()" class="card login-card mb-4">
             <div class="row g-0">
               <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
-                <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Logout"></i>
+                <i class="fa-solid fa-door-open org-icon-primary fa-7x pt-3 ps-4" title="Logout"></i>
               </div>
               <div class="col-12 col-sm-12 col-md-12 col-lg-7">
                 <div class="card-body">
@@ -30,16 +30,16 @@
             </div>
           </div>
 
-          <div v-else @click="redirectToSSOLogin()" class="card login-card mb-5">
+          <div v-else @click="redirectToSSOLogin()" class="card login-card mb-4">
             <div class="row g-0">
               <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
-                <i class="fa-solid fa-door-open org-icon-primary fa-10x" title="Login"></i>
+                <i class="fa-solid fa-door-open org-icon-primary fa-7x ps-4" title="Login"></i>
               </div>
               <div class="col-12 col-sm-12 col-md-12 col-lg-7">
                 <div class="card-body">
                   <h5 class="card-title">Log In</h5>
 
-                  <p class="card-text">
+                  <p class="card-text align-items-center">
                       <ul>
                         <li>View and download your current park pass</li>
                         <li>Update the vehicle details for your pass</li>
@@ -52,9 +52,9 @@
           </div>
 
           <div @click="redirectToFAQ()" class="card faq-card mb-4">
-            <div class="row g-0">
+            <div class="row g-0 align-items-center">
               <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
-                <i class="fa-solid fa-circle-info org-icon-primary fa-10x" title="Frequently Asked Questions"></i>
+                <i class="fa-solid fa-circle-info org-icon-primary fa-7x ps-4" title="Frequently Asked Questions"></i>
               </div>
               <div class="col-12 col-sm-12 col-md-12 col-lg-7">
                 <div class="card-body">
@@ -66,9 +66,9 @@
           </div>
 
           <div @click="redirectToHelp()" class="card help-card mb-4">
-            <div class="row g-0">
+            <div class="row g-0 align-items-center">
               <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
-                <i class="fa-solid fa-circle-question org-icon-primary fa-10x" title="Help"></i>
+                <i class="fa-solid fa-circle-question org-icon-primary fa-7x ps-4" title="Help"></i>
               </div>
               <div class="col-12 col-sm-12 col-md-12 col-lg-6">
                 <div class="card-body">
@@ -125,6 +125,10 @@ export default {
 .card:hover {
   cursor: pointer;
   opacity: 0.8;
+}
+
+.login-card .card-text ul {
+  margin: 0 0 0 0;
 }
 
 </style>
