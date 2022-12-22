@@ -22,7 +22,11 @@ from django.core.exceptions import (
     ValidationError,
 )
 from django.core.files.storage import FileSystemStorage
-from django.core.validators import MinLengthValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinLengthValidator,
+    MinValueValidator,
+)
 from django.db import models
 from django.utils import timezone
 from django_resized import ResizedImageField
@@ -45,6 +49,9 @@ from parkpasses.components.passes.exceptions import (
 from parkpasses.components.passes.utils import PassUtils
 from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.ledger_api_utils import retrieve_email_user
+
+PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
+
 
 logger = logging.getLogger(__name__)
 
@@ -537,7 +544,16 @@ class Pass(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     @property
+    def price_after_rac_discount_applied(self):
+        if hasattr(self, "rac_discount_usage"):
+            return self.rac_discount_usage.discount_amount
+        return self.price
+
+    @property
     def price_after_concession_applied(self):
+        if hasattr(self, "rac_discount_usage"):
+            # If the user is using the RAC Discount they can not use other concessions
+            return self.price_after_rac_discount_applied
         if hasattr(self, "concession_usage"):
             concession = self.concession_usage.concession
             discount_amount = concession.discount_as_amount(self.price)
@@ -987,3 +1003,49 @@ class PassAutoRenewalAttempt(models.Model):
     def __str__(self):
         status = "Succeeded" if self.auto_renewal_succeeded else "Failed"
         return f"Auto Renewal Attempt for Pass: {self.park_pass.pass_number} {status} at {self.datetime_attempted}"
+
+
+class RACDiscountUsageManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("park_pass")
+
+
+class RACDiscountUsage(models.Model):
+    """When an RAC discount is used to purchase a pass we create an rac discount usage
+    record. This can be used to determine if an RAC discount should be applied to passes
+    that are auto renewing.
+    """
+
+    objects = RACDiscountUsageManager()
+
+    park_pass = models.OneToOneField(
+        Pass,
+        on_delete=models.PROTECT,
+        related_name="rac_discount_usage",
+        null=False,
+        blank=False,
+    )
+
+    discount_percentage = models.DecimalField(
+        max_digits=2,
+        decimal_places=0,
+        blank=True,
+        null=True,
+        validators=PERCENTAGE_VALIDATOR,
+    )
+
+    def __str__(self):
+        return (
+            "RAC Discount ("
+            + str(self.discount_percentage)
+            + "% Off)"
+            + " used to purchase park pass "
+            + self.park_pass.pass_number
+        )
+
+    @property
+    def discount_amount(self):
+        return self.park_pass.price * (self.discount_percentage / 100)
+
+    class Meta:
+        app_label = "parkpasses"
