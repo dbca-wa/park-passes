@@ -48,6 +48,7 @@ from parkpasses.components.passes.models import (
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
+    RACDiscountUsage,
 )
 from parkpasses.components.passes.serializers import (
     ExternalCreateAllParksPassSerializer,
@@ -421,8 +422,6 @@ class ExternalPassViewSet(
         )
         # Pop these values out so they don't mess with the model serializer
         rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
-        if rac_discount_code:
-            pass
         discount_code = serializer.validated_data.pop("discount_code", None)
         voucher_code = serializer.validated_data.pop("voucher_code", None)
         voucher_pin = serializer.validated_data.pop("voucher_pin", None)
@@ -560,7 +559,16 @@ class ExternalPassViewSet(
         """ If the user deletes a cart item, any objects that can be attached to a cart item
         (concession usage, discount code usage and voucher transaction)
         are deleted in the cart item's delete method  """
-        if concession_id and concession_card_number:
+        if rac_discount_code and check_rac_discount_hash(
+            rac_discount_code, park_pass.email
+        ):
+            discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
+            cart_item.rac_discount_usage = RACDiscountUsage.objects.create(
+                park_pass=park_pass,
+                discount_percentage=discount_percentage,
+            )
+        # Only check for concession if the user is not using an rac discount code
+        elif concession_id and concession_card_number:
             if Concession.objects.filter(id=concession_id).exists():
                 concession = Concession.objects.get(id=concession_id)
                 logger.info(
@@ -574,7 +582,10 @@ class ExternalPassViewSet(
                     int(concession_card_expiry_month),
                     1,
                 )
-                # Get the first day of the next month
+                # In most cases, the expiry date is the last day of the month
+                # that is listed on the concession card so the real date of expiry is the
+                # the first day of the next month.
+                # I.e. if a card says expiry is 6/23 then it expires on the 1st day of 7/23 (at 12:00am midnight)
                 concession_card_expiry = last_month_before_expiry + relativedelta(
                     months=1
                 )
@@ -704,6 +715,7 @@ class ExternalPassViewSet(
                 object_id=park_pass.id, content_type=content_type
             )
             invoice_url = order_item.order.invoice_link
+            logger.info(f"invoice_url: {invoice_url}")
             if invoice_url:
                 response = requests.get(invoice_url)
                 return FileResponse(response, content_type="application/pdf")
@@ -1159,7 +1171,7 @@ class RetailerApiAccessViewSet(UserActionViewSet):
             key = request.META["HTTP_AUTHORIZATION"].split()[1]
             retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
             return retailer_group_api_key.retailer_group
-        return RetailerGroup.objects.get(name=settings.RAC_RETAILER_GROUP_NAME)
+        return RetailerGroup.get_rac_retailer_group()
 
 
 class RacDiscountCodeView(APIView):
@@ -1200,7 +1212,7 @@ class RacDiscountCodeCheckView(APIView):
             raise ValidationError({"email": "Please pass a valid email address."})
         result = check_rac_discount_hash(discount_hash, email)
         if result:
-            discount_percentage = self.get_retailer_group(request).commission_percentage
+            discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
             return Response(
                 {
                     "is_rac_discount_code_valid": result,
@@ -1215,4 +1227,4 @@ class RacDiscountCodeCheckView(APIView):
             key = request.META["HTTP_AUTHORIZATION"].split()[1]
             retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
             return retailer_group_api_key.retailer_group
-        return RetailerGroup.objects.get(name=settings.RAC_RETAILER_GROUP_NAME)
+        return RetailerGroup.get_rac_retailer_group()
