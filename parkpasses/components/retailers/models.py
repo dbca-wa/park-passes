@@ -19,7 +19,9 @@ from rest_framework_api_key.models import AbstractAPIKey, BaseAPIKeyManager
 from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.exceptions import (
     MultipleDBCARetailerGroupsExist,
+    MultipleRACRetailerGroupsExist,
     NoDBCARetailerGroupExists,
+    NoRACRetailerGroupExists,
 )
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
@@ -138,15 +140,41 @@ class RetailerGroup(models.Model):
         if 1 == dbca_retailer_count:
             return RetailerGroup.objects.get(name=settings.PARKPASSES_DEFAULT_SOLD_VIA)
         if 1 < dbca_retailer_count:
-            critical_message = "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
+            critical_message = (
+                "CRITICAL: There is more than one retailer group whose name = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+            )
             logger.critical(critical_message)
             raise MultipleDBCARetailerGroupsExist(critical_message)
         if 0 == dbca_retailer_count:
             critical_message = (
-                "CRITICAL: There is no retailer group whose name contains 'DBCA'"
+                "CRITICAL: There is no retailer group whose name = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
             )
             logger.critical(critical_message)
             raise NoDBCARetailerGroupExists(critical_message)
+
+    @classmethod
+    def get_rac_retailer_group(self):
+        rac_retailer_count = RetailerGroup.objects.filter(
+            name=settings.RAC_RETAILER_GROUP_NAME
+        ).count()
+        if 1 == rac_retailer_count:
+            return RetailerGroup.objects.get(name=settings.RAC_RETAILER_GROUP_NAME)
+        if 1 < rac_retailer_count:
+            critical_message = (
+                "CRITICAL: There is more than one retailer group whose name = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+            )
+            logger.critical(critical_message)
+            raise MultipleRACRetailerGroupsExist(critical_message)
+        if 0 == rac_retailer_count:
+            critical_message = (
+                "CRITICAL: There is no retailer group whose name = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+            )
+            logger.critical(critical_message)
+            raise NoRACRetailerGroupExists(critical_message)
 
 
 class OrganizationAPIKeyManager(BaseAPIKeyManager):
