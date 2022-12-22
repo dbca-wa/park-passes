@@ -12,6 +12,7 @@ from parkpasses.components.passes.models import (
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
+    RACDiscountUsage,
 )
 
 logger = logging.getLogger(__name__)
@@ -218,3 +219,13 @@ class PassTemplateAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PassTemplate, PassTemplateAdmin)
+
+
+class RACDiscountUsageAdmin(admin.ModelAdmin):
+    model = RACDiscountUsage
+    list_display = ["park_pass", "discount_percentage"]
+    raw_id_fields = ["park_pass"]
+    readonly_fields = ["park_pass", "discount_percentage"]
+
+
+admin.site.register(RACDiscountUsage, RACDiscountUsageAdmin)
