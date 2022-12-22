@@ -52,6 +52,7 @@ class ExternalOrderViewSet(
     def retrieve_invoice(self, request, *args, **kwargs):
         order = self.get_object()
         invoice_url = order.invoice_link
+        logger.info(f"invoice_url: {invoice_url}")
         if invoice_url:
             response = requests.get(invoice_url)
             return FileResponse(response, content_type="application/pdf")
