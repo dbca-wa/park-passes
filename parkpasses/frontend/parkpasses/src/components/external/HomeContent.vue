@@ -13,7 +13,7 @@
           <div v-if="store.userData && store.userData.is_authenticated" @click="redirectToSSOLogout()" class="card login-card mb-4">
             <div class="row g-0">
               <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
-                <i class="fa-solid fa-door-open org-icon-primary fa-7x pt-3 ps-4" title="Logout"></i>
+                <i class="fa-solid fa-door-open org-icon-primary fa-7x pt-3 ps-5" title="Logout"></i>
               </div>
               <div class="col-12 col-sm-12 col-md-12 col-lg-7">
                 <div class="card-body">
@@ -33,7 +33,7 @@
           <div v-else @click="redirectToSSOLogin()" class="card login-card mb-4">
             <div class="row g-0">
               <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
-                <i class="fa-solid fa-door-open org-icon-primary fa-7x ps-4" title="Login"></i>
+                <i class="fa-solid fa-door-open org-icon-primary fa-7x pt-3 ps-5" title="Login"></i>
               </div>
               <div class="col-12 col-sm-12 col-md-12 col-lg-7">
                 <div class="card-body">
@@ -51,10 +51,10 @@
             </div>
           </div>
 
-          <div @click="redirectToFAQ()" class="card faq-card mb-4">
+          <div @click="redirectToFAQ()" class="card faq-card mb-5">
             <div class="row g-0 align-items-center">
               <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
-                <i class="fa-solid fa-circle-info org-icon-primary fa-7x ps-4" title="Frequently Asked Questions"></i>
+                <i class="fa-solid fa-circle-info org-icon-primary fa-7x ps-5" title="Frequently Asked Questions"></i>
               </div>
               <div class="col-12 col-sm-12 col-md-12 col-lg-7">
                 <div class="card-body">
@@ -68,7 +68,7 @@
           <div @click="redirectToHelp()" class="card help-card mb-4">
             <div class="row g-0 align-items-center">
               <div class="col-12 col-sm-12 col-md-12 col-lg-5 col-xl-3 offset-md-1 offset-lg-0">
-                <i class="fa-solid fa-circle-question org-icon-primary fa-7x ps-4" title="Help"></i>
+                <i class="fa-solid fa-circle-question org-icon-primary fa-7x ps-5" title="Help"></i>
               </div>
               <div class="col-12 col-sm-12 col-md-12 col-lg-6">
                 <div class="card-body">
