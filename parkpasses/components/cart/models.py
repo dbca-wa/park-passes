@@ -15,7 +15,7 @@ from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.concessions.models import ConcessionUsage
 from parkpasses.components.discount_codes.models import DiscountCodeUsage
 from parkpasses.components.orders.models import Order, OrderItem
-from parkpasses.components.passes.models import Pass
+from parkpasses.components.passes.models import Pass, RACDiscountUsage
 from parkpasses.components.retailers.models import RetailerGroup
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.ledger_api_utils import retrieve_email_user
@@ -290,7 +290,32 @@ class Cart(models.Model):
                         f"Order item {order_item} saved.",
                     )
 
-                if cart_item.concession_usage:
+                if cart_item.rac_discount_usage:
+                    logger.info(
+                        f"RAC Discount Usage exists for cart_item {cart_item}.",
+                    )
+                    # A RAC discount is being applied to this pass purchase
+                    rac_discount_amount = cart_item.rac_discount_usage.discount_amount
+                    if rac_discount_amount > Decimal(0.00):
+                        logger.info(
+                            "RAC discount is greater than 0.00. Proceeding.",
+                        )
+                        order_item = OrderItem()
+                        order_item.order = order
+                        order_item.description = (
+                            CartUtils.get_rac_discount_description()
+                        )
+                        logger.info(
+                            f"RAC order item description: {order_item.description}",
+                        )
+                        order_item.amount = -abs(rac_discount_amount)
+                        order_items.append(order_item)
+                        if save_order_to_db_and_delete_cart:
+                            order_item.save()
+                            logger.info(
+                                f"Order item {order_item} saved.",
+                            )
+                elif cart_item.concession_usage:
                     logger.info(
                         f"Concession Usage exists for cart_item {cart_item}.",
                     )
@@ -479,6 +504,9 @@ class CartItem(models.Model):
     content_type = models.ForeignKey(
         ContentType, on_delete=models.CASCADE
     )  # Voucher or Pass
+    rac_discount_usage = models.ForeignKey(
+        RACDiscountUsage, on_delete=models.PROTECT, null=True, blank=True
+    )
     concession_usage = models.ForeignKey(
         ConcessionUsage, on_delete=models.PROTECT, null=True, blank=True
     )
