@@ -10,6 +10,8 @@ class CartItemInline(admin.TabularInline):
     ]
     raw_id_fields = [
         "voucher_transaction",
+        "rac_discount_usage",
+        "concession_usage",
         "discount_code_usage",
     ]
 
