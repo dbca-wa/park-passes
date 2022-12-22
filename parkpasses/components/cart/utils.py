@@ -173,6 +173,10 @@ class CartUtils:
         return f"{settings.PARKPASSES_PASS_PURCHASE_DESCRIPTION} {pass_number}"
 
     @classmethod
+    def get_rac_discount_description(self):
+        return f"{settings.PARKPASSES_RAC_DISCOUNT_APPLIED_DESCRIPTION}"
+
+    @classmethod
     def get_concession_description(self, concession_type):
         return f"{settings.PARKPASSES_CONCESSION_APPLIED_DESCRIPTION} {concession_type}"
 
