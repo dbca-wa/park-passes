@@ -9,6 +9,7 @@ Usage: ./manage.sh pass_process_autorenew_payments
 """
 import logging
 import uuid
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -24,6 +25,7 @@ from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.models import (
     Pass,
     PassAutoRenewalAttempt,
+    PassType,
     PassTypePricingWindowOption,
 )
 from parkpasses.components.retailers.models import RetailerGroup
@@ -58,6 +60,10 @@ class Command(BaseCommand):
 
         dbca_retailer_group = RetailerGroup.get_dbca_retailer_group()
 
+        auto_renewal_pass_types = PassType.objects.filter(
+            can_be_renewed_automatically=True
+        )
+
         passes = (
             Pass.objects.exclude(processing_status=Pass.CANCELLED)
             .annotate(successful_auto_renewal_attempts=successful_auto_renewal_attempts)
@@ -69,6 +75,7 @@ class Command(BaseCommand):
                 date_expiry__lte=today,
                 successful_auto_renewal_attempts=0,
                 failed_auto_renewal_attempts__lt=3,
+                option__pricing_window__pass_type__in=auto_renewal_pass_types,
             )
         )
 
@@ -176,11 +183,41 @@ have no successful renewal attempts and have less than 3 unsuccessful renewal at
                 )
                 order_item.amount = new_park_pass.option.price
 
-                oracle_code = settings.PARKPASSES_DEFAULT_ORACLE_CODE
+                order_item.oracle_code = settings.PARKPASSES_DEFAULT_ORACLE_CODE
                 if new_park_pass.option.pricing_window.pass_type.oracle_code:
-                    oracle_code = (
+                    order_item.oracle_code = (
                         new_park_pass.option.pricing_window.pass_type.oracle_code
                     )
+
+                # Check if the pass was purchased with an rac discount and if so apply the same discount
+                rac_discount_order_item = None
+                concession_order_item = None
+                if hasattr(park_pass, "rac_discount_usage"):
+                    discount_amount = park_pass.rac_discount_usage.discount_amount
+                    if discount_amount > Decimal(0.00):
+                        rac_discount_order_item = OrderItem()
+                        rac_discount_order_item.order = order
+                        rac_discount_order_item.description = (
+                            CartUtils.get_rac_discount_description()
+                        )
+                        rac_discount_order_item.amount = -abs(discount_amount)
+                        rac_discount_order_item.oracle_code = order_item.oracle_code
+                # If the pass wasn't purchased with an RAC discount then check if it was purchased with
+                # a concession and if so apply that concession
+                elif hasattr(park_pass, "concession_usage"):
+                    concession_discount_amount = (
+                        park_pass.concession_usage.concession.discount_as_amount(
+                            park_pass.option.price
+                        )
+                    )
+                    if concession_discount_amount > Decimal(0.00):
+                        concession_order_item = OrderItem()
+                        concession_order_item.order = order
+                        concession_order_item.description = (
+                            CartUtils.get_rac_discount_description()
+                        )
+                        concession_order_item.amount = -abs(concession_discount_amount)
+                        concession_order_item.oracle_code = order_item.oracle_code
 
                 try:
                     # Get ledger payment token id
@@ -202,25 +239,47 @@ have no successful renewal attempts and have less than 3 unsuccessful renewal at
                     request.user = EmailUser.objects.get(id=park_pass.user)
 
                     # Payment Basket Lines
-                    lines = []
-                    lines.append(
-                        {
-                            "ledger_description": order_item.description,
-                            "quantity": 1,
-                            "price_incl_tax": order_item.amount,
-                            "oracle_code": oracle_code,
-                        }
-                    )
+                    products = []
+                    if order_item:
+                        products.append(
+                            {
+                                "ledger_description": order_item.description,
+                                "quantity": 1,
+                                "price_incl_tax": str(order_item.amount),
+                                "oracle_code": order_item.oracle_code,
+                            }
+                        )
+                    if rac_discount_order_item:
+                        products.append(
+                            {
+                                "ledger_description": rac_discount_order_item.description,
+                                "quantity": 1,
+                                "price_incl_tax": str(rac_discount_order_item.amount),
+                                "oracle_code": rac_discount_order_item.oracle_code,
+                            }
+                        )
+                    elif concession_order_item:
+                        products.append(
+                            {
+                                "ledger_description": concession_order_item.description,
+                                "quantity": 1,
+                                "price_incl_tax": str(concession_order_item.amount),
+                                "oracle_code": concession_order_item.oracle_code,
+                            }
+                        )
 
                     no_payment = False
-                    booking_reference = order_uuid
+                    booking_reference = str(order_uuid)
+
+                    # Get the uuid for the order containing the original pass purchase
                     content_type = ContentType.objects.get_for_model(park_pass)
                     order_item = OrderItem.objects.get(
                         content_type=content_type, object_id=park_pass.id
                     )
-                    booking_reference_link = order_item.order.uuid
+                    booking_reference_link = str(order_item.order.uuid)
+
                     basket_params = {
-                        "products": lines,
+                        "products": products,
                         "vouchers": [],
                         "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
                         "custom_basket": True,
@@ -228,6 +287,8 @@ have no successful renewal attempts and have less than 3 unsuccessful renewal at
                         "booking_reference_link": booking_reference_link,
                         "no_payment": no_payment,
                     }
+
+                    logger.info("basket_params: %s", basket_params)
 
                     basket_user_id = request.user.id  # email user id for the customer
                     utils_ledger_api_client.create_basket_session(
@@ -239,10 +300,15 @@ have no successful renewal attempts and have less than 3 unsuccessful renewal at
                     # sett all 3 values to the same.
                     # return_preload_url is what send a completion ping back to the your application.
 
-                    return_preload_url = request.build_absolute_uri(
-                        reverse(
+                    return_preload_url = (
+                        settings.SITE_URL
+                        + "/"
+                        + reverse(
                             "pass-autorenewal-success-callback",
-                            kwargs={"uuid": order.uuid},
+                            kwargs={
+                                "id": str(new_park_pass.id),
+                                "uuid": str(order.uuid),
+                            },
                         )
                     )
 
@@ -271,16 +337,20 @@ have no successful renewal attempts and have less than 3 unsuccessful renewal at
                     print(resp)
                     # END - Sent Automatic Payment Request to Ledger
 
+                    order.save()
+                    order_item.save()
+                    if rac_discount_order_item:
+                        rac_discount_order_item.save()
+                    elif concession_order_item:
+                        concession_order_item.save()
+
+                    park_pass.renew_automatic = False
+                    park_pass.save()
+
                     PassAutoRenewalAttempt.objects.create(
                         park_pass=park_pass,
                         auto_renewal_succeeded=True,
                     )
-
-                    order.save()
-                    order_item.save()
-
-                    park_pass.renew_automatic = False
-                    park_pass.save()
 
                 except Exception as e:
                     PassAutoRenewalAttempt.objects.create(
@@ -299,6 +369,7 @@ have no successful renewal attempts and have less than 3 unsuccessful renewal at
                         )
                         park_pass.renew_automatic_failed = False
                         park_pass.save()
+                        new_park_pass.delete()
                         park_pass.send_final_autorenewal_failure_notification_email()
                         continue
 
