@@ -10,6 +10,7 @@ from parkpasses.components.passes.api import (
     InternalPassTypeViewSet,
     InternalPassViewSet,
     InternalPricingWindowViewSet,
+    PassAutoRenewSuccessView,
     PassProcessingStatusesDistinct,
     PassRefundSuccessView,
     PassTemplateViewSet,
@@ -70,6 +71,11 @@ urlpatterns = [
         r"ledger-api-refund-success-callback/(?P<id>.+)/(?P<uuid>.+)$",
         PassRefundSuccessView.as_view(),
         name="ledger-api-refund-success-callback",
+    ),
+    url(
+        r"pass-autorenewal-success-callback/(?P<id>.+)/(?P<uuid>.+)$",
+        PassAutoRenewSuccessView.as_view(),
+        name="pass-autorenewal-success-callback",
     ),
 ]
 
