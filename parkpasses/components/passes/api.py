@@ -949,37 +949,37 @@ class PassRefundSuccessView(APIView):
 
 
 class PassAutoRenewSuccessView(APIView):
-    def get(self, request, uuid, format=None):
+    def get(self, request, id, uuid, format=None):
         logger.info("Park passes Pass API PassAutoRenewSuccessView get method called.")
 
         invoice_reference = request.GET.get("invoice", "false")
 
-        if uuid and invoice_reference:
+        if id and uuid and invoice_reference:
             logger.info(
-                f"Invoice reference: {invoice_reference} and uuid: {uuid}.",
+                f"New park pass id: {id}, Invoice reference: {invoice_reference} and uuid: {uuid}.",
             )
-            if not Cart.objects.filter(uuid=uuid).exists():
-                return redirect(reverse("user-cart"))
+            if Pass.objects.filter(id=id).exists():
+                new_park_pass = Pass.objects.get(id=id)
+                logger.info(
+                    f"Park pass with {id} exists: {new_park_pass}.",
+                )
+                logger.info(
+                    f"Park pass with {id} exists: {new_park_pass}.",
+                )
+                new_park_pass.in_cart = False
+                new_park_pass.save()
 
-            cart = Cart.objects.get(uuid=uuid)
+                logger.info(
+                    f"Returning status.HTTP_204_NO_CONTENT. New Pass { new_park_pass }"
+                    f" renewed successfully from { new_park_pass.park_pass_renewed_from }.",
+                )
+                # this end-point is called by an unmonitored get request in ledger so there is no point having a
+                # a response body however we will return a status in case this is used on the ledger end in future
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
-            order, order_items = cart.create_order(
-                save_order_to_db_and_delete_cart=True,
-                invoice_reference=invoice_reference,
-            )
-
-            logger.info(
-                "Returning status.HTTP_204_NO_CONTENT. Order created successfully.",
-            )
-            # this end-point is called by an unmonitored get request in ledger so there is no point having a
-            # a response body however we will return a status in case this is used on the ledger end in future
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        CartUtils.reset_cart_item_count(request)
-        # If there is no uuid to identify the cart then send a bad request status back in case ledger can
-        # do something with this in future
         logger.info(
-            "Returning status.HTTP_400_BAD_REQUEST bad request as there was not a uuid and invoice_reference."
+            "Returning status.HTTP_400_BAD_REQUEST bad request as "
+            "there was not a valid new park pass id, uuid and invoice_reference."
         )
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
