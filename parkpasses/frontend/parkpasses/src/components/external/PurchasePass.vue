@@ -557,7 +557,13 @@ export default {
             }
         },
         showAutomaticRenewalOption() {
-            return this.passType && !this.isRetailer;
+            console.log('this.passType.name: ' + this.passType.name)
+            if(constants.DAY_ENTRY_PASS_NAME == this.passType.name ||
+                constants.HOLIDAY_PASS_NAME == this.passType.name ||
+                constants.PERSONNEL_PASS_NAME == this.passType.name || this.isRetailer) {
+                return false;
+            }
+            return true;
         },
         showRacMemberSwitch() {
             return !this.isRetailer && this.isEmailValid && !this.isPinjarPass;
@@ -1123,7 +1129,7 @@ export default {
             vm.pass.option = vm.pass.option_id;
             vm.pass.pass_type_name = vm.passType.name;
             console.log('vm.pass = ' + JSON.stringify(vm.pass));
-            alert('vm.pass = ' + JSON.stringify(vm.pass));
+            //alert('vm.pass = ' + JSON.stringify(vm.pass));
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
