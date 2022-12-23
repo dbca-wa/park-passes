@@ -10,6 +10,7 @@ module.exports = {
 
     TITLE_SUFFIX: ' - Park Passes - Department of Biodiversity, Conservation and Attractions',
 
+    DAY_ENTRY_PASS_NAME: 'DAY_ENTRY_PASS',
     HOLIDAY_PASS_NAME: 'HOLIDAY_PASS',
     PINJAR_PASS_NAME: 'PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS',
     PERSONNEL_PASS_NAME: 'PERSONNEL_PASS',
