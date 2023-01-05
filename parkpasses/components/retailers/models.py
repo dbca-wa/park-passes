@@ -7,13 +7,11 @@ import uuid
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.validators import (
-    MaxValueValidator,
-    MinLengthValidator,
-    MinValueValidator,
-)
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.utils import get_organisation
+from rest_framework import status
 from rest_framework_api_key.models import AbstractAPIKey, BaseAPIKeyManager
 
 from parkpasses.components.retailers.emails import RetailerEmails
@@ -22,6 +20,7 @@ from parkpasses.components.retailers.exceptions import (
     MultipleRACRetailerGroupsExist,
     NoDBCARetailerGroupExists,
     NoRACRetailerGroupExists,
+    RetailerGroupHasNoLedgerOrganisationAttached,
 )
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
@@ -34,47 +33,7 @@ class RetailerGroup(models.Model):
     ledger_organisation = models.IntegerField(
         verbose_name="Ledger Organisation", unique=True, null=True, blank=False
     )
-
-    # TODO: Remove the address fields once we can get them from ledger api client
-    NEW_SOUTH_WALES = "NSW"
-    VICTORIA = "VIC"
-    QUEENSLAND = "QLD"
-    WESTERN_AUSTRALIA = "WA"
-    SOUTH_AUSTRALIA = "SA"
-    TASMANIA = "TAS"
-    AUSTRALIAN_CAPITAL_TERRITORY = "ACT"
-    NORTHERN_TERRITORY = "NT"
-
-    STATE_CHOICES = [
-        (NEW_SOUTH_WALES, "Western Australia"),
-        (VICTORIA, "Victoria"),
-        (QUEENSLAND, "Queensland"),
-        (WESTERN_AUSTRALIA, "Western Australia"),
-        (SOUTH_AUSTRALIA, "South Australia"),
-        (TASMANIA, "Tasmania"),
-        (AUSTRALIAN_CAPITAL_TERRITORY, "Australian Capital Territory"),
-        (NORTHERN_TERRITORY, "Western Australia"),
-    ]
-
     name = models.CharField(max_length=150, unique=True, blank=False)
-    address_line_1 = models.CharField(max_length=150, null=True, blank=False)
-    address_line_2 = models.CharField(max_length=150, null=True, blank=True)
-    suburb = models.CharField(max_length=50, null=True, blank=False)
-    state = models.CharField(
-        max_length=3,
-        choices=STATE_CHOICES,
-        default=WESTERN_AUSTRALIA,
-        null=True,
-        blank=False,
-    )
-    postcode = models.CharField(
-        max_length=4,
-        validators=[
-            MinLengthValidator(4, "Australian postcodes must contain 4 digits")
-        ],
-        null=True,
-        blank=False,
-    )
     oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     commission_percentage = models.DecimalField(
         max_digits=2,
@@ -133,6 +92,16 @@ class RetailerGroup(models.Model):
         else:
             user_ids = json.loads(user_ids_cache)
         return user_ids
+
+    @property
+    def organisation(self):
+        if self.ledger_organisation:
+            organisation_response = get_organisation(self.ledger_organisation)
+            if status.HTTP_200_OK == organisation_response["status"]:
+                return organisation_response["data"]
+        critical_message = f"CRITICAL: Retailer Group: {self.name} has no ledger organisation attached."
+        logger.critical(critical_message)
+        raise RetailerGroupHasNoLedgerOrganisationAttached(critical_message)
 
     @classmethod
     def get_dbca_retailer_group(self):
