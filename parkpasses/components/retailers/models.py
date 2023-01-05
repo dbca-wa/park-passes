@@ -31,6 +31,11 @@ logger = logging.getLogger(__name__)
 
 
 class RetailerGroup(models.Model):
+    ledger_organisation = models.IntegerField(
+        verbose_name="Ledger Organisation", unique=True, null=True, blank=False
+    )
+
+    # TODO: Remove the address fields once we can get them from ledger api client
     NEW_SOUTH_WALES = "NSW"
     VICTORIA = "VIC"
     QUEENSLAND = "QLD"
