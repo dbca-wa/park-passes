@@ -191,7 +191,7 @@ class InternalVoucherViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
             )
             invoice_reference = order_item.order.invoice_reference
             return redirect(
-                settings.LEDGER_API_URL
+                settings.LEDGER_UI_URL
                 + "/ledger/payments/oracle/payments?invoice_no="
                 + invoice_reference
             )
