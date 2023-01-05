@@ -18,3 +18,7 @@ class MultipleRACRetailerGroupsExist(Exception):
 
 class NoRACRetailerGroupExists(Exception):
     """The exception to be thrown if there is no retailer group containing 'RAC'"""
+
+
+class RetailerGroupHasNoLedgerOrganisationAttached(Exception):
+    """The exception to be thrown if there is no retailer group has a null ledger_organisation field"""
