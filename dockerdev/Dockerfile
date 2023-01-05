@@ -16,7 +16,7 @@ RUN echo "fi" >> /etc/bash.bashrc
 RUN groupadd -g 1000 docker
 RUN useradd -g 1000 -u 1000 docker -s /bin/bash
 RUN mkdir /home/docker
-RUN chown container.container /home/docker
+RUN chown docker.docker /home/docker
 RUN cp /root/.bashrc /home/docker
 RUN cp /root/.profile /home/docker
 
@@ -25,7 +25,7 @@ RUN groupadd -g 20000 container
 RUN useradd -g 20000 -u 20000 container -s /bin/bash
 
 RUN mkdir /home/container
-RUN chown docker.docker /home/container
+RUN chown container.container/home/container
 RUN cp /root/.bashrc /home/container
 RUN cp /root/.profile /home/container
 
