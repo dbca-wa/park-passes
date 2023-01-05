@@ -28,8 +28,28 @@ class RetailerGroupAdmin(admin.ModelAdmin):
         "active",
     )
     search_fields = ("name",)
+    fields = [
+        "ledger_organisation",
+        "organisation_name",
+        "organisation_abn",
+        "name",
+        "oracle_code",
+        "commission_percentage",
+        "active",
+    ]
+    readonly_fields = ["organisation_name", "organisation_abn"]
     inlines = [RetailerGroupUserInline]
     ordering = ["name"]
+
+    def organisation_name(self, obj):
+        return obj.organisation["organisation_name"]
+
+    organisation_name.short_description = "Ledger Organisation Name"
+
+    def organisation_abn(self, obj):
+        return obj.organisation["organisation_abn"]
+
+    organisation_abn.short_description = "Ledger Organisation ABN"
 
 
 class RetailerGroupAPIKeyAdmin(APIKeyModelAdmin):
