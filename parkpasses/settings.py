@@ -366,8 +366,10 @@ PICA_GOLD_STAR_PASS_ROOT = env(
 )
 
 PICA_EMAIL = env("PICA_EMAIL", None)
-if not PICA_EMAIL:
-    raise ImproperlyConfigured("PICA_EMAIL is not set")
+# Removed as this affects the docker image build process and we shouldn't really be doing hard fails on email not being set.  (please move to another park of the code if important)
+#if not PICA_EMAIL:
+#    raise ImproperlyConfigured("PICA_EMAIL is not set")
+# END
 
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
     "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", "protected_media"
