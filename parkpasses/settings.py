@@ -153,7 +153,7 @@ TEMPLATES[0]["OPTIONS"]["context_processors"].append(
 SYSTEM_NAME = env("SYSTEM_NAME", "Park Passes")
 SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "PP")
 SITE_PREFIX = env("SITE_PREFIX")
-SITE_DOMAIN = env("SITE_DOMAIN")
+SITE_DOMAIN = env("SITE_DOMAIN", "dbca.wa.gov.au")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", "licensing@" + SITE_DOMAIN).lower()
 SUPPORT_EMAIL_FILMING = env("SUPPORT_EMAIL_FILMING", "filming@" + SITE_DOMAIN).lower()
 DEP_URL = env("DEP_URL", "www." + SITE_DOMAIN)
