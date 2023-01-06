@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.db.models import Case, Count, Value, When
+from django.db.models import Case, Count, Q, Value, When
 from django.http import Http404
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import mixins, status, viewsets
@@ -210,7 +210,13 @@ class InternalRetailerGroupUserViewSet(
     CustomDatatablesListMixin, viewsets.ModelViewSet
 ):
     model = RetailerGroupUser
-    queryset = RetailerGroupUser.objects.all()
+    retailer_group_admin_user_count = Count(
+        "retailer_group",
+        filter=Q(retailer_group__retailer_group_users__is_admin=True),
+    )
+    queryset = RetailerGroupUser.objects.annotate(
+        retailer_group_admin_user_count=retailer_group_admin_user_count
+    )
     permission_classes = [IsInternal]
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
