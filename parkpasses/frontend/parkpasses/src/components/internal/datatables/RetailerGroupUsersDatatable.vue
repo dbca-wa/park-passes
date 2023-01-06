@@ -243,8 +243,12 @@ export default {
                 name: 'is_admin',
                 'render': function(row, type, full){
                     let html = '<div class="form-check form-switch ms-5">';
+                    let disabled = '';
                     if(full.is_admin){
-                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserIsAdmin" checked>`;
+                        if(1==full.retailer_group_admin_user_count){
+                            disabled = 'disabled';
+                        }
+                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserIsAdmin" checked ${disabled}>`;
                     } else {
                         html+= `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserIsAdmin"></div>`;
                     }
@@ -388,6 +392,9 @@ export default {
                     const error = response.statusText;
                     return Promise.reject(error);
                 }
+                // It's important to redraw the datatable because to disable the toggle if there is only one
+                // admin user left in a retailer group
+                this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();
                 Swal.fire({
                 title: 'Success',
                 text: 'User admin status toggled successfully.',
