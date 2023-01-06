@@ -225,8 +225,12 @@ export default {
                 name: 'active',
                 'render': function(row, type, full){
                     let html = '<div class="form-check form-switch ms-5">';
+                    let disabled = '';
                     if(full.active){
-                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserActive" checked>`;
+                        if(full.is_admin && 1==full.retailer_group_admin_user_count){
+                            disabled = 'disabled';
+                        }
+                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserActive" checked ${disabled}>`;
                     } else {
                         html+= `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserActive"></div>`;
                     }
@@ -367,6 +371,7 @@ export default {
                     const error = response.statusText;
                     return Promise.reject(error);
                 }
+                this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();
                 Swal.fire({
                 title: 'Success',
                 text: 'User active status toggled successfully.',
