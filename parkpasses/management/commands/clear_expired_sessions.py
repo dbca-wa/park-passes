@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from parkpasses.components.cart.models import Cart
 from parkpasses.components.passes.models import Pass
+from parkpasses.components.vouchers.models import Voucher
 
 
 class Command(BaseCommand):
@@ -24,7 +25,7 @@ class Command(BaseCommand):
         two_weeks_ago = now - timezone.timedelta(days=14)
 
         self.stdout.write(
-            "Selecting any expired park passes carts (that were last added to more than 14 days ago)"
+            "\nSelecting any expired park passes carts (that were last added to more than 14 days ago)"
         )
         if Cart.objects.filter(datetime_last_added_to__lte=two_weeks_ago).exists():
             expired_carts = Cart.objects.filter(
@@ -36,11 +37,11 @@ class Command(BaseCommand):
                     expired_cart_item.delete()
                 expired_cart.delete()
             self.stdout.write(
-                self.style.SUCCESS(f"Deleted {len(expired_carts)} Expired carts.")
+                self.style.SUCCESS(f"Deleted {len(expired_carts)} Expired carts.\n\n")
             )
         else:
             self.stdout.write(
-                "No park passes that were added to a cart more than two weeks ago found."
+                "No park passes that were added to a cart more than two weeks ago found.\n\n"
             )
 
         # A pass may have been in a cart less than 2 weeks but has already expired
@@ -61,12 +62,40 @@ class Command(BaseCommand):
 
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Deleted {len(expired_passes)} Expired passes still in carts."
+                    f"Deleted {len(expired_passes)} Expired passes still in carts.\n\n"
                 )
+            )
+        else:
+            self.stdout.write(
+                "No park passes that were still in a cart but had expired were found.\n\n"
+            )
+
+        # A voucher may have been in a cart less than 2 weeks but the date the voucher was
+        # going to be sent has already passed.
+        # So we need to check for those daily and remove them so they are not accidentally purchased.
+        self.stdout.write(
+            "Selecting any vouchers that are still in a cart but their 'date to send' has already passed."
+        )
+        expired_vouchers = Voucher.objects.filter(
+            in_cart=True,
+            datetime_to_email__date__lt=date_today,
+        )
+        if expired_vouchers.exists():
+            for expired_voucher in expired_vouchers:
+                expired_voucher.delete()
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Deleted {len(expired_vouchers)} Expired vouchers still in carts.\n\n"
+                )
+            )
+        else:
+            self.stdout.write(
+                "No vouchers that were still in a cart but their 'date to send' had already passed were found.\n\n"
             )
 
         self.stdout.write("Clearing expired django sessions.")
         engine = import_module(settings.SESSION_ENGINE)
         engine.SessionStore.clear_expired()
 
-        self.stdout.write(self.style.SUCCESS("Expired django sessions cleared."))
+        self.stdout.write(self.style.SUCCESS("Expired django sessions cleared.\n"))
