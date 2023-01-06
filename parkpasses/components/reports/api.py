@@ -1,3 +1,4 @@
+import calendar
 import logging
 from decimal import Decimal
 
@@ -139,6 +140,8 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
         month_year = first_day_of_previous_month.strftime("%B %Y")
         ledger_description = f"Park Passes Sales for the Month of { month_year }"
 
+        logger.info("Retrieving " + ledger_description)
+
         passes = Pass.objects.filter(
             sold_via=retailer_group,
             datetime_created__range=(
@@ -146,6 +149,28 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
                 last_day_of_previous_month,
             ),
         )
+
+        if 0 == passes.count() and settings.DEBUG:
+            logger.info(
+                "No passes found in the month before the invoice was generated."
+                + "Trying to find passes in the same month the invoice was generated."
+            )
+            # If the genereate monthly invoices management command was run with the --test flag
+            # then we need to select the passes sold in the same month the report was generated
+            last_day_of_this_month_number = calendar.monthrange(
+                date_invoice_generated.year, date_invoice_generated.month
+            )[1]
+            last_day_of_this_month = date_invoice_generated.replace(
+                day=last_day_of_this_month_number
+            )
+            passes = Pass.objects.filter(
+                sold_via=retailer_group,
+                datetime_created__range=(
+                    first_day_of_this_month,
+                    last_day_of_this_month,
+                ),
+            )
+        logger.info(f"Found {len(passes)} passes.")
 
         invoice_amount = Decimal(0.00)
         for park_pass in passes:
@@ -158,10 +183,15 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
             Decimal(invoice_amount / 100).quantize(Decimal("0.01"))
             * retailer_group.commission_percentage
         )
+        commission_ledger_description = (
+            f"Park Passes Sales for the Month of { month_year }"
+        )
 
         if settings.DEBUG:
             invoice_amount = int(invoice_amount)
+            commission_amount = int(commission_amount)
             ledger_description += " (Price rounded for dev env)"
+            commission_ledger_description += " (Price rounded for dev env)"
 
         ledger_order_lines = [
             {
@@ -172,7 +202,7 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
                 "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
             },
             {
-                "ledger_description": f"Commission on sales ({retailer_group.commission_percentage}%)",
+                "ledger_description": commission_ledger_description,
                 "quantity": 1,
                 "price_incl_tax": str(-abs(commission_amount)),
                 "oracle_code": retailer_group.oracle_code,
