@@ -69,25 +69,25 @@ class Command(BaseCommand):
         )
 
         for retailer_group in retailer_groups:
+            admin_users = retailer_group.retailer_group_users.objects.filter(
+                is_admin=True
+            )
+            if 0 == admin_users.count():
+                logger.critical(
+                    f"Unable to generate monthly invoice for retailer group: {retailer_group}"
+                    " as there is are no admin users for this retailer group."
+                )
+                continue
+            user_to_add_to_invoice = admin_users.first()
+            logger.info(user_to_add_to_invoice)  # TODO: remove this line
             self.stdout.write(f"\tGenerating Invoice for {retailer_group}")
-            if options["test"]:
-                # To make sure we have records when testing just select all no_payment_orders
-                # regardless of the date
-                passes = Pass.objects.filter(
-                    sold_via=retailer_group,
-                    datetime_created__range=(
-                        first_day_of_previous_month,
-                        last_day_of_previous_month,
-                    ),
-                ).order_by("datetime_created")
-            else:
-                passes = Pass.objects.filter(
-                    sold_via=retailer_group,
-                    datetime_created__range=(
-                        first_day_of_previous_month,
-                        last_day_of_previous_month,
-                    ),
-                ).order_by("datetime_created")
+            passes = Pass.objects.filter(
+                sold_via=retailer_group,
+                datetime_created__range=(
+                    first_day_of_previous_month,
+                    last_day_of_previous_month,
+                ),
+            ).order_by("datetime_created")
 
             pass_count = len(passes)
             self.stdout.write(f"\t -- Found {pass_count} Passes.\n\n")
