@@ -8,7 +8,7 @@
 {% system_name as system_name %}
 {% system_name_short as system_name_short %}
 {% support_email as support_email %}
-{% is_payment_officer as is_payment_officer %}
+{% is_parkpasses_payments_officer as is_parkpasses_payments_officer %}
 {% build_tag as build_tag %}
 
 
@@ -16,7 +16,7 @@
     {% if is_parkpasses_admin_user or request.user.is_superuser %}
         <li><a href="{% url 'admin:index' %}">Admin</a></li>
     {% endif %}
-    {% if is_parkpasses_admin_user or request.user.is_superuser or is_payment_officer %}
+    {% if is_parkpasses_admin_user or request.user.is_superuser or is_parkpasses_payments_officer %}
         <li><a href="/internal/reports">Reports</a></li>
     {% endif %}
     {% if is_parkpasses_admin_user or request.user.is_superuser %}
