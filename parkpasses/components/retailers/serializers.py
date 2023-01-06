@@ -27,6 +27,7 @@ class RetailerGroupUserSerializer(serializers.ModelSerializer):
     datetime_updated = serializers.DateTimeField(
         format="%d/%m/%Y %I:%M %p", read_only=True
     )
+    retailer_group_admin_user_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = RetailerGroupUser
@@ -34,6 +35,7 @@ class RetailerGroupUserSerializer(serializers.ModelSerializer):
             "id",
             "retailer_group",
             "retailer_group_name",
+            "retailer_group_admin_user_count",
             "emailuser_email",
             "emailuser",
             "active",
