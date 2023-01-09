@@ -377,7 +377,7 @@ class ExternalPassViewSet(
     def get_queryset(self):
         return (
             Pass.objects.exclude(user__isnull=True)
-            .exclude(processing_status="CA")
+            .exclude(processing_status=Pass.CANCELLED)
             .exclude(in_cart=True)
             .filter(user=self.request.user.id)
             .order_by("-date_start")
