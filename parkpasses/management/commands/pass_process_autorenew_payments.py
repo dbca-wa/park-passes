@@ -48,27 +48,30 @@ class Command(BaseCommand):
             help="Adding the clear flag will reset the data state for testing purposes.",
         )
 
+    def clear_test_data(self, park_pass_content_type):
+        # Delete the new pass that was just created
+        park_pass_just_created = Pass.objects.order_by("-id").first()
+        containing_order_item = OrderItem.objects.filter(
+            content_type=park_pass_content_type, object_id=park_pass_just_created.id
+        ).first()
+        if containing_order_item:
+            if containing_order_item.order:
+                order = containing_order_item.order
+                order.items.all().delete()
+                order.delete()
+        park_pass_just_created.delete()
+        # Get the pass we are testing with
+        p = Pass.objects.get(id=350)
+        # Delete all the auto renewal attempts
+        p.auto_renewal_attempts.all().delete()
+        # Turn auto renewal back on
+        p.renew_automatically = True
+        p.save()
+
     def handle(self, *args, **options):
         park_pass_content_type = ContentType.objects.get_for_model(Pass)
         if options["clear"]:
-            # Delete the new pass that was just created
-            park_pass_just_created = Pass.objects.order_by("-id").first()
-            containing_order_item = OrderItem.objects.filter(
-                content_type=park_pass_content_type, object_id=park_pass_just_created.id
-            ).first()
-            if containing_order_item:
-                if containing_order_item.order:
-                    order = containing_order_item.order
-                    order.items.all().delete()
-                    order.delete()
-            park_pass_just_created.delete()
-            # Get the pass we are testing with
-            p = Pass.objects.get(id=350)
-            # Delete all the auto renewal attempts
-            p.auto_renewal_attempts.all().delete()
-            # Turn auto renewal back on
-            p.renew_automatically = True
-            p.save()
+            self.clear_test_data(park_pass_content_type)
 
         no_reply_email_user, created = EmailUser.objects.get_or_create(
             email=settings.NO_REPLY_EMAIL, password=""
@@ -305,9 +308,8 @@ class Command(BaseCommand):
                     booking_reference = str(order_uuid)
 
                     # Get the uuid for the order containing the original pass purchase
-                    content_type = ContentType.objects.get_for_model(park_pass)
                     renewed_from_order_item = OrderItem.objects.get(
-                        content_type=content_type, object_id=park_pass.id
+                        content_type=park_pass_content_type, object_id=park_pass.id
                     )
                     booking_reference_link = str(renewed_from_order_item.order.uuid)
 
@@ -343,6 +345,8 @@ class Command(BaseCommand):
 
                     logger.info("return_preload_url = " + str(return_preload_url))
 
+                    invoice_text = f"Park Passes Order: {order.uuid}"
+
                     checkout_params = {
                         "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
                         "fallback_url": return_preload_url,
@@ -350,7 +354,7 @@ class Command(BaseCommand):
                         "return_preload_url": return_preload_url,
                         "force_redirect": True,
                         "proxy": False,
-                        "invoice_text": "Parkstay test booking",
+                        "invoice_text": invoice_text,
                         "session_type": "ledger_api",
                         "basket_owner": park_pass.user,
                         "response_type": "json",
@@ -360,17 +364,18 @@ class Command(BaseCommand):
                         request, checkout_params
                     )
 
+                    # We have to save the order before processing the payment because we will store the
+                    # invoice reference number in the order when the code at the return_preload_url is called.
+                    order.save()
+
                     # START - Send Automatic Payment Request to Ledger
                     # look at post info on payment screen an reuse
                     resp = utils_ledger_api_client.process_payment_with_token(
                         request, ledger_payment_token_id
                     )
-                    print(resp)
+                    logger.info(resp)
                     # END - Sent Automatic Payment Request to Ledger
 
-                    logger.info("new_park_pass.in_cart = " + str(new_park_pass.in_cart))
-
-                    order.save()
                     order_item.order = order
                     order_item.save()
 
@@ -397,7 +402,7 @@ class Command(BaseCommand):
                         auto_renewal_succeeded=False,
                     )
 
-                    print(type(e).__name__, e)
+                    logger.info(f"{type(e).__name__}: {e}")
 
                     # For park passes that already had two failed attempts, that means this is the 3rd failed attempt
                     # We will disable automatic renewal and send a final fail email so the user can manually renew
