@@ -40,7 +40,7 @@ from parkpasses.components.main.api import (
     UserActionViewSet,
 )
 from parkpasses.components.main.serializers import UserActionSerializer
-from parkpasses.components.orders.models import OrderItem
+from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
 from parkpasses.components.passes.models import (
     Pass,
@@ -961,13 +961,29 @@ class PassAutoRenewSuccessView(APIView):
             if Pass.objects.filter(id=id).exists():
                 new_park_pass = Pass.objects.get(id=id)
                 logger.info(
-                    f"Park pass with {id} exists: {new_park_pass}.",
-                )
-                logger.info(
-                    f"Park pass with {id} exists: {new_park_pass}.",
+                    f"Park pass with id={id} exists: {new_park_pass}.",
                 )
                 new_park_pass.in_cart = False
                 new_park_pass.save()
+                logger.info(
+                    f"Park pass: {new_park_pass} removed from cart.",
+                )
+
+                if Order.objects.filter(uuid=uuid).exists():
+                    order = Order.objects.get(uuid=uuid)
+                    logger.info(
+                        f"Order with uuid={uuid} exists: {order}",
+                    )
+                    order.invoice_reference = invoice_reference
+                    logger.info(
+                        f"Assigning invoice reference for: {order} to: {invoice_reference}",
+                    )
+                    order.save()
+                    logger.info(
+                        f"Invoice reference for: {order} assigned to: {invoice_reference}",
+                    )
+                else:
+                    logger.error("Order with uuid: {uuid} does not exist.")
 
                 logger.info(
                     f"Returning status.HTTP_204_NO_CONTENT. New Pass { new_park_pass }"
