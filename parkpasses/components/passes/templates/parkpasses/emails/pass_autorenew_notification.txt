@@ -5,7 +5,7 @@
 {% endblock %}
 
 {%  block content %}
-            Your current {{pass.pass_type_display_name}} is due to renew automatically on {{pass.date_expiry}}.
+            Your current {{pass.pass_type}} is due to renew automatically on {{pass.date_expiry}}.
 
             The charge will be {{ next_renewal_option.price|currency }}
 

@@ -8,7 +8,7 @@
             DBCA has issued you with a personnel park pass:
 
             Pass Number: {{pass.pass_number}}
-            Pass Type: {{pass.pass_type_display_name}}
+            Pass Type: {{pass.pass_type}}
             Duration: {{pass.duration}}
             Price: {{pass.price}}
             Start Date: {{pass.date_start_formatted}}
