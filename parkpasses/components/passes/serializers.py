@@ -587,6 +587,10 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
         read_only=True,
         required=False,
     )
+    rac_discount_used = serializers.CharField(source="racdiscountusage", required=False)
+    rac_discount_percentage = serializers.CharField(
+        source="rac_discount_usage.discount_percentage", required=False
+    )
     discount_code_used = serializers.CharField(
         source="discountcodeusage.discount_code.code", required=False
     )
@@ -612,6 +616,7 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
             "sold_via",
             "sold_via_name",
             "pass_type_name",
+            "rac_discount_percentage",
         ]
         datatables_always_serialize = [
             "user_can_edit",
