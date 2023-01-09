@@ -42,8 +42,34 @@ class Command(BaseCommand):
             action="store_true",
             help="Adding the test flag will output what payments would be processed without actually processing them.",
         )
+        parser.add_argument(
+            "--clear",
+            action="store_true",
+            help="Adding the clear flag will reset the data state for testing purposes.",
+        )
 
     def handle(self, *args, **options):
+        park_pass_content_type = ContentType.objects.get_for_model(Pass)
+        if options["clear"]:
+            # Delete the new pass that was just created
+            park_pass_just_created = Pass.objects.order_by("-id").first()
+            containing_order_item = OrderItem.objects.filter(
+                content_type=park_pass_content_type, object_id=park_pass_just_created.id
+            ).first()
+            if containing_order_item:
+                if containing_order_item.order:
+                    order = containing_order_item.order
+                    order.items.all().delete()
+                    order.delete()
+            park_pass_just_created.delete()
+            # Get the pass we are testing with
+            p = Pass.objects.get(id=350)
+            # Delete all the auto renewal attempts
+            p.auto_renewal_attempts.all().delete()
+            # Turn auto renewal back on
+            p.renew_automatically = True
+            p.save()
+
         no_reply_email_user, created = EmailUser.objects.get_or_create(
             email=settings.NO_REPLY_EMAIL, password=""
         )
@@ -82,8 +108,8 @@ class Command(BaseCommand):
         if passes.exists():
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Found {len(passes)} park passes that have expired with autorenewal enabled, ",
-                    "have no successful renewal attempts and have less than 3 unsuccessful renewal attempts.",
+                    f"Found {len(passes)} park passes that have expired with autorenewal enabled, "
+                    "have no successful renewal attempts and have less than 3 unsuccessful renewal attempts."
                 )
             )
             for park_pass in passes:
@@ -163,7 +189,7 @@ class Command(BaseCommand):
                     if park_pass.park_group:
                         new_park_pass.park_group = park_pass.park_group
 
-                    new_park_pass.date_start = park_pass.date_expiry
+                    new_park_pass.date_start = today
                     new_park_pass.renew_automatically = True
                     # Strickly speaking the new pass is not in a cart as it is not stored in a session
                     # however to prevent these passes showing up where they shouldn't we set this flag
@@ -173,15 +199,23 @@ class Command(BaseCommand):
                     new_park_pass.processing_status = Pass.AWAITING_AUTO_RENEWAL
                     new_park_pass.save()
 
+                logger.info("new_park_pass.in_cart = " + str(new_park_pass.in_cart))
                 order_uuid = uuid.uuid4()
-                order = Order(user=park_pass.user, uuid=order_uuid)
+                # Every order must have an invoice reference but we don't yet have one so for now
+                # we use the order uuid (the real reference number will be populated by the return_preload_url code)
+                order = Order(
+                    user=park_pass.user,
+                    uuid=order_uuid,
+                    invoice_reference=order_uuid,
+                    retailer_group=dbca_retailer_group,
+                )
                 order_item = OrderItem()
-                order_item.order = order
+                order_item.content_type = park_pass_content_type
+                order_item.object_id = new_park_pass.id
                 order_item.description = CartUtils.get_pass_purchase_description(
                     new_park_pass.pass_number
                 )
                 order_item.amount = new_park_pass.option.price
-
                 order_item.oracle_code = settings.PARKPASSES_DEFAULT_ORACLE_CODE
                 if new_park_pass.option.pricing_window.pass_type.oracle_code:
                     order_item.oracle_code = (
@@ -195,7 +229,6 @@ class Command(BaseCommand):
                     discount_amount = park_pass.rac_discount_usage.discount_amount
                     if discount_amount > Decimal(0.00):
                         rac_discount_order_item = OrderItem()
-                        rac_discount_order_item.order = order
                         rac_discount_order_item.description = (
                             CartUtils.get_rac_discount_description()
                         )
@@ -211,12 +244,13 @@ class Command(BaseCommand):
                     )
                     if concession_discount_amount > Decimal(0.00):
                         concession_order_item = OrderItem()
-                        concession_order_item.order = order
                         concession_order_item.description = (
                             CartUtils.get_rac_discount_description()
                         )
                         concession_order_item.amount = -abs(concession_discount_amount)
                         concession_order_item.oracle_code = order_item.oracle_code
+
+                logger.info("order_item = " + str(order_item))
 
                 try:
                     # Get ledger payment token id
@@ -272,10 +306,10 @@ class Command(BaseCommand):
 
                     # Get the uuid for the order containing the original pass purchase
                     content_type = ContentType.objects.get_for_model(park_pass)
-                    order_item = OrderItem.objects.get(
+                    renewed_from_order_item = OrderItem.objects.get(
                         content_type=content_type, object_id=park_pass.id
                     )
-                    booking_reference_link = str(order_item.order.uuid)
+                    booking_reference_link = str(renewed_from_order_item.order.uuid)
 
                     basket_params = {
                         "products": products,
@@ -299,17 +333,15 @@ class Command(BaseCommand):
                     # sett all 3 values to the same.
                     # return_preload_url is what send a completion ping back to the your application.
 
-                    return_preload_url = (
-                        settings.SITE_URL
-                        + "/"
-                        + reverse(
-                            "pass-autorenewal-success-callback",
-                            kwargs={
-                                "id": str(new_park_pass.id),
-                                "uuid": str(order.uuid),
-                            },
-                        )
+                    return_preload_url = settings.SITE_URL + reverse(
+                        "pass-autorenewal-success-callback",
+                        kwargs={
+                            "id": str(new_park_pass.id),
+                            "uuid": str(order.uuid),
+                        },
                     )
+
+                    logger.info("return_preload_url = " + str(return_preload_url))
 
                     checkout_params = {
                         "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
@@ -336,20 +368,28 @@ class Command(BaseCommand):
                     print(resp)
                     # END - Sent Automatic Payment Request to Ledger
 
+                    logger.info("new_park_pass.in_cart = " + str(new_park_pass.in_cart))
+
                     order.save()
+                    order_item.order = order
                     order_item.save()
+
                     if rac_discount_order_item:
+                        rac_discount_order_item.order = order
                         rac_discount_order_item.save()
                     elif concession_order_item:
+                        concession_order_item.order = order
                         concession_order_item.save()
 
-                    park_pass.renew_automatic = False
+                    park_pass.renew_automatically = False
                     park_pass.save()
 
                     PassAutoRenewalAttempt.objects.create(
                         park_pass=park_pass,
                         auto_renewal_succeeded=True,
                     )
+
+                    new_park_pass.send_autorenew_success_notification_email()
 
                 except Exception as e:
                     PassAutoRenewalAttempt.objects.create(
@@ -366,7 +406,7 @@ class Command(BaseCommand):
                             "Disabling automatic renewal for park pass %s",
                             park_pass.pass_number,
                         )
-                        park_pass.renew_automatic_failed = False
+                        park_pass.renew_automatically = False
                         park_pass.save()
                         new_park_pass.delete()
                         park_pass.send_final_autorenewal_failure_notification_email()
