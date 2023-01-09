@@ -46,6 +46,7 @@ class PassUtils:
             "pass_expiry": date_expiry,
             "pass_vehicle_registration_1": park_pass.vehicle_registration_1,
             "pass_vehicle_registration_2": park_pass.vehicle_registration_2,
+            "pass_drivers_licence_number": park_pass.drivers_licence_number,
             "pass_purchase_date": datetime_created,
         }
 
