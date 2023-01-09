@@ -117,7 +117,7 @@
 
                             </form>
                         </SectionToggle>
-                        <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher and Discount">
+                        <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher &amp; Discounts">
                             <form>
                             <div v-if="pass.concession_type" class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Concession Type</label>
@@ -159,6 +159,19 @@
                                 <label class="col-sm-4 col-form-label">Discount Amount</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">{{pass.discount_code_discount}}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <label class="col-sm-4 col-form-label">RAC Discount Used for Purchase</label>
+                                <div class="col-sm-8">
+                                    <span v-if="pass.rac_discount_percentage" class="form-text">Yes</span>
+                                    <span v-else class="form-text">No</span>
+                                </div>
+                            </div>
+                            <div v-if="pass.rac_discount_percentage" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">RAC Discount Percentage</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{{pass.rac_discount_percentage}}% OFF</span>
                                 </div>
                             </div>
                             <div class="row mb-1">
@@ -231,7 +244,7 @@ export default {
     },
     computed: {
         showDiscountsPanel: function() {
-            return this.pass.concession_type || this.pass.voucher_number || this.pass.discount_code_used;
+            return this.pass.concession_type || this.pass.voucher_number || this.pass.discount_code_used || this.pass.rac_discount_percentage;
         },
         isHolidayPass: function () {
             return constants.HOLIDAY_PASS_NAME==this.pass.pass_type_name ? true : false;
