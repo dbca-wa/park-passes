@@ -80,13 +80,12 @@ class Command(BaseCommand):
         )
 
         if passes.exists():
-            if options["test"]:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Found {len(passes)} park passes that have expired with autorenewal enabled,\
-have no successful renewal attempts and have less than 3 unsuccessful renewal attempts."
-                    )
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Found {len(passes)} park passes that have expired with autorenewal enabled, ",
+                    "have no successful renewal attempts and have less than 3 unsuccessful renewal attempts.",
                 )
+            )
             for park_pass in passes:
                 if options["test"]:
                     self.stdout.write(
