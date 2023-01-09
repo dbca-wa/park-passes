@@ -49,6 +49,7 @@ class PassAutoRenewalAttemptInline(admin.TabularInline):
 class PassAdmin(admin.ModelAdmin):
     model = Pass
     fields = [
+        "park_pass_pdf_secure",
         "user",
         "in_cart",
         "purchase_email_sent",
@@ -70,6 +71,7 @@ class PassAdmin(admin.ModelAdmin):
         "vehicle_registration_1",
         "vehicle_registration_2",
         "prevent_further_vehicle_updates",
+        "drivers_licence_number",
         "date_start",
         "date_expiry",
         "renew_automatically",
@@ -93,6 +95,7 @@ class PassAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ("sold_via",)
     readonly_fields = [
+        "park_pass_pdf_secure",
         "pass_number",
         "first_name",
         "last_name",
@@ -110,13 +113,13 @@ class PassAdmin(admin.ModelAdmin):
         PassAutoRenewalAttemptInline,
     ]
 
-    def get_inline_instances(self, request, obj=None):
-        to_return = super().get_inline_instances(request, obj)
-        if not obj or not obj.renew_automatically:
-            to_return = [
-                x for x in to_return if not isinstance(x, PassAutoRenewalAttemptInline)
-            ]
-        return to_return
+    # def get_inline_instances(self, request, obj=None):
+    #     to_return = super().get_inline_instances(request, obj)
+    #     if not obj or not obj.renew_automatically:
+    #         to_return = [
+    #             x for x in to_return if not isinstance(x, PassAutoRenewalAttemptInline)
+    #         ]
+    #     return to_return
 
     def get_fields(self, request, obj=None):
         if obj:
