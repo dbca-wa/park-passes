@@ -22,12 +22,7 @@ from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.orders.models import Order, OrderItem
-from parkpasses.components.passes.models import (
-    Pass,
-    PassAutoRenewalAttempt,
-    PassType,
-    PassTypePricingWindowOption,
-)
+from parkpasses.components.passes.models import Pass, PassAutoRenewalAttempt, PassType
 from parkpasses.components.retailers.models import RetailerGroup
 
 logger = logging.getLogger(__name__)
@@ -127,15 +122,9 @@ class Command(BaseCommand):
                 if Pass.objects.filter(user=park_pass.user):
                     pass  # todo
 
-                pass_type = park_pass.option.pricing_window.pass_type
-
-                option = (
-                    PassTypePricingWindowOption.get_current_options_by_pass_type_id(
-                        pass_type.id
-                    )
-                    .filter(duration=park_pass.option.duration)
-                    .first()
-                )
+                # We have to give the customer warning of how much will be charged to their account
+                # See the doc string for the following method for more information
+                option = park_pass.get_next_renewal_option()
 
                 if (
                     1
