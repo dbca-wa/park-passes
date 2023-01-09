@@ -241,6 +241,8 @@ class Cart(models.Model):
             order.is_no_payment = self.is_no_payment
             if self.retailer_group:
                 order.retailer_group = self.retailer_group
+            else:
+                order.retailer_group = RetailerGroup.get_dbca_retailer_group()
             order.save()
             logger.info(
                 "Transferring cart items to order items.",
