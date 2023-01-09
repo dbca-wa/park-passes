@@ -375,6 +375,12 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     voucher_transaction = ExternalVoucherTransactionSerializer()
     price_after_voucher_applied = serializers.CharField()
     sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    date_start_formatted = serializers.DateField(
+        source="date_start", read_only=True, format="%d/%m/%Y"
+    )
+    date_expiry_formatted = serializers.DateField(
+        source="date_expiry", read_only=True, format="%d/%m/%Y"
+    )
 
     class Meta:
         model = Pass
@@ -400,9 +406,12 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "vehicle_registration_1",
             "vehicle_registration_2",
             "prevent_further_vehicle_updates",
+            "drivers_licence_number",
             "park_group",
             "park_pass_pdf",
             "date_start",
+            "date_start_formatted",
+            "date_expiry_formatted",
             "date_expiry",
             "renew_automatically",
             "status",
@@ -426,6 +435,8 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "pass_type_name",
             "price",
             "park_group",
+            "date_start_formatted",
+            "date_expiry_formatted",
             "date_expiry",
             "park_pass_pdf",
             "status",
