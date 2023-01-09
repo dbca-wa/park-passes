@@ -983,7 +983,7 @@ class PassAutoRenewSuccessView(APIView):
                         f"Invoice reference for: {order} assigned to: {invoice_reference}",
                     )
                 else:
-                    logger.error("Order with uuid: {uuid} does not exist.")
+                    logger.error(f"Order with uuid: {uuid} does not exist.")
 
                 logger.info(
                     f"Returning status.HTTP_204_NO_CONTENT. New Pass { new_park_pass }"
