@@ -5,7 +5,7 @@
 {% endblock %}
 
 {%  block content %}
-            <p>You have not yet provided your vehicle registration details for your park pass valid from {{pass.date_start|date:'d-m-Y'}}</p>.
+            <p>You have not yet provided your vehicle registration details for your park pass valid from {{pass.date_start_formatted}}</p>.
 
             <p>Log in to your account on {{site_url}}{% url 'your-park-passes' %} and enter the vehicle registration details for your park pass.</p>
 {%  endblock %}

@@ -8,17 +8,13 @@
             You have purchased a park pass with the following details:
 
             Pass Number: {{pass.pass_number}}
-            Pass Type: {{pass.pass_type_display_name}}
+            Pass Type: {{pass.pass_type}}
             Duration: {{pass.duration}}
-            Price: {{pass.price}}
-            Start Date: {{pass.date_start|date:'d-m-Y'}}
-            Expiry Date: {{pass.date_expiry|date:'d-m-Y'}}
-            {% if pass.park_group %}
-            Park Group: {{pass.park_group}}
-            {% endif %}
-            {% if pass.drivers_licence_number %}
-            Driver's Licence Number: {{pass.drivers_licence_number}}
-            {% endif %}
+            Price: ${{pass.price}}
+            Start Date: {{pass.date_start_formatted}}
+            Expiry Date: {{pass.date_expiry_formatted}}
+            {% if pass.park_group %}Park Group: {{pass.park_group}}{% endif %}
+            {% if pass.drivers_licence_number %}Driver's Licence Number: {{pass.drivers_licence_number}}{% endif %}
 
             Your park pass pdf is attached to this email.
 

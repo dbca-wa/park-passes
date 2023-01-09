@@ -11,11 +11,11 @@
 
             <table>
                 <tr><th>Pass Number:</th><td>{{pass.pass_number}}</td>
-                <tr><th>Pass Type:</th><td>{{pass.pass_type_display_name}}</td>
+                <tr><th>Pass Type:</th><td>{{pass.pass_type}}</td>
                 <tr><th>Duration:</th><td>{{pass.duration}}</td>
-                <tr><th>Price:</th><td>{{pass.price}}</td>
-                <tr><th>Start Date:</th><td>{{pass.date_start|date:'d-m-Y'}}</td>
-                <tr><th>Expiry Date:</th><td>{{pass.date_expiry|date:'d-m-Y'}}</td>
+                <tr><th>Price:</th><td>${{pass.price}}</td>
+                <tr><th>Start Date:</th><td>{{pass.date_start_formatted}}</td>
+                <tr><th>Expiry Date:</th><td>{{pass.date_expiry_formatted}}</td>
                 {% if pass.park_group %}
                 <tr><th>Park Group:</th><td>{{pass.park_group}}</td>
                 {% endif %}
