@@ -51,8 +51,7 @@ fi
 
  $RUN_PYTHON manage.py migrate django_cron &&
  $RUN_PYTHON manage.py migrate sites 0001_initial &&
- $RUN_PYTHON manage.py migrate flatpages 0001_initial &&
  $RUN_PYTHON manage.py migrate sites 0002_alter_domain_unique &&
  $RUN_PYTHON manage.py migrate sessions &&
  $RUN_PYTHON manage.py migrate &&
- $RUN_PYTHON manage.py dbshell -- -c 'ALTER TABLE django_admin_log RENAME COLUMN "user" TO "user_id";'
+ ECHO 'ALTER TABLE django_admin_log RENAME COLUMN "user" TO "user_id";' | $RUN_PYTHON manage.py dbshell
