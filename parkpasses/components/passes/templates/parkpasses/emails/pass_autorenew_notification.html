@@ -7,7 +7,7 @@
 {%  block content %}
             <p>Your current {{pass.pass_type}} is due to be renewed automatically on {{pass.date_expiry_formatted}}.</p>
 
-            <p>The charge to your primary credit card will be {{ next_renewal_option.price|currency }}</p>
+            <p>The charge to your primary credit card will be ${{ next_renewal_option.price }}</p>
 
             <p>The pass will be valid for {{ next_renewal_option.duration }} days and will renew automatically upon expiry.</p>
 
