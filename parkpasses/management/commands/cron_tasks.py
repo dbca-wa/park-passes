@@ -27,6 +27,10 @@ class Command(BaseCommand):
         subprocess.call(
             "python manage.py parkpasses_check" + stdout_redirect, shell=True
         )
+        logger.info("Running python manage.py clear_expired_sessions\n\n")
+        subprocess.call(
+            "python manage.py clear_expired_sessions" + stdout_redirect, shell=True
+        )
         logger.info(
             "Running python manage.py pass_send_vehicle_details_not_provided_notification_emails\n\n"
         )
@@ -50,14 +54,15 @@ class Command(BaseCommand):
             + stdout_redirect,
             shell=True,
         )
+        logger.info("Running python manage.py pass_process_autorenew_payments\n\n")
+        subprocess.call(
+            "python manage.py pass_process_autorenew_payments" + stdout_redirect,
+            shell=True,
+        )
         logger.info("Running python manage.py pass_send_gold_pass_details_to_pica\n\n")
         subprocess.call(
             "python manage.py pass_send_gold_pass_details_to_pica" + stdout_redirect,
             shell=True,
-        )
-        logger.info("Running python manage.py clear_expired_sessions\n\n")
-        subprocess.call(
-            "python manage.py clear_expired_sessions" + stdout_redirect, shell=True
         )
 
         logger.info(f"Command {__name__} completed")
@@ -69,7 +74,7 @@ class Command(BaseCommand):
         subject = f"{settings.SYSTEM_NAME_SHORT} - Cronjob"
         to = (
             settings.CRON_NOTIFICATION_EMAIL
-            if isinstance(settings.NOTIFICATION_EMAIL, list)
+            if isinstance(settings.CRON_NOTIFICATION_EMAIL, list)
             else [settings.CRON_NOTIFICATION_EMAIL]
         )
         msg = EmailMultiAlternatives(
