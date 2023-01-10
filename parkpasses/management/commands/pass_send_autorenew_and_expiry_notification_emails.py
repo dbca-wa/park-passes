@@ -52,7 +52,7 @@ class Command(BaseCommand):
             if options["test"]:
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"Found {len(passes)} park passes that expire today."
+                        f"Found {len(passes)} park passes that expire in {settings.PASS_REMINDER_DAYS_PRIOR} days."
                     )
                 )
             for park_pass in passes:
