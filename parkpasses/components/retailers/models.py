@@ -191,7 +191,7 @@ class RetailerGroupUser(models.Model):
         ordering = ["-datetime_created"]
 
     def __str__(self):
-        return f"{self.retailer_group} {self.emailuser}"
+        return f"{self.emailuser} [{self.retailer_group}]"
 
     def save(self, *args, **kwargs):
         cache.delete(settings.CACHE_KEY_RETAILER.format(str(self.emailuser.id)))
