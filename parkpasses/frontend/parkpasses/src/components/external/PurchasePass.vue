@@ -228,7 +228,7 @@
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="concessionCardExpiry" class="col-form-label">Concession Card Expiry</label>
                             </div>
-                            <div class="col-12 col-sm-3 col-lg-2 col-xl-1">
+                            <div class="col-12 col-sm-4 col-lg-3 col-xl-2">
                                 <select id="concessionCardExpiryMonth" name="concessionCardExpiryMonth" v-model="pass.concession_card_expiry_month" class="form-select" required="required">
                                     <option v-for="index in 12" :key="index" :value="index" :selected="1==index">{{index}}</option>
                                 </select>
