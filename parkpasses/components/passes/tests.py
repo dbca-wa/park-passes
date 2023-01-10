@@ -49,7 +49,7 @@ class PassTestCase(TestCase):
             vehicle_registration_1="12312312",
             vehicle_registration_2="",
             drivers_licence_number="",
-            date_start=today,
+            date_start=today.date(),
             renew_automatically=False,
             prevent_further_vehicle_updates=False,
             sold_via=self.default_sold_via,
