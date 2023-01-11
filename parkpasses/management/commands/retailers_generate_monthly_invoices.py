@@ -16,7 +16,6 @@ from pathlib import Path
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db.models import Count, F, Sum
 from django.utils import timezone
 from django.utils.text import slugify
 from docxtpl import DocxTemplate
@@ -69,9 +68,7 @@ class Command(BaseCommand):
         )
 
         for retailer_group in retailer_groups:
-            admin_users = retailer_group.retailer_group_users.objects.filter(
-                is_admin=True
-            )
+            admin_users = retailer_group.retailer_group_users.filter(is_admin=True)
             if 0 == admin_users.count():
                 logger.critical(
                     f"Unable to generate monthly invoice for retailer group: {retailer_group}"
@@ -144,20 +141,37 @@ class Command(BaseCommand):
                 ]
             )
 
-            total_sales_by_pass_type = (
-                passes.values("option__pricing_window__pass_type__display_name")
-                .order_by("option__pricing_window__pass_type__display_name")
-                .annotate(total_sales=Sum("option__price"))
-                .annotate(
-                    pass_type=F("option__pricing_window__pass_type__display_name")
-                )
-                .annotate(pass_count=Count("id"))
-            )
+            passes_by_type = Pass.objects.filter(
+                sold_via=retailer_group,
+                datetime_created__range=(
+                    first_day_of_previous_month,
+                    last_day_of_previous_month,
+                ),
+            ).order_by("option__pricing_window__pass_type")
+
+            # We have to build a dict of pass types and their counts and total sales
+            # because getting the price after all discounts is either difficult or impossible
+            # to do with the django ORM or even pure SQL
+            total_sales_by_pass_type_dict = {}
+            for park_pass in passes_by_type:
+                pass_type = park_pass.option.pricing_window.pass_type.display_name
+                if pass_type not in total_sales_by_pass_type_dict:
+                    total_sales_by_pass_type_dict[pass_type] = {}
+                    total_sales_by_pass_type_dict[pass_type]["count"] = 0
+                    total_sales_by_pass_type_dict[pass_type]["total_sales"] = Decimal(
+                        0.00
+                    )
+                total_sales_by_pass_type_dict[pass_type]["count"] += 1
+                total_sales_by_pass_type_dict[pass_type][
+                    "total_sales"
+                ] += park_pass.price_after_all_discounts
+
+            logger.info(f"sales by pass type dict: {total_sales_by_pass_type_dict}")
 
             context = {
                 "organisation": organisation,
                 "rg": retailer_group,
-                "total_sales_by_pass_type": total_sales_by_pass_type,
+                "total_sales_by_pass_type_dict": total_sales_by_pass_type_dict,
                 "date_report": first_day_of_previous_month,
                 "date_generated": today,
                 "commission_percentage": f"{retailer_group.commission_percentage}%",
