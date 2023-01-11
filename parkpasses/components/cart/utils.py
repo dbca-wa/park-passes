@@ -42,7 +42,7 @@ class CartUtils:
                 "quantity": 1,
                 "price_incl_tax": str(order_item.amount),
                 "oracle_code": CartUtils.get_oracle_code(
-                    request, order_item.content_type, order_item.object_id
+                    order_item.content_type, order_item.object_id
                 ),
                 "line_status": line_status,
             }
@@ -107,7 +107,7 @@ class CartUtils:
         }
 
     @classmethod
-    def get_oracle_code(self, request, content_type, object_id):
+    def get_oracle_code(self, content_type, object_id):
         logger.info(
             f"Calling get_oracle_code with content_type: {content_type} and object_id: {object_id}"
         )

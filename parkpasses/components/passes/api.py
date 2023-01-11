@@ -543,9 +543,7 @@ class ExternalPassViewSet(
         cart = Cart.get_or_create_cart(self.request)
 
         content_type = ContentType.objects.get_for_model(park_pass)
-        oracle_code = CartUtils.get_oracle_code(
-            self.request, content_type, park_pass.id
-        )
+        oracle_code = CartUtils.get_oracle_code(content_type, park_pass.id)
         logger.info(f"Oracle code: {oracle_code} will be used for this park pass.")
         cart_item = CartItem(
             cart=cart,
@@ -898,9 +896,7 @@ class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
                 "ledger_description": ledger_description,
                 "quantity": 1,
                 "price_incl_tax": str(-abs(pro_rata_refund_amount)),
-                "oracle_code": CartUtils.get_oracle_code(
-                    self.request, content_type, park_pass.id
-                ),
+                "oracle_code": CartUtils.get_oracle_code(content_type, park_pass.id),
                 "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
             }
         ]
