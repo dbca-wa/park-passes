@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.passes.serializers import ExternalPassSerializer
-from parkpasses.components.retailers.models import RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher
 from parkpasses.components.vouchers.serializers import ExternalListVoucherSerializer
 from parkpasses.helpers import is_retailer
@@ -112,30 +111,6 @@ class CartUtils:
         logger.info(
             f"Calling get_oracle_code with content_type: {content_type} and object_id: {object_id}"
         )
-        # Check if the request user belongs to retailer group and if so assign their oracle code
-        if is_retailer(request):
-            logger.info(
-                f"User: {request.user.id} ({request.user}) is a retailer.",
-            )
-            user = request.user
-            retailer_group_user = (
-                RetailerGroupUser.objects.filter(emailuser=user)
-                .order_by("-datetime_created")
-                .first()
-            )
-            if retailer_group_user:
-                logger.info(
-                    f"Retailer Group User: {retailer_group_user} exists.",
-                )
-                retailer_group = retailer_group_user.retailer_group
-                if retailer_group.oracle_code:
-                    logger.info(
-                        f"Returning Retailer Group oracle code: {retailer_group.oracle_code}.",
-                    )
-                    return retailer_group.oracle_code
-                logger.info(
-                    f"No oracle code found for Retailer Group: {retailer_group}.",
-                )
 
         # If not, assign the oracle code for the pass type
         pass_content_type = ContentType.objects.get(
