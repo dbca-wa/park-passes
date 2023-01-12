@@ -31,6 +31,7 @@ class OrderAdmin(admin.ModelAdmin):
         "total_display",
         "retailer_group",
         "is_no_payment",
+        "payment_confirmed",
     ]
 
     list_display = (
@@ -40,7 +41,7 @@ class OrderAdmin(admin.ModelAdmin):
         "retailer_group",
         "uuid",
         "invoice_reference",
-        "is_no_payment",
+        "payment_confirmed",
         "total_display",
     )
     readonly_fields = [
