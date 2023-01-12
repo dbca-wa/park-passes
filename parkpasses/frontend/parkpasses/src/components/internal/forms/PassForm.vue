@@ -39,6 +39,14 @@
                                 </div>
                             </div>
                             <div class="row mb-1">
+                                <label for="soldViaName" class="col-sm-4 col-form-label">Sold Via</label>
+                                <div class="col-sm-6">
+                                    <span class="form-text">
+                                        {{ pass.sold_via_name }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">First Name</label>
                                 <div class="col-sm-6">
                                     <input class="form-control" name="firstName" type="text" v-model="pass.first_name" :disabled="fieldDisabled">
@@ -117,12 +125,18 @@
 
                             </form>
                         </SectionToggle>
-                        <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher &amp; Discounts">
+                        <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher &amp; Discounts" class="mb-5">
                             <form>
                             <div v-if="pass.concession_type" class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Concession Type</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">{{ pass.concession_type }}</span>
+                                </div>
+                            </div>
+                            <div v-else class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Concession Used for Purchase</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">No</span>
                                 </div>
                             </div>
                             <div v-if="pass.concession_discount_percentage" class="row mb-1">
@@ -131,10 +145,10 @@
                                     <span class="form-text">{{ pass.concession_discount_percentage }}% Off</span>
                                 </div>
                             </div>
-                            <div v-else class="row mb-1">
-                                <label class="col-sm-4 col-form-label">Concession Used for Purchase</label>
+                            <div v-if="pass.concession_card_number" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Concession Card Number</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">No</span>
+                                    <span class="form-text">{{ pass.concession_card_number }}</span>
                                 </div>
                             </div>
                             <div v-if="pass.voucher_number" class="row mb-1">
@@ -172,14 +186,6 @@
                                 <label class="col-sm-4 col-form-label">RAC Discount Percentage</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">{{pass.rac_discount_percentage}}% OFF</span>
-                                </div>
-                            </div>
-                            <div class="row mb-1">
-                                <label for="startDate" class="col-sm-4 col-form-label">Sold Via</label>
-                                <div class="col-sm-8">
-                                    <span class="form-text">
-                                        {{ pass.sold_via_name }}
-                                    </span>
                                 </div>
                             </div>
                             </form>

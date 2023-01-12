@@ -31,6 +31,14 @@
                                 </div>
                             </div>
                             <div class="row mb-1">
+                                <label for="soldViaName" class="col-sm-4 col-form-label">Sold Via</label>
+                                <div class="col-sm-6">
+                                    <span class="form-text">
+                                        {{ pass.sold_via_name }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
                                 <label class="col-sm-4 col-form-label">First Name</label>
                                 <div class="col-sm-6">
                                     <input class="form-control" name="firstName" type="text" v-model="pass.first_name" :disabled="fieldDisabled">
@@ -102,7 +110,7 @@
                             </form>
                         </SectionToggle>
 
-                        <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher and Discount">
+                        <SectionToggle v-if="showDiscountsPanel" label="Concession, Voucher &amp; Discounts" class="mb-5">
                             <form>
                             <div v-if="pass.concession_type" class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Concession Type</label>
@@ -147,15 +155,22 @@
                                 </div>
                             </div>
                             <div class="row mb-1">
-                                <label for="startDate" class="col-sm-4 col-form-label">Sold Via</label>
+                                <label class="col-sm-4 col-form-label">RAC Discount Used for Purchase</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">
-                                        {{ pass.sold_via_name }}
-                                    </span>
+                                    <span v-if="pass.rac_discount_percentage" class="form-text">Yes</span>
+                                    <span v-else class="form-text">No</span>
                                 </div>
                             </div>
+                            <div v-if="pass.rac_discount_percentage" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">RAC Discount Percentage</label>
+                                <div class="col-sm-8">
+                                    <span class="form-text">{{pass.rac_discount_percentage}}% OFF</span>
+                                </div>
+                            </div>
+
                             </form>
                         </SectionToggle>
+
                     </div>
                 </div>
 
