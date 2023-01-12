@@ -443,6 +443,8 @@ class Cart(models.Model):
                         )
 
         if save_order_to_db_and_delete_cart:
+            order.payment_confirmed = True
+            order.save()
             logger.info(f"Deleting Cart {self}.")
             self.delete()
             logger.info("Cart Deleted.")

@@ -383,6 +383,9 @@ class Command(BaseCommand):
                         auto_renewal_succeeded=True,
                     )
 
+                    order.payment_confirmed = True
+                    order.save()
+
                     new_park_pass.send_autorenew_success_notification_email()
 
                 except Exception as e:
