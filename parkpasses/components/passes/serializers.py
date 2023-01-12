@@ -589,27 +589,34 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
         source="status_display", read_only=True
     )
     concession_type = serializers.CharField(
-        source="concessionusage.concession.concession_type",
+        source="concession_usage.concession.concession_type",
         read_only=True,
         required=False,
     )
     concession_discount_percentage = serializers.CharField(
-        source="concessionusage.concession.discount_percentage",
+        source="concession_usage.concession.discount_percentage",
         read_only=True,
         required=False,
     )
-    rac_discount_used = serializers.CharField(source="racdiscountusage", required=False)
+    concession_card_number = serializers.CharField(
+        source="concession_usage.concession_card_number",
+        read_only=True,
+        required=False,
+    )
+    rac_discount_used = serializers.CharField(
+        source="rac_discount_usage", required=False
+    )
     rac_discount_percentage = serializers.CharField(
         source="rac_discount_usage.discount_percentage", required=False
     )
     discount_code_used = serializers.CharField(
-        source="discountcodeusage.discount_code.code", required=False
+        source="discount_code_usage.discount_code.code", required=False
     )
     discount_code_discount = serializers.SerializerMethodField(
         read_only=True, required=False
     )
     voucher_number = serializers.CharField(
-        source="vouchertransaction.voucher.voucher_number",
+        source="voucher_transaction.voucher.voucher_number",
         read_only=True,
         required=False,
     )
@@ -627,6 +634,8 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
             "sold_via",
             "sold_via_name",
             "pass_type_name",
+            "concession_type",
+            "concession_discount_percentage",
             "rac_discount_percentage",
         ]
         datatables_always_serialize = [
@@ -634,14 +643,14 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
         ]
 
     def get_discount_code_discount(self, obj):
-        if hasattr(obj, "discountcodeusage"):
+        if hasattr(obj, "discount_code_usage"):
             discount = (
-                obj.discountcodeusage.discount_code.discount_code_batch.discount_amount
+                obj.discount_code_usage.discount_code.discount_code_batch.discount_amount
             )
             if discount:
                 return f"${discount}"
             discount = (
-                obj.discountcodeusage.discount_code.discount_code_batch.discount_percentage
+                obj.discount_code_usage.discount_code.discount_code_batch.discount_percentage
             )
             return f"{discount}% Off"
         return None
