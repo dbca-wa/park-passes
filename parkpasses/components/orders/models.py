@@ -50,6 +50,7 @@ class Order(models.Model):
         blank=True,
     )
     user = models.IntegerField(null=False, blank=False)  # EmailUserRO
+    payment_confirmed = models.BooleanField(blank=True, default=False)
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
 
     class Meta:
