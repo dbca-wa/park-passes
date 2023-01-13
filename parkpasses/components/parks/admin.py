@@ -8,6 +8,7 @@ class ParkGroupAdmin(admin.ModelAdmin):
     autocomplete_fields = ("lgas",)
     fields = [
         "name",
+        "oracle_code",
         "lgas",
         "display_order",
         "display_externally",
@@ -17,6 +18,7 @@ class ParkGroupAdmin(admin.ModelAdmin):
     ]
     list_display = (
         "name",
+        "oracle_code",
         "display_order",
         "display_externally",
     )

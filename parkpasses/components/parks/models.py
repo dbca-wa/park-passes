@@ -7,6 +7,7 @@
 """
 import logging
 
+from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.db import models
 
@@ -89,6 +90,13 @@ class ParkGroup(models.Model):
     """A class to represent a group of parks"""
 
     name = models.CharField(unique=True, max_length=100, null=False, blank=False)
+    oracle_code = models.CharField(
+        max_length=50,
+        null=False,
+        blank=False,
+        default=settings.PARKPASSES_DEFAULT_ORACLE_CODE,
+        help_text="This oracle code is for online sales (PICA) ONLY. Don't enter regional codes here.",
+    )
     parks = models.ManyToManyField(
         Park, related_name="park_group", through="Member", blank=True
     )
