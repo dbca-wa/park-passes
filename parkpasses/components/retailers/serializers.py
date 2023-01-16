@@ -2,6 +2,7 @@ from django.utils.formats import date_format
 from rest_framework import serializers
 
 from parkpasses.components.retailers.models import (
+    District,
     RetailerGroup,
     RetailerGroupInvite,
     RetailerGroupUser,
@@ -17,9 +18,7 @@ class RetailerGroupSerializer(serializers.ModelSerializer):
 
 
 class RetailerGroupUserSerializer(serializers.ModelSerializer):
-    retailer_group_name = serializers.CharField(
-        source="retailer_group.name", read_only=True
-    )
+    retailer_group_name = serializers.SerializerMethodField(read_only=True)
     emailuser_email = serializers.SerializerMethodField(read_only=True)
     datetime_created = serializers.DateTimeField(
         format="%d/%m/%Y %I:%M %p", read_only=True
@@ -44,6 +43,9 @@ class RetailerGroupUserSerializer(serializers.ModelSerializer):
             "datetime_updated",
         ]
 
+    def get_retailer_group_name(self, obj):
+        return obj.retailer_group.organisation["organisation_name"]
+
     def get_datetime_created(self, obj):
         return date_format(
             obj.datetime_created, format="SHORT_DATETIME_FORMAT", use_l10n=True
@@ -59,9 +61,7 @@ class RetailerGroupUserSerializer(serializers.ModelSerializer):
 
 
 class InternalRetailerGroupInviteSerializer(serializers.ModelSerializer):
-    retailer_group_name = serializers.CharField(
-        source="retailer_group.name", read_only=True
-    )
+    retailer_group_name = serializers.SerializerMethodField(read_only=True)
     initiated_by_display = serializers.CharField(
         source="get_initiated_by_display", read_only=True
     )
@@ -94,6 +94,9 @@ class InternalRetailerGroupInviteSerializer(serializers.ModelSerializer):
             "datetime_updated",
         ]
         datatables_always_serialize = ["status", "user_count_for_retailer_group"]
+
+    def get_retailer_group_name(self, obj):
+        return obj.retailer_group.organisation["organisation_name"]
 
     def create(self, validated_data):
         validated_data.pop("is_admin", None)
@@ -160,3 +163,9 @@ class RetailerRetailerGroupInviteSerializer(serializers.ModelSerializer):
         return date_format(
             obj.datetime_updated, format="SHORT_DATETIME_FORMAT", use_l10n=True
         )
+
+
+class DistrictSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = District
+        fields = "__all__"
