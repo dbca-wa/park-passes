@@ -33,7 +33,7 @@ class PassTestCase(TestCase):
             price=Decimal("10.00"),
         )
         self.default_sold_via, created = RetailerGroup.objects.get_or_create(
-            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         )
         self.holiday_pass = Pass.objects.create(
             user=1,
