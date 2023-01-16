@@ -37,7 +37,7 @@ class InternalReportSerializer(serializers.ModelSerializer):
     invoice_filename = serializers.SerializerMethodField()
     processing_status_display = serializers.SerializerMethodField()
     datetime_created = serializers.SerializerMethodField()
-    retailer_group = serializers.CharField(source="retailer_group.name")
+    retailer_group = serializers.SerializerMethodField()
 
     class Meta:
         model = Report
@@ -54,3 +54,6 @@ class InternalReportSerializer(serializers.ModelSerializer):
 
     def get_datetime_created(self, obj):
         return obj.datetime_created.strftime("%d/%m/%Y")
+
+    def get_retailer_group(self, obj):
+        return obj.retailer_group.organisation["organisation_name"]
