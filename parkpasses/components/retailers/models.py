@@ -29,12 +29,39 @@ PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 logger = logging.getLogger(__name__)
 
 
+class District(models.Model):
+    # region = models.IntegerField(verbose_name="Ledger Region", null=False, blank=False)
+    # see ledger.payments.cash.models.Region
+    name = models.CharField(max_length=200, unique=True)
+    archive_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        app_label = "parkpasses"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class RetailerGroup(models.Model):
     ledger_organisation = models.IntegerField(
         verbose_name="Ledger Organisation", unique=True, null=True, blank=False
+    )  # see ledger.accounts.models.Organisation
+    district = models.ForeignKey(
+        District,
+        related_name="retailer_group",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
     )
-    name = models.CharField(max_length=150, unique=True, blank=False)
-    oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    commission_oracle_code = models.CharField(
+        max_length=50,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Used to allocate commission for external retailers.\
+            IMPORTANT: Leave blank for internal retailer groups.",
+    )
     commission_percentage = models.DecimalField(
         max_digits=2,
         decimal_places=0,
@@ -42,6 +69,7 @@ class RetailerGroup(models.Model):
         null=False,
         validators=PERCENTAGE_VALIDATOR,
         default=10,
+        help_text="IMPORTANT: Enter 0 for internal retailer groups.",
     )
     active = models.BooleanField(default=True)
     datetime_created = models.DateTimeField(auto_now_add=True)
@@ -50,13 +78,10 @@ class RetailerGroup(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Retailer Group"
-        ordering = ["name"]
+        ordering = ["ledger_organisation"]
 
     def __str__(self):
-        return self.name
-
-    def natural_key(self):
-        return (self.name,)
+        return self.organisation["organisation_name"]
 
     def save(self, *args, **kwargs):
         cache.delete(
@@ -99,7 +124,9 @@ class RetailerGroup(models.Model):
             organisation_response = get_organisation(self.ledger_organisation)
             if status.HTTP_200_OK == organisation_response["status"]:
                 return organisation_response["data"]
-        critical_message = f"CRITICAL: Retailer Group: {self.name} has no ledger organisation attached."
+        critical_message = (
+            f"CRITICAL: Retailer Group: {self.id} has no ledger organisation attached."
+        )
         logger.critical(critical_message)
         raise RetailerGroupHasNoLedgerOrganisationAttached(critical_message)
 
@@ -109,21 +136,23 @@ class RetailerGroup(models.Model):
         use the retailer group that is returned by this function.
         """
         dbca_retailer_count = RetailerGroup.objects.filter(
-            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         ).count()
         if 1 == dbca_retailer_count:
-            return RetailerGroup.objects.get(name=settings.PARKPASSES_DEFAULT_SOLD_VIA)
+            return RetailerGroup.objects.get(
+                ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+            )
         if 1 < dbca_retailer_count:
             critical_message = (
-                "CRITICAL: There is more than one retailer group whose name = "
-                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+                "CRITICAL: There is more than one retailer group whose ledger_organisation = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
             )
             logger.critical(critical_message)
             raise MultipleDBCARetailerGroupsExist(critical_message)
         if 0 == dbca_retailer_count:
             critical_message = (
-                "CRITICAL: There is no retailer group whose name = "
-                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+                "CRITICAL: There is no retailer group whose ledger_organisation = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
             )
             logger.critical(critical_message)
             raise NoDBCARetailerGroupExists(critical_message)
@@ -131,21 +160,23 @@ class RetailerGroup(models.Model):
     @classmethod
     def get_rac_retailer_group(self):
         rac_retailer_count = RetailerGroup.objects.filter(
-            name=settings.RAC_RETAILER_GROUP_NAME
+            ledger_organisation=settings.RAC_RETAILER_GROUP_ORGANISATION_ID
         ).count()
         if 1 == rac_retailer_count:
-            return RetailerGroup.objects.get(name=settings.RAC_RETAILER_GROUP_NAME)
+            return RetailerGroup.objects.get(
+                ledger_organisation=settings.RAC_RETAILER_GROUP_ORGANISATION_ID
+            )
         if 1 < rac_retailer_count:
             critical_message = (
-                "CRITICAL: There is more than one retailer group whose name = "
-                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+                "CRITICAL: There is more than one retailer group whose ledger_organisation = "
+                f"'{settings.RAC_RETAILER_GROUP_ORGANISATION_ID}'"
             )
             logger.critical(critical_message)
             raise MultipleRACRetailerGroupsExist(critical_message)
         if 0 == rac_retailer_count:
             critical_message = (
-                "CRITICAL: There is no retailer group whose name = "
-                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+                "CRITICAL: There is no retailer group whose ledger_organisation = "
+                f"'{settings.RAC_RETAILER_GROUP_ORGANISATION_ID}'"
             )
             logger.critical(critical_message)
             raise NoRACRetailerGroupExists(critical_message)
@@ -180,7 +211,9 @@ class RetailerGroupUser(models.Model):
         EmailUser, on_delete=models.PROTECT, blank=True, null=True, db_constraint=False
     )
     active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
+    is_admin = models.BooleanField(
+        default=False, help_text="Admins can invite other users to their group."
+    )
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
 
