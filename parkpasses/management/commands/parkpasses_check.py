@@ -18,26 +18,27 @@ class Command(BaseCommand):
 
     def check_DBCA_retailer_group(self):
         dbca_retailer_count = RetailerGroup.objects.filter(
-            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         ).count()
         if 1 == dbca_retailer_count:
             self.stdout.write(
                 self.style.SUCCESS(
-                    "SUCCESS: One DBCA Retailer Group Exists where name = '{}'"
-                ).format(settings.PARKPASSES_DEFAULT_SOLD_VIA)
+                    "SUCCESS: One DBCA Retailer Group Exists where ledger_organisation = '{}'"
+                ).format(settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID)
             )
             return 0
         if 1 < dbca_retailer_count:
             self.stdout.write(
                 self.style.ERROR(
-                    f"CRITICAL: There is more than one retailer group whose name = "
-                    f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+                    f"CRITICAL: There is more than one retailer group whose ledger_organisation = "
+                    f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
                 )
             )
         if 0 == dbca_retailer_count:
             self.stdout.write(
                 self.style.ERROR(
-                    f"CRITICAL: There is no retailer group whose name = '{settings.PARKPASSES_DEFAULT_SOLD_VIA}'"
+                    "CRITICAL: There is no retailer group whose ledger_organisation = "
+                    f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
                 )
             )
         return 1
