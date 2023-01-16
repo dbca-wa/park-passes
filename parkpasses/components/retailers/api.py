@@ -20,11 +20,13 @@ from parkpasses.components.main.api import (
 )
 from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.models import (
+    District,
     RetailerGroup,
     RetailerGroupInvite,
     RetailerGroupUser,
 )
 from parkpasses.components.retailers.serializers import (
+    DistrictSerializer,
     InternalRetailerGroupInviteSerializer,
     RetailerGroupSerializer,
     RetailerGroupUserSerializer,
@@ -97,7 +99,7 @@ class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
     @action(methods=["GET"], detail=False, url_path="retailer-groups-excluding-dbca")
     def retailer_groups_excluding_dbca(self, request, *args, **kwargs):
         active_retailer_groups = self.get_queryset().exclude(
-            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         )
         serializer = self.get_serializer(active_retailer_groups, many=True)
         return Response(serializer.data)
@@ -107,7 +109,9 @@ class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
         active_retailer_groups = (
             self.get_queryset()
             .filter(active=True)
-            .exclude(name=settings.PARKPASSES_DEFAULT_SOLD_VIA)
+            .exclude(
+                ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+            )
         )
         serializer = self.get_serializer(active_retailer_groups, many=True)
         return Response(serializer.data)
@@ -426,3 +430,9 @@ class RetailerRetailerGroupInviteViewSet(
                 )
             )
         return RetailerGroupUser.objects.none()
+
+
+class InternalDistrictViewSet(viewsets.ModelViewSet):
+    model = District
+    queryset = District.objects.all()
+    serializer_class = DistrictSerializer
