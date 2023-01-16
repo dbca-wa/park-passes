@@ -2,11 +2,16 @@ from django.contrib import admin
 from rest_framework_api_key.admin import APIKeyModelAdmin
 
 from parkpasses.components.retailers.models import (
+    District,
     RetailerGroup,
     RetailerGroupAPIKey,
     RetailerGroupInvite,
     RetailerGroupUser,
 )
+
+
+class DistrictAdmin(admin.ModelAdmin):
+    model = District
 
 
 class RetailerGroupUserInline(admin.TabularInline):
@@ -23,8 +28,9 @@ class RetailerGroupAdmin(admin.ModelAdmin):
     model = RetailerGroup
     list_display = (
         "id",
-        "name",
-        "oracle_code",
+        "district",
+        "organisation_name",
+        "commission_oracle_code",
         "active",
     )
     search_fields = ("name",)
@@ -32,14 +38,13 @@ class RetailerGroupAdmin(admin.ModelAdmin):
         "ledger_organisation",
         "organisation_name",
         "organisation_abn",
-        "name",
-        "oracle_code",
+        "district",
+        "commission_oracle_code",
         "commission_percentage",
         "active",
     ]
     readonly_fields = ["organisation_name", "organisation_abn"]
     inlines = [RetailerGroupUserInline]
-    ordering = ["name"]
 
     def organisation_name(self, obj):
         return obj.organisation["organisation_name"]
@@ -84,6 +89,7 @@ class RetailerGroupInviteAdmin(admin.ModelAdmin):
     readonly_fields = ["uuid"]
 
 
+admin.site.register(District, DistrictAdmin)
 admin.site.register(RetailerGroup, RetailerGroupAdmin)
 admin.site.register(RetailerGroupUser, RetailerGroupUserAdmin)
 admin.site.register(RetailerGroupInvite, RetailerGroupInviteAdmin)
