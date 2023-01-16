@@ -130,6 +130,11 @@ urlpatterns = [
         ),
         name="internal-reports",
     ),
+    url(
+        r"^internal/oracle-codes$",
+        views.InternalView.as_view(extra_context={"title": "Oracle Codes"}),
+        name="internal-oracle-codes",
+    ),
     # ========================================================================== Retailer
     url(
         r"^retailer/$",
