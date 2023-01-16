@@ -13,6 +13,7 @@ import InternalDiscountCodes from '@/components/internal/DiscountCodes.vue'
 import InternalReports from '@/components/internal/Reports.vue'
 import InternalRetailerGroupUsers from '@/components/internal/RetailerGroupUsers.vue'
 import InternalInviteRetailerGroupUser from '@/components/internal/forms/InviteRetailerGroupUser.vue'
+import InternalOracleCodes from '@/components/internal/OracleCodes.vue'
 
 export default {
     path: '/internal',
@@ -77,6 +78,11 @@ export default {
             path: '/internal/discount-code-batch-form/:discountCodeBatchId',
             component: InternalDiscountCodeBatchForm,
             name: 'internal-discount-code-batch-form'
+        },
+        {
+            path: '/internal/oracle-codes',
+            component: InternalOracleCodes,
+            name: 'internal-oracle-codes'
         },
     ]
 }
