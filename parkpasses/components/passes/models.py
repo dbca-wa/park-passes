@@ -47,7 +47,7 @@ from parkpasses.components.passes.exceptions import (
     SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed,
 )
 from parkpasses.components.passes.utils import PassUtils
-from parkpasses.components.retailers.models import RetailerGroup
+from parkpasses.components.retailers.models import District, RetailerGroup
 from parkpasses.ledger_api_utils import retrieve_email_user
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
@@ -265,7 +265,7 @@ class PassTypePricingWindowOption(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Duration Option"
-        verbose_name = "Duration Options"
+        verbose_name_plural = "Duration Options"
         ordering = ["pricing_window", "price"]
 
     def __str__(self):
@@ -1054,3 +1054,31 @@ class RACDiscountUsage(models.Model):
 
     class Meta:
         app_label = "parkpasses"
+
+
+class DistrictPassTypeDurationOracleCode(models.Model):
+    district = models.ForeignKey(
+        District,
+        related_name="district_pass_type_duration_oracle_code",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        help_text="Leave blank for PICA oracle codes (online sales)",
+    )
+    option = models.ForeignKey(
+        PassTypePricingWindowOption,
+        on_delete=models.CASCADE,
+        related_name="district_oracle_code",
+    )
+    oracle_code = models.CharField(
+        max_length=50,
+        null=False,
+        blank=False,
+        help_text="The oracle code to be used for this district, pass type and pass duration.",
+    )
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Oracle Code"
+        verbose_name_plural = "Oracle Codes"
+        unique_together = (("district", "option"),)
