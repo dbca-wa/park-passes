@@ -28,7 +28,9 @@ def add_retailer_to_session(sender, user, request, **kwargs):
         )
         request.session["retailer"] = {
             "id": retailer_group_user.retailer_group.id,
-            "name": retailer_group_user.retailer_group.name,
+            "name": retailer_group_user.retailer_group.organisation[
+                "organisation_name"
+            ],
         }
     else:
         if "retailer" in request.session.keys():
