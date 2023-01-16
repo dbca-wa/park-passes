@@ -374,7 +374,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     voucher = serializers.SerializerMethodField()
     voucher_transaction = ExternalVoucherTransactionSerializer()
     price_after_voucher_applied = serializers.CharField()
-    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    sold_via_name = serializers.SerializerMethodField(read_only=True)
     date_start_formatted = serializers.DateField(
         source="date_start", read_only=True, format="%d/%m/%Y"
     )
@@ -452,6 +452,9 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "price_after_voucher_applied",
             "sold_via_name",
         ]
+
+    def get_sold_via_name(self, obj):
+        return obj.sold_via.organisation["organisation_name"]
 
     def get_price(self, obj):
         return f"{obj.option.price:.2f}"
@@ -584,7 +587,7 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     duration = serializers.CharField(source="option.name")
     park_pass_pdf = serializers.SerializerMethodField()
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
-    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    sold_via_name = serializers.SerializerMethodField(read_only=True)
     processing_status_display_name = serializers.CharField(
         source="status_display", read_only=True
     )
@@ -642,6 +645,9 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
             "user_can_edit",
         ]
 
+    def get_sold_via_name(self, obj):
+        return obj.sold_via.organisation["organisation_name"]
+
     def get_discount_code_discount(self, obj):
         if hasattr(obj, "discount_code_usage"):
             discount = (
@@ -676,7 +682,7 @@ class InternalPassSerializer(serializers.ModelSerializer):
     pricing_window = serializers.CharField(source="option.pricing_window")
     park_pass_pdf = serializers.SerializerMethodField()
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
-    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    sold_via_name = serializers.SerializerMethodField(read_only=True)
     processing_status_display_name = serializers.CharField(
         source="status_display", read_only=True
     )
@@ -697,6 +703,9 @@ class InternalPassSerializer(serializers.ModelSerializer):
             "user_can_upload_personnel_passes",
             "user_can_edit_and_cancel",
         ]
+
+    def get_sold_via_name(self, obj):
+        return obj.sold_via.organisation["organisation_name"]
 
     def get_park_pass_pdf(self, obj):
         return os.path.basename(obj.park_pass_pdf.name)
@@ -751,4 +760,10 @@ class RetailerApiCreatePassSerializer(serializers.ModelSerializer):
 class InternalPassCancellationSerializer(serializers.ModelSerializer):
     class Meta:
         model = PassCancellation
+        fields = "__all__"
+
+
+class InternalPassTypesOptionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PassType
         fields = "__all__"
