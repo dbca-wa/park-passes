@@ -64,7 +64,7 @@ class Command(BaseCommand):
         )
 
         retailer_groups = RetailerGroup.objects.exclude(
-            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         )
 
         for retailer_group in retailer_groups:
