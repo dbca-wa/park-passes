@@ -72,7 +72,7 @@
             <BootstrapSpinner :isLoading="true" />
         </div>
 
-        <BootstrapAlert class="mt-3">
+        <BootstrapAlert v-if="selectedDistrict == picaLabel" class="mt-3">
             Looking for the PICA oracle codes for local park passes? <a href="/admin/parkpasses/parkgroup/" target="_blank">Go here</a>
         </BootstrapAlert>
 
@@ -104,13 +104,15 @@ export default {
             oracleCodes: [],
             filteredOracleCodes: [],
             districts: [],
-            selectedDistrict: 'PICA (Online Sales)',
+            picaLabel: constants.PICA_LABEL,
+            selectedDistrict: constants.PICA_LABEL,
             updateCalled: false,
             saveDelay: 1000,
             systemErrorMessage: null,
         };
     },
     components: {
+        constants,
         FormSection,
         BootstrapAlert,
         BootstrapSpinner,
