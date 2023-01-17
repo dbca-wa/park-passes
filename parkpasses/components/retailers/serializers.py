@@ -16,6 +16,7 @@ class RetailerGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = RetailerGroup
         fields = [
+            "id",
             "ledger_organisation",
             "ledger_organisation_name",
             "district",
