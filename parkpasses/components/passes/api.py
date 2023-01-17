@@ -43,6 +43,7 @@ from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
 from parkpasses.components.passes.models import (
+    DistrictPassTypeDurationOracleCode,
     Pass,
     PassTemplate,
     PassType,
@@ -60,6 +61,8 @@ from parkpasses.components.passes.serializers import (
     ExternalPassSerializer,
     ExternalUpdatePassSerializer,
     InternalCreatePricingWindowSerializer,
+    InternalDistrictPassTypeDurationOracleCodeListUpdateSerializer,
+    InternalDistrictPassTypeDurationOracleCodeSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
     InternalPassRetrieveSerializer,
@@ -1240,3 +1243,52 @@ class RacDiscountCodeCheckView(APIView):
             retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
             return retailer_group_api_key.retailer_group
         return RetailerGroup.get_rac_retailer_group()
+
+
+class InternalDistrictPassTypeDurationOracleCodeViewSet(viewsets.ModelViewSet):
+    model = DistrictPassTypeDurationOracleCode
+    queryset = DistrictPassTypeDurationOracleCode.objects.all()
+    permission_classes = [IsInternal]
+    serializer_class = InternalDistrictPassTypeDurationOracleCodeSerializer
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer)
+    pagination_class = None
+
+    def get_serializer_class(self):
+        logger.info("action = %s", self.action)
+        if "list_update" == self.action:
+            return InternalDistrictPassTypeDurationOracleCodeListUpdateSerializer
+        return InternalDistrictPassTypeDurationOracleCodeSerializer
+
+    @action(methods=["PATCH"], detail=False, url_path="list-update")
+    def list_update(self, request, *args, **kwargs):
+        logger.info(
+            "Calling list_update on InternalDistrictPassTypeDurationOracleCodeViewSet"
+        )
+        filter = request.data["filter"]
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.values_list("id", "oracle_code")
+        if settings.PICA_ORACLE_CODE_LABEL == filter:
+            queryset = queryset.filter(district__isnull=True)
+        else:
+            queryset = queryset.filter(district__name=filter)
+        instances = list(queryset)
+        logger.info("data = %s\n", str(request.data["data"]))
+
+        data = request.data["data"]
+        serializer = self.get_serializer(instances, data, many=True, partial=True)
+        serializer.is_valid(raise_exception=True)
+        logger.info("serializer.validated_data = %s\n", str(serializer.validated_data))
+        self.perform_list_update(serializer)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_list_update(self, serializer):
+        for instance_tuple, data in zip(serializer.instance, serializer.validated_data):
+            id = instance_tuple[0]
+            oracle_code = str(data["oracle_code"])
+            instance = DistrictPassTypeDurationOracleCode.objects.get(id=id)
+            if instance.oracle_code != oracle_code:
+                logger.info("instance_tuple = %s", instance_tuple)
+                logger.info("data = %s", data)
+                logger.info("oracle_code = %s", oracle_code)
+                instance.oracle_code = oracle_code
+                instance.save()
