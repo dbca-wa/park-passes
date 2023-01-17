@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import requests
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -155,7 +156,7 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
                 "No passes found in the month before the invoice was generated."
                 + "Trying to find passes in the same month the invoice was generated."
             )
-            # If the genereate monthly invoices management command was run with the --test flag
+            # If the generate monthly invoices management command was run with the --test flag
             # then we need to select the passes sold in the same month the report was generated
             last_day_of_this_month_number = calendar.monthrange(
                 date_invoice_generated.year, date_invoice_generated.month
@@ -171,36 +172,48 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
                 ),
             )
         logger.info(f"Found {len(passes)} passes.")
-
-        invoice_amount = Decimal(0.00)
+        pass_content_type = ContentType.objects.get_for_model(Pass)
+        total_sales = Decimal(0.00)
+        ledger_order_lines = []
         for park_pass in passes:
-            invoice_amount += park_pass.price_after_concession_applied
+            ledger_description = CartUtils.get_pass_purchase_description(park_pass)
+            price_incl_tax = park_pass.price_after_all_discounts
+            if settings.DEBUG:
+                # If in dev round the amounts so the payment gateway will work
+                price_incl_tax = int(price_incl_tax)
+                ledger_description += " (Price rounded for dev env)"
 
-        if invoice_amount <= Decimal(0.00):
+            ledger_order_lines.append(
+                {
+                    "ledger_description": ledger_description,
+                    "quantity": 1,
+                    "price_incl_tax": str(price_incl_tax),
+                    "oracle_code": CartUtils.get_oracle_code(
+                        request, pass_content_type, park_pass.id
+                    ),
+                    "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
+                }
+            )
+            total_sales += park_pass.price_after_concession_applied
+
+        if total_sales <= Decimal(0.00):
             return redirect(reverse("retailer-reports"))
 
         commission_amount = (
-            Decimal(invoice_amount / 100).quantize(Decimal("0.01"))
+            Decimal(total_sales / 100).quantize(Decimal("0.01"))
             * retailer_group.commission_percentage
         )
         commission_ledger_description = (
-            f"Park Passes Sales for the Month of { month_year }"
+            f"{retailer_group.commission_percentage}% "
+            f"Commission on Sales for the Month of { month_year }"
         )
-
         if settings.DEBUG:
-            invoice_amount = int(invoice_amount)
+            # If in dev round the amounts so the payment gateway will work
             commission_amount = int(commission_amount)
             ledger_description += " (Price rounded for dev env)"
             commission_ledger_description += " (Price rounded for dev env)"
 
-        ledger_order_lines = [
-            {
-                "ledger_description": ledger_description,
-                "quantity": 1,
-                "price_incl_tax": str(invoice_amount),
-                "oracle_code": retailer_group.oracle_code,
-                "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
-            },
+        ledger_order_lines.append(
             {
                 "ledger_description": commission_ledger_description,
                 "quantity": 1,
@@ -208,7 +221,7 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
                 "oracle_code": retailer_group.oracle_code,
                 "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
             },
-        ]
+        )
         booking_reference = report.uuid
         basket_parameters = CartUtils.get_basket_parameters(
             ledger_order_lines,
@@ -319,7 +332,7 @@ class InternalReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
 
     model = Report
     queryset = Report.objects.exclude(
-        retailer_group__name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+        retailer_group__ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
     )
     permission_classes = [IsInternal]
     serializer_class = InternalReportSerializer
