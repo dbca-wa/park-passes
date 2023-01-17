@@ -255,5 +255,9 @@ module.exports = {
         return                          `/api/main/internal/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
     },
 
+    /* ========================= Oracle Codes =========================================*/
+
+    oracleCodesListInternal:          '/api/passes/internal/oracle-codes/',
+    oracleCodesListUpdateInternal:          '/api/passes/internal/oracle-codes/list-update/',
 
 }
