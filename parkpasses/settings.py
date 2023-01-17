@@ -364,6 +364,8 @@ PICA_EMAIL = env("PICA_EMAIL", None)
 if not PICA_EMAIL:
     raise ImproperlyConfigured("PICA_EMAIL is not set")
 
+PICA_ORACLE_CODE_LABEL = "PICA (Online Sales)"
+
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
     "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", "protected_media"
 )
