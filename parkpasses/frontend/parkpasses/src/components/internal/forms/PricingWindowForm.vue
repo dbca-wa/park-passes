@@ -143,7 +143,7 @@ export default {
     },
     computed: {
         isDefaultPricingWindow: function () {
-            return constants.PARKAPSSES_DEFAULT_PRICING_WINDOW_NAME === this.pricingWindow.name;
+            return constants.PARKPASSES_DEFAULT_PRICING_WINDOW_NAME === this.pricingWindow.name;
         },
 
         hasPricingWindowExpired: function () {
@@ -199,7 +199,7 @@ export default {
                     constants.PARKPASSES_MODELS_PRICING_WINDOW,
                     vm.pricingWindow.id
                 )
-                if(constants.PARKAPSSES_DEFAULT_PRICING_WINDOW_NAME==vm.pricingWindow.name){
+                if(constants.PARKPASSES_DEFAULT_PRICING_WINDOW_NAME==vm.pricingWindow.name){
                     let yesterday = new Date();
                     yesterday.setDate(yesterday.getDate() - 1);
                     this.maxStartDate = yesterday.toLocaleDateString('en-ca');
