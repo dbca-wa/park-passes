@@ -66,3 +66,7 @@ class SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(Exception):
 class SendGoldPassDetailsToPICAEmailFailed(Exception):
     """The exception to be thrown if an error occurs when sending the gold pass details to
     pica email"""
+
+
+class NoOracleCodeFoundForCartItem(Exception):
+    """The exception to be thrown if the system can not find an oracle code for a cart item"""
