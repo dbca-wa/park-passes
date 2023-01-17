@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from parkpasses.components.retailers.models import RetailerGroupUser
+from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.components.users.serializers import BasicEmailUserSerializer
 from parkpasses.helpers import (
     is_internal,
@@ -42,18 +42,21 @@ class UserDataView(APIView):
         elif is_retailer(request):
             user_data["authorisation_level"] = "retailer"
             if RetailerGroupUser.objects.filter(emailuser__id=emailuser.id).exists():
-                retailer_groups = (
+                retailer_group_user_ids = (
                     RetailerGroupUser.objects.annotate()
                     .filter(emailuser__id=emailuser.id)
-                    .values("retailer_group__id", "retailer_group__name")
+                    .values_list("retailer_group__id", flat=True)
                 )
                 retailer_groups_list = []
                 user_data["user"]["retailer_groups"] = {}
+                retailer_groups = RetailerGroup.objects.filter(
+                    id__in=[retailer_group_user_ids]
+                )
                 for retailer_group in retailer_groups:
                     retailer_groups_list.append(
                         {
-                            "id": retailer_group["retailer_group__id"],
-                            "name": retailer_group["retailer_group__name"],
+                            "id": retailer_group.id,
+                            "name": retailer_group.organisation["organisation_name"],
                         }
                     )
 
