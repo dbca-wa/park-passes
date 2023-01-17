@@ -413,11 +413,11 @@
                             <div class="col-12 col-lg-12 col-xl-9">
                                 <template v-if="retailerGroupsForUser && retailerGroupsForUser.length>1">
                                     <select class="form-select" name="retailer_group_id" v-model="pass.sold_via">
-                                        <option v-for="retailerGroup in retailerGroupsForUser" :value="retailerGroup.id">{{ retailerGroup.name }}</option>
+                                        <option v-for="retailerGroup in retailerGroupsForUser" :value="retailerGroup.id">{{ retailerGroup.ledger_organisation_name }}</option>
                                     </select>
                                 </template>
                                 <template v-else>
-                                    <div class="lead"><span class="badge org-badge-primary fw-bold">{{ retailerGroupsForUser[0].name }}</span></div>
+                                    <div class="lead"><span class="badge org-badge-primary fw-bold">{{ retailerGroupsForUser[0].ledger_organisation_name }}</span></div>
                                 </template>
                             </div>
                         </div>
