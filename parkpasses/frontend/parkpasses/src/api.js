@@ -257,7 +257,7 @@ module.exports = {
 
     /* ========================= Oracle Codes =========================================*/
 
-    oracleCodesListInternal:          '/api/passes/internal/oracle-codes/',
-    oracleCodesListUpdateInternal:          '/api/passes/internal/oracle-codes/list-update/',
+    oracleCodesListInternal:            '/api/passes/internal/oracle-codes/',
+    oracleCodesListUpdateInternal:      '/api/passes/internal/oracle-codes/list-update/',
 
 }
