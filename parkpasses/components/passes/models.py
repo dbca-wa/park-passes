@@ -1071,7 +1071,7 @@ class DistrictPassTypeDurationOracleCode(models.Model):
         related_name="district_oracle_code",
     )
     oracle_code = models.CharField(
-        max_length=50,
+        max_length=80,
         null=False,
         blank=False,
         help_text="The oracle code to be used for this district, pass type and pass duration.",
@@ -1082,3 +1082,18 @@ class DistrictPassTypeDurationOracleCode(models.Model):
         verbose_name = "Oracle Code"
         verbose_name_plural = "Oracle Codes"
         unique_together = (("district", "option"),)
+        ordering = (
+            "district__name",
+            "option__pricing_window__pass_type__display_order",
+            "option__duration",
+        )
+
+    def __str__(self):
+        district_name = settings.PICA_ORACLE_CODE_LABEL
+        if self.district:
+            district_name = self.district.name
+        return (
+            f"{district_name} - "
+            f"{self.option.pricing_window.pass_type.display_name} - "
+            f"{self.option.name} - {self.oracle_code}"
+        )
