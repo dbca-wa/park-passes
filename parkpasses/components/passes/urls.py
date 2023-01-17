@@ -7,6 +7,7 @@ from parkpasses.components.passes.api import (
     DefaultOptionsForPassType,
     ExternalPassTypeViewSet,
     ExternalPassViewSet,
+    InternalDistrictPassTypeDurationOracleCodeViewSet,
     InternalPassTypeViewSet,
     InternalPassViewSet,
     InternalPricingWindowViewSet,
@@ -47,6 +48,11 @@ router.register(r"pass-templates", PassTemplateViewSet, basename="pass-templates
 router.register(r"external/passes", ExternalPassViewSet, basename="passes-external")
 router.register(r"retailer/passes", RetailerPassViewSet, basename="passes-internal")
 router.register(r"internal/passes", InternalPassViewSet, basename="passes-internal")
+router.register(
+    r"internal/oracle-codes",
+    InternalDistrictPassTypeDurationOracleCodeViewSet,
+    basename="oracles-codes-internal",
+)
 router.register(
     r"retailer/api-key-access",
     RetailerApiAccessViewSet,
