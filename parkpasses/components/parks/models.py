@@ -95,7 +95,10 @@ class ParkGroup(models.Model):
         null=False,
         blank=False,
         default=settings.PARKPASSES_DEFAULT_ORACLE_CODE,
-        help_text="This oracle code is for online sales (PICA) ONLY. Don't enter regional codes here.",
+        help_text=(
+            "This oracle code is for PICA local park passes (Online Sales) ONLY. "
+            "Don't enter regional codes here."
+        ),
     )
     parks = models.ManyToManyField(
         Park, related_name="park_group", through="Member", blank=True
