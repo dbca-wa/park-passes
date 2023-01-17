@@ -10,11 +10,25 @@ from parkpasses.components.retailers.models import (
 
 
 class RetailerGroupSerializer(serializers.ModelSerializer):
+    ledger_organisation_name = serializers.SerializerMethodField(read_only=True)
     user_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = RetailerGroup
-        fields = "__all__"
+        fields = [
+            "ledger_organisation",
+            "ledger_organisation_name",
+            "district",
+            "commission_oracle_code",
+            "commission_percentage",
+            "active",
+            "user_count",
+            "datetime_created",
+            "datetime_updated",
+        ]
+
+    def get_ledger_organisation_name(self, obj):
+        return obj.organisation["organisation_name"]
 
 
 class RetailerGroupUserSerializer(serializers.ModelSerializer):
