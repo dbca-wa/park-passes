@@ -6,7 +6,7 @@ module.exports = {
     PARKPASSES_MODELS_DISCOUNT_CODE_BATCH:  'discountcodebatch',
     PARKPASSES_MODELS_PRICING_WINDOW:       'passtypepricingwindow',
 
-    PARKAPSSES_DEFAULT_PRICING_WINDOW_NAME: 'Default',
+    PARKPASSES_DEFAULT_PRICING_WINDOW_NAME: 'Default',
 
     TITLE_SUFFIX: ' - Park Passes - Department of Biodiversity, Conservation and Attractions',
 
@@ -17,6 +17,8 @@ module.exports = {
 
     DEFAULT_SOLD_VIA: 'DBCA Website',
 
+    PICA_LABEL: 'PICA (Online Sales)',
+
     PASS_PROCESSING_STATUS_CANCELLED: 'CA',
     PASS_STATUS_EXPIRED: 'Expired',
     DISCOUNT_CODE_BATCH_STATUS_INVALIDATED: 'Invalidated',
@@ -25,6 +27,7 @@ module.exports = {
 
     ERRORS: {
         NETWORK: 'NETWORK ERROR: Make sure your internet connection is working and try again.',
+        SYSTEM: 'SYSTEM ERROR: Make sure your internet connection is working and try again.',
         // The critical error will be shown on the client side when a critical error
         // has occured on the backend and needs the attention of the system admins.
         CRITICAL: 'SYSTEM ERROR: Our System Administrators have been notified. Please try again in an hour.'
