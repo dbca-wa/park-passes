@@ -3,8 +3,10 @@ import logging
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
-from parkpasses.components.passes.models import Pass
+from parkpasses.components.passes.exceptions import NoOracleCodeFoundForCartItem
+from parkpasses.components.passes.models import DistrictPassTypeDurationOracleCode, Pass
 from parkpasses.components.passes.serializers import ExternalPassSerializer
+from parkpasses.components.retailers.models import RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher
 from parkpasses.components.vouchers.serializers import ExternalListVoucherSerializer
 from parkpasses.helpers import is_retailer
@@ -107,15 +109,60 @@ class CartUtils:
         }
 
     @classmethod
-    def get_oracle_code(self, content_type, object_id):
+    def get_oracle_code(self, request, content_type, object_id):
+        """
+        There are two main ways that the system determines the oracle code to be used for a
+        park pass purchase. The first is if the sale is via a retailer or not. If it is via a retailer
+        then the system will use the oracle code based on the district that the retailer is in,
+        the pass type and the duration of the pass.
+
+        Note: Internal retailers have a district in the DistrictPassTypeDurationOracleCode model
+        for PICA the district is null.
+
+        If they are not a retailer then the sale must be online via the website, in this case,
+        the system will use a PICA oracle code. If the pass type is a local park pass then the
+        system will use the pica oracle code for the park group that the pass is for.
+        """
         logger.info(
             f"Calling get_oracle_code with content_type: {content_type} and object_id: {object_id}"
         )
 
-        # If not, assign the oracle code for the pass type
-        pass_content_type = ContentType.objects.get(
-            app_label="parkpasses", model="pass"
-        )
+        # Check if the pass is being sold via a retailer
+        if is_retailer(request):
+            logger.info(
+                "User is a retailer.",
+            )
+            user = request.user
+            retailer_group_user = (
+                RetailerGroupUser.objects.filter(emailuser=user)
+                .order_by("-datetime_created")
+                .first()
+            )
+            if retailer_group_user:
+                logger.info(
+                    f"Retailer Group User: {retailer_group_user} exists.",
+                )
+                retailer_group = retailer_group_user.retailer_group
+                district = retailer_group.district
+                # Retailers can only sell passes, not vouchers so we know the content type is a pass
+                park_pass = Pass.objects.get(id=object_id)
+                district_pass_type_duration_oracle_code = (
+                    DistrictPassTypeDurationOracleCode.objects.get(
+                        district=district, option=park_pass.option
+                    )
+                )
+
+                if district_pass_type_duration_oracle_code.oracle_code:
+                    logger.info(
+                        f"Returning oracle code: {district_pass_type_duration_oracle_code}.",
+                    )
+                    return district_pass_type_duration_oracle_code.oracle_code
+                logger.error(
+                    f"No oracle code found: {district_pass_type_duration_oracle_code}.",
+                )
+
+        # If not, the pass or voucher is being sold online
+        pass_content_type = ContentType.objects.get_for_model(Pass)
         if pass_content_type == content_type:
             logger.info(
                 f"Content type is : {pass_content_type}.",
@@ -126,18 +173,39 @@ class CartUtils:
                 )
                 park_pass = Pass.objects.get(id=object_id)
                 pass_type = park_pass.option.pricing_window.pass_type
-                if pass_type.oracle_code:
-                    logger.info(
-                        f"Returning Pass Type: {pass_type} oracle code: {pass_type.oracle_code}.",
-                    )
-                    return pass_type.oracle_code
+                if settings.ANNUAL_LOCAL_PASS == pass_type.name:
+                    # PICA Oracle codes for local park passes are based on the park group
+                    return park_pass.park_group.oracle_code
 
-        logger.info(
-            f"No retailer group or pass type oracle code found, returning default oracle code from settings:\
-                 {settings.PARKPASSES_DEFAULT_ORACLE_CODE} ."
+                # For other pass types, PICA oracle codes come are based on the pass type
+                # and duration
+                # Note: PICA oracle codes have a null district
+                district_pass_type_duration_oracle_code = (
+                    DistrictPassTypeDurationOracleCode.objects.get(
+                        district__isnull=True, option=park_pass.option
+                    )
+                )
+                if district_pass_type_duration_oracle_code.oracle_code:
+                    logger.info(
+                        f"Returning oracle code: {district_pass_type_duration_oracle_code}.",
+                    )
+                    return district_pass_type_duration_oracle_code.oracle_code
+
+        voucher_content_type = ContentType.objects.get_for_model(Voucher)
+        if voucher_content_type == content_type:
+            logger.info(
+                f"Content type is : {voucher_content_type}.",
+            )
+            logger.info(
+                f"Returning voucher oracle code: {settings.PARKPASSES_DEFAULT_VOUCHER_ORACLE_CODE}.",
+            )
+            return settings.PARKPASSES_DEFAULT_VOUCHER_ORACLE_CODE
+        error_message = (
+            f"No oracle code found for this user: {request.user}, "
+            f"content_type: {content_type} and object id: {object_id}"
         )
-        # If not then just fall back to the default code from settings.
-        return settings.PARKPASSES_DEFAULT_ORACLE_CODE
+        logger.error(error_message)
+        raise NoOracleCodeFoundForCartItem(error_message)
 
     @classmethod
     def get_voucher_purchase_description(self, voucher_number):
