@@ -9,6 +9,7 @@ from parkpasses.components.discount_codes.serializers import (
 )
 from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.models import (
+    DistrictPassTypeDurationOracleCode,
     Pass,
     PassCancellation,
     PassTemplate,
@@ -767,3 +768,41 @@ class InternalPassTypesOptionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = PassType
         fields = "__all__"
+
+
+class InternalDistrictPassTypeDurationOracleCodeSerializer(serializers.ModelSerializer):
+    district_name = serializers.SerializerMethodField()
+    option_name = serializers.CharField(source="option.name", read_only=True)
+    pass_type_display_name = serializers.CharField(
+        source="option.pricing_window.pass_type.display_name", read_only=True
+    )
+
+    class Meta:
+        model = DistrictPassTypeDurationOracleCode
+        fields = [
+            "id",
+            "district",
+            "district_name",
+            "pass_type_display_name",
+            "option",
+            "option_name",
+            "oracle_code",
+        ]
+
+    def get_district_name(self, obj):
+        if obj.district:
+            return obj.district.name
+        return "PICA (Online Sales)"
+
+
+class InternalDistrictPassTypeDurationOracleCodeListUpdateSerializer(
+    serializers.ModelSerializer
+):
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = DistrictPassTypeDurationOracleCode
+        fields = [
+            "id",
+            "oracle_code",
+        ]
