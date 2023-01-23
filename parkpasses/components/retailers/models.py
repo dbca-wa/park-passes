@@ -21,6 +21,7 @@ from parkpasses.components.retailers.exceptions import (
     NoDBCARetailerGroupExists,
     NoRACRetailerGroupExists,
     RetailerGroupHasNoLedgerOrganisationAttached,
+    UnableToRetrieveLedgerOrganisation,
 )
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
@@ -121,9 +122,23 @@ class RetailerGroup(models.Model):
     @property
     def organisation(self):
         if self.ledger_organisation:
-            organisation_response = get_organisation(self.ledger_organisation)
-            if status.HTTP_200_OK == organisation_response["status"]:
-                return organisation_response["data"]
+            cache_key = settings.CACHE_KEY_LEDGER_ORGANISATION.format(
+                self.ledger_organisation
+            )
+            logger.info(cache_key)
+            organisation = cache.get(cache_key)
+            if organisation is None:
+                organisation_response = get_organisation(self.ledger_organisation)
+                if status.HTTP_200_OK == organisation_response["status"]:
+                    organisation = organisation_response["data"]
+                    cache.set(cache_key, organisation, settings.CACHE_TIMEOUT_24_HOURS)
+                else:
+                    error_message = f"CRITICAL: Unable to retrieve organisation {self.ledger_organisation} from ledger."
+                    logger.error(error_message)
+                    raise UnableToRetrieveLedgerOrganisation(error_message)
+            logger.info(organisation)
+            return organisation
+
         critical_message = (
             f"CRITICAL: Retailer Group: {self.id} has no ledger organisation attached."
         )

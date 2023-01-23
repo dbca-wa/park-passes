@@ -344,6 +344,8 @@ CACHE_KEY_RETAILER_GROUP_IDS = "user-{}-retailer-group-ids"
 
 CACHE_KEY_GROUP_IDS = "{}-{}-user-ids"
 
+CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
+
 PROTECTED_MEDIA_ROOT = env(
     "PROTECTED_MEDIA_ROOT", os.path.join(BASE_DIR, "protected_media")
 )

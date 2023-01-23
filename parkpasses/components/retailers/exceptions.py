@@ -22,3 +22,7 @@ class NoRACRetailerGroupExists(Exception):
 
 class RetailerGroupHasNoLedgerOrganisationAttached(Exception):
     """The exception to be thrown if there is no retailer group has a null ledger_organisation field"""
+
+
+class UnableToRetrieveLedgerOrganisation(Exception):
+    """The exception to be thrown if no ledger organisation can be retrieved from the ledger API"""
