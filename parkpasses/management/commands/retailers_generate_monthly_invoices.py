@@ -123,11 +123,12 @@ class Command(BaseCommand):
                 "total_payable": f"${total_payable}",
             }
             invoice_template_docx.render(context)
-            invoice_filename = f"Park Passes Invoice - {retailer_group.name} - {first_day_of_previous_month.date()} "
+            organisation_name = retailer_group.organisation["organisation_name"]
+            invoice_filename = f"Park Passes Invoice - {organisation_name} - {first_day_of_previous_month.date()} "
             invoice_filename += f"{last_day_of_previous_month.date()}.docx"
-            invoice_path = f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(retailer_group.name)}/{invoice_filename}"
+            invoice_path = f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(organisation_name)}/{invoice_filename}"
             Path(
-                f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(retailer_group.name)}"
+                f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(organisation_name)}"
             ).mkdir(parents=True, exist_ok=True)
             invoice_template_docx.save(invoice_path)
             subprocess.run(
@@ -137,7 +138,7 @@ class Command(BaseCommand):
                     "pdf",
                     invoice_path,
                     "--outdir",
-                    f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(retailer_group.name)}",
+                    f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(organisation_name)}",
                 ]
             )
 
@@ -180,11 +181,12 @@ class Command(BaseCommand):
                 "total_payable": f"${total_payable}",
             }
             report_template_docx.render(context)
-            report_filename = f"Park Passes Report - {retailer_group.name} - {first_day_of_previous_month.date()} "
+            organisation_name = retailer_group.organisation["organisation_name"]
+            report_filename = f"Park Passes Report - {organisation_name} - {first_day_of_previous_month.date()} "
             report_filename += f"{last_day_of_previous_month.date()}.docx"
-            report_path = f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(retailer_group.name)}/{report_filename}"
+            report_path = f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(organisation_name)}/{report_filename}"
             Path(
-                f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(retailer_group.name)}"
+                f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(organisation_name)}"
             ).mkdir(parents=True, exist_ok=True)
             report_template_docx.save(report_path)
             subprocess.run(
@@ -194,7 +196,7 @@ class Command(BaseCommand):
                     "pdf",
                     report_path,
                     "--outdir",
-                    f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(retailer_group.name)}",
+                    f"{settings.RETAILER_GROUP_REPORT_ROOT}/{slugify(organisation_name)}",
                 ]
             )
 

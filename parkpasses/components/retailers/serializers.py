@@ -136,9 +136,7 @@ class InternalRetailerGroupInviteSerializer(serializers.ModelSerializer):
 
 
 class RetailerRetailerGroupInviteSerializer(serializers.ModelSerializer):
-    retailer_group_name = serializers.CharField(
-        source="retailer_group.name", read_only=True
-    )
+    retailer_group_name = serializers.SerializerMethodField(read_only=True)
     initiated_by_display = serializers.CharField(
         source="get_initiated_by_display", read_only=True
     )
@@ -165,6 +163,9 @@ class RetailerRetailerGroupInviteSerializer(serializers.ModelSerializer):
             "datetime_updated",
         ]
         datatables_always_serialize = ["status", "user_count_for_retailer_group"]
+
+    def get_retailer_group_name(self, obj):
+        return obj.retailer_group.organisation["organisation_name"]
 
     def get_status_display(self, obj):
         return obj.get_status_display()

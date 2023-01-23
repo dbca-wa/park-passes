@@ -7,7 +7,7 @@
 {%  block content %}
             Your invite to the {{ SYSTEM_NAME }} Retailer Group:
 
-            {{retailer_group_user_invite.retailer_group.name}}
+            {{organisation_name}}
 
             Has been denied.
 {%  endblock %}

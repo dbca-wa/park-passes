@@ -10,7 +10,7 @@ class RetailerReportSerializer(serializers.ModelSerializer):
     invoice_filename = serializers.SerializerMethodField()
     processing_status_display = serializers.SerializerMethodField()
     datetime_created = serializers.SerializerMethodField()
-    retailer_group = serializers.CharField(source="retailer_group.name")
+    retailer_group = serializers.SerializerMethodField()
 
     class Meta:
         model = Report
@@ -18,6 +18,9 @@ class RetailerReportSerializer(serializers.ModelSerializer):
         datatables_always_serialize = [
             "invoice_reference",
         ]
+
+    def get_retailer_group(self, obj):
+        return obj.retailer_group.organisation["organisation_name"]
 
     def get_processing_status_display(self, obj):
         return obj.get_processing_status_display()
