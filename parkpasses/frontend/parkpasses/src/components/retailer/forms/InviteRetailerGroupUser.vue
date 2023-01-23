@@ -41,7 +41,7 @@
                                 <div class="col-sm-6">
                                     <select v-if="retailerGroups && retailerGroups.length>1" class="form-select" id="retailerGroup" name="retailerGroup" v-model="selectedRetailerGroup" required>
                                         <option value="" selected disabled>Select a Retailer</option>
-                                        <option v-for="retailerGroup in retailerGroups" :key="retailerGroup.id" :value="retailerGroup">{{retailerGroup.name}}</option>
+                                        <option v-for="retailerGroup in retailerGroups" :key="retailerGroup.id" :value="retailerGroup">{{retailerGroup.ledger_organisation_name}}</option>
                                     </select>
                                     <span class="form-text text-dark">{{retailerGroups[0].name}}</span>
                                     <div id="validationRetailerGroupFeedback" class="invalid-feedback">

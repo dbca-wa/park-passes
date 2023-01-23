@@ -12,7 +12,7 @@
                         <label for="">Retailer</label>
                         <select v-if="retailerGroups" class="form-control" v-model="filterRetailerGroups">
                             <option value="" selected="selected">All</option>
-                            <option v-for="retailerGroup in retailerGroups" :value="retailerGroup.id">{{ retailerGroup.name }}</option>
+                            <option v-for="retailerGroup in retailerGroups" :value="retailerGroup.id">{{ retailerGroup.ledger_organisation_name }}</option>
                         </select>
                     </div>
                 </div>

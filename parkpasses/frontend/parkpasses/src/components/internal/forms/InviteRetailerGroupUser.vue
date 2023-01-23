@@ -41,7 +41,7 @@
                                 <div class="col-sm-6">
                                     <select class="form-select" id="retailerGroup" name="retailerGroup" v-model="selectedRetailerGroup" required>
                                         <option value="" selected disabled>Select a Retailer</option>
-                                        <option v-for="retailerGroup in retailerGroups" :key="retailerGroup.id" :value="retailerGroup">{{retailerGroup.name}}</option>
+                                        <option v-for="retailerGroup in retailerGroups" :key="retailerGroup.id" :value="retailerGroup">{{retailerGroup.ledger_organisation_name}}</option>
                                     </select>
                                     <div id="validationRetailerGroupFeedback" class="invalid-feedback">
                                         Please select a retailer to invite the user to.
