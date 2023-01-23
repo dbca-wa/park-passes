@@ -84,6 +84,7 @@ from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.helpers import (
     check_rac_discount_hash,
     get_rac_discount_code,
+    get_retailer_group_ids_for_user,
     is_customer,
     is_internal,
     is_retailer,
@@ -658,9 +659,9 @@ class ExternalPassViewSet(
         cart_item.save()
         logger.info(f"Cart item: {cart_item} saved.")
 
-        if is_customer(self.request):
+        if is_retailer(self.request) or is_customer(self.request):
             logger.info(
-                "User is an external user so will increment cart item count.",
+                "User is a retailer or external user so will increment cart item count.",
             )
             cart_item_count = CartUtils.increment_cart_item_count(self.request)
             logger.info(
@@ -694,6 +695,14 @@ class ExternalPassViewSet(
         )
 
     def has_object_permission(self, request, view, obj):
+        # As per the drf docs, object level permissions are not applied when creating objects.
+        if is_retailer(request):
+            logger.info("Checking if retailer use have permission to access this pass.")
+            retailer_group_ids_for_user = get_retailer_group_ids_for_user(
+                request.user.id
+            )
+            if obj.sold_via in retailer_group_ids_for_user:
+                return True
         if is_customer(request):
             if obj.user == request.user.id:
                 return True
