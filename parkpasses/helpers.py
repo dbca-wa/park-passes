@@ -170,6 +170,8 @@ def is_departmentUser(request):
 
 
 def is_customer(request):
+    if is_retailer(request):
+        return False
     return request.user.is_authenticated and not request.user.is_staff
 
 
