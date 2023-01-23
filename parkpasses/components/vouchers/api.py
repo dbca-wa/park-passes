@@ -23,6 +23,9 @@ from parkpasses.components.main.api import (
     CustomDatatablesRenderer,
 )
 from parkpasses.components.orders.models import OrderItem
+from parkpasses.components.vouchers.exceptions import (
+    RetailerGroupUsersCannotPurchaseGiftVouchers,
+)
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.components.vouchers.serializers import (
     ExternalCreateVoucherSerializer,
@@ -32,7 +35,7 @@ from parkpasses.components.vouchers.serializers import (
     InternalVoucherSerializer,
     InternalVoucherTransactionSerializer,
 )
-from parkpasses.helpers import is_customer, is_internal
+from parkpasses.helpers import is_customer, is_internal, is_retailer
 from parkpasses.permissions import IsInternal, IsInternalOrReadOnly
 
 from ..cart.utils import CartUtils
@@ -59,6 +62,10 @@ class ExternalVoucherViewSet(viewsets.ModelViewSet):
         return Voucher.objects.filter(purchaser=self.request.user.id)
 
     def perform_create(self, serializer):
+        if is_retailer(self.request):
+            error_message = "Retailer group users cannot purchase vouchers."
+            logger.error(error_message)
+            raise RetailerGroupUsersCannotPurchaseGiftVouchers(error_message)
         if is_customer(self.request):
             voucher = serializer.save(purchaser=self.request.user.id)
         else:
