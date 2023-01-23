@@ -5,6 +5,7 @@ from decimal import Decimal
 import requests
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -84,8 +85,16 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user_retailer_groups = get_retailer_group_ids_for_user(self.request)
+        due_date = timezone.now() - timezone.timedelta(
+            days=settings.RETAILER_INVOICE_DUE_DAYS
+        )
         if 0 < len(user_retailer_groups):
-            return Report.objects.filter(retailer_group__in=user_retailer_groups)
+            return Report.objects.annotate(
+                overdue=ExpressionWrapper(
+                    Q(datetime_created__lte=due_date, processing_status=Report.UNPAID),
+                    output_field=BooleanField(),
+                )
+            ).filter(retailer_group__in=user_retailer_groups)
         return Report.objects.none()
 
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice-pdf")
@@ -331,7 +340,15 @@ class InternalReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     """
 
     model = Report
-    queryset = Report.objects.exclude(
+    due_date = timezone.now() - timezone.timedelta(
+        days=settings.RETAILER_INVOICE_DUE_DAYS
+    )
+    queryset = Report.objects.annotate(
+        overdue=ExpressionWrapper(
+            Q(datetime_created__lte=due_date, processing_status=Report.UNPAID),
+            output_field=BooleanField(),
+        )
+    ).exclude(
         retailer_group__ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
     )
     permission_classes = [IsInternal]

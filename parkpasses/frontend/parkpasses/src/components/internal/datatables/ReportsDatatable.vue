@@ -243,6 +243,10 @@ export default {
                         html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfInternal(full.id)}" target="_blank">Receipt.pdf</a>`;
                     }
 
+                    if('Unpaid'==full.processing_status_display && full.overdue){
+                        html += ` <span class="badge bg-danger">Overdue</span>`;
+                    }
+
                     return html;
                 }
             }

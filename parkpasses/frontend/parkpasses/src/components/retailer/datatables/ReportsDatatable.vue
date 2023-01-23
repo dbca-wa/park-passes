@@ -1,5 +1,10 @@
 <template>
     <div>
+        <div v-if="there_are_overdue_invoices">
+            <BootstrapAlert type="danger" icon="exclamation-triangle-fill">
+                You have one or more overdue invoices to pay.  Please pay them as soon as possible.
+            </BootstrapAlert>
+        </div>
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
             <div class="row mb-3">
                 <div class="col-md-3">
@@ -44,6 +49,8 @@
 </template>
 
 <script>
+
+import BootstrapAlert from '@/utils/vue/BootstrapAlert.vue'
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
@@ -94,6 +101,8 @@ export default {
                 {id:'U', value:'Unpaid'},
             ],
 
+            there_are_overdue_invoices: false,
+
             dateFormat: 'DD/MM/YYYY',
             datepickerOptions:{
                 format: 'DD/MM/YYYY',
@@ -112,6 +121,7 @@ export default {
     components:{
         datatable,
         CollapsibleFilters,
+        BootstrapAlert,
     },
     watch: {
         filterProcessingStatus: function() {
@@ -218,6 +228,10 @@ export default {
                         html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
                     }
 
+                    if('Unpaid'==full.processing_status_display && full.overdue){
+                        html += ` <span class="badge bg-danger">Overdue</span>`;
+                    }
+
                     return html;
                 }
             }
@@ -322,7 +336,13 @@ export default {
                 columns: columns,
                 processing: true,
                 pagingType: "full_numbers",
-                initComplete: function() {
+                initComplete: function(settings, json) {
+                    json.data.forEach(function(currentValue, index, arr){
+                        if(currentValue.overdue){
+                            vm.there_are_overdue_invoices = true;
+                            return;
+                        }
+                    })
                 },
             }
         }
