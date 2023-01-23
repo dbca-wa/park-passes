@@ -379,6 +379,8 @@ APPLICATION_TYPES = [
 
 GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
 
+RETAILER_INVOICE_DUE_DAYS = 30
+
 template_title = "Park Passes"
 template_group = "parkpasses"
 
