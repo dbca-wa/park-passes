@@ -1,4 +1,5 @@
 module.exports = {
+
     GST:                                    10,
     PARKPASSES_APP_LABEL:                   'parkpasses',
     PARKPASSES_MODELS_USERACTION:           'useraction',
@@ -27,7 +28,8 @@ module.exports = {
 
     ERRORS: {
         NETWORK: 'NETWORK ERROR: Make sure your internet connection is working and try again.',
-        SYSTEM: 'SYSTEM ERROR: Make sure your internet connection is working and try again.',
+        SYSTEM: `SYSTEM ERROR: An error has occured accessing the Park Passes API. Please try again \
+        in an hour and if the problem persists contact us at: parkpasses@dbca.wa.gov.au`,
         // The critical error will be shown on the client side when a critical error
         // has occured on the backend and needs the attention of the system admins.
         CRITICAL: 'SYSTEM ERROR: Our System Administrators have been notified. Please try again in an hour.'

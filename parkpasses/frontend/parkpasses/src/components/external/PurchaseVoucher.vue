@@ -205,7 +205,7 @@ export default {
                 window.location.href = '/cart/';
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
             console.log(this.voucher);

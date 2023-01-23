@@ -698,7 +698,7 @@ export default {
                 vm.concessions = data.results
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -728,7 +728,7 @@ export default {
                 vm.title = vm.getHeading;
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -753,7 +753,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -784,7 +784,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             }).finally(() => (this.loadingParkGroups = false));
         },
@@ -967,7 +967,7 @@ export default {
                     return true;
                 })
                 .catch(error => {
-                    this.systemErrorMessage = constants.ERRORS.NETWORK;
+                    this.systemErrorMessage = constants.ERRORS.SYSTEM;
                     console.error("There was an error!", error);
                 });
             } else {
@@ -1037,7 +1037,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -1065,7 +1065,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -1155,7 +1155,7 @@ export default {
             })
             .catch(error => {
                 vm.isLoading = false;
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
             console.log(this.voucher);

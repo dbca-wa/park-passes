@@ -146,7 +146,7 @@ export default {
                 vm.retailerGroups = data
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -178,7 +178,7 @@ export default {
                     vm.$router.push({name: 'internal-retailer-group-users'});
                 })
                 .catch(error => {
-                    this.systemErrorMessage = constants.ERRORS.NETWORK;
+                    this.systemErrorMessage = constants.ERRORS.SYSTEM;
                     console.error("There was an error!", error);
                 });
             return false;
