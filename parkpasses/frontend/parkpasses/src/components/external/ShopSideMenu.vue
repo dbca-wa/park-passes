@@ -6,9 +6,10 @@
         'voucher',
         { 'opacity-25': activeItem && 'voucher' != activeItem },
       ]">
-        <img class="img-fluid" src="/static/parkpasses/img/gift-voucher.jpg" width="300" height="266" />
+        <img class="img-fluid rounded" src="/static/parkpasses/img/gift-voucher.jpg" width="300" height="266" />
         <div class="more-information">More Information</div>
       </div>
+      <div :class="{'opacity-50': activeItem && 'voucher' != activeItem}" class="display-name text-truncate">Gift Voucher</div>
     </div>
 
     <div v-if="errorMessage" class="alert alert-danger" role="alert">
