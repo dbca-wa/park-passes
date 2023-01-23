@@ -61,6 +61,15 @@ class PassVehicleDetailsNotYetProvidedNotificationEmail(TemplateEmailBase):
         )
 
 
+class NoPrimaryCardForAutoRenewalEmail(TemplateEmailBase):
+    def __init__(self):
+        self.subject = "Park Pass No Primary Card Set Up for AutoRenewal Notification"
+        self.html_template = (
+            "parkpasses/emails/pass_no_primary_card_for_autorenewal.html"
+        )
+        self.txt_template = "parkpasses/emails/pass_no_primary_card_for_autorenewal.txt"
+
+
 class PassAutoRenewNotificationEmail(TemplateEmailBase):
     def __init__(self):
         super().__init__()
@@ -179,6 +188,19 @@ class PassEmails:
     @classmethod
     def send_pass_expired_notification_email(self, park_pass):
         email = PassExpiredNotificationEmail()
+        from parkpasses.components.passes.serializers import ExternalPassSerializer
+
+        serializer = ExternalPassSerializer(park_pass)
+        context = {
+            "pass": serializer.data,
+            "site_url": settings.SITE_URL,
+        }
+        message = email.send(park_pass.email, context=context)
+        log_communication(park_pass.email, message, "email", park_pass)
+
+    @classmethod
+    def send_no_primary_card_for_autorenewal_email(self, park_pass):
+        email = NoPrimaryCardForAutoRenewalEmail()
         from parkpasses.components.passes.serializers import ExternalPassSerializer
 
         serializer = ExternalPassSerializer(park_pass)

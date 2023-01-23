@@ -68,5 +68,10 @@ class SendGoldPassDetailsToPICAEmailFailed(Exception):
     pica email"""
 
 
+class SendNoPrimaryCardForAutoRenewalEmailFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the no primary card for
+    autorenewal email"""
+
+
 class NoOracleCodeFoundForCartItem(Exception):
     """The exception to be thrown if the system can not find an oracle code for a cart item"""

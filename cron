@@ -1,3 +1,4 @@
 0 3 * * * root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py cron_tasks >> /app/logs/cronjob.log 2>&1
 0 8 * * * root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py voucher_send_notification_emails >> /app/logs/cronjob.log 2>&1
 0 0 1 * * root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py retailers_generate_monthly_invoices >> /app/logs/cronjob.log 2>&1
+0 0 * * MON root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py pass_send_no_primary_card_for_autorenewal >> /app/logs/cronjob.log 2>&1

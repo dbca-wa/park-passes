@@ -1,0 +1,19 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{% block greetings %}
+            <p>Dear {{pass.first_name}} {{pass.last_name}},</p>
+{% endblock %}
+
+{%  block content %}
+            <p>You have a {{pass.pass_type}} that is due to be renewed automatically on {{pass.date_expiry_formatted}}.</p>
+
+            <p>Our system indicates that you do not currently have a primary card set up for this autorenewal.</p>
+
+            <p>If you wish for this autorenewal to be successful, you will need to log in and set up a primary card.</p>
+
+            <p>To update your credit card details please go to <a href="{{site_url}}{% url 'account' %}">{{site_url}}{% url 'account' %}</a>, log in and click on the 'Manage Cards' tab.</p>
+
+            <p>Make sure there is at least one valid card on file and that it is selected as your primary card.</p>
+
+            <p>If you do not want to renew your park pass, log in to your account at {{site_url}}{% url 'your-park-passes' %} and cancel the automatic renewal of your park pass.</p>
+{% endblock %}

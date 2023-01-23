@@ -37,6 +37,7 @@ from parkpasses.components.passes.exceptions import (
     MultipleDefaultPricingWindowsExist,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
+    SendNoPrimaryCardForAutoRenewalEmailFailed,
     SendPassAutoRenewFailureNotificationEmailFailed,
     SendPassAutoRenewNotificationEmailFailed,
     SendPassAutoRenewSuccessNotificationEmailFailed,
@@ -837,6 +838,16 @@ class Pass(models.Model):
         logger.info(f"Updating park pass: {self}.")
         super().save(force_update=True)
         logger.info("Park pass updated.")
+
+    def send_no_primary_card_for_autorenewal_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += "send_no_primary_card_for_autorenewal_email for Pass with id {}. Exception {}"
+        try:
+            PassEmails.send_no_primary_card_for_autorenewal_email(self)
+        except Exception as e:
+            raise SendNoPrimaryCardForAutoRenewalEmailFailed(
+                error_message.format(self.id, e)
+            )
 
     def send_autorenew_notification_email(self):
         error_message = "An exception occured trying to run "
