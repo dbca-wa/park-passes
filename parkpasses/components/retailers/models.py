@@ -136,7 +136,6 @@ class RetailerGroup(models.Model):
                     error_message = f"CRITICAL: Unable to retrieve organisation {self.ledger_organisation} from ledger."
                     logger.error(error_message)
                     raise UnableToRetrieveLedgerOrganisation(error_message)
-            logger.info(organisation)
             return organisation
 
         critical_message = (
