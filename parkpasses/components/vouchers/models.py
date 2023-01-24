@@ -180,7 +180,6 @@ class Voucher(models.Model):
         if not self.in_cart:
             if self.processing_status in [
                 Voucher.NEW,
-                Voucher.NOT_DELIVERED_TO_PURCHASER,
             ]:
                 self.send_voucher_purchase_notification_email()
             if self.datetime_to_email.date() == timezone.now().date():
@@ -203,7 +202,6 @@ class Voucher(models.Model):
             ) as e:
                 self.processing_status = Voucher.NOT_DELIVERED_TO_PURCHASER
                 logger.exception(error_message.format(self.id, timezone.now(), e))
-                raise
 
     def send_voucher_sent_notification_emails(self):
         error_message = "An exception occured trying to run "
@@ -213,7 +211,6 @@ class Voucher(models.Model):
                 VoucherEmails.send_voucher_recipient_notification_email(self)
                 VoucherEmails.send_voucher_purchaser_sent_notification_email(self)
                 self.processing_status = Voucher.DELIVERED_TO_RECIPIENT
-                self.save()
                 logger.info(
                     f"Voucher sent notification emails sent for voucher {self.voucher_number}",
                 )
@@ -221,7 +218,6 @@ class Voucher(models.Model):
                 error_message.format(self.id, timezone.now(), e)
             ) as e:
                 self.processing_status = Voucher.NOT_DELIVERED_TO_RECIPIENT
-                self.save()
                 logger.exception(error_message.format(self.id, timezone.now(), e))
 
 
