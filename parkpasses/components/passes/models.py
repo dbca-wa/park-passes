@@ -397,6 +397,11 @@ class PassTemplate(models.Model):
 
     The template file field will be the word document that is used as a template to generate a park pass.
 
+    If pass_type is specified then passes of that type will use that template.
+
+    If pass_type is not specified (null) then any pass type that does not have a template specified
+    will use this template.
+
     The highest version number will be the template that is used to generate passes.
     """
 
@@ -405,6 +410,13 @@ class PassTemplate(models.Model):
         storage=upload_protected_files_storage,
         null=False,
         blank=False,
+    )
+    pass_type = models.ForeignKey(
+        PassType,
+        on_delete=models.PROTECT,
+        related_name="pass_template",
+        null=True,
+        blank=True,
     )
     version = models.SmallIntegerField(unique=True, null=False, blank=False)
 
