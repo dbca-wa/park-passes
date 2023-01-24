@@ -9,7 +9,6 @@ ENV TZ=Australia/Perth
 ENV EMAIL_HOST="emailserver"
 #ENV PICA_EMAIL='no-reply@dbca.wa.gov.au'
 ENV DEFAULT_FROM_EMAIL='no-reply@dbca.wa.gov.au'
-#ENV NOTIFICATION_EMAIL='oak.mcilwain@dbca.wa.gov.au'
 ENV NON_PROD_EMAIL='none@none.com'
 ENV PRODUCTION_EMAIL=False
 ENV EMAIL_INSTANCE='DEV'
