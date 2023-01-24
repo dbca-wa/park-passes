@@ -14,12 +14,7 @@
                                         <template v-if="selectedRetailerGroup">
                                             <table class="table table-striped table-sm table-bordered">
                                                 <tbody>
-                                                <tr><th width="35">Retailer</th><td>{{ selectedRetailerGroup.name }}</td></tr>
-                                                <tr><th>Address</th><td>{{ selectedRetailerGroup.address_line_1 }}</td></tr>
-                                                <tr v-if="selectedRetailerGroup.address_line_2"><td>&nbsp;</td><td>{{ selectedRetailerGroup.name }}</td></tr>
-                                                <tr><th>Suburb</th><td>{{ selectedRetailerGroup.suburb }}</td></tr>
-                                                <tr><th>State</th><td>{{ selectedRetailerGroup.state }}</td></tr>
-                                                <tr><th>Postcode</th><td>{{ selectedRetailerGroup.postcode }}</td></tr>
+                                                <tr><th width="35">Retailer</th><td>{{ selectedRetailerGroup.ledger_organisation_name }}</td></tr>
                                                 <tr><th>Commission</th><td>{{ selectedRetailerGroup.commission_percentage }}%</td></tr>
                                                 </tbody>
                                             </table>
@@ -43,7 +38,7 @@
                                         <option value="" selected disabled>Select a Retailer</option>
                                         <option v-for="retailerGroup in retailerGroups" :key="retailerGroup.id" :value="retailerGroup">{{retailerGroup.ledger_organisation_name}}</option>
                                     </select>
-                                    <span class="form-text text-dark">{{retailerGroups[0].name}}</span>
+                                    <span class="form-text text-dark">{{retailerGroups[0].ledger_organisation_name}}</span>
                                     <div id="validationRetailerGroupFeedback" class="invalid-feedback">
                                         Please select a retailer to invite the user to.
                                     </div>
