@@ -88,6 +88,9 @@ class RetailerGroup(models.Model):
         cache.delete(
             settings.CACHE_KEY_GROUP_IDS.format(self._meta.label_lower, str(self.id))
         )
+        cache.delete(
+            settings.CACHE_KEY_LEDGER_ORGANISATION.format(self.ledger_organisation)
+        )
         # If we deactivated a retailer group then all the users in that group need to be kicked out
         for retailer_group_user in self.retailer_group_users.all():
             cache.delete(
