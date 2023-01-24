@@ -5,7 +5,6 @@ import os
 import confy
 import dj_database_url
 from confy import env
-from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger(__name__)
 
@@ -363,8 +362,6 @@ PICA_GOLD_STAR_PASS_ROOT = env(
 )
 
 PICA_EMAIL = env("PICA_EMAIL", None)
-if not PICA_EMAIL:
-    raise ImproperlyConfigured("PICA_EMAIL is not set")
 
 PICA_ORACLE_CODE_LABEL = "PICA (Online Sales)"
 

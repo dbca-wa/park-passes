@@ -13,7 +13,15 @@ from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupU
 logger = logging.getLogger(__name__)
 
 
+def check_settings(messages, critical_issues):
+    if settings.PICA_EMAIL:
+        messages.append("SUCCESS: PICA_EMAIL is set")
+    else:
+        critical_issues.append("CRITICAL: PICA_EMAIL is not set")
+
+
 def park_passes_system_check(messages, critical_issues):
+    check_settings(messages, critical_issues)
     RetailerGroup.check_DBCA_retailer_group(messages, critical_issues)
     PassTypePricingWindow.check_default_pricing_windows(messages, critical_issues)
 

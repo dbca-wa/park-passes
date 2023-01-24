@@ -1,6 +1,10 @@
 
 module.exports = {
 
+    /* ========================= Park Passes System Check ==============================*/
+
+    systemCheck:                        '/api/main/internal/park-passes-system-check/',
+
     /* ========================= User Data =============================================*/
 
     userData:                           '/api/users/user-data/',

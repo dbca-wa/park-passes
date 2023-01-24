@@ -185,12 +185,14 @@ class RetailerGroup(models.Model):
         if 1 < dbca_retailer_count:
             critical_issues.append(
                 f"CRITICAL: There is more than one retailer group whose ledger_organisation = "
-                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
+                f"{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}. "
+                "(Defined in settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID)"
             )
         if 0 == dbca_retailer_count:
             critical_issues.append(
                 "CRITICAL: There is no retailer group whose ledger_organisation = "
-                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
+                f"{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}. "
+                "(Defined in settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID)"
             )
 
     @classmethod

@@ -76,7 +76,8 @@ export default {
       chevron_toggle.init();
     });
   },
-  created: function () {},
+  created: function () {
+  },
 };
 </script>
 
