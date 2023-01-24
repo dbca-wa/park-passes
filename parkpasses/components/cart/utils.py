@@ -44,7 +44,7 @@ class CartUtils:
                 "quantity": 1,
                 "price_incl_tax": str(order_item.amount),
                 "oracle_code": CartUtils.get_oracle_code(
-                    order_item.content_type, order_item.object_id
+                    request, order_item.content_type, order_item.object_id
                 ),
                 "line_status": line_status,
             }
