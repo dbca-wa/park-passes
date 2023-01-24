@@ -223,6 +223,26 @@ class PassTypePricingWindow(models.Model):
             )
         return default_pricing_window
 
+    @classmethod
+    def check_default_pricing_windows(self, messages, critical_issues):
+        pass_types = PassType.objects.all()
+        for pass_type in pass_types:
+            default_pricing_window_count = PassTypePricingWindow.objects.filter(
+                pass_type__id=pass_type.id, name="Default"
+            ).count()
+            if 1 == default_pricing_window_count:
+                messages.append(
+                    f"SUCCESS: There is one default pricing window for pass type {pass_type.name}"
+                )
+            elif 0 == default_pricing_window_count:
+                critical_issues.append(
+                    f"CRITICAL: There is no default pricing window for pass type  {pass_type.name}"
+                )
+            else:
+                critical_issues.append(
+                    f"CRITICAL: There is more than one default pricing window for pass type {pass_type.name}"
+                )
+
     def is_valid(self):
         if not self.date_expiry and settings.PRICING_WINDOW_DEFAULT_NAME == self.name:
             """The default pricing window is always valid as it forms the template that other pricing windows

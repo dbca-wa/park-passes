@@ -6,6 +6,7 @@ from parkpasses.components.main.api import (
     DocumentViewSet,
     EntryTypeList,
     ListCreateCommunicationsLogEntry,
+    ParkPassesSystemCheck,
     UserActionList,
 )
 
@@ -16,6 +17,7 @@ router.register(
     basename="org-model-documents-internal",
 )
 urlpatterns = [
+    url(r"internal/park-passes-system-check/$", ParkPassesSystemCheck.as_view()),
     # ========================================================================== Org Model Logs
     url(
         r"org-model-logs/user-actions",

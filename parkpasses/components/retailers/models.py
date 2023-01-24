@@ -172,6 +172,28 @@ class RetailerGroup(models.Model):
             raise NoDBCARetailerGroupExists(critical_message)
 
     @classmethod
+    def check_DBCA_retailer_group(cls, messages, critical_issues):
+        dbca_retailer_count = cls.objects.filter(
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+        ).count()
+        if 1 == dbca_retailer_count:
+            messages.append(
+                (
+                    "SUCCESS: One DBCA Retailer Group Exists where ledger_organisation = {}"
+                ).format(settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID)
+            )
+        if 1 < dbca_retailer_count:
+            critical_issues.append(
+                f"CRITICAL: There is more than one retailer group whose ledger_organisation = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
+            )
+        if 0 == dbca_retailer_count:
+            critical_issues.append(
+                "CRITICAL: There is no retailer group whose ledger_organisation = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
+            )
+
+    @classmethod
     def get_rac_retailer_group(self):
         rac_retailer_count = RetailerGroup.objects.filter(
             ledger_organisation=settings.RAC_RETAILER_GROUP_ORGANISATION_ID
