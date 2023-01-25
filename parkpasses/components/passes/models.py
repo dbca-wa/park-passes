@@ -418,15 +418,23 @@ class PassTemplate(models.Model):
         null=True,
         blank=True,
     )
-    version = models.SmallIntegerField(unique=True, null=False, blank=False)
+    version = models.SmallIntegerField(null=False, blank=False)
 
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Pass Template"
         verbose_name_plural = "Pass Templates"
+        unique_together = (("pass_type", "version"),)
 
     def __str__(self):
         return f"{self.template.name} (Version: {self.version}) (Size: {self.pretty_size()})"
+
+    @classmethod
+    def get_template_by_pass_type(cls, pass_type):
+        template = cls.objects.filter(pass_type=pass_type).order_by("-version").first()
+        if template:
+            return template
+        return cls.objects.filter(pass_type__isnull=True).order_by("-version").first()
 
     def pretty_size(self):
         size_bytes = self.template.size
@@ -752,7 +760,8 @@ class Pass(models.Model):
                 "CRITICAL: The system can not find a Pass Template to use for generating park passes."
             )
         qr_code_path = self.generate_qrcode()
-        pass_template = PassTemplate.objects.order_by("-version").first()
+        pass_type = self.option.pricing_window.pass_type
+        pass_template = PassTemplate.get_template_by_pass_type(pass_type)
         pass_utils = PassUtils()
         pass_utils.generate_pass_pdf_from_docx_template(
             self, pass_template, qr_code_path
