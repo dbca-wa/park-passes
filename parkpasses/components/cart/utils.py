@@ -146,17 +146,17 @@ class CartUtils:
                 district = retailer_group.district
                 # Retailers can only sell passes, not vouchers so we know the content type is a pass
                 park_pass = Pass.objects.get(id=object_id)
-                district_pass_type_duration_oracle_code = (
-                    DistrictPassTypeDurationOracleCode.objects.get(
-                        district=district, option=park_pass.option
-                    )
+                oracle_codes = DistrictPassTypeDurationOracleCode.objects.filter(
+                    district=district, option=park_pass.option
                 )
+                if oracle_codes.exists():
+                    district_pass_type_duration_oracle_code = oracle_codes.first()
+                    if district_pass_type_duration_oracle_code.oracle_code:
+                        logger.info(
+                            f"Returning oracle code: {district_pass_type_duration_oracle_code}.",
+                        )
+                        return district_pass_type_duration_oracle_code.oracle_code
 
-                if district_pass_type_duration_oracle_code.oracle_code:
-                    logger.info(
-                        f"Returning oracle code: {district_pass_type_duration_oracle_code}.",
-                    )
-                    return district_pass_type_duration_oracle_code.oracle_code
                 logger.error(
                     f"No oracle code found: {district_pass_type_duration_oracle_code}.",
                 )
@@ -180,16 +180,20 @@ class CartUtils:
                 # For other pass types, PICA oracle codes come are based on the pass type
                 # and duration
                 # Note: PICA oracle codes have a null district
-                district_pass_type_duration_oracle_code = (
-                    DistrictPassTypeDurationOracleCode.objects.get(
-                        district__isnull=True, option=park_pass.option
-                    )
+                oracle_codes = DistrictPassTypeDurationOracleCode.objects.filter(
+                    district__isnull=True, option=park_pass.option
                 )
-                if district_pass_type_duration_oracle_code.oracle_code:
-                    logger.info(
-                        f"Returning oracle code: {district_pass_type_duration_oracle_code}.",
-                    )
-                    return district_pass_type_duration_oracle_code.oracle_code
+                if oracle_codes.exists():
+                    district_pass_type_duration_oracle_code = oracle_codes.first()
+                    if district_pass_type_duration_oracle_code.oracle_code:
+                        logger.info(
+                            f"Returning oracle code: {district_pass_type_duration_oracle_code}.",
+                        )
+                        return district_pass_type_duration_oracle_code.oracle_code
+
+                # If no oracle code is found, then try getting a code from the pass type
+                if pass_type.oracle_code:
+                    return pass_type.oracle_code
 
         voucher_content_type = ContentType.objects.get_for_model(Voucher)
         if voucher_content_type == content_type:
