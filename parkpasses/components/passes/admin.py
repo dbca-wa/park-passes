@@ -208,12 +208,16 @@ class PassTemplateAdmin(admin.ModelAdmin):
     model = PassTemplate
     list_display = (
         "id",
+        "pass_type_field",
         "template_secure",
         "version",
     )
-    ordering = [
-        "-version",
-    ]
+    ordering = ["pass_type", "-version"]
+
+    def pass_type_field(self, instance):
+        if instance.pass_type:
+            return str(instance.pass_type)
+        return "All Pass Types"
 
     def template_secure(self, instance):
         value_link = f"/api/passes/pass-templates/{instance.id}/retrieve-pass-template/"
