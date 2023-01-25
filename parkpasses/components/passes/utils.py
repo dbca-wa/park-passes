@@ -39,11 +39,16 @@ class PassUtils:
         date_format = DateFormat(park_pass.datetime_created)
         datetime_created = date_format.format("jS F Y")
 
+        pass_type_display_name = park_pass.option.pricing_window.pass_type.display_name
+
         context = {
             "pass_qr_code": qr_image,
-            "pass_type": park_pass.option.pricing_window.pass_type.display_name,
+            "pass_number": park_pass.pass_number,
+            "pass_type": pass_type_display_name,
             "pass_start": date_start,
             "pass_expiry": date_expiry,
+            "pass_first_name": park_pass.first_name,
+            "pass_last_name": park_pass.last_name,
             "pass_vehicle_registration_1": park_pass.vehicle_registration_1,
             "pass_vehicle_registration_2": park_pass.vehicle_registration_2,
             "pass_drivers_licence_number": park_pass.drivers_licence_number,
@@ -66,6 +71,8 @@ class PassUtils:
             + park_pass_file_path
             + park_pass_docx_file_name
         )
+        document_title = f"{pass_type_display_name} - {park_pass.first_name} {park_pass.last_name} - {datetime_created}"
+        park_pass_docx.docx.core_properties.title = document_title
         park_pass_docx.save(f"{park_pass_docx_full_file_path}")
         output = subprocess.check_output(
             [
