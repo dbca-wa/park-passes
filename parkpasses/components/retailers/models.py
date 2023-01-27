@@ -128,7 +128,6 @@ class RetailerGroup(models.Model):
             cache_key = settings.CACHE_KEY_LEDGER_ORGANISATION.format(
                 self.ledger_organisation
             )
-            logger.info(cache_key)
             organisation = cache.get(cache_key)
             if organisation is None:
                 organisation_response = get_organisation(self.ledger_organisation)
@@ -276,6 +275,26 @@ class RetailerGroupUser(models.Model):
             )
         )
         super().save(*args, **kwargs)
+
+    @classmethod
+    def update_session(cls, request, user_id):
+        from parkpasses.helpers import is_retailer
+
+        if is_retailer(request):
+            retailer_group_user = (
+                RetailerGroupUser.objects.filter(emailuser=user_id)
+                .order_by("-datetime_created")
+                .first()
+            )
+            request.session["retailer"] = {
+                "id": retailer_group_user.retailer_group.id,
+                "name": retailer_group_user.retailer_group.organisation[
+                    "organisation_name"
+                ],
+            }
+        else:
+            if "retailer" in request.session.keys():
+                del request.session["retailer"]
 
 
 class RetailerGroupInviteManager(models.Manager):
