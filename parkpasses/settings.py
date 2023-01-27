@@ -15,6 +15,10 @@ os.environ.setdefault("BASE_DIR", BASE_DIR)
 
 from ledger_api_client.settings_base import *  # noqa: F403
 
+ADMINS = [
+    ("ASI", "asi@dpaw.wa.gov.au"),
+]
+
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
@@ -87,8 +91,6 @@ MIDDLEWARE_CLASSES += [
 MIDDLEWARE = MIDDLEWARE_CLASSES
 MIDDLEWARE_CLASSES = None
 
-# MIDDLEWARE.insert(0, "django.middleware.gzip.GZipMiddleware")
-
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
@@ -101,7 +103,6 @@ if DEBUG and SHOW_DEBUG_TOOLBAR:
             return True
 
     MIDDLEWARE += [
-        # "kolo.middleware.KoloMiddleware",
         "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
     # KOLO_PATH = "./manage.sh runserver 8010"
@@ -426,6 +427,11 @@ PASS_TYPES = [
     ),
     (PERSONNEL_PASS, "Personnel Pass"),
 ]
+
+PASS_TEMPLATE_REPLACEMENT_IMAGE_PATH = "word/media/image2.png"
+PASS_TEMPLATE_DEFAULT_IMAGE_PATH = (
+    f"{STATIC_ROOT}/parkpasses/img/default-pass-template-image.png"
+)
 
 PASS_VEHICLE_REGO_REMINDER_DAYS_PRIOR = 7
 PASS_REMINDER_DAYS_PRIOR = 7
