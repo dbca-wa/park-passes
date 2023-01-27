@@ -278,6 +278,7 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
                     active=True,
                 )
                 retailer_group_user_invite.status = RetailerGroupInvite.APPROVED
+                RetailerGroupUser.update_session(request, request.user.id)
             retailer_group_user_invite.save()
             serializer = self.get_serializer(retailer_group_user_invite)
             return Response(serializer.data)
