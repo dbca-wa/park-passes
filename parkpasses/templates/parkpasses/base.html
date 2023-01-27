@@ -11,29 +11,10 @@
     {% endblock %}
 
     {% block title %}
-    {% system_check as system_check %}
-
-    {% if not system_check.passed %}
-    NOT HAPPY DAYS.
-{% endif %}
         Park Passes - Department of Biodiversity, Conservation and Attractions
     {% endblock %}
 
     <body>
-        {% system_check as system_check %}
-
-    {% if system_check.passed %}
-    system check passed
-    {% endif %}
-    {% is_internal as is_internal_user %}
-
-    {% if not is_internal_user %}
-        not internal user
-    {% endif %}
-
-    {% if not system_check.passed %}
-        NOT HAPPY DAYS.
-    {% endif %}
         {% block header_top_menu %}
             {% system_check as system_check %}
             {% is_internal as is_internal_user %}
