@@ -16,6 +16,7 @@ import qrcode
 from autoslug import AutoSlugField
 from ckeditor.fields import RichTextField
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import (
     MultipleObjectsReturned,
     ObjectDoesNotExist,
@@ -31,6 +32,7 @@ from django.db import models
 from django.utils import timezone
 from django_resized import ResizedImageField
 
+from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.emails import PassEmails
 from parkpasses.components.passes.exceptions import (
@@ -65,6 +67,25 @@ def pass_type_image_path(instance, filename):
     return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.name}/{filename}"
 
 
+def pass_type_template_image_path(instance, filename):
+    """Stores the pass type template images in a unique folder
+
+    based on the content type and object_id
+    """
+    return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.name}/template-image/{filename}"
+
+
+def pass_type_concession_template_image_path(instance, filename):
+    """Stores the pass type concession template images in a unique folder
+
+    based on the content type and object_id
+    """
+    return (
+        f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.name}"
+        f"/concession/template-image/{filename}"
+    )
+
+
 class PassType(models.Model):
     """A class to represent a pass type"""
 
@@ -76,6 +97,22 @@ class PassType(models.Model):
         help_text="Ideal dimension for image are 300px (width) x 150px (height)",
         null=False,
         blank=False,
+    )
+    template_image = ResizedImageField(
+        size=[540, 225],
+        quality=99,
+        upload_to=pass_type_template_image_path,
+        help_text="Ideal dimension for image are 540px (width) x 225px (height)",
+        null=True,
+        blank=False,
+    )
+    concession_template_image = ResizedImageField(
+        size=[540, 225],
+        quality=99,
+        upload_to=pass_type_concession_template_image_path,
+        help_text="Ideal dimension for image are 540px (width) x 225px (height)",
+        null=True,
+        blank=True,
     )
     name = models.CharField(
         max_length=100, editable=False
@@ -708,6 +745,18 @@ class Pass(models.Model):
             return option.price - discount_amount
         return option.price
 
+    @property
+    def order(self):
+        content_type = ContentType.objects.get_for_model(self)
+        if OrderItem.objects.filter(
+            content_type=content_type, object_id=self.id
+        ).exists():
+            return OrderItem.objects.get(
+                content_type=content_type, object_id=self.id
+            ).order
+        logger.warning("Can't find order for park pass: %s", self)
+        return None
+
     def pro_rata_refund_percentage(self):
         if self.date_start >= timezone.now().date():
             return 100
@@ -731,7 +780,7 @@ class Pass(models.Model):
             ExternalQRCodePassSerializer,
         )
 
-        qr = qrcode.QRCode()
+        qr = qrcode.QRCode(box_size=2)
         serializer = ExternalQRCodePassSerializer(self)
         # replace this line with the real encryption server at a later date
         logger.debug(f"serializer.data: {serializer.data}")
@@ -739,7 +788,7 @@ class Pass(models.Model):
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
         qr_image = qr.make_image(fill="black", back_color="white")
-        qr_image_path = f"{settings.MEDIA_ROOT}/{self._meta.app_label}/"
+        qr_image_path = f"{settings.PROTECTED_MEDIA_ROOT}/{self._meta.app_label}/"
         qr_image_path += f"{self._meta.model.__name__}/passes/{self.user}/{self.pk}"
         if not os.path.exists(qr_image_path):
             os.makedirs(qr_image_path)
