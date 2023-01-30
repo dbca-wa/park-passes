@@ -445,6 +445,8 @@ RAC_HASH_SALT = env("RAC_HASH_SALT")
 UNLIMITED_USES = 999999999
 UNLIMITED_USES_TEXT = "Unlimited"
 
+USE_DUMMY_QR_CODE_DATA = env("USE_DUMMY_QR_CODE_DATA", True)
+
 """ ==================== USER ACTIONS ======================== """
 
 
