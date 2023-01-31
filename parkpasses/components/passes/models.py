@@ -15,6 +15,7 @@ from decimal import Decimal
 import qrcode
 from autoslug import AutoSlugField
 from ckeditor.fields import RichTextField
+from colorfield.fields import ColorField
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import (
@@ -118,6 +119,18 @@ class PassType(models.Model):
         max_length=100, editable=False
     )  # Name reserved for system use
     display_name = models.CharField(max_length=50, null=False, blank=False)
+    display_name_colour = ColorField(
+        default="#000000",
+        help_text="Choose a colour for the pass type heading on the pass template.",
+        null=False,
+        blank=False,
+    )
+    concession_display_name_colour = ColorField(
+        default="#000000",
+        help_text="Choose a colour for the concession pass type heading on the pass template.",
+        null=False,
+        blank=False,
+    )
     description = RichTextField(null=True)
     oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     can_be_renewed_automatically = models.BooleanField(
