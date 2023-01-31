@@ -42,6 +42,7 @@ INSTALLED_APPS += [
     "rest_framework_api_key",
     "rest_framework_datatables",
     "django_filters",
+    "colorfield",
     "rest_framework_gis",
     "ledger_api_client",
     "ckeditor",
@@ -154,6 +155,7 @@ SYSTEM_NAME = env("SYSTEM_NAME", "Park Passes")
 SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "PP")
 SITE_PREFIX = env("SITE_PREFIX")
 SITE_DOMAIN = env("SITE_DOMAIN")
+PARKPASSES_EXTERNAL_URL = env("PARKPASSES_EXTERNAL_URL")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", "licensing@" + SITE_DOMAIN).lower()
 SUPPORT_EMAIL_FILMING = env("SUPPORT_EMAIL_FILMING", "filming@" + SITE_DOMAIN).lower()
 DEP_URL = env("DEP_URL", "www." + SITE_DOMAIN)
