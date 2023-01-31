@@ -33,19 +33,27 @@ class CartUtils:
         )
         line_status = settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS
 
+        previous_item_oracle_code = None
+
         order, order_items = cart.create_order()
         for order_item in order_items:
             if settings.DEBUG:
                 order_item.amount = int(order_item.amount)
                 order_item.description += " (Price rounded for dev env)"
 
+            oracle_code = CartUtils.get_oracle_code(
+                request, order_item.content_type, order_item.object_id
+            )
+            if oracle_code:
+                previous_item_oracle_code = oracle_code
+            else:
+                oracle_code = previous_item_oracle_code
+
             ledger_order_line = {
                 "ledger_description": order_item.description,
                 "quantity": 1,
                 "price_incl_tax": str(order_item.amount),
-                "oracle_code": CartUtils.get_oracle_code(
-                    request, order_item.content_type, order_item.object_id
-                ),
+                "oracle_code": oracle_code,
                 "line_status": line_status,
             }
             logger.info(
