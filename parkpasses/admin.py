@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 @admin.register(EmailUser)
 class EmailUserAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "email",
         "first_name",
         "last_name",
