@@ -170,7 +170,6 @@ export default {
                 'Number',
                 'Monthly Report',
                 'Invoice',
-                'Unique Identifier',
                 'Payment Status',
                 'Date Generated',
             ]
@@ -212,16 +211,16 @@ export default {
         },
         columnInvoice: function(){
             return {
-                data: "invoice_filename",
+                data: "invoice_link",
                 visible: true,
-                name: 'invoice_filename',
+                name: 'invoice_link',
                 'render': function(row, type, full){
                     console.log(full.processing_status)
                     console.log(full.invoice_reference)
                     let html = '';
 
-                    if(full.invoice_filename){
-                        html += `<a href="${apiEndpoints.retrieveReportInvoicePdfRetailer(full.id)}" target="_blank">Invoice.pdf</a>`;
+                    if(full.invoice_link){
+                        html += `<a href="${full.invoice_link}" target="_blank">Invoice.pdf</a>`;
                     }
 
                     if('P'===full.processing_status && full.invoice_reference) {
@@ -236,14 +235,6 @@ export default {
                 }
             }
         },
-        columnUUID: function(){
-            return {
-                data: "uuid",
-                visible: true,
-                name: 'uuid',
-                orderable: false,
-            }
-        },
         columnProcessingStatusDisplay: function(){
             return {
                 data: "processing_status_display",
@@ -254,7 +245,7 @@ export default {
                     if('Paid'==full.processing_status_display){
                         html = `<span class="badge bg-success">Paid</span>`;
                     } else {
-                        html = `<span class="badge bg-danger">Unpaid</span> | <a href="javascript:void(0);" data-id="${full.id}" data-action="pay-now">Pay Now</a>`;
+                        html = `<span class="badge bg-danger">Unpaid</span> | <a href="${apiEndpoints.retailerPayInvoice(full.id)}">Pay Now</a>`;
                     }
                     return html;
                 }
@@ -296,7 +287,6 @@ export default {
                 vm.columnReportNumber,
                 vm.columnReport,
                 vm.columnInvoice,
-                vm.columnUUID,
                 vm.columnProcessingStatusDisplay,
                 vm.columnDatetimeCreated,
             ]
@@ -460,14 +450,27 @@ export default {
             console.log(vm.$route.params)
             if(vm.$route.params.reportNumber){
                 let reportNumber = DOMPurify.sanitize(vm.$route.params.reportNumber);
-                Swal.fire({
-                    title: 'Success',
-                    text: `Invoice ${reportNumber} paid successfully.`,
-                    icon: 'success',
-                    showConfirmButton: true,
-                }).then(function() {
-                    vm.$router.push({ name: 'retailer-reports' });
-                });
+                let paymentStatus = DOMPurify.sanitize(vm.$route.params.paymentStatus);
+                if('success'===paymentStatus){
+                    Swal.fire({
+                        title: 'Success',
+                        text: `Invoice ${reportNumber} paid successfully.`,
+                        icon: 'success',
+                        showConfirmButton: true,
+                    }).then(function() {
+                        vm.$router.push({ name: 'retailer-reports' });
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Failure',
+                        text: `Payment for invoice ${reportNumber} failed.`,
+                        icon: 'error',
+                        showConfirmButton: true,
+                    }).then(function() {
+                        vm.$router.push({ name: 'retailer-reports' });
+                    });
+                }
+
             }
         });
     }
