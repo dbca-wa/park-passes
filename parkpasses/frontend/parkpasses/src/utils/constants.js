@@ -16,7 +16,7 @@ module.exports = {
     PINJAR_PASS_NAME: 'PINJAR_OFF_ROAD_VEHICLE_AREA_ANNUAL_PASS',
     PERSONNEL_PASS_NAME: 'PERSONNEL_PASS',
 
-    DEFAULT_SOLD_VIA: 'DBCA Website',
+    DEFAULT_SOLD_VIA: 'Department of Biodiversity, Conservation and Attractions',
 
     PICA_LABEL: 'PICA (Online Sales)',
 
