@@ -180,8 +180,8 @@ export default {
                 'Retailer',
                 'Monthly Report',
                 'Invoice',
-                'Unique Identifier',
                 'Payment Status',
+                'Booking Reference',
                 'Date Generated',
             ]
         },
@@ -229,14 +229,14 @@ export default {
         },
         columnInvoice: function(){
             return {
-                data: "invoice_filename",
+                data: "invoice_link",
                 visible: true,
-                name: 'invoice_filename',
+                name: 'invoice_link',
                 'render': function(row, type, full){
                     let html = '';
 
-                    if(full.invoice_filename){
-                        html += `<a href="${apiEndpoints.retrieveReportInvoicePdfInternal(full.id)}" target="_blank">Invoice.pdf</a>`;
+                    if(full.invoice_link){
+                        html += `<a href="${full.invoice_link}" target="_blank">Invoice.pdf</a>`;
                     }
 
                     if('P'===full.processing_status && full.invoice_reference) {
@@ -249,14 +249,6 @@ export default {
 
                     return html;
                 }
-            }
-        },
-        columnUUID: function(){
-            return {
-                data: "uuid",
-                visible: true,
-                name: 'uuid',
-                orderable: false,
             }
         },
         columnProcessingStatusDisplay: function(){
@@ -273,6 +265,14 @@ export default {
                     }
                     return html;
                 }
+            }
+        },
+        columnUUID: function(){
+            return {
+                data: "uuid",
+                visible: true,
+                name: 'uuid',
+                orderable: false,
             }
         },
         columnDatetimeCreated: function(){
@@ -312,8 +312,8 @@ export default {
                 vm.columnRetailerGroup,
                 vm.columnReport,
                 vm.columnInvoice,
-                vm.columnUUID,
                 vm.columnProcessingStatusDisplay,
+                vm.columnUUID,
                 vm.columnDatetimeCreated,
             ]
             search = true
