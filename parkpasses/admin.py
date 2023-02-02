@@ -24,6 +24,10 @@ class EmailUserAdmin(admin.ModelAdmin):
     search_fields = ("id", "email", "first_name", "last_name")
     list_display_links = None
 
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.opts.verbose_name_plural = "Email Users (Read-Only)"
+
     def has_add_permission(self, request, obj=None):
         return False
 
