@@ -35,9 +35,14 @@ export default {
             name: 'retailer-reports'
         },
         {
-            path: '/retailer/reports/:reportNumber/payment-success',
+            path: '/retailer/reports/:reportNumber/payment-:paymentStatus',
             component: RetailerReports,
             name: 'retailer-reports-payment-success'
+        },
+        {
+            path: '/retailer/reports/:reportNumber/payment-:paymentStatus',
+            component: RetailerReports,
+            name: 'retailer-reports-payment-failure'
         },
         {
             path: '/retailer/users',
