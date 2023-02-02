@@ -51,7 +51,12 @@ class Report(models.Model):
         unique=True, max_length=36, blank=False, null=False, default=get_uuid_eleven
     )
     uuid = models.CharField(
-        unique=True, max_length=36, blank=False, null=False, default=get_uuid
+        unique=True,
+        max_length=36,
+        blank=False,
+        null=False,
+        default=get_uuid,
+        help_text="This is used as the booking reference for the generated ledger invoice.",
     )
 
     PAID = "P"
@@ -85,7 +90,7 @@ class Report(models.Model):
     @property
     def invoice_link(self):
         return (
-            settings.LEDGER_API_URL
+            settings.LEDGER_UI_URL
             + "/ledgergw/invoice-pdf/"
             + settings.LEDGER_API_KEY
             + "/"
