@@ -9,17 +9,21 @@ import logging
 import os
 import subprocess
 import uuid
+from collections import namedtuple
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.text import slugify
 from docxtpl import DocxTemplate
+from ledger_api_client import utils as ledger_api_client_utils
 
+from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.reports.models import Report
 from parkpasses.components.retailers.models import RetailerGroup
@@ -39,9 +43,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         organisation = settings.ORGANISATION
-        invoice_template_docx = DocxTemplate(
-            "parkpasses/management/templates/RetailerGroupInvoiceTemplate.docx"
-        )
         report_template_docx = DocxTemplate(
             "parkpasses/management/templates/RetailerGroupReportTemplate.docx"
         )
@@ -68,15 +69,18 @@ class Command(BaseCommand):
         )
 
         for retailer_group in retailer_groups:
-            admin_users = retailer_group.retailer_group_users.filter(is_admin=True)
+            admin_users = retailer_group.retailer_group_users.filter(
+                active=True, is_admin=True
+            )
             if 0 == admin_users.count():
                 logger.critical(
                     f"Unable to generate monthly invoice for retailer group: {retailer_group}"
-                    " as there is are no admin users for this retailer group."
+                    " as there is no admin user to add to the invoice for this retailer group."
                 )
                 continue
-            user_to_add_to_invoice = admin_users.first()
-            logger.info(user_to_add_to_invoice)  # TODO: remove this line
+            retailer_group_user = admin_users.first()
+            email_user = retailer_group_user.emailuser
+            logger.info(email_user)  # TODO: remove this line
             self.stdout.write(f"\tGenerating Invoice for {retailer_group}")
             passes = Pass.objects.filter(
                 sold_via=retailer_group,
@@ -86,7 +90,7 @@ class Command(BaseCommand):
                 ),
             ).order_by("datetime_created")
 
-            pass_count = len(passes)
+            pass_count = passes.count()
             self.stdout.write(f"\t -- Found {pass_count} Passes.\n\n")
 
             if 0 == pass_count:
@@ -94,53 +98,118 @@ class Command(BaseCommand):
 
             invoice_uuid = uuid.uuid4()
 
+            pass_content_type = ContentType.objects.get_for_model(Pass)
+
+            MockRequest = namedtuple("MockRequest", ["user"])
+            request = MockRequest(user=email_user)
+
             total_sales = Decimal(0.00)
+            ledger_order_lines = []
             for park_pass in passes:
+                ledger_description = CartUtils.get_pass_purchase_description(park_pass)
+                price_incl_tax = park_pass.price_after_all_discounts
+                if settings.DEBUG:
+                    # If in dev round the amounts so the payment gateway will work
+                    price_incl_tax = int(price_incl_tax)
+                    ledger_description += " (Price rounded for dev env)"
+
+                ledger_order_lines.append(
+                    {
+                        "ledger_description": ledger_description,
+                        "quantity": 1,
+                        "price_incl_tax": str(price_incl_tax),
+                        "oracle_code": CartUtils.get_oracle_code(
+                            request, pass_content_type, park_pass.id
+                        ),
+                        "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
+                    }
+                )
                 total_sales += park_pass.price_after_concession_applied.quantize(
                     Decimal("0.01")
                 )
 
             total_sales = total_sales.quantize(Decimal("0.01"))
 
-            commission_amount = Decimal(
-                total_sales * (retailer_group.commission_percentage / 100)
-            ).quantize(Decimal("0.01"))
+            if total_sales <= Decimal(0.00):
+                # No need to generate an invoice for this retailer group
+                continue
+
+            invoice_month = first_day_of_previous_month.strftime("%B")
+            invoice_year = first_day_of_previous_month.strftime("%Y")
+
+            commission_amount = (
+                Decimal(total_sales / 100).quantize(Decimal("0.01"))
+                * retailer_group.commission_percentage
+            )
+            commission_ledger_description = (
+                f"{retailer_group.commission_percentage}% "
+                f"Commission on Sales for the Month of {invoice_month} {invoice_year}"
+            )
+            if settings.DEBUG:
+                # If in dev round the amounts so the payment gateway will work
+                commission_amount = int(commission_amount)
+                ledger_description += " (Price rounded for dev env)"
+                commission_ledger_description += " (Price rounded for dev env)"
+
+            ledger_order_lines.append(
+                {
+                    "ledger_description": commission_ledger_description,
+                    "quantity": 1,
+                    "price_incl_tax": str(-abs(commission_amount)),
+                    "oracle_code": retailer_group.commission_oracle_code,
+                    "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
+                },
+            )
+            booking_reference = invoice_uuid
 
             total_payable = Decimal(total_sales - commission_amount).quantize(
                 Decimal("0.01")
             )
 
-            context = {
-                "invoice_uuid": invoice_uuid,
-                "organisation": organisation,
-                "retailer_group": retailer_group,
-                "passes": passes,
-                "date_invoice": first_day_of_previous_month,
-                "date_generated": today,
-                "commission_percentage": f"{retailer_group.commission_percentage}%",
-                "commission_amount": f"${commission_amount}",
-                "total_sales": f"${total_sales}",
-                "total_payable": f"${total_payable}",
+            # Here we will generate the ledger invoices with Jason's new API
+            request = ledger_api_client_utils.FakeRequestSessionObj()
+            request.user = email_user
+
+            basket_params = {
+                "products": ledger_order_lines,
+                "vouchers": [],
+                "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
+                "custom_basket": True,
+                "booking_reference": str(booking_reference),
+                "no_payment": True,
+                "organisation": retailer_group.ledger_organisation,
             }
-            invoice_template_docx.render(context)
-            organisation_name = retailer_group.organisation["organisation_name"]
-            invoice_filename = f"Park Passes Invoice - {organisation_name} - {first_day_of_previous_month.date()} "
-            invoice_filename += f"{last_day_of_previous_month.date()}.docx"
-            invoice_path = f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(organisation_name)}/{invoice_filename}"
-            Path(
-                f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(organisation_name)}"
-            ).mkdir(parents=True, exist_ok=True)
-            invoice_template_docx.save(invoice_path)
-            subprocess.run(
-                [
-                    "libreoffice",
-                    "--convert-to",
-                    "pdf",
-                    invoice_path,
-                    "--outdir",
-                    f"{settings.RETAILER_GROUP_INVOICE_ROOT}/{slugify(organisation_name)}",
-                ]
+
+            basket_hash = ledger_api_client_utils.create_basket_session(
+                request, request.user.id, basket_params
             )
+            basket_hash = basket_hash.split("|")[0]
+            invoice_text = (
+                f"Park Pass Sales for the Month of {invoice_month} {invoice_year}"
+            )
+            return_preload_url = (
+                f"{settings.PARKPASSES_EXTERNAL_URL}"
+                f"/api/retailers/ledger-api-retailer-invoice-success-callback/{invoice_uuid}"
+            )
+
+            future_invoice = ledger_api_client_utils.process_create_future_invoice(
+                basket_hash, invoice_text, return_preload_url
+            )
+
+            logger.info(future_invoice)
+
+            if 200 != future_invoice["status"]:
+                logger.error(
+                    f"Failed to create future invoice for {retailer_group} with basket_hash "
+                    f"{basket_hash}, invoice_text {invoice_text}, return_preload_url {return_preload_url}"
+                )
+                continue
+
+            data = future_invoice["data"]
+
+            order_number = data["order"]
+            basket_id = data["basket_id"]
+            invoice_reference = data["invoice"]
 
             passes_by_type = Pass.objects.filter(
                 sold_via=retailer_group,
@@ -192,6 +261,7 @@ class Command(BaseCommand):
             subprocess.run(
                 [
                     "libreoffice",
+                    "--headless",
                     "--convert-to",
                     "pdf",
                     report_path,
@@ -212,17 +282,20 @@ class Command(BaseCommand):
                     datetime_created__month=first_day_of_previous_month.month,
                 )
             else:
-                report = Report.objects.create(retailer_group=retailer_group)
-            report.uuid = invoice_uuid
+                report = Report.objects.create(
+                    retailer_group=retailer_group,
+                    uuid=invoice_uuid,
+                    order_number=order_number,
+                    basket_id=basket_id,
+                    invoice_reference=invoice_reference,
+                )
             report.report.name = report_path.replace("docx", "pdf")
-            report.invoice.name = invoice_path.replace("docx", "pdf")
             report.save()
 
             os.remove(report_path)
-            os.remove(invoice_path)
 
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"\tGenerated Report: {os.path.basename(report.invoice.name)}\n"
+                    f"\tGenerated Report: {os.path.basename(report.report.name)}\n"
                 )
             )
