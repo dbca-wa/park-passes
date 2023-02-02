@@ -1,16 +1,13 @@
-import calendar
 import logging
-from decimal import Decimal
 
 import requests
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
-from ledger_api_client.utils import create_basket_session, create_checkout_session
+from ledger_api_client.utils import generate_payment_session
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
@@ -20,12 +17,10 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.main.api import (
     CustomDatatablesListMixin,
     CustomDatatablesRenderer,
 )
-from parkpasses.components.passes.models import Pass
 from parkpasses.components.reports.models import Report
 from parkpasses.components.reports.serializers import (
     InternalReportSerializer,
@@ -135,135 +130,34 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
 
         raise Http404
 
-    @action(methods=["POST"], detail=True, url_path="pay-invoice")
+    @action(methods=["GET"], detail=True, url_path="pay-invoice")
     def pay_invoice(self, request, *args, **kwargs):
         logger.info("Pay Invoice")
         report = self.get_object()
-        retailer_group = report.retailer_group
-
-        date_invoice_generated = report.datetime_created.date()
-        first_day_of_this_month = date_invoice_generated.replace(day=1)
-        last_day_of_previous_month = first_day_of_this_month - timezone.timedelta(
-            days=1
-        )
-        first_day_of_previous_month = last_day_of_previous_month.replace(day=1)
-        month_year = first_day_of_previous_month.strftime("%B %Y")
-        ledger_description = f"Park Passes Sales for the Month of { month_year }"
-
-        logger.info("Retrieving " + ledger_description)
-
-        passes = Pass.objects.filter(
-            sold_via=retailer_group,
-            datetime_created__range=(
-                first_day_of_previous_month,
-                last_day_of_previous_month,
-            ),
-        )
-
-        if 0 == passes.count() and settings.DEBUG:
-            logger.info(
-                "No passes found in the month before the invoice was generated."
-                + "Trying to find passes in the same month the invoice was generated."
-            )
-            # If the generate monthly invoices management command was run with the --test flag
-            # then we need to select the passes sold in the same month the report was generated
-            last_day_of_this_month_number = calendar.monthrange(
-                date_invoice_generated.year, date_invoice_generated.month
-            )[1]
-            last_day_of_this_month = date_invoice_generated.replace(
-                day=last_day_of_this_month_number
-            )
-            passes = Pass.objects.filter(
-                sold_via=retailer_group,
-                datetime_created__range=(
-                    first_day_of_this_month,
-                    last_day_of_this_month,
-                ),
-            )
-        logger.info(f"Found {len(passes)} passes.")
-        pass_content_type = ContentType.objects.get_for_model(Pass)
-        total_sales = Decimal(0.00)
-        ledger_order_lines = []
-        for park_pass in passes:
-            ledger_description = CartUtils.get_pass_purchase_description(park_pass)
-            price_incl_tax = park_pass.price_after_all_discounts
-            if settings.DEBUG:
-                # If in dev round the amounts so the payment gateway will work
-                price_incl_tax = int(price_incl_tax)
-                ledger_description += " (Price rounded for dev env)"
-
-            ledger_order_lines.append(
-                {
-                    "ledger_description": ledger_description,
-                    "quantity": 1,
-                    "price_incl_tax": str(price_incl_tax),
-                    "oracle_code": CartUtils.get_oracle_code(
-                        request, pass_content_type, park_pass.id
-                    ),
-                    "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
-                }
-            )
-            total_sales += park_pass.price_after_concession_applied
-
-        if total_sales <= Decimal(0.00):
-            return redirect(reverse("retailer-reports"))
-
-        commission_amount = (
-            Decimal(total_sales / 100).quantize(Decimal("0.01"))
-            * retailer_group.commission_percentage
-        )
-        commission_ledger_description = (
-            f"{retailer_group.commission_percentage}% "
-            f"Commission on Sales for the Month of { month_year }"
-        )
-        if settings.DEBUG:
-            # If in dev round the amounts so the payment gateway will work
-            commission_amount = int(commission_amount)
-            ledger_description += " (Price rounded for dev env)"
-            commission_ledger_description += " (Price rounded for dev env)"
-
-        ledger_order_lines.append(
-            {
-                "ledger_description": commission_ledger_description,
-                "quantity": 1,
-                "price_incl_tax": str(-abs(commission_amount)),
-                "oracle_code": retailer_group.oracle_code,
-                "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
-            },
-        )
-        booking_reference = report.uuid
-        basket_parameters = CartUtils.get_basket_parameters(
-            ledger_order_lines,
-            booking_reference,
-            is_no_payment=False,
-        )
-        create_basket_session(request, request.user.id, basket_parameters)
-
-        invoice_text = f"Unique Identifier: {booking_reference}"
         return_url = request.build_absolute_uri(
             reverse(
                 "retailer-reports-pay-invoice-success",
-                kwargs={
-                    "report_number": report.report_number,
-                },
+                kwargs={"report_number": report.report_number},
             )
         )
-        return_preload_url = request.build_absolute_uri(
+        # return_preload_url = request.build_absolute_uri(reverse("ledger-api-retailer-invoice-success-callback",
+        # kwargs={"uuid": report.uuid}))
+        fallback_url = request.build_absolute_uri(
             reverse(
-                "ledger-api-retailer-invoice-success-callback",
-                kwargs={
-                    "uuid": booking_reference,
-                },
+                "retailer-reports-pay-invoice-failure",
+                kwargs={"report_number": report.report_number},
             )
         )
-        checkout_parameters = CartUtils.get_checkout_parameters(
-            request, return_url, return_preload_url, request.user.id, invoice_text
+        logger.info(f"Return URL: {return_url}")
+        # logger.info(f"Return Preload URL: {return_preload_url}")
+        logger.info(f"Fallback URL: {fallback_url}")
+        payment_session = generate_payment_session(
+            request, report.invoice_reference, return_url, fallback_url
         )
-        logger.info("Checkout_parameters = " + str(checkout_parameters))
-
-        create_checkout_session(request, checkout_parameters)
-
-        return redirect(reverse("ledgergw-payment-details"))
+        logger.info(f"Payment session: {payment_session}")
+        if 200 == payment_session["status"]:
+            return redirect(payment_session["payment_url"])
+        return redirect(fallback_url)
 
 
 class PayInvoiceSuccessCallbackView(APIView):
