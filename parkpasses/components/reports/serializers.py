@@ -7,19 +7,18 @@ from parkpasses.components.reports.models import Report
 
 class RetailerReportSerializer(serializers.ModelSerializer):
     report_filename = serializers.SerializerMethodField()
-    invoice_filename = serializers.SerializerMethodField()
     processing_status_display = serializers.SerializerMethodField()
     datetime_created = serializers.SerializerMethodField()
     retailer_group = serializers.SerializerMethodField()
     overdue = serializers.BooleanField(read_only=True)
+    invoice_link = serializers.CharField(read_only=True)
 
     class Meta:
         model = Report
         fields = [
             "id",
-            "invoice",
-            "invoice_filename",
             "invoice_reference",
+            "invoice_link",
             "processing_status",
             "processing_status_display",
             "report",
@@ -44,28 +43,24 @@ class RetailerReportSerializer(serializers.ModelSerializer):
     def get_report_filename(self, obj):
         return os.path.basename(obj.report.name)
 
-    def get_invoice_filename(self, obj):
-        return os.path.basename(obj.invoice.name)
-
     def get_datetime_created(self, obj):
         return obj.datetime_created.strftime("%d/%m/%Y")
 
 
 class InternalReportSerializer(serializers.ModelSerializer):
     report_filename = serializers.SerializerMethodField()
-    invoice_filename = serializers.SerializerMethodField()
     processing_status_display = serializers.SerializerMethodField()
     datetime_created = serializers.SerializerMethodField()
     retailer_group = serializers.SerializerMethodField()
     overdue = serializers.BooleanField(read_only=True)
+    invoice_link = serializers.CharField(read_only=True)
 
     class Meta:
         model = Report
         fields = [
             "id",
-            "invoice",
-            "invoice_filename",
             "invoice_reference",
+            "invoice_link",
             "processing_status",
             "processing_status_display",
             "report",
@@ -86,9 +81,6 @@ class InternalReportSerializer(serializers.ModelSerializer):
 
     def get_report_filename(self, obj):
         return os.path.basename(obj.report.name)
-
-    def get_invoice_filename(self, obj):
-        return os.path.basename(obj.invoice.name)
 
     def get_datetime_created(self, obj):
         return obj.datetime_created.strftime("%d/%m/%Y")
