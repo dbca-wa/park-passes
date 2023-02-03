@@ -39,7 +39,6 @@ STATIC_URL = "/static/"
 INSTALLED_APPS += [
     "webtemplate_dbca",
     "rest_framework",
-    "rest_framework_api_key",
     "rest_framework_datatables",
     "django_filters",
     "colorfield",
@@ -62,7 +61,6 @@ INSTALLED_APPS += [
     "parkpasses.components.help",
     "parkpasses.components.emails",
     "parkpasses.components.reports",
-    "django_q",
 ]
 
 ADD_REVERSION_ADMIN = True

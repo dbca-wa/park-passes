@@ -18,8 +18,6 @@ from parkpasses.components.passes.api import (
     PassTypePricingWindowOptionViewSet,
     PassTypesDistinct,
     RacDiscountCodeCheckView,
-    RacDiscountCodeView,
-    RetailerApiAccessViewSet,
     RetailerPassTypesDistinct,
     RetailerPassTypeViewSet,
     RetailerPassViewSet,
@@ -53,11 +51,6 @@ router.register(
     InternalDistrictPassTypeDurationOracleCodeViewSet,
     basename="oracles-codes-internal",
 )
-router.register(
-    r"retailer/api-key-access",
-    RetailerApiAccessViewSet,
-    basename="passes-external-api-key-access",
-)
 
 urlpatterns = [
     url(r"retailer-pass-types/$", RetailerPassTypesDistinct.as_view()),
@@ -65,8 +58,6 @@ urlpatterns = [
     url(r"pass-processing-statuses-distinct", PassProcessingStatusesDistinct.as_view()),
     url(r"default-pass-options-by-pass-type-id", DefaultOptionsForPassType.as_view()),
     url(r"pass-options-by-pass-type-id", CurrentOptionsForPassType.as_view()),
-    url(r"rac/generate-code-from-email/(?P<email>.+)$", RacDiscountCodeView.as_view()),
-    url(r"rac/generate-code-from-email/$", RacDiscountCodeView.as_view()),
     url(
         r"rac/check-hash-matches-email/(?P<discount_hash>.+)/(?P<email>.+)/$",
         RacDiscountCodeCheckView.as_view(),

@@ -1,10 +1,8 @@
 from django.contrib import admin
-from rest_framework_api_key.admin import APIKeyModelAdmin
 
 from parkpasses.components.retailers.models import (
     District,
     RetailerGroup,
-    RetailerGroupAPIKey,
     RetailerGroupInvite,
     RetailerGroupUser,
 )
@@ -57,10 +55,6 @@ class RetailerGroupAdmin(admin.ModelAdmin):
     organisation_abn.short_description = "Ledger Organisation ABN"
 
 
-class RetailerGroupAPIKeyAdmin(APIKeyModelAdmin):
-    model = RetailerGroupAPIKey
-
-
 class RetailerGroupUserAdmin(admin.ModelAdmin):
     model = RetailerGroupUser
     list_display = (
@@ -93,4 +87,3 @@ admin.site.register(District, DistrictAdmin)
 admin.site.register(RetailerGroup, RetailerGroupAdmin)
 admin.site.register(RetailerGroupUser, RetailerGroupUserAdmin)
 admin.site.register(RetailerGroupInvite, RetailerGroupInviteAdmin)
-admin.site.register(RetailerGroupAPIKey, RetailerGroupAPIKeyAdmin)
