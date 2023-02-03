@@ -311,7 +311,7 @@ class Cart(models.Model):
                             f"RAC order item description: {order_item.description}",
                         )
                         order_item.amount = -abs(rac_discount_amount)
-                        # Give the discount code usage the same oracle code as the pass that it is attached to
+                        # Give the rac discount usage the same oracle code as the pass that it is attached to
                         order_item.oracle_code = cart_item.oracle_code
                         order_items.append(order_item)
                         if save_order_to_db_and_delete_cart:
@@ -440,6 +440,8 @@ class Cart(models.Model):
                     logger.info(
                         f"Voucher transaction order item amount: {order_item.amount}",
                     )
+                    # Give the voucher transaction the same oracle code as the pass that it is attached to
+                    order_item.oracle_code = cart_item.oracle_code
 
                     order_items.append(order_item)
                     if save_order_to_db_and_delete_cart:
