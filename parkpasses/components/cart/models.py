@@ -311,6 +311,8 @@ class Cart(models.Model):
                             f"RAC order item description: {order_item.description}",
                         )
                         order_item.amount = -abs(rac_discount_amount)
+                        # Give the discount code usage the same oracle code as the pass that it is attached to
+                        order_item.oracle_code = cart_item.oracle_code
                         order_items.append(order_item)
                         if save_order_to_db_and_delete_cart:
                             order_item.save()
@@ -352,6 +354,8 @@ class Cart(models.Model):
                         logger.info(
                             f"Concession order item amount: {order_item.amount}",
                         )
+                        # Give the concession usage the same oracle code as the pass that it is attached to
+                        order_item.oracle_code = cart_item.oracle_code
 
                         order_items.append(order_item)
                         logger.info(
@@ -399,6 +403,8 @@ class Cart(models.Model):
                         logger.info(
                             f"Discount Code order item amount: {order_item.amount}",
                         )
+                        # Give the discount code usage the same oracle code as the pass that it is attached to
+                        order_item.oracle_code = cart_item.oracle_code
 
                         order_items.append(order_item)
                         logger.info(
