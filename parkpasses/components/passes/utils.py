@@ -9,9 +9,7 @@ from pathlib import Path
 
 import fitz
 from django.conf import settings
-from django.utils import timezone
 from django.utils.dateformat import DateFormat
-from django.utils.text import slugify
 from docxtpl import DocxTemplate, RichText
 
 logger = logging.getLogger(__name__)
@@ -155,9 +153,7 @@ class PassUtils:
         park_pass_pdf_file_name = "ParkPass.pdf"
         park_pass_pdf_path = park_pass_file_path + park_pass_pdf_file_name
 
-        timestamp_slug = slugify(timezone.now())
-        park_pass_pdf_file_name_timestamp = f"ParkPass-{timestamp_slug}.pdf"
-        new_path = park_pass_file_path + park_pass_pdf_file_name_timestamp
+        new_path = park_pass_file_path + f"{park_pass.pass_number}.pdf"
         os.rename(
             settings.PROTECTED_MEDIA_ROOT + "/" + park_pass_pdf_path,
             settings.PROTECTED_MEDIA_ROOT + "/" + new_path,
