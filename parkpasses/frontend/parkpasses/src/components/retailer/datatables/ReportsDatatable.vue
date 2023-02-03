@@ -219,12 +219,12 @@ export default {
                     console.log(full.invoice_reference)
                     let html = '';
 
-                    if(full.invoice_link){
-                        html += `<a href="${full.invoice_link}" target="_blank">Invoice.pdf</a>`;
+                    if('P'===full.processing_status) {
+                        html += `<a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
                     }
 
-                    if('P'===full.processing_status && full.invoice_reference) {
-                        html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
+                    else if(full.invoice_link){
+                        html += `<a href="${full.invoice_link}" target="_blank">Invoice.pdf</a>`;
                     }
 
                     if('Unpaid'==full.processing_status_display && full.overdue){
