@@ -135,6 +135,12 @@ class CartUtils:
             f"Calling get_oracle_code with content_type: {content_type} and object_id: {object_id}"
         )
 
+        # If the content type and object id are None then this item must be a concession, discount code or
+        # voucher transaction. In this case we return None as the oracle code and the system will use the
+        # oracle code from the previous item in the basket (i.e. the park pass).
+        if content_type is None or object_id is None:
+            return None
+
         # Check if the pass is being sold via a retailer
         if is_retailer(request):
             logger.info(
