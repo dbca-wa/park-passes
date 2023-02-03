@@ -998,12 +998,12 @@ class PassAutoRenewSuccessView(APIView):
                     logger.error(f"Order with uuid: {uuid} does not exist.")
 
                 logger.info(
-                    f"Returning status.HTTP_204_NO_CONTENT. New Pass { new_park_pass }"
+                    f"Returning status.HTTP_200_OK. New Pass { new_park_pass }"
                     f" renewed successfully from { new_park_pass.park_pass_renewed_from }.",
                 )
                 # this end-point is called by an unmonitored get request in ledger so there is no point having a
                 # a response body however we will return a status in case this is used on the ledger end in future
-                return Response(status=status.HTTP_204_NO_CONTENT)
+                return Response(status=status.HTTP_200_OK)
 
         logger.info(
             "Returning status.HTTP_400_BAD_REQUEST bad request as "
