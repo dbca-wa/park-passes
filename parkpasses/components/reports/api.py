@@ -166,7 +166,12 @@ class PayInvoiceSuccessCallbackView(APIView):
     def get(self, request, uuid, format=None):
         logger.info("Park passes Pay Invoice Success View get method called.")
 
-        if uuid and Report.objects.filter(uuid=uuid).exists():
+        if (
+            uuid
+            and Report.objects.filter(
+                uuid=uuid, processing_status=Report.UNPAID
+            ).exists()
+        ):
             logger.info(
                 f"Invoice uuid: {uuid}.",
             )
@@ -184,7 +189,8 @@ class PayInvoiceSuccessCallbackView(APIView):
         # If there is no uuid to identify the cart then send a bad request status back in case ledger can
         # do something with this in future
         logger.info(
-            "Returning status.HTTP_400_BAD_REQUEST bad request as there was not a uuid and invoice_reference."
+            "Returning status.HTTP_400_BAD_REQUEST bad request as there "
+            f"was not an unpaid report invoice with uuid: {uuid}."
         )
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
