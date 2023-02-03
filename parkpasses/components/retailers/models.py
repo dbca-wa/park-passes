@@ -12,7 +12,6 @@ from django.db import models, transaction
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import get_organisation
 from rest_framework import status
-from rest_framework_api_key.models import AbstractAPIKey, BaseAPIKeyManager
 
 from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.exceptions import (
@@ -220,25 +219,6 @@ class RetailerGroup(models.Model):
             )
             logger.critical(critical_message)
             raise NoRACRetailerGroupExists(critical_message)
-
-
-class OrganizationAPIKeyManager(BaseAPIKeyManager):
-    def get_usable_keys(self):
-        return super().get_usable_keys().filter(retailer_group__active=True)
-
-
-class RetailerGroupAPIKey(AbstractAPIKey):
-    objects = OrganizationAPIKeyManager()
-    retailer_group = models.ForeignKey(
-        RetailerGroup,
-        on_delete=models.CASCADE,
-        related_name="api_keys",
-    )
-
-    class Meta(AbstractAPIKey.Meta):
-        app_label = "parkpasses"
-        verbose_name = "Retailer Group API key"
-        verbose_name_plural = "Retailer Group API keys"
 
 
 class RetailerGroupUser(models.Model):
