@@ -1,5 +1,5 @@
 """
-This management commands sends emails to customers who have have a pass that expires today.
+This management commands sends emails to customers who have have a pass that expired today.
 
 Usage: ./manage.sh pass_send_expired_notification_emails
         (this command should be run by a cron job or task runner not manually)
@@ -32,26 +32,19 @@ class Command(BaseCommand):
             email=settings.NO_REPLY_EMAIL, password=""
         )
         today = timezone.now().date()
-        if (
-            Pass.objects.exclude(
-                processing_status=Pass.CANCELLED,
-            )
-            .filter(
-                in_cart=False,
-                date_expiry=today,
-            )
-            .exists()
-        ):
-            passes = Pass.objects.exclude(processing_status=Pass.CANCELLED,).filter(
-                in_cart=False,
-                date_expiry=today,
-            )
+        passes_that_expired_today = Pass.objects.exclude(
+            processing_status=Pass.CANCELLED,
+        ).filter(
+            in_cart=False,
+            date_expiry=today,
+        )
+        if passes_that_expired_today.exists():
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Found {len(passes)} park passes that expire today."
+                    f"Found {len(passes_that_expired_today)} park passes that expired today."
                 )
             )
-            for park_pass in passes:
+            for park_pass in passes_that_expired_today:
                 if options["test"]:
                     self.stdout.write(
                         self.style.SUCCESS(

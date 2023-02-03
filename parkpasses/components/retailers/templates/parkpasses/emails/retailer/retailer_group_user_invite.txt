@@ -7,7 +7,7 @@
 {%  block content %}
             You have been invited to join the following {{ SYSTEM_NAME }} retailer group:
 
-            {{retailer_group_user_invite.retailer_group.name}}
+            {{organisation_name}}
 
             Which will allow you to log in and take retail sales.
 

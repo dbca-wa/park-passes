@@ -5,7 +5,7 @@
 {% endblock %}
 
 {%  block content %}
-            Your {{pass.pass_type_display_name}} expired today.
+            Your {{pass.pass_type}} expired today.
 
             If you want to purchase a new park pass, please visit: {{site_url}}.
 {%  endblock %}

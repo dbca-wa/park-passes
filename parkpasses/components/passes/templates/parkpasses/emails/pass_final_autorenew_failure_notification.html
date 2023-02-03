@@ -1,0 +1,13 @@
+{%  extends 'parkpasses/emails/base_email.html' %}
+
+{% block greetings %}
+            <p>Dear {{ pass.first_name }} {{ pass.last_name }},</p>
+{% endblock %}
+
+{%  block content %}
+            <p>Today we made our 3rd and final attempt to process the auto renewal for your park pass: {{ pass.pass_number }}.</p>
+
+            <p>We have now cancelled your auto renewal and you will have to purchase another park pass manually.</p>
+
+            <p>If you want to purchase a new park pass, please visit: <a href="{{site_url}}">{{site_url}}</a></p>
+{% endblock %}

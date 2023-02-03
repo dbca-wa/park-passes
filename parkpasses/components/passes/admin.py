@@ -6,11 +6,13 @@ from django.utils.html import format_html
 from parkpasses import settings
 from parkpasses.components.passes.models import (
     Pass,
+    PassAutoRenewalAttempt,
     PassCancellation,
     PassTemplate,
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
+    RACDiscountUsage,
 )
 
 logger = logging.getLogger(__name__)
@@ -25,9 +27,29 @@ class PassCancellationInline(admin.TabularInline):
     readonly_fields = ["datetime_cancelled"]
 
 
+class PassAutoRenewalAttemptInline(admin.TabularInline):
+    model = PassAutoRenewalAttempt
+    fields = [
+        "auto_renewal_succeeded",
+        "datetime_attempted",
+    ]
+    readonly_fields = [
+        "auto_renewal_succeeded",
+        "datetime_attempted",
+    ]
+    extra = 0
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+
 class PassAdmin(admin.ModelAdmin):
     model = Pass
     fields = [
+        "park_pass_pdf_secure",
         "user",
         "in_cart",
         "purchase_email_sent",
@@ -49,14 +71,17 @@ class PassAdmin(admin.ModelAdmin):
         "vehicle_registration_1",
         "vehicle_registration_2",
         "prevent_further_vehicle_updates",
+        "drivers_licence_number",
         "date_start",
         "date_expiry",
         "renew_automatically",
+        "park_pass_renewed_from",
         "datetime_created",
         "datetime_updated",
     ]
     list_display = (
         "pass_number",
+        "renew_automatically",  # remove later
         "sold_via",
         "park_pass_pdf_secure",
         "processing_status",
@@ -70,11 +95,13 @@ class PassAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ("sold_via",)
     readonly_fields = [
+        "park_pass_pdf_secure",
         "pass_number",
         "first_name",
         "last_name",
         "email",
         "date_expiry",
+        "park_pass_renewed_from",
         "datetime_created",
         "datetime_updated",
     ]
@@ -83,7 +110,16 @@ class PassAdmin(admin.ModelAdmin):
     ]
     inlines = [
         PassCancellationInline,
+        PassAutoRenewalAttemptInline,
     ]
+
+    # def get_inline_instances(self, request, obj=None):
+    #     to_return = super().get_inline_instances(request, obj)
+    #     if not obj or not obj.renew_automatically:
+    #         to_return = [
+    #             x for x in to_return if not isinstance(x, PassAutoRenewalAttemptInline)
+    #         ]
+    #     return to_return
 
     def get_fields(self, request, obj=None):
         if obj:
@@ -172,12 +208,16 @@ class PassTemplateAdmin(admin.ModelAdmin):
     model = PassTemplate
     list_display = (
         "id",
+        "pass_type_field",
         "template_secure",
         "version",
     )
-    ordering = [
-        "-version",
-    ]
+    ordering = ["pass_type", "-version"]
+
+    def pass_type_field(self, instance):
+        if instance.pass_type:
+            return str(instance.pass_type)
+        return "All Pass Types"
 
     def template_secure(self, instance):
         value_link = f"/api/passes/pass-templates/{instance.id}/retrieve-pass-template/"
@@ -186,3 +226,13 @@ class PassTemplateAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PassTemplate, PassTemplateAdmin)
+
+
+class RACDiscountUsageAdmin(admin.ModelAdmin):
+    model = RACDiscountUsage
+    list_display = ["park_pass", "discount_percentage"]
+    raw_id_fields = ["park_pass"]
+    readonly_fields = ["park_pass", "discount_percentage"]
+
+
+admin.site.register(RACDiscountUsage, RACDiscountUsageAdmin)

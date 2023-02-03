@@ -5,7 +5,6 @@ import os
 import confy
 import dj_database_url
 from confy import env
-from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +14,10 @@ confy.read_environment_file(BASE_DIR + "/.env")
 os.environ.setdefault("BASE_DIR", BASE_DIR)
 
 from ledger_api_client.settings_base import *  # noqa: F403
+
+ADMINS = [
+    ("ASI", "asi@dpaw.wa.gov.au"),
+]
 
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
@@ -36,9 +39,9 @@ STATIC_URL = "/static/"
 INSTALLED_APPS += [
     "webtemplate_dbca",
     "rest_framework",
-    "rest_framework_api_key",
     "rest_framework_datatables",
     "django_filters",
+    "colorfield",
     "rest_framework_gis",
     "ledger_api_client",
     "ckeditor",
@@ -58,7 +61,6 @@ INSTALLED_APPS += [
     "parkpasses.components.help",
     "parkpasses.components.emails",
     "parkpasses.components.reports",
-    "django_q",
 ]
 
 ADD_REVERSION_ADMIN = True
@@ -88,8 +90,6 @@ MIDDLEWARE_CLASSES += [
 MIDDLEWARE = MIDDLEWARE_CLASSES
 MIDDLEWARE_CLASSES = None
 
-# MIDDLEWARE.insert(0, "django.middleware.gzip.GZipMiddleware")
-
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
@@ -102,7 +102,6 @@ if DEBUG and SHOW_DEBUG_TOOLBAR:
             return True
 
     MIDDLEWARE += [
-        # "kolo.middleware.KoloMiddleware",
         "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
     # KOLO_PATH = "./manage.sh runserver 8010"
@@ -154,6 +153,7 @@ SYSTEM_NAME = env("SYSTEM_NAME", "Park Passes")
 SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "PP")
 SITE_PREFIX = env("SITE_PREFIX")
 SITE_DOMAIN = env("SITE_DOMAIN")
+PARKPASSES_EXTERNAL_URL = env("PARKPASSES_EXTERNAL_URL")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", "licensing@" + SITE_DOMAIN).lower()
 SUPPORT_EMAIL_FILMING = env("SUPPORT_EMAIL_FILMING", "filming@" + SITE_DOMAIN).lower()
 DEP_URL = env("DEP_URL", "www." + SITE_DOMAIN)
@@ -205,9 +205,6 @@ CRON_NOTIFICATION_EMAIL = env("CRON_NOTIFICATION_EMAIL", NOTIFICATION_EMAIL).low
 CRON_CLASSES = [
     "parkpasses.cron.OracleIntegrationCronJob",
 ]
-
-
-BASE_URL = env("BASE_URL")
 
 CKEDITOR_CONFIGS = {
     "default": {
@@ -347,6 +344,8 @@ CACHE_KEY_RETAILER_GROUP_IDS = "user-{}-retailer-group-ids"
 
 CACHE_KEY_GROUP_IDS = "{}-{}-user-ids"
 
+CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
+
 PROTECTED_MEDIA_ROOT = env(
     "PROTECTED_MEDIA_ROOT", os.path.join(BASE_DIR, "protected_media")
 )
@@ -364,8 +363,8 @@ PICA_GOLD_STAR_PASS_ROOT = env(
 )
 
 PICA_EMAIL = env("PICA_EMAIL", None)
-if not PICA_EMAIL:
-    raise ImproperlyConfigured("PICA_EMAIL is not set")
+
+PICA_ORACLE_CODE_LABEL = "PICA (Online Sales)"
 
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
     "ORG_MODEL_DOCUMENTS_MEDIA_ROOT", "protected_media"
@@ -377,6 +376,8 @@ APPLICATION_TYPES = [
 ]
 
 GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
+
+RETAILER_INVOICE_DUE_DAYS = 30
 
 template_title = "Park Passes"
 template_group = "parkpasses"
@@ -394,7 +395,7 @@ if len(GIT_COMMIT_HASH) == 0:
 
 LEDGER_TEMPLATE = "bootstrap5"
 
-SESSION_COOKIE_NAME = "pp_sessionid"
+LEDGER_UI_CARDS_MANAGEMENT = True
 
 ORGANISATION = {
     "name": "Department of Biodiversity, Conservation and Attractions",
@@ -427,15 +428,24 @@ PASS_TYPES = [
     (PERSONNEL_PASS, "Personnel Pass"),
 ]
 
+PASS_TEMPLATE_REPLACEMENT_IMAGE_PATH = "word/media/image2.png"
+PASS_TEMPLATE_DEFAULT_IMAGE_PATH = (
+    f"{STATIC_ROOT}/parkpasses/img/default-pass-template-image.png"
+)
+
 PASS_VEHICLE_REGO_REMINDER_DAYS_PRIOR = 7
 PASS_REMINDER_DAYS_PRIOR = 7
 
 PRICING_WINDOW_DEFAULT_NAME = "Default"
 
+RAC_DISCOUNT_PERCENTAGE = env("RAC_DISCOUNT_PERCENTAGE", 50)
 RAC_HASH_SALT = env("RAC_HASH_SALT")
-RAC_RETAILER_GROUP_NAME = env("RAC_RETAILER_GROUP_NAME", "RAC")
+
+
 UNLIMITED_USES = 999999999
 UNLIMITED_USES_TEXT = "Unlimited"
+
+USE_DUMMY_QR_CODE_DATA = env("USE_DUMMY_QR_CODE_DATA", True)
 
 """ ==================== USER ACTIONS ======================== """
 
@@ -460,7 +470,11 @@ PARKPASSES_VALID_CART_CONTENT_TYPES = [
 """ ==================== DEFAULT DATA CONFIGS ======================== """
 
 PARKPASSES_DEFAULT_SOLD_VIA = "DBCA Website"
+PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID = env(
+    "PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID"
+)
 
+RAC_RETAILER_GROUP_ORGANISATION_ID = env("RAC_RETAILER_GROUP_ORGANISATION_ID")
 
 DATABASES["test"] = dj_database_url.config(env="TEST_DATABASE_URL")
 
@@ -484,12 +498,13 @@ PARKPASSES_LEDGER_DEFAULT_LINE_STATUS = 1
 PARKPASSES_VOUCHER_PURCHASE_DESCRIPTION = "Voucher Purchase:"
 PARKPASSES_PASS_PURCHASE_DESCRIPTION = "Park Pass Purchase:"
 
+PARKPASSES_RAC_DISCOUNT_APPLIED_DESCRIPTION = "RAC Discount Applied:"
 PARKPASSES_CONCESSION_APPLIED_DESCRIPTION = "Concession Discount:"
 PARKPASSES_DISCOUNT_CODE_APPLIED_DESCRIPTION = "Discount Code Applied:"
 PARKPASSES_VOUCHER_CODE_REDEEMED_DESCRIPTION = "Voucher Code Redeemed:"
 
 PARKPASSES_DEFAULT_ORACLE_CODE = "PARKPASSES_DEFAULT_ORACLE_CODE"
-
+PARKPASSES_DEFAULT_VOUCHER_ORACLE_CODE = "PARKPASSES_DEFAULT_VOUCHER_ORACLE_CODE"
 
 LEDGER_UI_ACCOUNTS_MANAGEMENT = [
     {"first_name": {"options": {"view": True, "edit": True}}},

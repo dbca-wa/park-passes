@@ -9,6 +9,7 @@ from parkpasses.components.discount_codes.serializers import (
 )
 from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.models import (
+    DistrictPassTypeDurationOracleCode,
     Pass,
     PassCancellation,
     PassTemplate,
@@ -192,6 +193,12 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
     concession_card_number = serializers.CharField(
         write_only=True, required=False, allow_blank=True
     )
+    concession_card_expiry_month = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
+    concession_card_expiry_year = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
     sold_via = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
@@ -202,6 +209,8 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
             "voucher_pin",
             "concession_id",
             "concession_card_number",
+            "concession_card_expiry_month",
+            "concession_card_expiry_year",
             "sold_via",
         ]
 
@@ -359,13 +368,20 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     )
     park_group = serializers.CharField()
     concession = serializers.SerializerMethodField()
+    rac_discount_percentage = serializers.SerializerMethodField()
     price_after_concession_applied = serializers.CharField()
     discount_code = serializers.SerializerMethodField()
     price_after_discount_code_applied = serializers.CharField()
     voucher = serializers.SerializerMethodField()
     voucher_transaction = ExternalVoucherTransactionSerializer()
     price_after_voucher_applied = serializers.CharField()
-    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    sold_via_name = serializers.SerializerMethodField(read_only=True)
+    date_start_formatted = serializers.DateField(
+        source="date_start", read_only=True, format="%d/%m/%Y"
+    )
+    date_expiry_formatted = serializers.DateField(
+        source="date_expiry", read_only=True, format="%d/%m/%Y"
+    )
 
     class Meta:
         model = Pass
@@ -391,15 +407,19 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "vehicle_registration_1",
             "vehicle_registration_2",
             "prevent_further_vehicle_updates",
+            "drivers_licence_number",
             "park_group",
             "park_pass_pdf",
             "date_start",
+            "date_start_formatted",
+            "date_expiry_formatted",
             "date_expiry",
             "renew_automatically",
             "status",
             "status_display",
             "datetime_created",
             "datetime_updated",
+            "rac_discount_percentage",
             "concession",
             "price_after_concession_applied",
             "discount_code",
@@ -416,6 +436,8 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "pass_type_name",
             "price",
             "park_group",
+            "date_start_formatted",
+            "date_expiry_formatted",
             "date_expiry",
             "park_pass_pdf",
             "status",
@@ -432,6 +454,9 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "sold_via_name",
         ]
 
+    def get_sold_via_name(self, obj):
+        return obj.sold_via.organisation["organisation_name"]
+
     def get_price(self, obj):
         return f"{obj.option.price:.2f}"
 
@@ -443,6 +468,11 @@ class ExternalPassSerializer(serializers.ModelSerializer):
 
     def get_duration(self, obj):
         return f"{obj.option.duration} days"
+
+    def get_rac_discount_percentage(self, obj):
+        if hasattr(obj, "rac_discount_usage"):
+            return obj.rac_discount_usage.discount_percentage
+        return None
 
     def get_concession(self, obj):
         if hasattr(obj, "concession_usage"):
@@ -558,28 +588,39 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
     duration = serializers.CharField(source="option.name")
     park_pass_pdf = serializers.SerializerMethodField()
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
-    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    sold_via_name = serializers.SerializerMethodField(read_only=True)
     processing_status_display_name = serializers.CharField(
         source="status_display", read_only=True
     )
     concession_type = serializers.CharField(
-        source="concessionusage.concession.concession_type",
+        source="concession_usage.concession.concession_type",
         read_only=True,
         required=False,
     )
     concession_discount_percentage = serializers.CharField(
-        source="concessionusage.concession.discount_percentage",
+        source="concession_usage.concession.discount_percentage",
         read_only=True,
         required=False,
     )
+    concession_card_number = serializers.CharField(
+        source="concession_usage.concession_card_number",
+        read_only=True,
+        required=False,
+    )
+    rac_discount_used = serializers.CharField(
+        source="rac_discount_usage", required=False
+    )
+    rac_discount_percentage = serializers.CharField(
+        source="rac_discount_usage.discount_percentage", required=False
+    )
     discount_code_used = serializers.CharField(
-        source="discountcodeusage.discount_code.code", required=False
+        source="discount_code_usage.discount_code.code", required=False
     )
     discount_code_discount = serializers.SerializerMethodField(
         read_only=True, required=False
     )
     voucher_number = serializers.CharField(
-        source="vouchertransaction.voucher.voucher_number",
+        source="voucher_transaction.voucher.voucher_number",
         read_only=True,
         required=False,
     )
@@ -597,20 +638,26 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
             "sold_via",
             "sold_via_name",
             "pass_type_name",
+            "concession_type",
+            "concession_discount_percentage",
+            "rac_discount_percentage",
         ]
         datatables_always_serialize = [
             "user_can_edit",
         ]
 
+    def get_sold_via_name(self, obj):
+        return obj.sold_via.organisation["organisation_name"]
+
     def get_discount_code_discount(self, obj):
-        if hasattr(obj, "discountcodeusage"):
+        if hasattr(obj, "discount_code_usage"):
             discount = (
-                obj.discountcodeusage.discount_code.discount_code_batch.discount_amount
+                obj.discount_code_usage.discount_code.discount_code_batch.discount_amount
             )
             if discount:
                 return f"${discount}"
             discount = (
-                obj.discountcodeusage.discount_code.discount_code_batch.discount_percentage
+                obj.discount_code_usage.discount_code.discount_code_batch.discount_percentage
             )
             return f"{discount}% Off"
         return None
@@ -636,7 +683,7 @@ class InternalPassSerializer(serializers.ModelSerializer):
     pricing_window = serializers.CharField(source="option.pricing_window")
     park_pass_pdf = serializers.SerializerMethodField()
     sold_via = serializers.PrimaryKeyRelatedField(queryset=RetailerGroup.objects.all())
-    sold_via_name = serializers.CharField(source="sold_via.name", read_only=True)
+    sold_via_name = serializers.SerializerMethodField(read_only=True)
     processing_status_display_name = serializers.CharField(
         source="status_display", read_only=True
     )
@@ -657,6 +704,9 @@ class InternalPassSerializer(serializers.ModelSerializer):
             "user_can_upload_personnel_passes",
             "user_can_edit_and_cancel",
         ]
+
+    def get_sold_via_name(self, obj):
+        return obj.sold_via.organisation["organisation_name"]
 
     def get_park_pass_pdf(self, obj):
         return os.path.basename(obj.park_pass_pdf.name)
@@ -712,3 +762,47 @@ class InternalPassCancellationSerializer(serializers.ModelSerializer):
     class Meta:
         model = PassCancellation
         fields = "__all__"
+
+
+class InternalPassTypesOptionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PassType
+        fields = "__all__"
+
+
+class InternalDistrictPassTypeDurationOracleCodeSerializer(serializers.ModelSerializer):
+    district_name = serializers.SerializerMethodField()
+    option_name = serializers.CharField(source="option.name", read_only=True)
+    pass_type_display_name = serializers.CharField(
+        source="option.pricing_window.pass_type.display_name", read_only=True
+    )
+
+    class Meta:
+        model = DistrictPassTypeDurationOracleCode
+        fields = [
+            "id",
+            "district",
+            "district_name",
+            "pass_type_display_name",
+            "option",
+            "option_name",
+            "oracle_code",
+        ]
+
+    def get_district_name(self, obj):
+        if obj.district:
+            return obj.district.name
+        return "PICA (Online Sales)"
+
+
+class InternalDistrictPassTypeDurationOracleCodeListUpdateSerializer(
+    serializers.ModelSerializer
+):
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = DistrictPassTypeDurationOracleCode
+        fields = [
+            "id",
+            "oracle_code",
+        ]

@@ -7,29 +7,5 @@
 {%  block content %}
             <p>Your park pass auto renewal was processed successfully.</p>
 
-            <p>Note: You may continue to use your existing pass until it expires.</p>
-
-            <p>Your new pass has the following details:</p>
-
-            <table>
-                <tr><th>Pass Number:</th><td>{{pass.pass_number}}</td>
-                <tr><th>Pass Type:</th><td>{{pass.pass_type_display_name}}</td>
-                <tr><th>Duration:</th><td>{{pass.duration}}</td>
-                <tr><th>Price:</th><td>{{pass.price}}</td>
-                <tr><th>Start Date:</th><td>{{pass.date_start|date:'d-m-Y'}}</td>
-                <tr><th>Expiry Date:</th><td>{{pass.date_expiry|date:'d-m-Y'}}</td>
-                {% if pass.park_group %}
-                <tr><th>Park Group:</th><td>{{pass.park_group}}</td>
-                {% endif %}
-                {% if pass.drivers_licence_number %}
-                <tr><th>Driver's Licence Number:</th><td>{{pass.drivers_licence_number}}</td>
-                {% endif %}
-            </table>
-
-            <p>Your park pass pdf is attached to this email.</p>
-
-            <p>To update the vehicle registration details and generate a new park pass pdf go to <a href="{{site_url}}{% url 'your-park-passes' %}">{{site_url}}{% url 'your-park-passes' %}</a></p>
-
-            <p>Once you have added your vehicle details to your park pass, please print it out and display it on
-            your vehicle dashboard when entering a national park.</p>
+            <p>You have been sent a pass purchase confirmation email with the details of your pass and your pass pdf.</p>
 {% endblock %}

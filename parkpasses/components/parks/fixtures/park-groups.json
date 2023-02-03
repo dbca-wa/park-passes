@@ -1,1 +1,296 @@
-[{"model": "parkpasses.parkgroup", "pk": 1, "fields": {"name": "Albany Group", "display_order": 1, "display_externally": true, "lgas": [65, 35, 4, 67, 68, 105, 42, 13, 77, 16, 55, 61]}}, {"model": "parkpasses.parkgroup", "pk": 2, "fields": {"name": "Karijini/Millstream–Chichester", "display_order": 2, "display_externally": true, "lgas": [6, 49, 106, 110]}}, {"model": "parkpasses.parkgroup", "pk": 3, "fields": {"name": "Yanchep", "display_order": 3, "display_externally": true, "lgas": [128, 5, 8, 9, 10, 21, 22, 28, 29, 34, 48, 52, 57, 62, 63, 72, 76, 79, 85, 90, 96, 101, 103, 109, 112, 114, 115, 116, 117, 123, 125]}}, {"model": "parkpasses.parkgroup", "pk": 4, "fields": {"name": "Kalbarri", "display_order": 4, "display_externally": true, "lgas": [98]}}, {"model": "parkpasses.parkgroup", "pk": 5, "fields": {"name": "Warren Group", "display_order": 5, "display_externally": true, "lgas": [65, 35, 68, 7, 136, 105, 42, 44, 13, 14, 77, 16, 20, 93]}}, {"model": "parkpasses.parkgroup", "pk": 6, "fields": {"name": "Francois Peron", "display_order": 6, "display_externally": true, "lgas": [113]}}, {"model": "parkpasses.parkgroup", "pk": 7, "fields": {"name": "Lane Poole/Serpentine", "display_order": 7, "display_externally": true, "lgas": [128, 5, 8, 9, 10, 12, 21, 22, 28, 29, 30, 34, 48, 52, 57, 59, 62, 63, 72, 76, 79, 85, 90, 92, 96, 101, 103, 109, 112, 114, 115, 116, 117, 123, 125]}}, {"model": "parkpasses.parkgroup", "pk": 8, "fields": {"name": "Esperance Group", "display_order": 8, "display_externally": true, "lgas": [64, 67, 69, 71, 73, 108, 140, 47, 50, 55, 61, 31]}}, {"model": "parkpasses.parkgroup", "pk": 9, "fields": {"name": "Mirima/Mitchell River/Purnululu", "display_order": 9, "display_externally": true, "lgas": [58, 138]}}, {"model": "parkpasses.parkgroup", "pk": 10, "fields": {"name": "Cape Range", "display_order": 10, "display_externally": true, "lgas": [25, 51]}}, {"model": "parkpasses.parkgroup", "pk": 11, "fields": {"name": "Lesueur/Nambung", "display_order": 11, "display_externally": true, "lgas": [24, 32, 40]}}, {"model": "parkpasses.parkgroup", "pk": 12, "fields": {"name": "King Leopold/Tunnel Creek/Windjana Gorge", "display_order": 13, "display_externally": true, "lgas": [17, 43]}}, {"model": "parkpasses.parkgroup", "pk": 13, "fields": {"name": "Avon Valley/John Forrest/Walyunga", "display_order": 12, "display_externally": true, "lgas": [128, 5, 8, 9, 10, 21, 22, 27, 28, 29, 34, 48, 52, 57, 62, 63, 72, 79, 85, 90, 96, 101, 103, 109, 112, 114, 115, 116, 117, 120, 123, 125]}}]
+[
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 1,
+        "fields": {
+            "name": "Albany Group",
+            "display_order": 1,
+            "display_externally": true,
+            "lgas": [
+                65,
+                35,
+                4,
+                67,
+                68,
+                105,
+                42,
+                13,
+                77,
+                16,
+                55,
+                61
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 2,
+        "fields": {
+            "name": "Karijini/Millstream–Chichester",
+            "display_order": 2,
+            "display_externally": true,
+            "lgas": [
+                6,
+                49,
+                106,
+                110
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 3,
+        "fields": {
+            "name": "Yanchep",
+            "display_order": 3,
+            "display_externally": true,
+            "lgas": [
+                128,
+                5,
+                8,
+                9,
+                10,
+                21,
+                22,
+                28,
+                29,
+                34,
+                48,
+                52,
+                57,
+                62,
+                63,
+                72,
+                76,
+                79,
+                85,
+                90,
+                96,
+                101,
+                103,
+                109,
+                112,
+                114,
+                115,
+                116,
+                117,
+                123,
+                125
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 4,
+        "fields": {
+            "name": "Kalbarri",
+            "display_order": 4,
+            "display_externally": true,
+            "lgas": [
+                98
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 5,
+        "fields": {
+            "name": "Warren Group",
+            "display_order": 5,
+            "display_externally": true,
+            "lgas": [
+                65,
+                35,
+                68,
+                7,
+                136,
+                105,
+                42,
+                44,
+                13,
+                14,
+                77,
+                16,
+                20,
+                93
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 6,
+        "fields": {
+            "name": "Francois Peron",
+            "display_order": 6,
+            "display_externally": true,
+            "lgas": [
+                113
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 7,
+        "fields": {
+            "name": "Lane Poole/Serpentine",
+            "display_order": 7,
+            "display_externally": true,
+            "lgas": [
+                128,
+                5,
+                8,
+                9,
+                10,
+                12,
+                21,
+                22,
+                28,
+                29,
+                30,
+                34,
+                48,
+                52,
+                57,
+                59,
+                62,
+                63,
+                72,
+                76,
+                79,
+                85,
+                90,
+                92,
+                96,
+                101,
+                103,
+                109,
+                112,
+                114,
+                115,
+                116,
+                117,
+                123,
+                125
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 8,
+        "fields": {
+            "name": "Esperance Group",
+            "display_order": 8,
+            "display_externally": true,
+            "lgas": [
+                64,
+                67,
+                69,
+                71,
+                73,
+                108,
+                140,
+                47,
+                50,
+                55,
+                61,
+                31
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 9,
+        "fields": {
+            "name": "Mirima/Purnululu",
+            "display_order": 9,
+            "display_externally": true,
+            "lgas": [
+                58,
+                138
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 10,
+        "fields": {
+            "name": "Cape Range",
+            "display_order": 10,
+            "display_externally": true,
+            "lgas": [
+                25,
+                51
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 11,
+        "fields": {
+            "name": "Lesueur/Nambung",
+            "display_order": 11,
+            "display_externally": true,
+            "lgas": [
+                24,
+                32,
+                40
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 12,
+        "fields": {
+            "name": "Wunaamin, Miluwindi, Dimalurru (Tunnel Creek) and Bandilngan (Windjana Gorge)",
+            "display_order": 13,
+            "display_externally": true,
+            "lgas": [
+                17,
+                43
+            ]
+        }
+    },
+    {
+        "model": "parkpasses.parkgroup",
+        "pk": 13,
+        "fields": {
+            "name": "Avon Valley/John Forrest/Walyunga",
+            "display_order": 12,
+            "display_externally": true,
+            "lgas": [
+                128,
+                5,
+                8,
+                9,
+                10,
+                21,
+                22,
+                27,
+                28,
+                29,
+                34,
+                48,
+                52,
+                57,
+                62,
+                63,
+                72,
+                79,
+                85,
+                90,
+                96,
+                101,
+                103,
+                109,
+                112,
+                114,
+                115,
+                116,
+                117,
+                120,
+                123,
+                125
+            ]
+        }
+    }
+]

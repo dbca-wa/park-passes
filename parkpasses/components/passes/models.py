@@ -15,35 +15,47 @@ from decimal import Decimal
 import qrcode
 from autoslug import AutoSlugField
 from ckeditor.fields import RichTextField
+from colorfield.fields import ColorField
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import (
     MultipleObjectsReturned,
     ObjectDoesNotExist,
     ValidationError,
 )
 from django.core.files.storage import FileSystemStorage
-from django.core.validators import MinLengthValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinLengthValidator,
+    MinValueValidator,
+)
 from django.db import models
 from django.utils import timezone
 from django_resized import ResizedImageField
 
+from parkpasses.components.orders.models import OrderItem
 from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.emails import PassEmails
 from parkpasses.components.passes.exceptions import (
     MultipleDefaultPricingWindowsExist,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
+    SendNoPrimaryCardForAutoRenewalEmailFailed,
     SendPassAutoRenewFailureNotificationEmailFailed,
     SendPassAutoRenewNotificationEmailFailed,
     SendPassAutoRenewSuccessNotificationEmailFailed,
     SendPassExpiredNotificationEmailFailed,
     SendPassExpiryNotificationEmailFailed,
+    SendPassFinalAutoRenewFailureNotificationEmailFailed,
     SendPassPurchasedEmailNotificationFailed,
     SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed,
 )
 from parkpasses.components.passes.utils import PassUtils
-from parkpasses.components.retailers.models import RetailerGroup
+from parkpasses.components.retailers.models import District, RetailerGroup
 from parkpasses.ledger_api_utils import retrieve_email_user
+
+PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +66,25 @@ def pass_type_image_path(instance, filename):
     based on the content type and object_id
     """
     return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.name}/{filename}"
+
+
+def pass_type_template_image_path(instance, filename):
+    """Stores the pass type template images in a unique folder
+
+    based on the content type and object_id
+    """
+    return f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.name}/template-image/{filename}"
+
+
+def pass_type_concession_template_image_path(instance, filename):
+    """Stores the pass type concession template images in a unique folder
+
+    based on the content type and object_id
+    """
+    return (
+        f"{instance._meta.app_label}/{instance._meta.model.__name__}/{instance.name}"
+        f"/concession/template-image/{filename}"
+    )
 
 
 class PassType(models.Model):
@@ -68,10 +99,43 @@ class PassType(models.Model):
         null=False,
         blank=False,
     )
-    name = models.CharField(max_length=100)  # Name reserved for system use
+    template_image = ResizedImageField(
+        size=[540, 225],
+        quality=99,
+        upload_to=pass_type_template_image_path,
+        help_text="Ideal dimension for image are 540px (width) x 225px (height)",
+        null=True,
+        blank=False,
+    )
+    concession_template_image = ResizedImageField(
+        size=[540, 225],
+        quality=99,
+        upload_to=pass_type_concession_template_image_path,
+        help_text="Ideal dimension for image are 540px (width) x 225px (height)",
+        null=True,
+        blank=True,
+    )
+    name = models.CharField(
+        max_length=100, editable=False
+    )  # Name reserved for system use
     display_name = models.CharField(max_length=50, null=False, blank=False)
+    display_name_colour = ColorField(
+        default="#000000",
+        help_text="Choose a colour for the pass type heading on the pass template.",
+        null=False,
+        blank=False,
+    )
+    concession_display_name_colour = ColorField(
+        default="#000000",
+        help_text="Choose a colour for the concession pass type heading on the pass template.",
+        null=False,
+        blank=False,
+    )
     description = RichTextField(null=True)
     oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    can_be_renewed_automatically = models.BooleanField(
+        null=False, blank=False, default=False
+    )
     display_order = models.SmallIntegerField(null=False, blank=False)
     display_retailer = models.BooleanField(null=False, blank=False, default=True)
     display_externally = models.BooleanField(null=False, blank=False, default=True)
@@ -209,6 +273,26 @@ class PassTypePricingWindow(models.Model):
             )
         return default_pricing_window
 
+    @classmethod
+    def check_default_pricing_windows(self, messages, critical_issues):
+        pass_types = PassType.objects.all()
+        for pass_type in pass_types:
+            default_pricing_window_count = PassTypePricingWindow.objects.filter(
+                pass_type__id=pass_type.id, name="Default"
+            ).count()
+            if 1 == default_pricing_window_count:
+                messages.append(
+                    f"SUCCESS: There is one default pricing window for pass type {pass_type.name}"
+                )
+            elif 0 == default_pricing_window_count:
+                critical_issues.append(
+                    f"CRITICAL: There is no default pricing window for pass type  {pass_type.name}"
+                )
+            else:
+                critical_issues.append(
+                    f"CRITICAL: There is more than one default pricing window for pass type {pass_type.name}"
+                )
+
     def is_valid(self):
         if not self.date_expiry and settings.PRICING_WINDOW_DEFAULT_NAME == self.name:
             """The default pricing window is always valid as it forms the template that other pricing windows
@@ -252,7 +336,7 @@ class PassTypePricingWindowOption(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Duration Option"
-        verbose_name = "Duration Options"
+        verbose_name_plural = "Duration Options"
         ordering = ["pricing_window", "price"]
 
     def __str__(self):
@@ -260,16 +344,25 @@ class PassTypePricingWindowOption(models.Model):
             (Pricing Window: {self.pricing_window.name})"
 
     @classmethod
-    def get_current_options_by_pass_type_id(self, pass_type_id):
+    def get_options_by_pass_type_and_date(self, pass_type_id, date):
+        return self.get_current_options_by_pass_type_id(pass_type_id, date)
+
+    @classmethod
+    def get_current_options_by_pass_type_id(self, pass_type_id, date=None):
         try:
             pass_type = PassType.objects.get(id=pass_type_id)
         except ObjectDoesNotExist:
             logger.info(f"No Pass Type Exists with ID: {pass_type_id}.")
             return []
 
-        pricing_windows_for_pass_count = PassTypePricingWindow.objects.filter(
+        pricing_windows_for_pass = PassTypePricingWindow.objects.filter(
             pass_type=pass_type
-        ).count()
+        )
+
+        if date:
+            pricing_windows_for_pass.filter(date_start__lte=date, date_expiry__gte=date)
+
+        pricing_windows_for_pass_count = pricing_windows_for_pass.count()
 
         if 0 == pricing_windows_for_pass_count:
             logger.critical(
@@ -354,6 +447,11 @@ class PassTemplate(models.Model):
 
     The template file field will be the word document that is used as a template to generate a park pass.
 
+    If pass_type is specified then passes of that type will use that template.
+
+    If pass_type is not specified (null) then any pass type that does not have a template specified
+    will use this template.
+
     The highest version number will be the template that is used to generate passes.
     """
 
@@ -363,15 +461,30 @@ class PassTemplate(models.Model):
         null=False,
         blank=False,
     )
-    version = models.SmallIntegerField(unique=True, null=False, blank=False)
+    pass_type = models.ForeignKey(
+        PassType,
+        on_delete=models.PROTECT,
+        related_name="pass_template",
+        null=True,
+        blank=True,
+    )
+    version = models.SmallIntegerField(null=False, blank=False)
 
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Pass Template"
         verbose_name_plural = "Pass Templates"
+        unique_together = (("pass_type", "version"),)
 
     def __str__(self):
         return f"{self.template.name} (Version: {self.version}) (Size: {self.pretty_size()})"
+
+    @classmethod
+    def get_template_by_pass_type(cls, pass_type):
+        template = cls.objects.filter(pass_type=pass_type).order_by("-version").first()
+        if template:
+            return template
+        return cls.objects.filter(pass_type__isnull=True).order_by("-version").first()
 
     def pretty_size(self):
         size_bytes = self.template.size
@@ -429,8 +542,10 @@ class Pass(models.Model):
     EXPIRED = "EX"
     CANCELLED = "CA"
     VALID = "VA"
+    AWAITING_AUTO_RENEWAL = "AR"
     PROCESSING_STATUS_CHOICES = [
         (CANCELLED, "Cancelled"),
+        (AWAITING_AUTO_RENEWAL, "Awaiting Auto Renewal"),
         (VALID, "Valid"),
     ]
 
@@ -470,6 +585,13 @@ class Pass(models.Model):
     date_start = models.DateField(null=False, blank=False)
     date_expiry = models.DateField(null=False, blank=False)
     renew_automatically = models.BooleanField(null=False, blank=False, default=False)
+    park_pass_renewed_from = models.OneToOneField(
+        "self",
+        on_delete=models.PROTECT,
+        related_name="renewed_pass",
+        null=True,
+        blank=True,
+    )
     prevent_further_vehicle_updates = models.BooleanField(
         null=False, blank=False, default=False
     )
@@ -518,7 +640,16 @@ class Pass(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     @property
+    def price_after_rac_discount_applied(self):
+        if hasattr(self, "rac_discount_usage"):
+            return self.rac_discount_usage.discount_amount
+        return self.price
+
+    @property
     def price_after_concession_applied(self):
+        if hasattr(self, "rac_discount_usage"):
+            # If the user is using the RAC Discount they can not use other concessions
+            return self.price_after_rac_discount_applied
         if hasattr(self, "concession_usage"):
             concession = self.concession_usage.concession
             discount_amount = concession.discount_as_amount(self.price)
@@ -571,7 +702,9 @@ class Pass(models.Model):
 
     @property
     def status(self):
-        if self.isCancelled:
+        if self.in_cart and self.park_pass_renewed_from:
+            return Pass.AWAITING_AUTO_RENEWAL
+        elif self.is_cancelled:
             return Pass.CANCELLED
         elif self.date_start > timezone.now().date():
             return Pass.FUTURE
@@ -582,7 +715,7 @@ class Pass(models.Model):
 
     @property
     def status_display(self):
-        if self.isCancelled:
+        if self.is_cancelled:
             return "Cancelled"
         elif self.date_start > timezone.now().date():
             return "Future"
@@ -592,10 +725,50 @@ class Pass(models.Model):
             return "Current"
 
     @property
-    def isCancelled(self):
-        if hasattr(self, "cancellation"):
-            return True
-        return False
+    def is_cancelled(self):
+        return hasattr(self, "cancellation")
+
+    @property
+    def has_expired(self):
+        return self.date_expiry <= timezone.now().date()
+
+    @property
+    def get_next_renewal_option(self):
+        """Customers are sent an email settings.PASS_REMINDER_DAYS_PRIOR to the autorenewal to
+        let them know how much the charge to their card will be. This is needed because the system
+        has dynamic pricing windows and if we didn't lock the price in at the time of the reminder
+        then the customer would have no warning of exactly how much their card was going to charged ."""
+        if not self.renew_automatically:
+            return None
+
+        reminder_date = self.date_expiry - timezone.timedelta(
+            days=settings.PASS_REMINDER_DAYS_PRIOR
+        )
+        options = PassTypePricingWindowOption.get_options_by_pass_type_and_date(
+            self.option.pricing_window.pass_type.id, reminder_date
+        )
+        return options.filter(duration=self.option.duration).first()
+
+    @property
+    def get_next_renewal_price(self):
+        option = self.get_next_renewal_option
+        if hasattr(self, "concession_usage"):
+            concession = self.concession_usage.concession
+            discount_amount = concession.discount_as_amount(option.price)
+            return option.price - discount_amount
+        return option.price
+
+    @property
+    def order(self):
+        content_type = ContentType.objects.get_for_model(self)
+        if OrderItem.objects.filter(
+            content_type=content_type, object_id=self.id
+        ).exists():
+            return OrderItem.objects.get(
+                content_type=content_type, object_id=self.id
+            ).order
+        logger.warning("Can't find order for park pass: %s", self)
+        return None
 
     def pro_rata_refund_percentage(self):
         if self.date_start >= timezone.now().date():
@@ -620,7 +793,7 @@ class Pass(models.Model):
             ExternalQRCodePassSerializer,
         )
 
-        qr = qrcode.QRCode()
+        qr = qrcode.QRCode(box_size=2)
         serializer = ExternalQRCodePassSerializer(self)
         # replace this line with the real encryption server at a later date
         logger.debug(f"serializer.data: {serializer.data}")
@@ -628,7 +801,7 @@ class Pass(models.Model):
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
         qr_image = qr.make_image(fill="black", back_color="white")
-        qr_image_path = f"{settings.MEDIA_ROOT}/{self._meta.app_label}/"
+        qr_image_path = f"{settings.PROTECTED_MEDIA_ROOT}/{self._meta.app_label}/"
         qr_image_path += f"{self._meta.model.__name__}/passes/{self.user}/{self.pk}"
         if not os.path.exists(qr_image_path):
             os.makedirs(qr_image_path)
@@ -649,7 +822,8 @@ class Pass(models.Model):
                 "CRITICAL: The system can not find a Pass Template to use for generating park passes."
             )
         qr_code_path = self.generate_qrcode()
-        pass_template = PassTemplate.objects.order_by("-version").first()
+        pass_type = self.option.pricing_window.pass_type
+        pass_template = PassTemplate.get_template_by_pass_type(pass_type)
         pass_utils = PassUtils()
         pass_utils.generate_pass_pdf_from_docx_template(
             self, pass_template, qr_code_path
@@ -679,7 +853,12 @@ class Pass(models.Model):
 
     def set_processing_status(self):
         logger.info(f"Setting processing status for park pass: {self}.")
-        if PassCancellation.objects.filter(park_pass=self).count():
+        if self.in_cart and self.park_pass_renewed_from:
+            self.processing_status = Pass.AWAITING_AUTO_RENEWAL
+            logger.info(
+                f"Processing status set as: {Pass.AWAITING_AUTO_RENEWAL}.",
+            )
+        elif PassCancellation.objects.filter(park_pass=self).count():
             self.processing_status = Pass.CANCELLED
             logger.info(
                 f"Processing status set as: {Pass.CANCELLED}.",
@@ -724,7 +903,7 @@ class Pass(models.Model):
                 f"Park pass assigned pass number: {self.pass_number}.",
             )
 
-        if not Pass.CANCELLED == self.processing_status:
+        if not Pass.CANCELLED == self.processing_status and not self.has_expired:
             if not self.in_cart:
                 logger.info(
                     "Park pass has not been cancelled and is not in cart so generating park pass pdf.",
@@ -763,6 +942,16 @@ class Pass(models.Model):
         super().save(force_update=True)
         logger.info("Park pass updated.")
 
+    def send_no_primary_card_for_autorenewal_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += "send_no_primary_card_for_autorenewal_email for Pass with id {}. Exception {}"
+        try:
+            PassEmails.send_no_primary_card_for_autorenewal_email(self)
+        except Exception as e:
+            raise SendNoPrimaryCardForAutoRenewalEmailFailed(
+                error_message.format(self.id, e)
+            )
+
     def send_autorenew_notification_email(self):
         error_message = "An exception occured trying to run "
         error_message += (
@@ -785,13 +974,25 @@ class Pass(models.Model):
                 error_message.format(self.id, e)
             )
 
-    def send_autorenew_failure_notification_email(self):
+    def send_autorenew_failure_notification_email(self, failure_count):
         error_message = "An exception occured trying to run "
         error_message += "send_autorenew_failure_notification_email for Pass with id {}. Exception {}"
         try:
-            PassEmails.send_pass_autorenew_failure_notification_email(self)
+            PassEmails.send_pass_autorenew_failure_notification_email(
+                self, failure_count
+            )
         except Exception as e:
             raise SendPassAutoRenewFailureNotificationEmailFailed(
+                error_message.format(self.id, e)
+            )
+
+    def send_final_autorenewal_failure_notification_email(self):
+        error_message = "An exception occured trying to run "
+        error_message += "send_final_autorenewal_failure_notification_email for Pass with id {}. Exception {}"
+        try:
+            PassEmails.send_pass_final_autorenew_failure_notification_email(self)
+        except Exception as e:
+            raise SendPassFinalAutoRenewFailureNotificationEmailFailed(
                 error_message.format(self.id, e)
             )
 
@@ -884,7 +1085,7 @@ class PassCancellation(models.Model):
         verbose_name_plural = "Pass Cancellations"
 
     def __str__(self):
-        return f"Cancellation for Pass: {self.park_pass.pass_number}(Date Cancelled: {self.datetime_cancelled})"
+        return f"Cancellation for Pass: {self.park_pass.pass_number} (Date Cancelled: {self.datetime_cancelled})"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -898,3 +1099,115 @@ class PassCancellation(models.Model):
         park_pass.set_processing_status()
         park_pass.save()
         return deleted
+
+
+class PassAutoRenewalAttemptManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("park_pass")
+
+
+class PassAutoRenewalAttempt(models.Model):
+    objects = PassAutoRenewalAttemptManager()
+
+    park_pass = models.ForeignKey(
+        Pass, on_delete=models.PROTECT, related_name="auto_renewal_attempts"
+    )
+    auto_renewal_succeeded = models.BooleanField(null=False, blank=False, default=False)
+    datetime_attempted = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name_plural = "Pass Auto Renewal Attempts"
+
+    def __str__(self):
+        status = "Succeeded" if self.auto_renewal_succeeded else "Failed"
+        return f"Auto Renewal Attempt for Pass: {self.park_pass.pass_number} {status} at {self.datetime_attempted}"
+
+
+class RACDiscountUsageManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("park_pass")
+
+
+class RACDiscountUsage(models.Model):
+    """When an RAC discount is used to purchase a pass we create an rac discount usage
+    record. This can be used to determine if an RAC discount should be applied to passes
+    that are auto renewing.
+    """
+
+    objects = RACDiscountUsageManager()
+
+    park_pass = models.OneToOneField(
+        Pass,
+        on_delete=models.PROTECT,
+        related_name="rac_discount_usage",
+        null=False,
+        blank=False,
+    )
+
+    discount_percentage = models.DecimalField(
+        max_digits=2,
+        decimal_places=0,
+        blank=True,
+        null=True,
+        validators=PERCENTAGE_VALIDATOR,
+    )
+
+    def __str__(self):
+        return (
+            "RAC Discount ("
+            + str(self.discount_percentage)
+            + "% Off)"
+            + " used to purchase park pass "
+            + self.park_pass.pass_number
+        )
+
+    @property
+    def discount_amount(self):
+        return self.park_pass.price * (self.discount_percentage / 100)
+
+    class Meta:
+        app_label = "parkpasses"
+
+
+class DistrictPassTypeDurationOracleCode(models.Model):
+    district = models.ForeignKey(
+        District,
+        related_name="district_pass_type_duration_oracle_code",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        help_text="Leave blank for PICA oracle codes (online sales)",
+    )
+    option = models.ForeignKey(
+        PassTypePricingWindowOption,
+        on_delete=models.CASCADE,
+        related_name="district_oracle_code",
+    )
+    oracle_code = models.CharField(
+        max_length=80,
+        null=False,
+        blank=False,
+        help_text="The oracle code to be used for this district, pass type and pass duration.",
+    )
+
+    class Meta:
+        app_label = "parkpasses"
+        verbose_name = "Oracle Code"
+        verbose_name_plural = "Oracle Codes"
+        unique_together = (("district", "option"),)
+        ordering = (
+            "district__name",
+            "option__pricing_window__pass_type__display_order",
+            "option__duration",
+        )
+
+    def __str__(self):
+        district_name = settings.PICA_ORACLE_CODE_LABEL
+        if self.district:
+            district_name = self.district.name
+        return (
+            f"{district_name} - "
+            f"{self.option.pricing_window.pass_type.display_name} - "
+            f"{self.option.name} - {self.oracle_code}"
+        )

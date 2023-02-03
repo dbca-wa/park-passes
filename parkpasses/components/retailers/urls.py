@@ -3,6 +3,7 @@ from rest_framework import routers
 
 from parkpasses.components.retailers.api import (
     ExternalRetailerGroupInviteViewSet,
+    InternalDistrictViewSet,
     InternalRetailerGroupInviteViewSet,
     InternalRetailerGroupUserViewSet,
     InternalRetailerGroupViewSet,
@@ -42,7 +43,11 @@ router.register(
     ExternalRetailerGroupInviteViewSet,
     basename="retailer-group-invites-external",
 )
-
+router.register(
+    r"internal/districts",
+    InternalDistrictViewSet,
+    basename="internal-districts",
+)
 
 urlpatterns = [
     url(r"retailer-groups-for-user", RetailerGroupsForUser.as_view()),

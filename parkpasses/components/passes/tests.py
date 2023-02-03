@@ -33,7 +33,7 @@ class PassTestCase(TestCase):
             price=Decimal("10.00"),
         )
         self.default_sold_via, created = RetailerGroup.objects.get_or_create(
-            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         )
         self.holiday_pass = Pass.objects.create(
             user=1,
@@ -49,7 +49,7 @@ class PassTestCase(TestCase):
             vehicle_registration_1="12312312",
             vehicle_registration_2="",
             drivers_licence_number="",
-            date_start=today,
+            date_start=today.date(),
             renew_automatically=False,
             prevent_further_vehicle_updates=False,
             sold_via=self.default_sold_via,

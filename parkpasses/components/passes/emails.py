@@ -61,6 +61,15 @@ class PassVehicleDetailsNotYetProvidedNotificationEmail(TemplateEmailBase):
         )
 
 
+class NoPrimaryCardForAutoRenewalEmail(TemplateEmailBase):
+    def __init__(self):
+        self.subject = "Park Pass No Primary Card Set Up for AutoRenewal Notification"
+        self.html_template = (
+            "parkpasses/emails/pass_no_primary_card_for_autorenewal.html"
+        )
+        self.txt_template = "parkpasses/emails/pass_no_primary_card_for_autorenewal.txt"
+
+
 class PassAutoRenewNotificationEmail(TemplateEmailBase):
     def __init__(self):
         super().__init__()
@@ -87,6 +96,18 @@ class PassAutoRenewFailureNotificationEmail(TemplateEmailBase):
             "parkpasses/emails/pass_autorenew_failure_notification.html"
         )
         self.txt_template = "parkpasses/emails/pass_autorenew_failure_notification.txt"
+
+
+class PassFinalAutoRenewFailureNotificationEmail(TemplateEmailBase):
+    def __init__(self):
+        super().__init__()
+        self.subject = "Park Pass Final AutoRenewal Failure Notification"
+        self.html_template = (
+            "parkpasses/emails/pass_final_autorenew_failure_notification.html"
+        )
+        self.txt_template = (
+            "parkpasses/emails/pass_final_autorenew_failure_notification.txt"
+        )
 
 
 class PassGoldPassDetailsForPICAEmail(TemplateEmailBase):
@@ -178,13 +199,28 @@ class PassEmails:
         log_communication(park_pass.email, message, "email", park_pass)
 
     @classmethod
-    def send_pass_autorenew_notification_email(self, park_pass):
-        email = PassAutoRenewNotificationEmail()
+    def send_no_primary_card_for_autorenewal_email(self, park_pass):
+        email = NoPrimaryCardForAutoRenewalEmail()
         from parkpasses.components.passes.serializers import ExternalPassSerializer
 
         serializer = ExternalPassSerializer(park_pass)
         context = {
             "pass": serializer.data,
+            "site_url": settings.SITE_URL,
+        }
+        message = email.send(park_pass.email, context=context)
+        log_communication(park_pass.email, message, "email", park_pass)
+
+    @classmethod
+    def send_pass_autorenew_notification_email(self, park_pass):
+        email = PassAutoRenewNotificationEmail()
+        from parkpasses.components.passes.serializers import ExternalPassSerializer
+
+        serializer = ExternalPassSerializer(park_pass)
+        next_renewal_option = park_pass.get_next_renewal_option
+        context = {
+            "pass": serializer.data,
+            "next_renewal_option": next_renewal_option,
             "site_url": settings.SITE_URL,
         }
         message = email.send(park_pass.email, context=context)
@@ -204,13 +240,27 @@ class PassEmails:
         log_communication(park_pass.email, message, "email", park_pass)
 
     @classmethod
-    def send_pass_autorenew_failure_notification_email(self, park_pass):
+    def send_pass_autorenew_failure_notification_email(self, park_pass, failure_count):
         email = PassAutoRenewFailureNotificationEmail()
         from parkpasses.components.passes.serializers import ExternalPassSerializer
 
         serializer = ExternalPassSerializer(park_pass)
         context = {
-            "park_pass": serializer.data,
+            "pass": serializer.data,
+            "failure_count": failure_count,
+            "site_url": settings.SITE_URL,
+        }
+        message = email.send(park_pass.email, context=context)
+        log_communication(park_pass.email, message, "email", park_pass)
+
+    @classmethod
+    def send_pass_final_autorenew_failure_notification_email(self, park_pass):
+        email = PassFinalAutoRenewFailureNotificationEmail()
+        from parkpasses.components.passes.serializers import ExternalPassSerializer
+
+        serializer = ExternalPassSerializer(park_pass)
+        context = {
+            "pass": serializer.data,
             "site_url": settings.SITE_URL,
         }
         message = email.send(park_pass.email, context=context)

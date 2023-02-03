@@ -38,6 +38,11 @@ class SendPassAutoRenewFailureNotificationEmailFailed(Exception):
     notification email"""
 
 
+class SendPassFinalAutoRenewFailureNotificationEmailFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the pass final autorenew failure
+    notification email"""
+
+
 class SendPassExpiryNotificationEmailFailed(Exception):
     """The exception to be thrown if an error occurs when sending the pass expiry
     notification email"""
@@ -61,3 +66,12 @@ class SendPassVehicleDetailsNotYetProvidedEmailNotificationFailed(Exception):
 class SendGoldPassDetailsToPICAEmailFailed(Exception):
     """The exception to be thrown if an error occurs when sending the gold pass details to
     pica email"""
+
+
+class SendNoPrimaryCardForAutoRenewalEmailFailed(Exception):
+    """The exception to be thrown if an error occurs when sending the no primary card for
+    autorenewal email"""
+
+
+class NoOracleCodeFoundForCartItem(Exception):
+    """The exception to be thrown if the system can not find an oracle code for a cart item"""

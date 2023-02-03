@@ -1,12 +1,12 @@
 import logging
 import pickle
-import re
 import sys
 import uuid
 from decimal import Decimal
 
 import openpyxl
 import requests
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import FileResponse, Http404
@@ -39,14 +39,16 @@ from parkpasses.components.main.api import (
     UserActionViewSet,
 )
 from parkpasses.components.main.serializers import UserActionSerializer
-from parkpasses.components.orders.models import OrderItem
+from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
 from parkpasses.components.passes.models import (
+    DistrictPassTypeDurationOracleCode,
     Pass,
     PassTemplate,
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
+    RACDiscountUsage,
 )
 from parkpasses.components.passes.serializers import (
     ExternalCreateAllParksPassSerializer,
@@ -58,6 +60,8 @@ from parkpasses.components.passes.serializers import (
     ExternalPassSerializer,
     ExternalUpdatePassSerializer,
     InternalCreatePricingWindowSerializer,
+    InternalDistrictPassTypeDurationOracleCodeListUpdateSerializer,
+    InternalDistrictPassTypeDurationOracleCodeSerializer,
     InternalOptionSerializer,
     InternalPassCancellationSerializer,
     InternalPassRetrieveSerializer,
@@ -67,24 +71,18 @@ from parkpasses.components.passes.serializers import (
     OptionSerializer,
     PassTemplateSerializer,
     PassTypeSerializer,
-    RetailerApiCreatePassSerializer,
     RetailerUpdatePassSerializer,
 )
-from parkpasses.components.retailers.models import (
-    RetailerGroup,
-    RetailerGroupAPIKey,
-    RetailerGroupUser,
-)
+from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.helpers import (
     check_rac_discount_hash,
-    get_rac_discount_code,
+    get_retailer_group_ids_for_user,
     is_customer,
     is_internal,
     is_retailer,
 )
 from parkpasses.permissions import (
-    HasRetailerGroupAPIKey,
     IsInternal,
     IsInternalAPIView,
     IsInternalDestroyer,
@@ -375,7 +373,7 @@ class ExternalPassViewSet(
     def get_queryset(self):
         return (
             Pass.objects.exclude(user__isnull=True)
-            .exclude(processing_status="CA")
+            .exclude(processing_status=Pass.CANCELLED)
             .exclude(in_cart=True)
             .filter(user=self.request.user.id)
             .order_by("-date_start")
@@ -420,14 +418,24 @@ class ExternalPassViewSet(
         )
         # Pop these values out so they don't mess with the model serializer
         rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
-        if rac_discount_code:
-            pass
         discount_code = serializer.validated_data.pop("discount_code", None)
         voucher_code = serializer.validated_data.pop("voucher_code", None)
         voucher_pin = serializer.validated_data.pop("voucher_pin", None)
         concession_id = serializer.validated_data.pop("concession_id", None)
         concession_card_number = serializer.validated_data.pop(
             "concession_card_number", None
+        )
+        concession_card_expiry_month = serializer.validated_data.pop(
+            "concession_card_expiry_month", None
+        )
+        concession_card_expiry_year = serializer.validated_data.pop(
+            "concession_card_expiry_year", None
+        )
+        logger.debug(
+            "concession_card_expiry_month = " + str(concession_card_expiry_month)
+        )
+        logger.debug(
+            "concession_card_expiry_year = " + str(concession_card_expiry_year)
         )
         sold_via = serializer.validated_data.pop("sold_via", None)
         logger.info(
@@ -547,7 +555,16 @@ class ExternalPassViewSet(
         """ If the user deletes a cart item, any objects that can be attached to a cart item
         (concession usage, discount code usage and voucher transaction)
         are deleted in the cart item's delete method  """
-        if concession_id and concession_card_number:
+        if rac_discount_code and check_rac_discount_hash(
+            rac_discount_code, park_pass.email
+        ):
+            discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
+            cart_item.rac_discount_usage = RACDiscountUsage.objects.create(
+                park_pass=park_pass,
+                discount_percentage=discount_percentage,
+            )
+        # Only check for concession if the user is not using an rac discount code
+        elif concession_id and concession_card_number:
             if Concession.objects.filter(id=concession_id).exists():
                 concession = Concession.objects.get(id=concession_id)
                 logger.info(
@@ -556,10 +573,24 @@ class ExternalPassViewSet(
                 logger.info(
                     "Creating concession usage.",
                 )
+                last_month_before_expiry = timezone.datetime(
+                    int(concession_card_expiry_year),
+                    int(concession_card_expiry_month),
+                    1,
+                )
+                # In most cases, the expiry date is the last day of the month
+                # that is listed on the concession card so the real date of expiry is the
+                # the first day of the next month.
+                # I.e. if a card says expiry is 6/23 then it expires on the 1st day of 7/23 (at 12:00am midnight)
+                concession_card_expiry = last_month_before_expiry + relativedelta(
+                    months=1
+                )
+
                 concession_usage = ConcessionUsage.objects.create(
                     concession=concession,
                     park_pass=park_pass,
                     concession_card_number=concession_card_number,
+                    date_expiry=concession_card_expiry,
                 )
                 logger.info(
                     "Concession usage: {concession_usage} created.",
@@ -620,9 +651,9 @@ class ExternalPassViewSet(
         cart_item.save()
         logger.info(f"Cart item: {cart_item} saved.")
 
-        if is_customer(self.request):
+        if is_retailer(self.request) or is_customer(self.request):
             logger.info(
-                "User is an external user so will increment cart item count.",
+                "User is a retailer or external user so will increment cart item count.",
             )
             cart_item_count = CartUtils.increment_cart_item_count(self.request)
             logger.info(
@@ -656,6 +687,14 @@ class ExternalPassViewSet(
         )
 
     def has_object_permission(self, request, view, obj):
+        # As per the drf docs, object level permissions are not applied when creating objects.
+        if is_retailer(request):
+            logger.info("Checking if retailer use have permission to access this pass.")
+            retailer_group_ids_for_user = get_retailer_group_ids_for_user(
+                request.user.id
+            )
+            if obj.sold_via in retailer_group_ids_for_user:
+                return True
         if is_customer(request):
             if obj.user == request.user.id:
                 return True
@@ -680,6 +719,7 @@ class ExternalPassViewSet(
                 object_id=park_pass.id, content_type=content_type
             )
             invoice_url = order_item.order.invoice_link
+            logger.info(f"invoice_url: {invoice_url}")
             if invoice_url:
                 response = requests.get(invoice_url)
                 return FileResponse(response, content_type="application/pdf")
@@ -832,7 +872,7 @@ class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
             )
             invoice_reference = order_item.order.invoice_reference
             return redirect(
-                settings.LEDGER_API_URL
+                settings.LEDGER_UI_URL
                 + "/ledger/payments/oracle/payments?invoice_no="
                 + invoice_reference
             )
@@ -863,7 +903,7 @@ class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
                 "quantity": 1,
                 "price_incl_tax": str(-abs(pro_rata_refund_amount)),
                 "oracle_code": CartUtils.get_oracle_code(
-                    self.request, content_type, park_pass.id
+                    request, content_type, park_pass.id
                 ),
                 "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
             }
@@ -910,6 +950,58 @@ class PassRefundSuccessView(APIView):
     def get(self, request, id, uuid, format=None):
         """We don't actually need to do any processing here but ledger needs a valid url for return_preload_url"""
         logger.info(f"RefundSuccessView get method called with id {id} and uuid {uuid}")
+
+
+class PassAutoRenewSuccessView(APIView):
+    def get(self, request, id, uuid, format=None):
+        logger.info("Park passes Pass API PassAutoRenewSuccessView get method called.")
+
+        invoice_reference = request.GET.get("invoice", "false")
+
+        if id and uuid and invoice_reference:
+            logger.info(
+                f"New park pass id: {id}, Invoice reference: {invoice_reference} and uuid: {uuid}.",
+            )
+            if Pass.objects.filter(id=id).exists():
+                new_park_pass = Pass.objects.get(id=id)
+                logger.info(
+                    f"Park pass with id={id} exists: {new_park_pass}.",
+                )
+                new_park_pass.in_cart = False
+                new_park_pass.save()
+                logger.info(
+                    f"Park pass: {new_park_pass} removed from cart.",
+                )
+
+                if Order.objects.filter(uuid=uuid).exists():
+                    order = Order.objects.get(uuid=uuid)
+                    logger.info(
+                        f"Order with uuid={uuid} exists: {order}",
+                    )
+                    order.invoice_reference = invoice_reference
+                    logger.info(
+                        f"Assigning invoice reference for: {order} to: {invoice_reference}",
+                    )
+                    order.save()
+                    logger.info(
+                        f"Invoice reference for: {order} assigned to: {invoice_reference}",
+                    )
+                else:
+                    logger.error(f"Order with uuid: {uuid} does not exist.")
+
+                logger.info(
+                    f"Returning status.HTTP_200_OK. New Pass { new_park_pass }"
+                    f" renewed successfully from { new_park_pass.park_pass_renewed_from }.",
+                )
+                # this end-point is called by an unmonitored get request in ledger so there is no point having a
+                # a response body however we will return a status in case this is used on the ledger end in future
+                return Response(status=status.HTTP_200_OK)
+
+        logger.info(
+            "Returning status.HTTP_400_BAD_REQUEST bad request as "
+            "there was not a valid new park pass id, uuid and invoice_reference."
+        )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class CancelPass(APIView):
@@ -1051,108 +1143,85 @@ class UploadPersonnelPasses(APIView):
         return Response({"results": results}, status=status.HTTP_201_CREATED)
 
 
-class RetailerApiAccessViewSet(UserActionViewSet):
-    permission_classes = [HasRetailerGroupAPIKey]
-    model = Pass
-    pagination_class = DatatablesPageNumberPagination
-    filter_backends = (PassFilterBackend,)
-    http_method_names = ["get", "post", "put", "patch", "head", "options"]
-    lookup_field = "rac_member_number"
-
-    def get_serializer_class(self):
-        if "retrieve" == self.action:
-            return InternalPassRetrieveSerializer
-        if "create" == self.action:
-            return RetailerApiCreatePassSerializer
-        return InternalPassSerializer
-
-    def get_queryset(self):
-        retailer_group = self.get_retailer_group(self.request)
-        return (
-            Pass.objects.exclude(in_cart=True)
-            .filter(sold_via=retailer_group)
-            .order_by("-datetime_created")
-        )
-
-    def perform_create(self, serializer):
-        retailer_group = self.get_retailer_group(self.request)
-        email = serializer.validated_data["email"]
-        if EmailUser.objects.filter(email=email).exists():
-            email_user = EmailUser.objects.get(email=email)
-            serializer.save(user=email_user.id, sold_via=retailer_group)
-        else:
-            serializer.save(sold_via=retailer_group)
-
-        return super().perform_create(serializer)
-
-    @action(methods=["GET"], detail=True, url_path="get-discount-code-from-email")
-    def get_discount_code_from_email(self, request, *args, **kwargs):
-        email = kwargs["email"]
-        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-        if not re.fullmatch(regex, email):
-            raise ValidationError({"email": "Please pass a valid email address."})
-        return get_rac_discount_code(email)
-
-    def get_retailer_group(self, request):
-        """Retrieve a project based on the request API key."""
-        if "HTTP_AUTHORIZATION" in request.META:
-            key = request.META["HTTP_AUTHORIZATION"].split()[1]
-            retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
-            return retailer_group_api_key.retailer_group
-        return RetailerGroup.objects.get(name=settings.RAC_RETAILER_GROUP_NAME)
-
-
-class RacDiscountCodeView(APIView):
-    permission_classes = [HasRetailerGroupAPIKey]
-
-    def get(self, request, *args, **kwargs):
-        email = kwargs["email"]
-        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-        if not re.fullmatch(regex, email):
-            raise ValidationError({"email": "Please pass a valid email address."})
-        return Response(get_rac_discount_code(email))
-
-    def post(self, request, *args, **kwargs):
-        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-        emails = request.data.get("emails").split(",")
-        codes = []
-        for email in emails:
-            if not re.fullmatch(regex, email):
-                raise ValidationError(
-                    {"email": f"Your list contains an invalid email address: {email}."}
-                )
-            codes.append({email: get_rac_discount_code(email)})
-        return Response(codes)
-
-
 class RacDiscountCodeCheckView(APIView):
     throttle_classes = [AnonRateThrottle]
 
-    def get(self, request, *args, **kwargs):
-        discount_hash = kwargs["discount_hash"]
-        if 20 != len(discount_hash):
-            raise ValidationError(
-                {"discount_hash": "The discount hash must be 20 characters long."}
-            )
-        email = kwargs["email"]
-        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-        if not re.fullmatch(regex, email):
-            raise ValidationError({"email": "Please pass a valid email address."})
-        result = check_rac_discount_hash(discount_hash, email)
-        if result:
-            discount_percentage = self.get_retailer_group(request).commission_percentage
-            return Response(
-                {
-                    "is_rac_discount_code_valid": result,
-                    "discount_percentage": discount_percentage,
-                }
-            )
-        return Response({"is_rac_discount_code_valid": result})
+    """ TODO: Replace this with calls to the RAC API that Jason will provide in ledger_api_client: """
 
-    def get_retailer_group(self, request):
-        """Retrieve a project based on the request API key."""
-        if "HTTP_AUTHORIZATION" in request.META:
-            key = request.META["HTTP_AUTHORIZATION"].split()[1]
-            retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
-            return retailer_group_api_key.retailer_group
-        return RetailerGroup.objects.get(name=settings.RAC_RETAILER_GROUP_NAME)
+    # def get(self, request, *args, **kwargs):
+    #     discount_hash = kwargs["discount_hash"]
+    #     if 20 != len(discount_hash):
+    #         raise ValidationError(
+    #             {"discount_hash": "The discount hash must be 20 characters long."}
+    #         )
+    #     email = kwargs["email"]
+    #     regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+    #     if not re.fullmatch(regex, email):
+    #         raise ValidationError({"email": "Please pass a valid email address."})
+    #     result = check_rac_discount_hash(discount_hash, email)
+    #     if result:
+    #         discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
+    #         return Response(
+    #             {
+    #                 "is_rac_discount_code_valid": result,
+    #                 "discount_percentage": discount_percentage,
+    #             }
+    #         )
+    #     return Response({"is_rac_discount_code_valid": result})
+
+    # def get_retailer_group(self, request):
+    #     """Retrieve a project based on the request API key."""
+    #     if "HTTP_AUTHORIZATION" in request.META:
+    #         key = request.META["HTTP_AUTHORIZATION"].split()[1]
+    #         retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
+    #         return retailer_group_api_key.retailer_group
+    #     return RetailerGroup.get_rac_retailer_group()
+
+
+class InternalDistrictPassTypeDurationOracleCodeViewSet(viewsets.ModelViewSet):
+    model = DistrictPassTypeDurationOracleCode
+    queryset = DistrictPassTypeDurationOracleCode.objects.all()
+    permission_classes = [IsInternal]
+    serializer_class = InternalDistrictPassTypeDurationOracleCodeSerializer
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer)
+    pagination_class = None
+
+    def get_serializer_class(self):
+        logger.info("action = %s", self.action)
+        if "list_update" == self.action:
+            return InternalDistrictPassTypeDurationOracleCodeListUpdateSerializer
+        return InternalDistrictPassTypeDurationOracleCodeSerializer
+
+    @action(methods=["PATCH"], detail=False, url_path="list-update")
+    def list_update(self, request, *args, **kwargs):
+        logger.info(
+            "Calling list_update on InternalDistrictPassTypeDurationOracleCodeViewSet"
+        )
+        filter = request.data["filter"]
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.values_list("id", "oracle_code")
+        if settings.PICA_ORACLE_CODE_LABEL == filter:
+            queryset = queryset.filter(district__isnull=True)
+        else:
+            queryset = queryset.filter(district__name=filter)
+        instances = list(queryset)
+        logger.info("data = %s\n", str(request.data["data"]))
+
+        data = request.data["data"]
+        serializer = self.get_serializer(instances, data, many=True, partial=True)
+        serializer.is_valid(raise_exception=True)
+        logger.info("serializer.validated_data = %s\n", str(serializer.validated_data))
+        self.perform_list_update(serializer)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_list_update(self, serializer):
+        for instance_tuple, data in zip(serializer.instance, serializer.validated_data):
+            id = instance_tuple[0]
+            oracle_code = str(data["oracle_code"])
+            instance = DistrictPassTypeDurationOracleCode.objects.get(id=id)
+            if instance.oracle_code != oracle_code:
+                logger.info("instance_tuple = %s", instance_tuple)
+                logger.info("data = %s", data)
+                logger.info("oracle_code = %s", oracle_code)
+                instance.oracle_code = oracle_code
+                instance.save()

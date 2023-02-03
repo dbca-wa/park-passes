@@ -7,19 +7,20 @@ import uuid
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.validators import (
-    MaxValueValidator,
-    MinLengthValidator,
-    MinValueValidator,
-)
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from rest_framework_api_key.models import AbstractAPIKey, BaseAPIKeyManager
+from ledger_api_client.utils import get_organisation
+from rest_framework import status
 
 from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.exceptions import (
     MultipleDBCARetailerGroupsExist,
+    MultipleRACRetailerGroupsExist,
     NoDBCARetailerGroupExists,
+    NoRACRetailerGroupExists,
+    RetailerGroupHasNoLedgerOrganisationAttached,
+    UnableToRetrieveLedgerOrganisation,
 )
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
@@ -28,47 +29,39 @@ PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 logger = logging.getLogger(__name__)
 
 
+class District(models.Model):
+    # region = models.IntegerField(verbose_name="Ledger Region", null=False, blank=False)
+    # see ledger.payments.cash.models.Region
+    name = models.CharField(max_length=200, unique=True)
+    archive_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        app_label = "parkpasses"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class RetailerGroup(models.Model):
-    NEW_SOUTH_WALES = "NSW"
-    VICTORIA = "VIC"
-    QUEENSLAND = "QLD"
-    WESTERN_AUSTRALIA = "WA"
-    SOUTH_AUSTRALIA = "SA"
-    TASMANIA = "TAS"
-    AUSTRALIAN_CAPITAL_TERRITORY = "ACT"
-    NORTHERN_TERRITORY = "NT"
-
-    STATE_CHOICES = [
-        (NEW_SOUTH_WALES, "Western Australia"),
-        (VICTORIA, "Victoria"),
-        (QUEENSLAND, "Queensland"),
-        (WESTERN_AUSTRALIA, "Western Australia"),
-        (SOUTH_AUSTRALIA, "South Australia"),
-        (TASMANIA, "Tasmania"),
-        (AUSTRALIAN_CAPITAL_TERRITORY, "Australian Capital Territory"),
-        (NORTHERN_TERRITORY, "Western Australia"),
-    ]
-
-    name = models.CharField(max_length=150, unique=True, blank=False)
-    address_line_1 = models.CharField(max_length=150, null=True, blank=False)
-    address_line_2 = models.CharField(max_length=150, null=True, blank=True)
-    suburb = models.CharField(max_length=50, null=True, blank=False)
-    state = models.CharField(
-        max_length=3,
-        choices=STATE_CHOICES,
-        default=WESTERN_AUSTRALIA,
+    ledger_organisation = models.IntegerField(
+        verbose_name="Ledger Organisation", unique=True, null=True, blank=False
+    )  # see ledger.accounts.models.Organisation
+    district = models.ForeignKey(
+        District,
+        related_name="retailer_group",
+        on_delete=models.PROTECT,
         null=True,
-        blank=False,
+        blank=True,
     )
-    postcode = models.CharField(
-        max_length=4,
-        validators=[
-            MinLengthValidator(4, "Australian postcodes must contain 4 digits")
-        ],
+    commission_oracle_code = models.CharField(
+        max_length=50,
+        unique=True,
         null=True,
-        blank=False,
+        blank=True,
+        help_text="Used to allocate commission for external retailers.\
+            IMPORTANT: Leave blank for internal retailer groups.",
     )
-    oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     commission_percentage = models.DecimalField(
         max_digits=2,
         decimal_places=0,
@@ -76,6 +69,7 @@ class RetailerGroup(models.Model):
         null=False,
         validators=PERCENTAGE_VALIDATOR,
         default=10,
+        help_text="IMPORTANT: Enter 0 for internal retailer groups.",
     )
     active = models.BooleanField(default=True)
     datetime_created = models.DateTimeField(auto_now_add=True)
@@ -84,17 +78,17 @@ class RetailerGroup(models.Model):
     class Meta:
         app_label = "parkpasses"
         verbose_name = "Retailer Group"
-        ordering = ["name"]
+        ordering = ["ledger_organisation"]
 
     def __str__(self):
-        return self.name
-
-    def natural_key(self):
-        return (self.name,)
+        return self.organisation["organisation_name"]
 
     def save(self, *args, **kwargs):
         cache.delete(
             settings.CACHE_KEY_GROUP_IDS.format(self._meta.label_lower, str(self.id))
+        )
+        cache.delete(
+            settings.CACHE_KEY_LEDGER_ORGANISATION.format(self.ledger_organisation)
         )
         # If we deactivated a retailer group then all the users in that group need to be kicked out
         for retailer_group_user in self.retailer_group_users.all():
@@ -127,45 +121,104 @@ class RetailerGroup(models.Model):
             user_ids = json.loads(user_ids_cache)
         return user_ids
 
+    @property
+    def organisation(self):
+        if self.ledger_organisation:
+            cache_key = settings.CACHE_KEY_LEDGER_ORGANISATION.format(
+                self.ledger_organisation
+            )
+            organisation = cache.get(cache_key)
+            if organisation is None:
+                organisation_response = get_organisation(self.ledger_organisation)
+                if status.HTTP_200_OK == organisation_response["status"]:
+                    organisation = organisation_response["data"]
+                    cache.set(cache_key, organisation, settings.CACHE_TIMEOUT_24_HOURS)
+                else:
+                    error_message = f"CRITICAL: Unable to retrieve organisation {self.ledger_organisation} from ledger."
+                    logger.error(error_message)
+                    raise UnableToRetrieveLedgerOrganisation(error_message)
+            return organisation
+
+        critical_message = (
+            f"CRITICAL: Retailer Group: {self.id} has no ledger organisation attached."
+        )
+        logger.critical(critical_message)
+        raise RetailerGroupHasNoLedgerOrganisationAttached(critical_message)
+
     @classmethod
     def get_dbca_retailer_group(self):
         """Passes have a sold_via field which is always populated. The passes sold from the dbca website
         use the retailer group that is returned by this function.
         """
         dbca_retailer_count = RetailerGroup.objects.filter(
-            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         ).count()
         if 1 == dbca_retailer_count:
-            return RetailerGroup.objects.get(name=settings.PARKPASSES_DEFAULT_SOLD_VIA)
+            return RetailerGroup.objects.get(
+                ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+            )
         if 1 < dbca_retailer_count:
-            critical_message = "CRITICAL: There is more than one retailer group whose name contains 'DBCA'"
+            critical_message = (
+                "CRITICAL: There is more than one retailer group whose ledger_organisation = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
+            )
             logger.critical(critical_message)
             raise MultipleDBCARetailerGroupsExist(critical_message)
         if 0 == dbca_retailer_count:
             critical_message = (
-                "CRITICAL: There is no retailer group whose name contains 'DBCA'"
+                "CRITICAL: There is no retailer group whose ledger_organisation = "
+                f"'{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}'"
             )
             logger.critical(critical_message)
             raise NoDBCARetailerGroupExists(critical_message)
 
+    @classmethod
+    def check_DBCA_retailer_group(cls, messages, critical_issues):
+        dbca_retailer_count = cls.objects.filter(
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+        ).count()
+        if 1 == dbca_retailer_count:
+            messages.append(
+                (
+                    "SUCCESS: One DBCA Retailer Group Exists where ledger_organisation = {}"
+                ).format(settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID)
+            )
+        if 1 < dbca_retailer_count:
+            critical_issues.append(
+                f"CRITICAL: There is more than one retailer group whose ledger_organisation = "
+                f"{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}. "
+                "(Defined in settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID)"
+            )
+        if 0 == dbca_retailer_count:
+            critical_issues.append(
+                "CRITICAL: There is no retailer group whose ledger_organisation = "
+                f"{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}. "
+                "(Defined in settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID)"
+            )
 
-class OrganizationAPIKeyManager(BaseAPIKeyManager):
-    def get_usable_keys(self):
-        return super().get_usable_keys().filter(retailer_group__active=True)
-
-
-class RetailerGroupAPIKey(AbstractAPIKey):
-    objects = OrganizationAPIKeyManager()
-    retailer_group = models.ForeignKey(
-        RetailerGroup,
-        on_delete=models.CASCADE,
-        related_name="api_keys",
-    )
-
-    class Meta(AbstractAPIKey.Meta):
-        app_label = "parkpasses"
-        verbose_name = "Retailer Group API key"
-        verbose_name_plural = "Retailer Group API keys"
+    @classmethod
+    def get_rac_retailer_group(self):
+        rac_retailer_count = RetailerGroup.objects.filter(
+            ledger_organisation=settings.RAC_RETAILER_GROUP_ORGANISATION_ID
+        ).count()
+        if 1 == rac_retailer_count:
+            return RetailerGroup.objects.get(
+                ledger_organisation=settings.RAC_RETAILER_GROUP_ORGANISATION_ID
+            )
+        if 1 < rac_retailer_count:
+            critical_message = (
+                "CRITICAL: There is more than one retailer group whose ledger_organisation = "
+                f"'{settings.RAC_RETAILER_GROUP_ORGANISATION_ID}'"
+            )
+            logger.critical(critical_message)
+            raise MultipleRACRetailerGroupsExist(critical_message)
+        if 0 == rac_retailer_count:
+            critical_message = (
+                "CRITICAL: There is no retailer group whose ledger_organisation = "
+                f"'{settings.RAC_RETAILER_GROUP_ORGANISATION_ID}'"
+            )
+            logger.critical(critical_message)
+            raise NoRACRetailerGroupExists(critical_message)
 
 
 class RetailerGroupUser(models.Model):
@@ -178,7 +231,9 @@ class RetailerGroupUser(models.Model):
         EmailUser, on_delete=models.PROTECT, blank=True, null=True, db_constraint=False
     )
     active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
+    is_admin = models.BooleanField(
+        default=False, help_text="Admins can invite other users to their group."
+    )
     datetime_created = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
 
@@ -189,7 +244,7 @@ class RetailerGroupUser(models.Model):
         ordering = ["-datetime_created"]
 
     def __str__(self):
-        return f"{self.retailer_group} {self.emailuser}"
+        return f"{self.emailuser} [{self.retailer_group}]"
 
     def save(self, *args, **kwargs):
         cache.delete(settings.CACHE_KEY_RETAILER.format(str(self.emailuser.id)))
@@ -200,6 +255,26 @@ class RetailerGroupUser(models.Model):
             )
         )
         super().save(*args, **kwargs)
+
+    @classmethod
+    def update_session(cls, request, user_id):
+        from parkpasses.helpers import is_retailer
+
+        if is_retailer(request):
+            retailer_group_user = (
+                RetailerGroupUser.objects.filter(emailuser=user_id)
+                .order_by("-datetime_created")
+                .first()
+            )
+            request.session["retailer"] = {
+                "id": retailer_group_user.retailer_group.id,
+                "name": retailer_group_user.retailer_group.organisation[
+                    "organisation_name"
+                ],
+            }
+        else:
+            if "retailer" in request.session.keys():
+                del request.session["retailer"]
 
 
 class RetailerGroupInviteManager(models.Manager):

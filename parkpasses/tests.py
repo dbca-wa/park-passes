@@ -49,8 +49,8 @@
 # 'extra_data': {},
 # '_password': None}
 # )
-#         #self.retailer_user = EmailUser.objects.get(email='oak1.mcilwain@gmail.com')
-#         #self.internal_user = EmailUser.objects.get(email='oak.mcilwain@dbca.wa.gov.au')
+#         #self.retailer_user = EmailUser.objects.get(email='test.user1@gmail.com')
+#         #self.internal_user = EmailUser.objects.get(email='test.user2@dbca.wa.gov.au')
 
 #         self.factory = RequestFactory()
 

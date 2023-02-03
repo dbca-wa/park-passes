@@ -82,6 +82,16 @@ const notMobile = breakpoints.greaterOrEqual('sm');
             </div>
         </div>
 
+        <div v-if="cartItem.rac_discount_percentage" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
+            <div class="col text-secondary border-bottom">
+                RAC Discount Applied:
+                <span>{{ cartItem.rac_discount_percentage }}% OFF</span>
+            </div>
+            <div class="col col-auto text-success border-bottom">
+                -${{ concessionAmount }}
+            </div>
+        </div>
+
         <div v-if="cartItem.concession" class="row my-1 ps-3 pe-1 g-0 align-items-center discount-code-text">
             <div class="col text-secondary border-bottom">
                 <template v-if="notMobile">Concession Applied: </template>{{ cartItem.concession.concession_type }}
@@ -153,6 +163,7 @@ export default {
             return Math.max(this.cartItem.price_after_voucher_applied, 0.00).toFixed(2);
         },
         showSubTotal() {
+            if(null!==this.cartItem.rac_discount_percentage){return true}
             if(null!==this.cartItem.concession){return true}
             if(null!==this.cartItem.discount_code){return true}
             if(null!==this.cartItem.voucher){return true}

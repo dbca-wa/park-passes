@@ -2,7 +2,6 @@ import { RouterView } from 'vue-router'
 import ShopHome from '@/components/external/ShopHome.vue'
 import FAQs from '@/components/external/FAQs.vue'
 import Help from '@/components/external/Help.vue'
-import Contact from '@/components/external/Contact.vue'
 import YourParkPasses from '@/components/external/YourParkPasses.vue'
 import YourOrders from '@/components/external/YourOrders.vue'
 import Cart from '@/components/external/Cart.vue'
@@ -58,10 +57,5 @@ export default {
             component: Help,
             name: 'help'
         },
-        {
-            path: '/contact/',
-            component: Contact,
-            name: 'contact'
-        }
     ]
 }

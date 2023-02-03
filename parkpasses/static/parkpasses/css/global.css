@@ -41,6 +41,18 @@ div#app .container {
     color: #00818F;
 }
 
+.org-secondary {
+    color: #003e52;
+}
+
+.org-icon-secondary {
+    color: #00818F;
+}
+
+.org-icon-secondary:hover {
+    color: #0998a8;
+}
+
 .org-error-message {
     color: #dc3545;
     margin-top: 0.25rem;

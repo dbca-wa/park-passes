@@ -1,7 +1,20 @@
 from django.conf import settings
 from django.template import Library
 
+from parkpasses.helpers import park_passes_system_check
+
 register = Library()
+
+
+@register.simple_tag()
+def system_check():
+    messages = []
+    critical_issues = []
+    passed = False
+    park_passes_system_check(messages, critical_issues)
+    if len(critical_issues) == 0:
+        passed = True
+    return {"passed": passed, "messages": messages, "critical_issues": critical_issues}
 
 
 @register.simple_tag()

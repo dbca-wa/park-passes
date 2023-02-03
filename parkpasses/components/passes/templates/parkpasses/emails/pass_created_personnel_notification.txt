@@ -8,11 +8,10 @@
             DBCA has issued you with a personnel park pass:
 
             Pass Number: {{pass.pass_number}}
-            Pass Type: {{pass.pass_type_display_name}}
+            Pass Type: {{pass.pass_type}}
             Duration: {{pass.duration}}
-            Price: {{pass.price}}
-            Start Date: {{pass.date_start|date:'d-m-Y'}}
-            Expiry Date: {{pass.date_expiry|date:'d-m-Y'}}
+            Start Date: {{pass.date_start_formatted}}
+            Expiry Date: {{pass.date_expiry_formatted}}
 
             Your park pass pdf is attached to this email.
 
