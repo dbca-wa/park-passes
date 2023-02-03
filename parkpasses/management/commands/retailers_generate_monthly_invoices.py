@@ -189,7 +189,7 @@ class Command(BaseCommand):
             )
             return_preload_url = (
                 f"{settings.PARKPASSES_EXTERNAL_URL}"
-                f"/api/retailers/ledger-api-retailer-invoice-success-callback/{invoice_uuid}"
+                f"/api/reports/ledger-api-retailer-invoice-success-callback/{invoice_uuid}"
             )
 
             future_invoice = ledger_api_client_utils.process_create_future_invoice(
