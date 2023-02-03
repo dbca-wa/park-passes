@@ -124,7 +124,7 @@ class Command(BaseCommand):
 
                 # We have to give the customer warning of how much will be charged to their account
                 # See the doc string for the following method for more information
-                option = park_pass.get_next_renewal_option()
+                option = park_pass.get_next_renewal_option
 
                 if (
                     1
@@ -386,6 +386,8 @@ class Command(BaseCommand):
                     order.payment_confirmed = True
                     order.save()
 
+                    new_park_pass.in_cart = False
+                    new_park_pass.save()
                     new_park_pass.send_autorenew_success_notification_email()
 
                 except Exception as e:
