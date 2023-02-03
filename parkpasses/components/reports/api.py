@@ -165,23 +165,21 @@ class PayInvoiceSuccessCallbackView(APIView):
 
     def get(self, request, uuid, format=None):
         logger.info("Park passes Pay Invoice Success View get method called.")
-        invoice_reference = request.GET.get("invoice", "false")
 
-        if uuid and invoice_reference and Report.objects.filter(uuid=uuid).exists():
+        if uuid and Report.objects.filter(uuid=uuid).exists():
             logger.info(
-                f"Invoice reference: {invoice_reference} and uuid: {uuid}.",
+                f"Invoice uuid: {uuid}.",
             )
             report = Report.objects.get(uuid=uuid)
-            report.invoice_reference = invoice_reference
             report.processing_status = Report.PAID
             report.save()
 
             logger.info(
-                "Returning status.HTTP_204_NO_CONTENT. Report marked as paid successfully.",
+                "Returning status.HTTP_200_OK. Report marked as paid successfully.",
             )
             # this end-point is called by an unmonitored get request in ledger so there is no point having a
             # a response body however we will return a status in case this is used on the ledger end in future
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_200_OK)
 
         # If there is no uuid to identify the cart then send a bad request status back in case ledger can
         # do something with this in future
