@@ -26,6 +26,7 @@ def check_settings(messages, critical_issues):
 def park_passes_system_check(messages, critical_issues):
     check_settings(messages, critical_issues)
     RetailerGroup.check_DBCA_retailer_group(messages, critical_issues)
+    RetailerGroup.check_retailers_have_ledger_organisations(messages, critical_issues)
     PassTypePricingWindow.check_default_pricing_windows(messages, critical_issues)
     DistrictPassTypeDurationOracleCode.check_oracle_codes_have_been_entered(
         messages, critical_issues

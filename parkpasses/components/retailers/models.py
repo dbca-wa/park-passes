@@ -203,6 +203,21 @@ class RetailerGroup(models.Model):
             )
 
     @classmethod
+    def check_retailers_have_ledger_organisations(cls, messages, critical_errors):
+        retailers_without_organisations = cls.objects.filter(
+            ledger_organization__isnull=True
+        )
+        if retailers_without_organisations.exists():
+            for retailer_group in retailers_without_organisations:
+                critical_errors.append(
+                    f"CRITICAL: Retailer Group: {retailer_group.id} has no ledger organisation attached."
+                )
+        else:
+            messages.append(
+                "SUCCESS: All Retailer Groups have ledger organisations attached."
+            )
+
+    @classmethod
     def get_rac_retailer_group(self):
         rac_retailer_count = RetailerGroup.objects.filter(
             ledger_organisation=settings.RAC_RETAILER_GROUP_ORGANISATION_ID
