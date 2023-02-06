@@ -22,6 +22,7 @@ module.exports = {
 
     PICA_LABEL: 'PICA (Online Sales)',
 
+    PASS_REMINDER_DAYS_PRIOR: '7',
     PASS_PROCESSING_STATUS_CANCELLED: 'CA',
     PASS_STATUS_EXPIRED: 'Expired',
     DISCOUNT_CODE_BATCH_STATUS_INVALIDATED: 'Invalidated',
