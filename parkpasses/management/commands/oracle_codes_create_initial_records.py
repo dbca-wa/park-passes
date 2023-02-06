@@ -4,6 +4,13 @@ This management commands sends emails to customers who have have a pass that exp
 Usage: ./manage.sh oracles_codes_create_initial_records
         (this command should be run by a cron job or task runner not manually)
 
+        WARNING: This script is designed to be run once and only once. It will delete all existing records in the
+        DistrictPassTypeDurationOracleCode table and then create new records for all districts and pass types.
+
+        Make sure you know what you are doing before running this script.
+
+        TODO: Remove me after production deployment is successful.
+
 """
 import logging
 
@@ -27,6 +34,12 @@ class Command(BaseCommand):
             "--test",
             action="store_true",
             help="Adding the test flag will output what emails would be sent without actually sending them.",
+        )
+        parser.add_argument(
+            "--unique",
+            action="store_true",
+            help="Adding the unique flag will assign every record generated a unqiue oracle code so the park \
+                passes system check passes. ONLY use this flag for testing purposes.",
         )
 
     def handle(self, *args, **options):
@@ -55,6 +68,10 @@ class Command(BaseCommand):
                 f"Setting oracle code for district: PICA, pass type: {option.pricing_window.pass_type.name} "
                 f"and duration: {duration} to: {oracle_code}"
             )
+            if options["unique"]:
+                oracle_code = (
+                    f"PICA_{option.pricing_window.pass_type.name}_{duration}".upper()
+                )
             if not options["test"]:
                 (
                     oracles_code,
@@ -67,6 +84,10 @@ class Command(BaseCommand):
                     f"Setting oracle code for district: {district}, "
                     f"pass type: {option.pricing_window.pass_type.name} and duration: {duration} to: {oracle_code}"
                 )
+                if options["unique"]:
+                    district_name = district.name.replace(" ", "_").upper()
+                    oracle_code = f"{district_name}_{option.pricing_window.pass_type.name}_{duration}".upper()
+
                 if not options["test"]:
                     (
                         oracles_code,
