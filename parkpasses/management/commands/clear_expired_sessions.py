@@ -12,8 +12,10 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from parkpasses.components.cart.models import Cart
+from parkpasses.components.concessions.models import ConcessionUsage
+from parkpasses.components.discount_codes.models import DiscountCodeUsage
 from parkpasses.components.passes.models import Pass
-from parkpasses.components.vouchers.models import Voucher
+from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 
 
 class Command(BaseCommand):
@@ -58,6 +60,18 @@ class Command(BaseCommand):
         )
         if expired_passes.exists():
             for expired_pass in expired_passes:
+
+                # Make sure to remove any related objects
+                expired_pass.concession_usage = None
+                expired_pass.discount_code_usage = None
+                expired_pass.voucher_transaction = None
+                expired_pass.save()
+
+                # Delete the related objects
+                ConcessionUsage.objects.filter(park_pass=expired_pass).delete()
+                DiscountCodeUsage.objects.filter(park_pass=expired_pass).delete()
+                VoucherTransaction.objects.filter(park_pass=expired_pass).delete()
+
                 expired_pass.delete()
 
             self.stdout.write(
