@@ -368,6 +368,8 @@ PICA_GOLD_STAR_PASS_ROOT = env(
 
 PICA_EMAIL = env("PICA_EMAIL", None)
 
+UNENTERED_ORACLE_CODE_LABEL = "You must enter a real oracle code here!"
+
 PICA_ORACLE_CODE_LABEL = "PICA (Online Sales)"
 
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(

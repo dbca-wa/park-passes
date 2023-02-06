@@ -46,13 +46,15 @@ class Command(BaseCommand):
             .order_by("pricing_window__pass_type__display_order")
         )
 
+        oracle_code = f"{settings.UNENTERED_ORACLE_CODE_LABEL}"
+
         # Generate PICA Oracle Codes first (no district as they are online sales)
         for option in default_options:
             duration = option.name.replace(" ", "_")
-            oracle_code = (
-                f"PICA_{option.pricing_window.pass_type.name}_{duration}".upper()
+            logger.info(
+                f"Setting oracle code for district: PICA, pass type: {option.pricing_window.pass_type.name} "
+                f"and duration: {duration} to: {oracle_code}"
             )
-            logger.info(f"Creating oracle code: {oracle_code}")
             if not options["test"]:
                 (
                     oracles_code,
@@ -61,9 +63,10 @@ class Command(BaseCommand):
                     district=None, option=option, oracle_code=oracle_code
                 )
             for district in districts:
-                district_name = district.name.replace(" ", "_").upper()
-                oracle_code = f"{district_name}_{option.pricing_window.pass_type.name}_{duration}".upper()
-                logger.info(f"Creating oracle code: {oracle_code}")
+                logger.info(
+                    f"Setting oracle code for district: {district}, "
+                    f"pass type: {option.pricing_window.pass_type.name} and duration: {duration} to: {oracle_code}"
+                )
                 if not options["test"]:
                     (
                         oracles_code,
