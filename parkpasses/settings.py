@@ -151,9 +151,11 @@ TEMPLATES[0]["OPTIONS"]["context_processors"].append(
 # Department details
 SYSTEM_NAME = env("SYSTEM_NAME", "Park Passes")
 SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "PP")
-SITE_PREFIX = env("SITE_PREFIX")
-SITE_DOMAIN = env("SITE_DOMAIN")
+
+SITE_PREFIX = env("SITE_PREFIX", "")
+SITE_DOMAIN = env("SITE_DOMAIN", "dbca.wa.gov.au")
 PARKPASSES_EXTERNAL_URL = env("PARKPASSES_EXTERNAL_URL")
+
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", "licensing@" + SITE_DOMAIN).lower()
 SUPPORT_EMAIL_FILMING = env("SUPPORT_EMAIL_FILMING", "filming@" + SITE_DOMAIN).lower()
 DEP_URL = env("DEP_URL", "www." + SITE_DOMAIN)
@@ -199,7 +201,9 @@ OTHER_PAYMENT_ALLOWED = env("OTHER_PAYMENT_ALLOWED", False)  # Cash/Cheque
 os.environ[
     "LEDGER_PRODUCT_CUSTOM_FIELDS"
 ] = "('ledger_description','quantity','price_incl_tax','price_excl_tax','oracle_code')"
-CRON_NOTIFICATION_EMAIL = env("CRON_NOTIFICATION_EMAIL", NOTIFICATION_EMAIL).lower()
+
+if NOTIFICATION_EMAIL is not None:
+    CRON_NOTIFICATION_EMAIL = env("CRON_NOTIFICATION_EMAIL", NOTIFICATION_EMAIL).lower()
 
 
 CRON_CLASSES = [
