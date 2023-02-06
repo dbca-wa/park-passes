@@ -372,9 +372,10 @@ class ExternalPassViewSet(
         return (
             Pass.objects.exclude(user__isnull=True)
             .exclude(processing_status=Pass.CANCELLED)
+            .exclude(date_expiry__lte=timezone.now().date())
             .exclude(in_cart=True)
             .filter(user=self.request.user.id)
-            .order_by("-date_start")
+            .order_by("-pass_number")
         )
 
     def get_serializer_class(self):
