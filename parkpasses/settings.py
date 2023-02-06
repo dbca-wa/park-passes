@@ -15,9 +15,14 @@ os.environ.setdefault("BASE_DIR", BASE_DIR)
 
 from ledger_api_client.settings_base import *  # noqa: F403
 
-ADMINS = [
-    ("ASI", "asi@dpaw.wa.gov.au"),
-]
+if DEBUG:
+    ADMINS = [
+        ("Oak McIlwain", "oak.mcilwain@dbca.wa.gov.au"),
+    ]
+else:
+    ADMINS = [
+        ("ASI", "asi@dpaw.wa.gov.au"),
+    ]
 
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
@@ -368,6 +373,8 @@ PICA_GOLD_STAR_PASS_ROOT = env(
 
 PICA_EMAIL = env("PICA_EMAIL", None)
 
+UNENTERED_ORACLE_CODE_LABEL = "You must enter a real oracle code here!"
+
 PICA_ORACLE_CODE_LABEL = "PICA (Online Sales)"
 
 ORG_MODEL_DOCUMENTS_MEDIA_ROOT = env(
@@ -443,7 +450,6 @@ PASS_REMINDER_DAYS_PRIOR = 7
 PRICING_WINDOW_DEFAULT_NAME = "Default"
 
 RAC_DISCOUNT_PERCENTAGE = env("RAC_DISCOUNT_PERCENTAGE", 50)
-RAC_HASH_SALT = env("RAC_HASH_SALT")
 
 
 UNLIMITED_USES = 999999999

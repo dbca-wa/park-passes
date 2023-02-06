@@ -10,7 +10,7 @@
       >
         <FormSection
           :formCollapse="false"
-          label="Oracle Codes"
+          label="District-Based Oracle Codes"
           Index="oracle-codes"
         >
 

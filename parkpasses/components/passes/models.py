@@ -1211,3 +1211,15 @@ class DistrictPassTypeDurationOracleCode(models.Model):
             f"{self.option.pricing_window.pass_type.display_name} - "
             f"{self.option.name} - {self.oracle_code}"
         )
+
+    @classmethod
+    def check_oracle_codes_have_been_entered(cls, messages, critical_issues):
+        unentered_oracle_codes = cls.objects.filter(
+            oracle_code=settings.UNENTERED_ORACLE_CODE_LABEL
+        )
+        if unentered_oracle_codes.exists():
+            critical_issues.append(
+                f"There are {unentered_oracle_codes.count()} district-based oracle codes that have not been entered."
+            )
+        else:
+            messages.append("All district-based oracle codes have been entered.")

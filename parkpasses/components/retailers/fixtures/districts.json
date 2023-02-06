@@ -1,0 +1,178 @@
+[
+    {
+        "model": "parkpasses.district",
+        "pk": 1,
+        "fields": {
+            "name": "Kensington",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 2,
+        "fields": {
+            "name": "Swan Region",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 3,
+        "fields": {
+            "name": "Walpole",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 4,
+        "fields": {
+            "name": "Kununurra",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 5,
+        "fields": {
+            "name": "Wellington",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 6,
+        "fields": {
+            "name": "Serpentine National Park",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 7,
+        "fields": {
+            "name": "Avon Valley",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 8,
+        "fields": {
+            "name": "Esperance",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 9,
+        "fields": {
+            "name": "Mundaring",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 10,
+        "fields": {
+            "name": "West Kimberley",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 11,
+        "fields": {
+            "name": "Blackwood",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 12,
+        "fields": {
+            "name": "Karratha",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 13,
+        "fields": {
+            "name": "Yanchep",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 14,
+        "fields": {
+            "name": "Swan Coastal",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 15,
+        "fields": {
+            "name": "John Forrest",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 16,
+        "fields": {
+            "name": "South West",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 17,
+        "fields": {
+            "name": "Geraldton",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 18,
+        "fields": {
+            "name": "Moora",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 19,
+        "fields": {
+            "name": "Kalbarri",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 20,
+        "fields": {
+            "name": "Wheatbelt",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 21,
+        "fields": {
+            "name": "Kalgoorlie",
+            "archive_date": null
+        }
+    },
+    {
+        "model": "parkpasses.district",
+        "pk": 22,
+        "fields": {
+            "name": "Gloucester Tree",
+            "archive_date": null
+        }
+    }
+]

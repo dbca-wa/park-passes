@@ -19,7 +19,6 @@ from parkpasses.components.retailers.exceptions import (
     MultipleRACRetailerGroupsExist,
     NoDBCARetailerGroupExists,
     NoRACRetailerGroupExists,
-    RetailerGroupHasNoLedgerOrganisationAttached,
     UnableToRetrieveLedgerOrganisation,
 )
 
@@ -81,7 +80,9 @@ class RetailerGroup(models.Model):
         ordering = ["ledger_organisation"]
 
     def __str__(self):
-        return self.organisation["organisation_name"]
+        if self.organisation:
+            return self.organisation["organisation_name"]
+        return "No Ledger Organisation Attached!"
 
     def save(self, *args, **kwargs):
         cache.delete(
@@ -143,7 +144,7 @@ class RetailerGroup(models.Model):
             f"CRITICAL: Retailer Group: {self.id} has no ledger organisation attached."
         )
         logger.critical(critical_message)
-        raise RetailerGroupHasNoLedgerOrganisationAttached(critical_message)
+        return None
 
     @classmethod
     def get_dbca_retailer_group(self):
@@ -174,6 +175,11 @@ class RetailerGroup(models.Model):
 
     @classmethod
     def check_DBCA_retailer_group(cls, messages, critical_issues):
+        if not settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID:
+            critical_issues.append(
+                "CRITICAL: settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID is not set."
+            )
+            return
         dbca_retailer_count = cls.objects.filter(
             ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         ).count()
@@ -194,6 +200,21 @@ class RetailerGroup(models.Model):
                 "CRITICAL: There is no retailer group whose ledger_organisation = "
                 f"{settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID}. "
                 "(Defined in settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID)"
+            )
+
+    @classmethod
+    def check_retailers_have_ledger_organisations(cls, messages, critical_errors):
+        retailers_without_organisations = cls.objects.filter(
+            ledger_organisation__isnull=True
+        )
+        if retailers_without_organisations.exists():
+            for retailer_group in retailers_without_organisations:
+                critical_errors.append(
+                    f"CRITICAL: Retailer Group: {retailer_group.id} has no ledger organisation attached."
+                )
+        else:
+            messages.append(
+                "SUCCESS: All Retailer Groups have ledger organisations attached."
             )
 
     @classmethod

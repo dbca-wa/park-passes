@@ -243,14 +243,14 @@ class ValidateVoucherView(APIView):
                 recipient_email=email,
                 code=code,
                 pin=pin,
-                processing_status=Voucher.DELIVERED,
+                processing_status=Voucher.DELIVERED_TO_RECIPIENT,
             ).exists():
                 voucher = Voucher.objects.get(
                     in_cart=False,
                     recipient_email=email,
                     code=code,
                     pin=pin,
-                    processing_status=Voucher.DELIVERED,
+                    processing_status=Voucher.DELIVERED_TO_RECIPIENT,
                 )
                 logger.info(
                     f"Voucher exists: {voucher}.",
