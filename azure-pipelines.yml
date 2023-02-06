@@ -11,7 +11,7 @@ resources:
 variables:
   tag: '$(Build.BuildId)'
   tagDate: $[ format('{0:yyyy}.{0:MM}.{0:dd}.{0:HH}.{0:mm}{0:ss}', pipeline.startTime) ]
-  
+
 stages:
 - stage: Build
   displayName: Build image
@@ -26,7 +26,7 @@ stages:
       inputs:
         command: buildAndPush
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        tags: | 
+        tags: |
               latest
               $(tagDate)
         containerRegistry: DockerHub
@@ -36,8 +36,8 @@ stages:
       inputs:
         command: buildAndPush
         dockerfile: '$(Build.SourcesDirectory)/dockerdev/Dockerfile'
-        tags: | 
+        tags: |
               park-passes_dev_latest
-              park-passes_dev_$(tagDate)              
+              park-passes_dev_$(tagDate)
         containerRegistry: DockerHub
-        repository: dbcawa/docker_app_dev       
+        repository: dbcawa/docker_app_dev
