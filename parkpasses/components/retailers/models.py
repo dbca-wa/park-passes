@@ -174,6 +174,11 @@ class RetailerGroup(models.Model):
 
     @classmethod
     def check_DBCA_retailer_group(cls, messages, critical_issues):
+        if not settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID:
+            critical_issues.append(
+                "CRITICAL: settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID is not set."
+            )
+            return
         dbca_retailer_count = cls.objects.filter(
             ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         ).count()
