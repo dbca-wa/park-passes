@@ -15,9 +15,14 @@ os.environ.setdefault("BASE_DIR", BASE_DIR)
 
 from ledger_api_client.settings_base import *  # noqa: F403
 
-ADMINS = [
-    ("ASI", "asi@dpaw.wa.gov.au"),
-]
+if DEBUG:
+    ADMINS = [
+        ("Oak McIlwain", "oak.mcilwain@dbca.wa.gov.au"),
+    ]
+else:
+    ADMINS = [
+        ("ASI", "asi@dpaw.wa.gov.au"),
+    ]
 
 ROOT_URLCONF = "parkpasses.urls"
 SITE_ID = 1
