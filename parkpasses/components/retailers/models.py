@@ -205,7 +205,7 @@ class RetailerGroup(models.Model):
     @classmethod
     def check_retailers_have_ledger_organisations(cls, messages, critical_errors):
         retailers_without_organisations = cls.objects.filter(
-            ledger_organization__isnull=True
+            ledger_organisation__isnull=True
         )
         if retailers_without_organisations.exists():
             for retailer_group in retailers_without_organisations:
