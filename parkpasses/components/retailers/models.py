@@ -19,7 +19,6 @@ from parkpasses.components.retailers.exceptions import (
     MultipleRACRetailerGroupsExist,
     NoDBCARetailerGroupExists,
     NoRACRetailerGroupExists,
-    RetailerGroupHasNoLedgerOrganisationAttached,
     UnableToRetrieveLedgerOrganisation,
 )
 
@@ -81,7 +80,9 @@ class RetailerGroup(models.Model):
         ordering = ["ledger_organisation"]
 
     def __str__(self):
-        return self.organisation["organisation_name"]
+        if self.organisation:
+            return self.organisation["organisation_name"]
+        return "No Ledger Organisation Attached!"
 
     def save(self, *args, **kwargs):
         cache.delete(
@@ -143,7 +144,7 @@ class RetailerGroup(models.Model):
             f"CRITICAL: Retailer Group: {self.id} has no ledger organisation attached."
         )
         logger.critical(critical_message)
-        raise RetailerGroupHasNoLedgerOrganisationAttached(critical_message)
+        return None
 
     @classmethod
     def get_dbca_retailer_group(self):
