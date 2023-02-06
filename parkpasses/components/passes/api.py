@@ -41,14 +41,13 @@ from parkpasses.components.main.api import (
 from parkpasses.components.main.serializers import UserActionSerializer
 from parkpasses.components.orders.models import Order, OrderItem
 from parkpasses.components.passes.exceptions import NoValidPassTypeFoundInPost
-from parkpasses.components.passes.models import (
+from parkpasses.components.passes.models import (  # RACDiscountUsage,
     DistrictPassTypeDurationOracleCode,
     Pass,
     PassTemplate,
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
-    RACDiscountUsage,
 )
 from parkpasses.components.passes.serializers import (
     ExternalCreateAllParksPassSerializer,
@@ -76,7 +75,6 @@ from parkpasses.components.passes.serializers import (
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 from parkpasses.components.vouchers.models import Voucher, VoucherTransaction
 from parkpasses.helpers import (
-    check_rac_discount_hash,
     get_retailer_group_ids_for_user,
     is_customer,
     is_internal,
@@ -417,7 +415,7 @@ class ExternalPassViewSet(
                  concession_id, concession_cart_number and sold_via."
         )
         # Pop these values out so they don't mess with the model serializer
-        rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
+        # rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
         discount_code = serializer.validated_data.pop("discount_code", None)
         voucher_code = serializer.validated_data.pop("voucher_code", None)
         voucher_pin = serializer.validated_data.pop("voucher_pin", None)
@@ -555,14 +553,21 @@ class ExternalPassViewSet(
         """ If the user deletes a cart item, any objects that can be attached to a cart item
         (concession usage, discount code usage and voucher transaction)
         are deleted in the cart item's delete method  """
-        if rac_discount_code and check_rac_discount_hash(
-            rac_discount_code, park_pass.email
-        ):
-            discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
-            cart_item.rac_discount_usage = RACDiscountUsage.objects.create(
-                park_pass=park_pass,
-                discount_percentage=discount_percentage,
-            )
+
+        # TODO: Commenting this out pending integration of the real PAC api:
+        #
+        #  if rac_discount_code and check_rac_discount_hash(
+        #     rac_discount_code, park_pass.email
+        # ):
+        #     discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
+        #     cart_item.rac_discount_usage = RACDiscountUsage.objects.create(
+        #         park_pass=park_pass,
+        #         discount_percentage=discount_percentage,
+        #     )
+        if (
+            False
+        ):  # TODO: Just adding this to retain the elif below update when integrating real rac api !
+            pass
         # Only check for concession if the user is not using an rac discount code
         elif concession_id and concession_card_number:
             if Concession.objects.filter(id=concession_id).exists():
