@@ -415,7 +415,9 @@ class ExternalPassViewSet(
                  concession_id, concession_cart_number and sold_via."
         )
         # Pop these values out so they don't mess with the model serializer
-        # rac_discount_code = serializer.validated_data.pop("rac_discount_code", None)
+        rac_discount_code = serializer.validated_data.pop(  # noqa: F841
+            "rac_discount_code", None
+        )
         discount_code = serializer.validated_data.pop("discount_code", None)
         voucher_code = serializer.validated_data.pop("voucher_code", None)
         voucher_pin = serializer.validated_data.pop("voucher_pin", None)
