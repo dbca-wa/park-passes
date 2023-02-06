@@ -77,6 +77,7 @@ class ConcessionUsage(models.Model):
     concession_card_number = models.CharField(
         max_length=50, null=False, blank=False, default=""
     )
+    date_expiry = models.DateField(null=False, blank=False)
 
     def __str__(self):
         return (
@@ -86,6 +87,9 @@ class ConcessionUsage(models.Model):
             + "% Off)"
             + " used to purchase park pass "
             + self.park_pass.pass_number
+            + " (Expiry: "
+            + str(self.date_expiry)
+            + ")"
         )
 
     class Meta:

@@ -11,7 +11,7 @@
 
             Which you invited to join the following Retailer Group:
 
-            {{retailer_group_user_invite.retailer_group.name}}
+            {{organisation_name}}
 
             On the {{retailer_group_user_invite.datetime_created|date:'jS'}} of {{retailer_group_user_invite.datetime_created|date:'F Y'}} at {{retailer_group_user_invite.datetime_created|date:'P'}}
 

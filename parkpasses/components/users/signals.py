@@ -5,7 +5,6 @@ from django.contrib.auth.signals import user_logged_in
 from parkpasses.components.cart.models import Cart
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.retailers.models import RetailerGroupUser
-from parkpasses.helpers import is_retailer
 
 logger = logging.getLogger(__name__)
 
@@ -20,19 +19,7 @@ def init_cart(sender, user, request, **kwargs):
 
 def add_retailer_to_session(sender, user, request, **kwargs):
     logger.info("user_logged_in signal running add_retailer_to_session function")
-    if is_retailer(request):
-        retailer_group_user = (
-            RetailerGroupUser.objects.filter(emailuser=user.id)
-            .order_by("-datetime_created")
-            .first()
-        )
-        request.session["retailer"] = {
-            "id": retailer_group_user.retailer_group.id,
-            "name": retailer_group_user.retailer_group.name,
-        }
-    else:
-        if "retailer" in request.session.keys():
-            del request.session["retailer"]
+    RetailerGroupUser.update_session(request, user.id)
 
 
 def assign_orphan_passes(sender, user, request, **kwargs):

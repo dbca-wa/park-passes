@@ -1,6 +1,10 @@
 
 module.exports = {
 
+    /* ========================= Park Passes System Check ==============================*/
+
+    systemCheck:                        '/api/main/internal/park-passes-system-check/',
+
     /* ========================= User Data =============================================*/
 
     userData:                           '/api/users/user-data/',
@@ -58,7 +62,7 @@ module.exports = {
         return                          `/api/passes/internal/passes/${passId}/payment-details`
     },
     checkRacDiscountCode: function (discountHash, email) {
-        return                          `/api/passes/check-hash-matches-email/${discountHash}/${email}/`
+        return                          `/api/passes/rac/check-hash-matches-email/${discountHash}/${email}/`
     },
     uploadPersonnelPasses:              '/api/passes/upload-personnel-passes/',
 
@@ -255,5 +259,9 @@ module.exports = {
         return                          `/api/main/internal/org-model-logs/communications-log-entries?app_label=${appLabel}&model=${model}&object_id=${objectId}&format=datatables`;
     },
 
+    /* ========================= Oracle Codes =========================================*/
+
+    oracleCodesListInternal:            '/api/passes/internal/oracle-codes/',
+    oracleCodesListUpdateInternal:      '/api/passes/internal/oracle-codes/list-update/',
 
 }

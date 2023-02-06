@@ -1,5 +1,10 @@
 <template>
     <div>
+        <div v-if="there_are_overdue_invoices">
+            <BootstrapAlert type="danger" icon="exclamation-triangle-fill">
+                You have one or more overdue invoices to pay.  Please pay them as soon as possible.
+            </BootstrapAlert>
+        </div>
         <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
             <div class="row mb-3">
                 <div class="col-md-3">
@@ -44,6 +49,8 @@
 </template>
 
 <script>
+
+import BootstrapAlert from '@/utils/vue/BootstrapAlert.vue'
 import datatable from '@/utils/vue/Datatable.vue'
 import { v4 as uuid } from 'uuid';
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
@@ -94,6 +101,8 @@ export default {
                 {id:'U', value:'Unpaid'},
             ],
 
+            there_are_overdue_invoices: false,
+
             dateFormat: 'DD/MM/YYYY',
             datepickerOptions:{
                 format: 'DD/MM/YYYY',
@@ -112,6 +121,7 @@ export default {
     components:{
         datatable,
         CollapsibleFilters,
+        BootstrapAlert,
     },
     watch: {
         filterProcessingStatus: function() {
@@ -160,7 +170,6 @@ export default {
                 'Number',
                 'Monthly Report',
                 'Invoice',
-                'Unique Identifier',
                 'Payment Status',
                 'Date Generated',
             ]
@@ -202,32 +211,28 @@ export default {
         },
         columnInvoice: function(){
             return {
-                data: "invoice_filename",
+                data: "invoice_link",
                 visible: true,
-                name: 'invoice_filename',
+                name: 'invoice_link',
                 'render': function(row, type, full){
                     console.log(full.processing_status)
                     console.log(full.invoice_reference)
                     let html = '';
 
-                    if(full.invoice_filename){
-                        html += `<a href="${apiEndpoints.retrieveReportInvoicePdfRetailer(full.id)}" target="_blank">Invoice.pdf</a>`;
+                    if('P'===full.processing_status) {
+                        html += `<a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
                     }
 
-                    if('P'===full.processing_status && full.invoice_reference) {
-                        html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
+                    else if(full.invoice_link){
+                        html += `<a href="${full.invoice_link}" target="_blank">Invoice.pdf</a>`;
+                    }
+
+                    if('Unpaid'==full.processing_status_display && full.overdue){
+                        html += ` <span class="badge bg-danger">Overdue</span>`;
                     }
 
                     return html;
                 }
-            }
-        },
-        columnUUID: function(){
-            return {
-                data: "uuid",
-                visible: true,
-                name: 'uuid',
-                orderable: false,
             }
         },
         columnProcessingStatusDisplay: function(){
@@ -240,7 +245,7 @@ export default {
                     if('Paid'==full.processing_status_display){
                         html = `<span class="badge bg-success">Paid</span>`;
                     } else {
-                        html = `<span class="badge bg-danger">Unpaid</span> | <a href="javascript:void(0);" data-id="${full.id}" data-action="pay-now">Pay Now</a>`;
+                        html = `<span class="badge bg-danger">Unpaid</span> | <a href="${apiEndpoints.retailerPayInvoice(full.id)}">Pay Now</a>`;
                     }
                     return html;
                 }
@@ -282,7 +287,6 @@ export default {
                 vm.columnReportNumber,
                 vm.columnReport,
                 vm.columnInvoice,
-                vm.columnUUID,
                 vm.columnProcessingStatusDisplay,
                 vm.columnDatetimeCreated,
             ]
@@ -322,7 +326,13 @@ export default {
                 columns: columns,
                 processing: true,
                 pagingType: "full_numbers",
-                initComplete: function() {
+                initComplete: function(settings, json) {
+                    json.data.forEach(function(currentValue, index, arr){
+                        if(currentValue.overdue){
+                            vm.there_are_overdue_invoices = true;
+                            return;
+                        }
+                    })
                 },
             }
         }
@@ -362,7 +372,7 @@ export default {
                 });
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -440,14 +450,27 @@ export default {
             console.log(vm.$route.params)
             if(vm.$route.params.reportNumber){
                 let reportNumber = DOMPurify.sanitize(vm.$route.params.reportNumber);
-                Swal.fire({
-                    title: 'Success',
-                    text: `Invoice ${reportNumber} paid successfully.`,
-                    icon: 'success',
-                    showConfirmButton: true,
-                }).then(function() {
-                    vm.$router.push({ name: 'retailer-reports' });
-                });
+                let paymentStatus = DOMPurify.sanitize(vm.$route.params.paymentStatus);
+                if('success'===paymentStatus){
+                    Swal.fire({
+                        title: 'Success',
+                        text: `Invoice ${reportNumber} paid successfully.`,
+                        icon: 'success',
+                        showConfirmButton: true,
+                    }).then(function() {
+                        vm.$router.push({ name: 'retailer-reports' });
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Failure',
+                        text: `Payment for invoice ${reportNumber} failed.`,
+                        icon: 'error',
+                        showConfirmButton: true,
+                    }).then(function() {
+                        vm.$router.push({ name: 'retailer-reports' });
+                    });
+                }
+
             }
         });
     }

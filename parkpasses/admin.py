@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 @admin.register(EmailUser)
 class EmailUserAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "email",
         "first_name",
         "last_name",
@@ -21,11 +22,17 @@ class EmailUserAdmin(admin.ModelAdmin):
     )
     ordering = ("email",)
     search_fields = ("id", "email", "first_name", "last_name")
+    list_display_links = None
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.opts.verbose_name_plural = "Email Users (Read-Only)"
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
     def has_change_permission(self, request, obj=None):
-        if obj is None:  # and obj.status > 1:
-            return True
-        return None
+        return False
 
     def has_delete_permission(self, request, obj=None):
-        return None
+        return False

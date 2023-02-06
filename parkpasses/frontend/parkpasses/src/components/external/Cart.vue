@@ -39,7 +39,7 @@
                                     <div class="col">
                                         <BootstrapAlert>
                                             <div class="mb-2">Please take payment from the customer and then click 'Create Pass'</div>
-                                            <div>{{retailerGroupsForUser[0].name}} will be invoiced monthly for any sales minus commission.</div>
+                                            <div>{{retailerGroupsForUser[0].ledger_organisation_name}} will be invoiced monthly for any sales minus commission.</div>
                                         </BootstrapAlert>
                                     </div>
                                 </div>
@@ -52,12 +52,12 @@
                                         <div v-if="isRetailer" class="me-5 d-flex align-items-center">
                                             <template v-if="retailerGroupsForUser && retailerGroupsForUser.length>1">
                                                 <select class="form-select" name="retailer_group_id">
-                                                    <option v-for="retailerGroup in retailerGroupsForUser" :value="retailerGroup.id">{{ retailerGroup.name }}</option>
+                                                    <option v-for="retailerGroup in retailerGroupsForUser" :value="retailerGroup.id">{{ retailerGroup.ledger_organisation_name }}</option>
                                                 </select>
                                             </template>
                                             <template v-else>
                                                 <input type="hidden" name="retailer_group_id" :value="retailerGroupsForUser[0].id" />
-                                                <span class="badge org-badge-primary">{{ retailerGroupsForUser[0].name }}</span>
+                                                <span class="badge org-badge-primary">{{ retailerGroupsForUser[0].ledger_organisation_name }}</span>
                                             </template>
                                         </div>
                                         <div>

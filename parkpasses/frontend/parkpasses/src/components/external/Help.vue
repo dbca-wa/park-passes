@@ -53,8 +53,8 @@ export default {
                 vm.generalHelp = data;
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
-                console.error("There was an error!", error);
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
+                console.error("There was an error!", JSON.stringify(error));
             });
         }
     },

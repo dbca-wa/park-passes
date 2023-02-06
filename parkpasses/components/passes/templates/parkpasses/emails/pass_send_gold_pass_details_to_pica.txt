@@ -17,7 +17,7 @@
             Postcode: {{pass.postcode}}
             State: {{pass.state}}
             Mobile: {{pass.mobile}}
-            Start Date of Pass: {{pass.date_start|date:'d-m-Y'}}
+            Start Date of Pass: {{pass.date_start_formatted}}
 
             {% endfor %}
 

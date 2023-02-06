@@ -1,12 +1,15 @@
 from django.contrib import admin
-from rest_framework_api_key.admin import APIKeyModelAdmin
 
 from parkpasses.components.retailers.models import (
+    District,
     RetailerGroup,
-    RetailerGroupAPIKey,
     RetailerGroupInvite,
     RetailerGroupUser,
 )
+
+
+class DistrictAdmin(admin.ModelAdmin):
+    model = District
 
 
 class RetailerGroupUserInline(admin.TabularInline):
@@ -23,17 +26,33 @@ class RetailerGroupAdmin(admin.ModelAdmin):
     model = RetailerGroup
     list_display = (
         "id",
-        "name",
-        "oracle_code",
+        "district",
+        "organisation_name",
+        "commission_oracle_code",
         "active",
     )
     search_fields = ("name",)
+    fields = [
+        "ledger_organisation",
+        "organisation_name",
+        "organisation_abn",
+        "district",
+        "commission_oracle_code",
+        "commission_percentage",
+        "active",
+    ]
+    readonly_fields = ["organisation_name", "organisation_abn"]
     inlines = [RetailerGroupUserInline]
-    ordering = ["name"]
 
+    def organisation_name(self, obj):
+        return obj.organisation["organisation_name"]
 
-class RetailerGroupAPIKeyAdmin(APIKeyModelAdmin):
-    model = RetailerGroupAPIKey
+    organisation_name.short_description = "Ledger Organisation Name"
+
+    def organisation_abn(self, obj):
+        return obj.organisation["organisation_abn"]
+
+    organisation_abn.short_description = "Ledger Organisation ABN"
 
 
 class RetailerGroupUserAdmin(admin.ModelAdmin):
@@ -64,7 +83,7 @@ class RetailerGroupInviteAdmin(admin.ModelAdmin):
     readonly_fields = ["uuid"]
 
 
+admin.site.register(District, DistrictAdmin)
 admin.site.register(RetailerGroup, RetailerGroupAdmin)
 admin.site.register(RetailerGroupUser, RetailerGroupUserAdmin)
 admin.site.register(RetailerGroupInvite, RetailerGroupInviteAdmin)
-admin.site.register(RetailerGroupAPIKey, RetailerGroupAPIKeyAdmin)

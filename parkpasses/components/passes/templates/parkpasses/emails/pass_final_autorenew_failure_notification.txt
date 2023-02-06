@@ -1,0 +1,13 @@
+{%  extends 'parkpasses/emails/base_email.txt' %}
+
+{% block greetings %}
+            Dear {{ pass.first_name }} {{ pass.last_name }},
+{% endblock %}
+
+{%  block content %}
+            Today we made our 3rd and final attempt to process the auto renewal for your park pass: {{ pass.pass_number }}.
+
+            We have now cancelled your auto renewal and you will have to purchase another park pass manually.
+
+            If you want to purchase a new park pass, please visit: {{ site_url }}
+{%  endblock %}

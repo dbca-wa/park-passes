@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.db.models import Case, Count, Value, When
+from django.db.models import Case, Count, Q, Value, When
 from django.http import Http404
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from rest_framework import mixins, status, viewsets
@@ -20,11 +20,13 @@ from parkpasses.components.main.api import (
 )
 from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.models import (
+    District,
     RetailerGroup,
     RetailerGroupInvite,
     RetailerGroupUser,
 )
 from parkpasses.components.retailers.serializers import (
+    DistrictSerializer,
     InternalRetailerGroupInviteSerializer,
     RetailerGroupSerializer,
     RetailerGroupUserSerializer,
@@ -97,7 +99,7 @@ class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
     @action(methods=["GET"], detail=False, url_path="retailer-groups-excluding-dbca")
     def retailer_groups_excluding_dbca(self, request, *args, **kwargs):
         active_retailer_groups = self.get_queryset().exclude(
-            name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
         )
         serializer = self.get_serializer(active_retailer_groups, many=True)
         return Response(serializer.data)
@@ -107,7 +109,9 @@ class InternalRetailerGroupViewSet(viewsets.ModelViewSet):
         active_retailer_groups = (
             self.get_queryset()
             .filter(active=True)
-            .exclude(name=settings.PARKPASSES_DEFAULT_SOLD_VIA)
+            .exclude(
+                ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+            )
         )
         serializer = self.get_serializer(active_retailer_groups, many=True)
         return Response(serializer.data)
@@ -210,7 +214,13 @@ class InternalRetailerGroupUserViewSet(
     CustomDatatablesListMixin, viewsets.ModelViewSet
 ):
     model = RetailerGroupUser
-    queryset = RetailerGroupUser.objects.all()
+    retailer_group_admin_user_count = Count(
+        "retailer_group",
+        filter=Q(retailer_group__retailer_group_users__is_admin=True),
+    )
+    queryset = RetailerGroupUser.objects.annotate(
+        retailer_group_admin_user_count=retailer_group_admin_user_count
+    )
     permission_classes = [IsInternal]
     serializer_class = RetailerGroupUserSerializer
     pagination_class = DatatablesPageNumberPagination
@@ -268,6 +278,7 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
                     active=True,
                 )
                 retailer_group_user_invite.status = RetailerGroupInvite.APPROVED
+                RetailerGroupUser.update_session(request, request.user.id)
             retailer_group_user_invite.save()
             serializer = self.get_serializer(retailer_group_user_invite)
             return Response(serializer.data)
@@ -420,3 +431,9 @@ class RetailerRetailerGroupInviteViewSet(
                 )
             )
         return RetailerGroupUser.objects.none()
+
+
+class InternalDistrictViewSet(viewsets.ModelViewSet):
+    model = District
+    queryset = District.objects.all()
+    serializer_class = DistrictSerializer

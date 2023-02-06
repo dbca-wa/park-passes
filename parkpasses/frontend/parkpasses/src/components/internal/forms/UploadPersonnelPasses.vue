@@ -185,7 +185,7 @@ export default {
                 }
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -239,7 +239,7 @@ export default {
                     })
                 })
                 .catch(error => {
-                    this.systemErrorMessage = constants.ERRORS.NETWORK;
+                    this.systemErrorMessage = constants.ERRORS.SYSTEM;
                     console.error("There was an error!", error);
                     vm.loading = false;
 

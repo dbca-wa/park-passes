@@ -9,7 +9,6 @@ ENV TZ=Australia/Perth
 ENV EMAIL_HOST="emailserver"
 #ENV PICA_EMAIL='no-reply@dbca.wa.gov.au'
 ENV DEFAULT_FROM_EMAIL='no-reply@dbca.wa.gov.au'
-#ENV NOTIFICATION_EMAIL='oak.mcilwain@dbca.wa.gov.au'
 ENV NON_PROD_EMAIL='none@none.com'
 ENV PRODUCTION_EMAIL=False
 ENV EMAIL_INSTANCE='DEV'
@@ -53,10 +52,10 @@ RUN pip install --upgrade pip
 WORKDIR /app
 #RUN git clone -v -b $BRANCH https://github.com/dbca-wa/$REPO.git .
 COPY parkpasses ./parkpasses
-COPY gunicorn.ini manage.py ./
+COPY gunicorn.ini manage.py 0001_initial.py.patch1 0001_initial.py.patch2 apply_initial_migrations.sh ./
 ENV POETRY_VERSION=1.2.1
 RUN pip install "poetry==$POETRY_VERSION"
-RUN poetry config virtualenvs.create false 
+RUN poetry config virtualenvs.create false
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --only main --no-interaction --no-ansi
 RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*

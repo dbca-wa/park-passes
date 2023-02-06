@@ -11,7 +11,6 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from parkpasses.components.passes.models import Pass
 
@@ -29,43 +28,42 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        no_reply_email_user, created = EmailUser.objects.get_or_create(
-            email=settings.NO_REPLY_EMAIL, password=""
-        )
+        logger.info(f"Running {__name__}")
         today = timezone.now()
         pass_expiry_datetime = today + timezone.timedelta(
             days=settings.PASS_REMINDER_DAYS_PRIOR
         )
         pass_expiry_date = pass_expiry_datetime.date()
-        if (
-            Pass.objects.exclude(
-                processing_status=Pass.CANCELLED,  # to exclude cancelled passes
+        logger.info(
+            f"Retrieving passes that expire in {settings.PASS_REMINDER_DAYS_PRIOR} days."
+        )
+        passes_to_notify = Pass.objects.exclude(
+            processing_status=Pass.CANCELLED,  # to exclude cancelled passes
+        ).filter(
+            in_cart=False,
+            date_expiry=pass_expiry_date,
+        )
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Found {len(passes_to_notify)} park passes that expire in {settings.PASS_REMINDER_DAYS_PRIOR} days."
             )
-            .filter(
-                in_cart=False,
-                date_expiry=pass_expiry_date,
-            )
-            .exists()
-        ):
-            passes = Pass.objects.exclude(
-                processing_status=Pass.CANCELLED,  # to exclude cancelled passes
-            ).filter(
-                in_cart=False,
-                date_expiry=today,
-            )
-            if options["test"]:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Found {len(passes)} park passes that expire today."
-                    )
-                )
-            for park_pass in passes:
+        )
+        if passes_to_notify.exists():
+
+            for park_pass in passes_to_notify:
                 if options["test"]:
-                    self.stdout.write(
-                        self.style.SUCCESS(
-                            f"TEST: pretending to call send_expiry_notification_emails on Pass: {park_pass}"
+                    if park_pass.renew_automatically:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"TEST: pretending to call send_autorenew_notification_email on Pass: {park_pass}"
+                            )
                         )
-                    )
+                    else:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"TEST: pretending to call send_expiry_notification_emails on Pass: {park_pass}"
+                            )
+                        )
                 else:
                     if park_pass.renew_automatically:
                         park_pass.send_autorenew_notification_email()

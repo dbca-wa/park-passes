@@ -1,13 +1,19 @@
 {%  extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
-            <p>Dear {{first_name}} {{last_name}},</p>
+            <p>Dear {{ pass.first_name }} {{ pass.last_name }},</p>
 {% endblock %}
 
 {%  block content %}
-            <p>Your park pass auto renewal has failed.</p>
+            <p>Today we attempted to process the auto renewal for your park pass: {{ pass.pass_number }}.</p>
 
-            <p>To update your credit card details please go to [!!Todo: Insert url here when available]
+            <p>This was attempt number: {{ failure_count }}.</p>
 
-            <p>To purchase a new park pass please go to <a href="{{site_url}}">{{site_url}}</a></p>
+            <p>We will make 3 attempts to process your auto renewal.</p>
+
+            <p>After 3 failed attempts, we will cancel your auto renewal and you will have to purchase another park pass manually.</p>
+
+            <p>To update your credit card details please go to <a href="{{site_url}}{% url 'account' %}">{{site_url}}{% url 'account' %}</a>, log in and click on the 'Manage Cards' tab.</p>
+
+            <p>Make sure there is at least one valid card on file and that it is selected as your primary card.</p>
 {% endblock %}

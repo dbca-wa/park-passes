@@ -8,7 +8,7 @@
                         <label for="">Retailer</label>
                         <select v-if="retailerGroups" class="form-control" v-model="filterRetailerGroups">
                             <option value="" selected="selected">All</option>
-                            <option v-for="retailerGroup in retailerGroups" :value="retailerGroup.id">{{ retailerGroup.name }}</option>
+                            <option v-for="retailerGroup in retailerGroups" :value="retailerGroup.id">{{ retailerGroup.ledger_organisation_name }}</option>
                         </select>
                     </div>
                 </div>
@@ -225,8 +225,12 @@ export default {
                 name: 'active',
                 'render': function(row, type, full){
                     let html = '<div class="form-check form-switch ms-5">';
+                    let disabled = '';
                     if(full.active){
-                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserActive" checked>`;
+                        if(full.is_admin && 1==full.retailer_group_admin_user_count){
+                            disabled = 'disabled';
+                        }
+                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserActive" checked ${disabled}>`;
                     } else {
                         html+= `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserActive"></div>`;
                     }
@@ -243,8 +247,12 @@ export default {
                 name: 'is_admin',
                 'render': function(row, type, full){
                     let html = '<div class="form-check form-switch ms-5">';
+                    let disabled = '';
                     if(full.is_admin){
-                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserIsAdmin" checked>`;
+                        if(1==full.retailer_group_admin_user_count){
+                            disabled = 'disabled';
+                        }
+                        html += `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserIsAdmin" checked ${disabled}>`;
                     } else {
                         html+= `<input class="form-check-input" type="checkbox" data-item-id="${full.id}" data-action="toggleUserIsAdmin"></div>`;
                     }
@@ -363,6 +371,7 @@ export default {
                     const error = response.statusText;
                     return Promise.reject(error);
                 }
+                this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();
                 Swal.fire({
                 title: 'Success',
                 text: 'User active status toggled successfully.',
@@ -372,7 +381,7 @@ export default {
                 });
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
@@ -388,6 +397,9 @@ export default {
                     const error = response.statusText;
                     return Promise.reject(error);
                 }
+                // It's important to redraw the datatable because to disable the toggle if there is only one
+                // admin user left in a retailer group
+                this.$refs.retailerGroupUsersDatatable.vmDataTable.draw();
                 Swal.fire({
                 title: 'Success',
                 text: 'User admin status toggled successfully.',
@@ -397,7 +409,7 @@ export default {
                 });
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },

@@ -1,13 +1,13 @@
 import logging
-from decimal import Decimal
 
 import requests
 from django.conf import settings
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
-from ledger_api_client.utils import create_basket_session, create_checkout_session
+from ledger_api_client.utils import generate_payment_session
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
@@ -17,12 +17,10 @@ from rest_framework.views import APIView
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.main.api import (
     CustomDatatablesListMixin,
     CustomDatatablesRenderer,
 )
-from parkpasses.components.passes.models import Pass
 from parkpasses.components.reports.models import Report
 from parkpasses.components.reports.serializers import (
     InternalReportSerializer,
@@ -82,8 +80,16 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user_retailer_groups = get_retailer_group_ids_for_user(self.request)
+        due_date = timezone.now() - timezone.timedelta(
+            days=settings.RETAILER_INVOICE_DUE_DAYS
+        )
         if 0 < len(user_retailer_groups):
-            return Report.objects.filter(retailer_group__in=user_retailer_groups)
+            return Report.objects.annotate(
+                overdue=ExpressionWrapper(
+                    Q(datetime_created__lte=due_date, processing_status=Report.UNPAID),
+                    output_field=BooleanField(),
+                )
+            ).filter(retailer_group__in=user_retailer_groups)
         return Report.objects.none()
 
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice-pdf")
@@ -124,94 +130,34 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
 
         raise Http404
 
-    @action(methods=["POST"], detail=True, url_path="pay-invoice")
+    @action(methods=["GET"], detail=True, url_path="pay-invoice")
     def pay_invoice(self, request, *args, **kwargs):
         logger.info("Pay Invoice")
         report = self.get_object()
-        retailer_group = report.retailer_group
-
-        date_invoice_generated = report.datetime_created.date()
-        first_day_of_this_month = date_invoice_generated.replace(day=1)
-        last_day_of_previous_month = first_day_of_this_month - timezone.timedelta(
-            days=1
-        )
-        first_day_of_previous_month = last_day_of_previous_month.replace(day=1)
-        month_year = first_day_of_previous_month.strftime("%B %Y")
-        ledger_description = f"Park Passes Sales for the Month of { month_year }"
-
-        passes = Pass.objects.filter(
-            sold_via=retailer_group,
-            datetime_created__range=(
-                first_day_of_previous_month,
-                last_day_of_previous_month,
-            ),
-        )
-
-        invoice_amount = Decimal(0.00)
-        for park_pass in passes:
-            invoice_amount += park_pass.price_after_concession_applied
-
-        if invoice_amount <= Decimal(0.00):
-            return redirect(reverse("retailer-reports"))
-
-        commission_amount = (
-            Decimal(invoice_amount / 100).quantize(Decimal("0.01"))
-            * retailer_group.commission_percentage
-        )
-
-        if settings.DEBUG:
-            invoice_amount = int(invoice_amount)
-            ledger_description += " (Price rounded for dev env)"
-
-        ledger_order_lines = [
-            {
-                "ledger_description": ledger_description,
-                "quantity": 1,
-                "price_incl_tax": str(invoice_amount),
-                "oracle_code": retailer_group.oracle_code,
-                "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
-            },
-            {
-                "ledger_description": f"Commission on sales ({retailer_group.commission_percentage}%)",
-                "quantity": 1,
-                "price_incl_tax": str(-abs(commission_amount)),
-                "oracle_code": retailer_group.oracle_code,
-                "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
-            },
-        ]
-        booking_reference = report.uuid
-        basket_parameters = CartUtils.get_basket_parameters(
-            ledger_order_lines,
-            booking_reference,
-            is_no_payment=False,
-        )
-        create_basket_session(request, request.user.id, basket_parameters)
-
-        invoice_text = f"Unique Identifier: {booking_reference}"
         return_url = request.build_absolute_uri(
             reverse(
                 "retailer-reports-pay-invoice-success",
-                kwargs={
-                    "report_number": report.report_number,
-                },
+                kwargs={"report_number": report.report_number},
             )
         )
-        return_preload_url = request.build_absolute_uri(
+        # return_preload_url = request.build_absolute_uri(reverse("ledger-api-retailer-invoice-success-callback",
+        # kwargs={"uuid": report.uuid}))
+        fallback_url = request.build_absolute_uri(
             reverse(
-                "ledger-api-retailer-invoice-success-callback",
-                kwargs={
-                    "uuid": booking_reference,
-                },
+                "retailer-reports-pay-invoice-failure",
+                kwargs={"report_number": report.report_number},
             )
         )
-        checkout_parameters = CartUtils.get_checkout_parameters(
-            request, return_url, return_preload_url, request.user.id, invoice_text
+        logger.info(f"Return URL: {return_url}")
+        # logger.info(f"Return Preload URL: {return_preload_url}")
+        logger.info(f"Fallback URL: {fallback_url}")
+        payment_session = generate_payment_session(
+            request, report.invoice_reference, return_url, fallback_url
         )
-        logger.info("Checkout_parameters = " + str(checkout_parameters))
-
-        create_checkout_session(request, checkout_parameters)
-
-        return redirect(reverse("ledgergw-payment-details"))
+        logger.info(f"Payment session: {payment_session}")
+        if 200 == payment_session["status"]:
+            return redirect(payment_session["payment_url"])
+        return redirect(fallback_url)
 
 
 class PayInvoiceSuccessCallbackView(APIView):
@@ -219,28 +165,32 @@ class PayInvoiceSuccessCallbackView(APIView):
 
     def get(self, request, uuid, format=None):
         logger.info("Park passes Pay Invoice Success View get method called.")
-        invoice_reference = request.GET.get("invoice", "false")
 
-        if uuid and invoice_reference and Report.objects.filter(uuid=uuid).exists():
+        if (
+            uuid
+            and Report.objects.filter(
+                uuid=uuid, processing_status=Report.UNPAID
+            ).exists()
+        ):
             logger.info(
-                f"Invoice reference: {invoice_reference} and uuid: {uuid}.",
+                f"Invoice uuid: {uuid}.",
             )
             report = Report.objects.get(uuid=uuid)
-            report.invoice_reference = invoice_reference
             report.processing_status = Report.PAID
             report.save()
 
             logger.info(
-                "Returning status.HTTP_204_NO_CONTENT. Report marked as paid successfully.",
+                "Returning status.HTTP_200_OK. Report marked as paid successfully.",
             )
             # this end-point is called by an unmonitored get request in ledger so there is no point having a
             # a response body however we will return a status in case this is used on the ledger end in future
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_200_OK)
 
         # If there is no uuid to identify the cart then send a bad request status back in case ledger can
         # do something with this in future
         logger.info(
-            "Returning status.HTTP_400_BAD_REQUEST bad request as there was not a uuid and invoice_reference."
+            "Returning status.HTTP_400_BAD_REQUEST bad request as there "
+            f"was not an unpaid report invoice with uuid: {uuid}."
         )
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -288,8 +238,16 @@ class InternalReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     """
 
     model = Report
-    queryset = Report.objects.exclude(
-        retailer_group__name=settings.PARKPASSES_DEFAULT_SOLD_VIA
+    due_date = timezone.now() - timezone.timedelta(
+        days=settings.RETAILER_INVOICE_DUE_DAYS
+    )
+    queryset = Report.objects.annotate(
+        overdue=ExpressionWrapper(
+            Q(datetime_created__lte=due_date, processing_status=Report.UNPAID),
+            output_field=BooleanField(),
+        )
+    ).exclude(
+        retailer_group__ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
     )
     permission_classes = [IsInternal]
     serializer_class = InternalReportSerializer

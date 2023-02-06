@@ -130,6 +130,11 @@ urlpatterns = [
         ),
         name="internal-reports",
     ),
+    url(
+        r"^internal/oracle-codes$",
+        views.InternalView.as_view(extra_context={"title": "Oracle Codes"}),
+        name="internal-oracle-codes",
+    ),
     # ========================================================================== Retailer
     url(
         r"^retailer/$",
@@ -180,6 +185,13 @@ urlpatterns = [
             extra_context={"title": "Retailer Invoices and Monthly Reports"}
         ),
         name="retailer-reports-pay-invoice-success",
+    ),
+    url(
+        r"^retailer/reports/(?P<report_number>.+)/payment-failure$",
+        views.RetailerView.as_view(
+            extra_context={"title": "Retailer Invoices and Monthly Reports"}
+        ),
+        name="retailer-reports-pay-invoice-failure",
     ),
     url(
         r"^retailer/invite-a-user$",

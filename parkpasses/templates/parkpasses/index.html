@@ -1,6 +1,8 @@
 {% extends 'parkpasses/base.html' %}
 
 {% load static %}
+{% load users %}
+{% load utils %}
 
 {% block left_menu_items %}
     <li><a  href="{% url 'contact' %}">Contact Us</a></li>
@@ -12,8 +14,29 @@
 
 {% block content %}
     <div class="container-fluid" id="vue-root">
+    {% system_check as system_check %}
+    {% is_internal as is_internal_user %}
+    {% if  system_check.passed %}
         {% block vue-component %}
         <div id="app"></div>
         {% endblock %}
+    {% else %}
+    <div class="container" id="system-error">
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-danger mt-1 m-3" role="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                        </symbol>
+                    </svg>
+                    <div>
+                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                        SYSTEM ERROR: Please try again in an hour and if the problem persists contact: <a href="mailto:{% support_email %}" target="blank">{% support_email %}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
     </div>
 {% endblock %}

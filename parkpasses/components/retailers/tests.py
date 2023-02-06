@@ -11,10 +11,6 @@ class RetailerGroupTestCase(TestCase):
         self.api_request_factory = APIRequestFactory()
         self.retailer_group1 = RetailerGroup.objects.create(
             name="Retailer Group 1",
-            address_line_1="Address Line 1",
-            address_line_2="Address Line 2",
-            suburb="",
-            postcode="6008",
             oracle_code="RETAILER_GROUP_1_ORACLE_CODE",
             commission_percentage=Decimal("10.00"),
             active=True,

@@ -62,13 +62,17 @@ class RetailerEmails:
     def send_retailer_group_user_invite_notification_email(
         self, retailer_group_user_invite
     ):
+        organisation_name = retailer_group_user_invite.retailer_group.organisation[
+            "organisation_name"
+        ]
         email = RetailerGroupUserInviteNotificationEmail(
-            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group.name
+            settings.SYSTEM_NAME, organisation_name
         )
         context = {
             "SITE_URL": settings.SITE_URL,
             "SYSTEM_NAME": settings.SYSTEM_NAME,
             "retailer_group_user_invite": retailer_group_user_invite,
+            "organisation_name": organisation_name,
         }
         message = email.send(retailer_group_user_invite.email, context=context)
         if message:
@@ -92,14 +96,17 @@ class RetailerEmails:
     def send_retailer_group_user_accepted_notification_email(
         self, retailer_group_user_invite
     ):
+        organisation_name = retailer_group_user_invite.retailer_group.organisation[
+            "organisation_name"
+        ]
         email = RetailerGroupUserAcceptedNotificationEmail(
-            retailer_group_user_invite.email,
-            retailer_group_user_invite.retailer_group.name,
+            retailer_group_user_invite.email, organisation_name
         )
         context = {
             "SITE_URL": settings.SITE_URL,
             "ADMIN_GROUP": settings.ADMIN_GROUP,
             "retailer_group_user_invite": retailer_group_user_invite,
+            "organisation_name": organisation_name,
         }
         message = email.send(retailer_group_user_invite.email, context=context)
         if message:
@@ -124,8 +131,11 @@ class RetailerEmails:
     def send_retailer_group_user_approved_notification_email(
         self, retailer_group_user_invite, is_admin
     ):
+        organisation_name = retailer_group_user_invite.retailer_group.organisation[
+            "organisation_name"
+        ]
         email = RetailerGroupUserApprovedNotificationEmail(
-            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group.name
+            settings.SYSTEM_NAME, organisation_name
         )
         emailuser = retrieve_email_user(retailer_group_user_invite.user)
         context = {
@@ -133,6 +143,7 @@ class RetailerEmails:
             "SITE_URL": settings.SITE_URL,
             "SYSTEM_NAME": settings.SYSTEM_NAME,
             "retailer_group_user_invite": retailer_group_user_invite,
+            "organisation_name": organisation_name,
             "is_admin": is_admin,
         }
         message = email.send(retailer_group_user_invite.email, context=context)
@@ -158,8 +169,11 @@ class RetailerEmails:
     def send_retailer_group_user_denied_notification_email(
         self, retailer_group_user_invite
     ):
+        organisation_name = retailer_group_user_invite.retailer_group.organisation[
+            "organisation_name"
+        ]
         email = RetailerGroupUserDeniedNotificationEmail(
-            settings.SYSTEM_NAME, retailer_group_user_invite.retailer_group.name
+            settings.SYSTEM_NAME, organisation_name
         )
         emailuser = retrieve_email_user(retailer_group_user_invite.user)
         context = {
@@ -167,6 +181,7 @@ class RetailerEmails:
             "SITE_URL": settings.SITE_URL,
             "SYSTEM_NAME": settings.SYSTEM_NAME,
             "retailer_group_user_invite": retailer_group_user_invite,
+            "organisation_name": organisation_name,
         }
         message = email.send(retailer_group_user_invite.email, context=context)
         if message:

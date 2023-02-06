@@ -68,13 +68,6 @@ def is_authenticated(context):
     return parkpasses_helpers.is_authenticated(request)
 
 
-@register.simple_tag(takes_context=True)
-def is_payment_officer(context):
-    # request = context["request"]
-    # TODO: fix this
-    return False  # is_payment_admin(request.user)
-
-
 @register.simple_tag()
 def system_maintenance_due():
     """Returns True (actually a time str), if within <timedelta hours> of system maintenance due datetime"""

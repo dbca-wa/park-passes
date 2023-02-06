@@ -14,12 +14,14 @@ from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
+from rest_framework.views import APIView
 from rest_framework_datatables.renderers import DatatablesRenderer
 
 from parkpasses.components.main.serializers import (
     CommunicationsLogEntrySerializer,
     UserActionSerializer,
 )
+from parkpasses.helpers import park_passes_system_check
 from parkpasses.permissions import IsInternal, IsInternalAPIView
 
 logger = logging.getLogger(__name__)
@@ -110,4 +112,19 @@ class ListCreateCommunicationsLogEntry(BaseListCreateCommunicationsLogEntry):
         extended_serializer.update(serializer.data)
         return Response(
             extended_serializer, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+
+class ParkPassesSystemCheck(APIView):
+    permission_classes = [IsInternalAPIView]
+
+    def get(self, request, format=None):
+        messages = []
+        critical_issues = []
+        passed = False
+        park_passes_system_check(messages, critical_issues)
+        if len(critical_issues) == 0:
+            passed = True
+        return Response(
+            {"passed": passed, "messages": messages, "critical_issues": critical_issues}
         )

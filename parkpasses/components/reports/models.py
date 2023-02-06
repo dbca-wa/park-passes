@@ -1,6 +1,8 @@
 """
     This module contains the models for implimenting invoices and montly reports.
 """
+import uuid
+
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.db import models
@@ -10,6 +12,23 @@ from parkpasses.components.retailers.models import RetailerGroup
 upload_protected_files_storage = FileSystemStorage(
     location=settings.PROTECTED_MEDIA_ROOT, base_url="/protected_media"
 )
+
+
+def get_uuid():
+    u = uuid.uuid4()
+    return u
+
+
+def get_uuid_six():
+    return str(uuid.uuid4().int)[:6]
+
+
+def get_uuid_int_six():
+    return int(str(uuid.uuid4().int)[:6])
+
+
+def get_uuid_eleven():
+    return str(uuid.uuid4().int)[:6]
 
 
 class Report(models.Model):
@@ -22,11 +41,23 @@ class Report(models.Model):
     report = models.FileField(
         null=True, blank=True, max_length=500, storage=upload_protected_files_storage
     )
-    invoice = models.FileField(
-        null=True, blank=True, max_length=500, storage=upload_protected_files_storage
+    order_number = models.CharField(
+        unique=True, max_length=128, blank=False, null=False, default=get_uuid_six
     )
-    invoice_reference = models.CharField(max_length=36, blank=True, null=True)
-    uuid = models.CharField(max_length=36, blank=True, null=True)
+    basket_id = models.IntegerField(
+        unique=True, blank=False, null=False, default=get_uuid_int_six
+    )
+    invoice_reference = models.CharField(
+        unique=True, max_length=36, blank=False, null=False, default=get_uuid_eleven
+    )
+    uuid = models.CharField(
+        unique=True,
+        max_length=36,
+        blank=False,
+        null=False,
+        default=get_uuid,
+        help_text="This is used as the booking reference for the generated ledger invoice.",
+    )
 
     PAID = "P"
     UNPAID = "U"
@@ -59,7 +90,7 @@ class Report(models.Model):
     @property
     def invoice_link(self):
         return (
-            settings.LEDGER_API_URL
+            settings.LEDGER_UI_URL
             + "/ledgergw/invoice-pdf/"
             + settings.LEDGER_API_KEY
             + "/"

@@ -5,7 +5,11 @@
 {% endblock %}
 
 {%  block content %}
-            <p>Your current {{pass.pass_type_display_name}} is due to renew automatically on {{pass.datetime_expiry}}.</p>
+            <p>Your current {{pass.pass_type}} is due to be renewed automatically on {{pass.date_expiry_formatted}}.</p>
 
-            <p>If you do not want to renew your park pass, log in to your account at {{url}}{% url 'your-park-passes' %} and cancel the automatic renewal of your park pass.</p>
+            <p>The charge to your primary credit card will be ${{ next_renewal_option.price }}</p>
+
+            <p>The pass will be valid for {{ next_renewal_option.duration }} days and will renew automatically upon expiry.</p>
+
+            <p>If you do not want to renew your park pass, log in to your account at {{site_url}}{% url 'your-park-passes' %} and cancel the automatic renewal of your park pass.</p>
 {% endblock %}

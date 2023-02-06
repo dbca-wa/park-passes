@@ -7,17 +7,17 @@ from parkpasses.components.passes.api import (
     DefaultOptionsForPassType,
     ExternalPassTypeViewSet,
     ExternalPassViewSet,
+    InternalDistrictPassTypeDurationOracleCodeViewSet,
     InternalPassTypeViewSet,
     InternalPassViewSet,
     InternalPricingWindowViewSet,
+    PassAutoRenewSuccessView,
     PassProcessingStatusesDistinct,
     PassRefundSuccessView,
     PassTemplateViewSet,
     PassTypePricingWindowOptionViewSet,
     PassTypesDistinct,
     RacDiscountCodeCheckView,
-    RacDiscountCodeView,
-    RetailerApiAccessViewSet,
     RetailerPassTypesDistinct,
     RetailerPassTypeViewSet,
     RetailerPassViewSet,
@@ -47,9 +47,9 @@ router.register(r"external/passes", ExternalPassViewSet, basename="passes-extern
 router.register(r"retailer/passes", RetailerPassViewSet, basename="passes-internal")
 router.register(r"internal/passes", InternalPassViewSet, basename="passes-internal")
 router.register(
-    r"retailer/api-key-access",
-    RetailerApiAccessViewSet,
-    basename="passes-external-api-key-access",
+    r"internal/oracle-codes",
+    InternalDistrictPassTypeDurationOracleCodeViewSet,
+    basename="oracles-codes-internal",
 )
 
 urlpatterns = [
@@ -58,10 +58,8 @@ urlpatterns = [
     url(r"pass-processing-statuses-distinct", PassProcessingStatusesDistinct.as_view()),
     url(r"default-pass-options-by-pass-type-id", DefaultOptionsForPassType.as_view()),
     url(r"pass-options-by-pass-type-id", CurrentOptionsForPassType.as_view()),
-    url(r"rac/generate-code-from-email/(?P<email>.+)$", RacDiscountCodeView.as_view()),
-    url(r"rac/generate-code-from-email/$", RacDiscountCodeView.as_view()),
     url(
-        r"check-hash-matches-email/(?P<discount_hash>.+)/(?P<email>.+)/$",
+        r"rac/check-hash-matches-email/(?P<discount_hash>.+)/(?P<email>.+)/$",
         RacDiscountCodeCheckView.as_view(),
     ),
     url(r"cancel-pass", CancelPass.as_view()),
@@ -70,6 +68,11 @@ urlpatterns = [
         r"ledger-api-refund-success-callback/(?P<id>.+)/(?P<uuid>.+)$",
         PassRefundSuccessView.as_view(),
         name="ledger-api-refund-success-callback",
+    ),
+    url(
+        r"pass-autorenewal-success-callback/(?P<id>.+)/(?P<uuid>.+)$",
+        PassAutoRenewSuccessView.as_view(),
+        name="pass-autorenewal-success-callback",
     ),
 ]
 

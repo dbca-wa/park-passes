@@ -15,3 +15,7 @@ class RemainingVoucherBalanceLessThanZeroException(Exception):
 
 class SendVoucherRecipientEmailNotificationFailed(Exception):
     """The exeption to be thrown if any exceptions occur during the send_voucher_email method."""
+
+
+class RetailerGroupUsersCannotPurchaseGiftVouchers(Exception):
+    """The exception to be thrown if a retailer group user attempts to purchase a gift voucher"""

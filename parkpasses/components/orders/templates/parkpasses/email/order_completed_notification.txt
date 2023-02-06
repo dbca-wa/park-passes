@@ -6,7 +6,7 @@
 
     You have purchased a park pass with the following details:
 
-    Pass Type: {{pass.pass_type_display_name}}
+    Pass Type: {{pass.pass_type}}
     Duration: {{pass.duration}}
     Price: {{pass.price}}
     Start Date: {{pass.date_start}}

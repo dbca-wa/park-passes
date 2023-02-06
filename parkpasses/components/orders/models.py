@@ -50,6 +50,7 @@ class Order(models.Model):
         blank=True,
     )
     user = models.IntegerField(null=False, blank=False)  # EmailUserRO
+    payment_confirmed = models.BooleanField(blank=True, default=False)
     datetime_created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
 
     class Meta:
@@ -93,7 +94,7 @@ class Order(models.Model):
     @property
     def invoice_link(self):
         return (
-            settings.LEDGER_API_URL
+            settings.LEDGER_UI_URL
             + "/ledgergw/invoice-pdf/"
             + settings.LEDGER_API_KEY
             + "/"

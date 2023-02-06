@@ -29,7 +29,7 @@ export const useStore = defineStore('main', {
                 this.userData = data
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         }

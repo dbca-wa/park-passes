@@ -7,7 +7,7 @@
                         <label for="">Retailer</label>
                         <select v-if="retailerGroups" class="form-control" v-model="filterRetailerGroups">
                             <option value="" selected="selected">All</option>
-                            <option v-for="retailerGroup in retailerGroups" :value="retailerGroup.id">{{ retailerGroup.name }}</option>
+                            <option v-for="retailerGroup in retailerGroups" :value="retailerGroup.id">{{ retailerGroup.ledger_organisation_name }}</option>
                         </select>
                     </div>
                 </div>
@@ -180,8 +180,8 @@ export default {
                 'Retailer',
                 'Monthly Report',
                 'Invoice',
-                'Unique Identifier',
                 'Payment Status',
+                'Booking Reference',
                 'Date Generated',
             ]
         },
@@ -229,30 +229,27 @@ export default {
         },
         columnInvoice: function(){
             return {
-                data: "invoice_filename",
+                data: "invoice_link",
                 visible: true,
-                name: 'invoice_filename',
+                name: 'invoice_link',
                 'render': function(row, type, full){
                     let html = '';
 
-                    if(full.invoice_filename){
-                        html += `<a href="${apiEndpoints.retrieveReportInvoicePdfInternal(full.id)}" target="_blank">Invoice.pdf</a>`;
+                    if('P'===full.processing_status && full.invoice_reference) {
+                        html += `<a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfInternal(full.id)}" target="_blank">Receipt.pdf</a>`;
                     }
 
-                    if('P'===full.processing_status && full.invoice_reference) {
-                        html += ` | <a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfInternal(full.id)}" target="_blank">Receipt.pdf</a>`;
+                    else if(full.invoice_link){
+                        html += `<a href="${full.invoice_link}" target="_blank">Invoice.pdf</a>`;
+                    }
+
+
+                    if('Unpaid'==full.processing_status_display && full.overdue){
+                        html += ` <span class="badge bg-danger">Overdue</span>`;
                     }
 
                     return html;
                 }
-            }
-        },
-        columnUUID: function(){
-            return {
-                data: "uuid",
-                visible: true,
-                name: 'uuid',
-                orderable: false,
             }
         },
         columnProcessingStatusDisplay: function(){
@@ -269,6 +266,14 @@ export default {
                     }
                     return html;
                 }
+            }
+        },
+        columnUUID: function(){
+            return {
+                data: "uuid",
+                visible: true,
+                name: 'uuid',
+                orderable: false,
             }
         },
         columnDatetimeCreated: function(){
@@ -308,8 +313,8 @@ export default {
                 vm.columnRetailerGroup,
                 vm.columnReport,
                 vm.columnInvoice,
-                vm.columnUUID,
                 vm.columnProcessingStatusDisplay,
+                vm.columnUUID,
                 vm.columnDatetimeCreated,
             ]
             search = true
@@ -407,7 +412,7 @@ export default {
                 });
             })
             .catch(error => {
-                this.systemErrorMessage = constants.ERRORS.NETWORK;
+                this.systemErrorMessage = constants.ERRORS.SYSTEM;
                 console.error("There was an error!", error);
             });
         },
