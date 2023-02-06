@@ -630,13 +630,13 @@ export default {
             if(!this.passType){
                 return false;
             }
-            return ('ANNUAL_LOCAL_PASS'==this.passType.name ? true : false)
+            return (constants.ANNUAL_LOCAL_PASS_NAME==this.passType.name ? true : false)
         },
         isGoldStarPass() {
             if(!this.passType){
                 return false;
             }
-            return ('GOLD_STAR_PASS'==this.passType.name ? true : false)
+            return (constants.GOLD_STAR_PASS_NAME==this.passType.name ? true : false)
         },
         indefiniteArticle() {
             return ('A'==this.passType.display_name.substring(0,1) ? 'an' : 'a' )
