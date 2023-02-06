@@ -6,7 +6,11 @@ from django.utils.text import slugify
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroupPermission
 
-from parkpasses.components.passes.models import Pass, PassTypePricingWindow
+from parkpasses.components.passes.models import (
+    DistrictPassTypeDurationOracleCode,
+    Pass,
+    PassTypePricingWindow,
+)
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
 
 logger = logging.getLogger(__name__)
@@ -23,6 +27,9 @@ def park_passes_system_check(messages, critical_issues):
     check_settings(messages, critical_issues)
     RetailerGroup.check_DBCA_retailer_group(messages, critical_issues)
     PassTypePricingWindow.check_default_pricing_windows(messages, critical_issues)
+    DistrictPassTypeDurationOracleCode.check_oracle_codes_have_been_entered(
+        messages, critical_issues
+    )
 
 
 def belongs_to(request, group_name):
