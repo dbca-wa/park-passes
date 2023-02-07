@@ -191,7 +191,7 @@ class CartUtils:
                     # PICA Oracle codes for local park passes are based on the park group
                     return park_pass.park_group.oracle_code
 
-                # For other pass types, PICA oracle codes come are based on the pass type
+                # For other pass types, PICA oracle codes are based on the pass type
                 # and duration
                 # Note: PICA oracle codes have a null district
                 oracle_codes = DistrictPassTypeDurationOracleCode.objects.filter(
