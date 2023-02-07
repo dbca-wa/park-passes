@@ -135,8 +135,7 @@ class PassType(models.Model):
     oracle_code = models.CharField(
         max_length=50,
         unique=True,
-        help_text="This oracle code will only be used if no district-based \
-            oracle code or local park group oracle code can be found.",
+        help_text="Only to be used for pass types that are not district or park group specific. I.e. Pinjar Pass.",
         null=True,
         blank=True,
     )
