@@ -31,9 +31,6 @@ A Ledger server must be run prior to the Park Passes Django application.
 
 The `LEDGER_API_URL` env var assumes that the server will be run with no port specified, i.e. using the default port 8000.
 
-The db listed by the `LEDGER_DATABASE_URL` env var holds user, organisation and other corporate data.
-Creating a new user or changing a user password must be done in the Ledger app/db.
-
 ## Vue JS
 - also see README.md in frontend root
 
@@ -89,7 +86,6 @@ required environment variables at run time. Example content:
     CRON_NOTIFICATION_EMAIL='email'
     ENABLE_DJANGO_LOGIN=True
     OSCAR_SHOP_NAME='shop_name'
-    LEDGER_DATABASE_URL='postgis://user:pw@localhost:port/db_name'
     LEDGER_API_URL="http://localhost:8000"
     LEDGER_API_KEY="API_KEY"
     # Below is required to run Vue Js front end with hot reload
