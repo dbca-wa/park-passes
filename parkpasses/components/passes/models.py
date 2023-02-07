@@ -465,6 +465,7 @@ class PassTemplate(models.Model):
         PassType,
         on_delete=models.PROTECT,
         related_name="pass_template",
+        help_text="When left blank this template will be used for all pass types that don't have a template specified.",
         null=True,
         blank=True,
     )
