@@ -222,7 +222,7 @@ class CartUtils:
             f"No oracle code found for this user: {request.user}, "
             f"content_type: {content_type} and object id: {object_id}"
         )
-        logger.error(error_message)
+        logger.critical(error_message)
         raise NoOracleCodeFoundForCartItem(error_message)
 
     @classmethod
