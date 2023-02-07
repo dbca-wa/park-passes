@@ -16,9 +16,7 @@ from rest_framework import status
 from parkpasses.components.retailers.emails import RetailerEmails
 from parkpasses.components.retailers.exceptions import (
     MultipleDBCARetailerGroupsExist,
-    MultipleRACRetailerGroupsExist,
     NoDBCARetailerGroupExists,
-    NoRACRetailerGroupExists,
     UnableToRetrieveLedgerOrganisation,
 )
 
@@ -52,6 +50,7 @@ class RetailerGroup(models.Model):
         on_delete=models.PROTECT,
         null=True,
         blank=True,
+        help_text="Leave blank for DBCA ONLY. All other retailers (internal and external) must be assigned a district.",
     )
     commission_oracle_code = models.CharField(
         max_length=50,
@@ -210,7 +209,7 @@ class RetailerGroup(models.Model):
         if retailers_without_organisations.exists():
             for retailer_group in retailers_without_organisations:
                 critical_errors.append(
-                    f"CRITICAL: Retailer Group: {retailer_group.id} has no ledger organisation attached."
+                    f"CRITICAL: Retailer Group with ID: {retailer_group.id} has no ledger organisation attached."
                 )
         else:
             messages.append(
@@ -218,28 +217,19 @@ class RetailerGroup(models.Model):
             )
 
     @classmethod
-    def get_rac_retailer_group(self):
-        rac_retailer_count = RetailerGroup.objects.filter(
-            ledger_organisation=settings.RAC_RETAILER_GROUP_ORGANISATION_ID
-        ).count()
-        if 1 == rac_retailer_count:
-            return RetailerGroup.objects.get(
-                ledger_organisation=settings.RAC_RETAILER_GROUP_ORGANISATION_ID
+    def check_retailers_have_districts(cls, messages, critical_errors):
+        retailers_without_districts = cls.objects.exclude(
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+        ).filter(district__isnull=True)
+        if retailers_without_districts.exists():
+            for retailer_group in retailers_without_districts:
+                critical_errors.append(
+                    f"CRITICAL: Retailer Group with ID: {retailer_group.id} has no district assigned."
+                )
+        else:
+            messages.append(
+                "SUCCESS: All External and Internal Retailer Groups have districts assigned."
             )
-        if 1 < rac_retailer_count:
-            critical_message = (
-                "CRITICAL: There is more than one retailer group whose ledger_organisation = "
-                f"'{settings.RAC_RETAILER_GROUP_ORGANISATION_ID}'"
-            )
-            logger.critical(critical_message)
-            raise MultipleRACRetailerGroupsExist(critical_message)
-        if 0 == rac_retailer_count:
-            critical_message = (
-                "CRITICAL: There is no retailer group whose ledger_organisation = "
-                f"'{settings.RAC_RETAILER_GROUP_ORGANISATION_ID}'"
-            )
-            logger.critical(critical_message)
-            raise NoRACRetailerGroupExists(critical_message)
 
 
 class RetailerGroupUser(models.Model):

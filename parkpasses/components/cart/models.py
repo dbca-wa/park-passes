@@ -440,8 +440,10 @@ class Cart(models.Model):
                     logger.info(
                         f"Voucher transaction order item amount: {order_item.amount}",
                     )
-                    # Give the voucher transaction the same oracle code as the pass that it is attached to
-                    order_item.oracle_code = cart_item.oracle_code
+
+                    order_item.oracle_code = (
+                        settings.PARKPASSES_DEFAULT_VOUCHER_ORACLE_CODE
+                    )
 
                     order_items.append(order_item)
                     if save_order_to_db_and_delete_cart:

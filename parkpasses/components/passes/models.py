@@ -132,7 +132,13 @@ class PassType(models.Model):
         blank=False,
     )
     description = RichTextField(null=True)
-    oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    oracle_code = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Only to be used for pass types that are not district or park group specific. I.e. Pinjar Pass.",
+        null=True,
+        blank=True,
+    )
     can_be_renewed_automatically = models.BooleanField(
         null=False, blank=False, default=False
     )
@@ -465,6 +471,7 @@ class PassTemplate(models.Model):
         PassType,
         on_delete=models.PROTECT,
         related_name="pass_template",
+        help_text="When left blank this template will be used for all pass types that don't have a template specified.",
         null=True,
         blank=True,
     )

@@ -24,13 +24,32 @@ def check_settings(messages, critical_issues):
 
 
 def park_passes_system_check(messages, critical_issues):
-    check_settings(messages, critical_issues)
-    RetailerGroup.check_DBCA_retailer_group(messages, critical_issues)
-    RetailerGroup.check_retailers_have_ledger_organisations(messages, critical_issues)
-    PassTypePricingWindow.check_default_pricing_windows(messages, critical_issues)
-    DistrictPassTypeDurationOracleCode.check_oracle_codes_have_been_entered(
-        messages, critical_issues
-    )
+    logger.info("running park_passes_system_check")
+    cache_key = "parkpasses_system_check"
+    parkpasses_system_check = cache.get(cache_key)
+    if parkpasses_system_check is None:
+        check_settings(messages, critical_issues)
+        RetailerGroup.check_DBCA_retailer_group(messages, critical_issues)
+        RetailerGroup.check_retailers_have_ledger_organisations(
+            messages, critical_issues
+        )
+        RetailerGroup.check_retailers_have_districts(messages, critical_issues)
+        PassTypePricingWindow.check_default_pricing_windows(messages, critical_issues)
+        DistrictPassTypeDurationOracleCode.check_oracle_codes_have_been_entered(
+            messages, critical_issues
+        )
+        logger.info(
+            "Adding parkpasses_system_check messages and critical issues to cache"
+        )
+        cache.set(
+            cache_key,
+            {"messages": messages, "critical_issues": critical_issues},
+            settings.CACHE_SYSTEM_CHECK_FOR,
+        )
+    else:
+        logger.info("Retrieving parkpasses_system_check from cache")
+        messages.extend(parkpasses_system_check["messages"])
+        critical_issues.extend(parkpasses_system_check["critical_issues"])
 
 
 def belongs_to(request, group_name):

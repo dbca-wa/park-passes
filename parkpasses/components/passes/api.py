@@ -1,4 +1,5 @@
 import logging
+import os
 import pickle
 import sys
 import uuid
@@ -713,7 +714,29 @@ class ExternalPassViewSet(
         park_pass = self.get_object()
         if park_pass.user == self.request.user.id:
             if park_pass.park_pass_pdf:
-                return FileResponse(park_pass.park_pass_pdf)
+                return FileResponse(
+                    park_pass.park_pass_pdf, content_type="application/pdf"
+                )
+        raise Http404
+
+    # TODO: Rmove this. This is a temporary endpoint to allow the park pass docx file
+    # to be downloaded for testing purposes. In usual circumstances, the park pass docx file
+    # is removed after the pdf is generated
+    @action(methods=["GET"], detail=True, url_path="retrieve-park-pass-docx")
+    def retrieve_park_pass_docx(self, request, *args, **kwargs):
+        park_pass = self.get_object()
+        if park_pass.user == self.request.user.id:
+            if park_pass.park_pass_pdf:
+                pdf_file_path = park_pass.park_pass_pdf.path
+                upload_path = os.path.dirname(pdf_file_path)
+                filename = f"{upload_path}/ParkPass.docx"
+                file = open(filename, mode="rb")
+                response = FileResponse(
+                    file,
+                    content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+                response["Content-Disposition"] = "attachment; filename=ParkPass.docx"
+                return response
         raise Http404
 
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice")

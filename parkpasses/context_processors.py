@@ -12,4 +12,5 @@ def parkpasses_url(request):
         "build_tag": settings.BUILD_TAG,
         "LEDGER_UI_URL": settings.LEDGER_UI_URL,
         "PARKPASSES_PAYMENT_SYSTEM_PREFIX": settings.PARKPASSES_PAYMENT_SYSTEM_PREFIX,
+        "CACHE_SYSTEM_CHECK_FOR": settings.CACHE_SYSTEM_CHECK_FOR,
     }

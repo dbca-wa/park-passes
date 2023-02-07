@@ -29,6 +29,12 @@ RUN sed 's/archive.ubuntu.com/au.archive.ubuntu.com/g' /etc/apt/sources.list > /
 RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
 # Use Australian Mirrors
 
+# TODO: Used for testing with newer versions of libreoffice
+# Add libreoffice ppa to use newer version
+# RUN apt-get install software-properties-common
+# RUN apt-get update
+# RUN add-apt-repository ppa:libreoffice/ppa
+
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y

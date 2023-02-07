@@ -255,9 +255,10 @@
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="renewAutomatically" class="col-form-label">Automatically Renew at Expiry?</label>
                             </div>
-                            <div class="col-12 col-lg-12 col-xl-9">
+                            <div class="col-12 col-lg-12 col-xl-3">
                                 <div class="form-switch">
                                     <input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="renewAutomatically" name="renewAutomatically" v-model="pass.renew_automatically">
+                                    <i class="fa-solid fa-circle-question org-icon-primary ps-1" data-bs-toggle="tooltip" data-bs-placement="right" :title="`Park pass prices are subject to change. You will be emailed ${passReminderDaysPrior} days before auto renewal with a quote for the next park pass.`"></i>
                                 </div>
                             </div>
                         </div>
@@ -529,6 +530,7 @@ export default {
             vehicleInputs: 1,
             extraVehicleText: 'Add a second vehicle',
             racMember: false,
+            passReminderDaysPrior: constants.PASS_REMINDER_DAYS_PRIOR,
 
             discountType: null,
             discountPercentage: 0.00,
@@ -550,6 +552,7 @@ export default {
         BootstrapButtonSpinner,
         BootstrapSpinner,
         BootstrapAlert,
+        constants
     },
     computed: {
         getHeading() {
@@ -630,13 +633,13 @@ export default {
             if(!this.passType){
                 return false;
             }
-            return ('ANNUAL_LOCAL_PASS'==this.passType.name ? true : false)
+            return (constants.ANNUAL_LOCAL_PASS_NAME==this.passType.name ? true : false)
         },
         isGoldStarPass() {
             if(!this.passType){
                 return false;
             }
-            return ('GOLD_STAR_PASS'==this.passType.name ? true : false)
+            return (constants.GOLD_STAR_PASS_NAME==this.passType.name ? true : false)
         },
         indefiniteArticle() {
             return ('A'==this.passType.display_name.substring(0,1) ? 'an' : 'a' )

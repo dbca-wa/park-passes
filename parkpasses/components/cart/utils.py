@@ -191,7 +191,7 @@ class CartUtils:
                     # PICA Oracle codes for local park passes are based on the park group
                     return park_pass.park_group.oracle_code
 
-                # For other pass types, PICA oracle codes come are based on the pass type
+                # For other pass types, PICA oracle codes are based on the pass type
                 # and duration
                 # Note: PICA oracle codes have a null district
                 oracle_codes = DistrictPassTypeDurationOracleCode.objects.filter(
@@ -222,7 +222,7 @@ class CartUtils:
             f"No oracle code found for this user: {request.user}, "
             f"content_type: {content_type} and object id: {object_id}"
         )
-        logger.error(error_message)
+        logger.critical(error_message)
         raise NoOracleCodeFoundForCartItem(error_message)
 
     @classmethod
