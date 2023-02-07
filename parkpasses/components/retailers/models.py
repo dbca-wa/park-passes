@@ -52,6 +52,7 @@ class RetailerGroup(models.Model):
         on_delete=models.PROTECT,
         null=True,
         blank=True,
+        help_text="Leave blank for DBCA ONLY. All other retailers (internal and external) must be assigned a district.",
     )
     commission_oracle_code = models.CharField(
         max_length=50,
@@ -215,6 +216,21 @@ class RetailerGroup(models.Model):
         else:
             messages.append(
                 "SUCCESS: All Retailer Groups have ledger organisations attached."
+            )
+
+    @classmethod
+    def check_retailers_have_districts(cls, messages, critical_errors):
+        retailers_without_districts = cls.objects.exclude(
+            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+        ).filter(district__isnull=True)
+        if retailers_without_districts.exists():
+            for retailer_group in retailers_without_districts:
+                critical_errors.append(
+                    f"CRITICAL: Retailer Group: {retailer_group.id} has no district assigned."
+                )
+        else:
+            messages.append(
+                "SUCCESS: All External and Internal Retailer Groups have districts assigned."
             )
 
     @classmethod

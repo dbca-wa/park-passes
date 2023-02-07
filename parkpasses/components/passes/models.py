@@ -132,7 +132,14 @@ class PassType(models.Model):
         blank=False,
     )
     description = RichTextField(null=True)
-    oracle_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    oracle_code = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="This oracle code will only be used if no district-based \
+            oracle code or local park group oracle code can be found.",
+        null=True,
+        blank=True,
+    )
     can_be_renewed_automatically = models.BooleanField(
         null=False, blank=False, default=False
     )
