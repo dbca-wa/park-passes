@@ -94,7 +94,7 @@ class Order(models.Model):
     @property
     def invoice_link(self):
         return (
-            settings.LEDGER_UI_URL
+            settings.LEDGER_API_URL
             + "/ledgergw/invoice-pdf/"
             + settings.LEDGER_API_KEY
             + "/"
