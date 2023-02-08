@@ -1235,6 +1235,13 @@ class DistrictPassTypeDurationOracleCode(models.Model):
 
     @classmethod
     def check_oracle_codes_have_been_entered(cls, messages, critical_issues):
+        district_based_oracle_codes = cls.objects.all()
+        if 0 == district_based_oracle_codes.count():
+            critical_issues.append(
+                "CRITICAL: There are no district-based oracle codes. "
+                "Please run the oracle_codes_create_initial_records management command to generate the required codes."
+            )
+            return
         unentered_oracle_codes = cls.objects.filter(
             oracle_code=settings.UNENTERED_ORACLE_CODE_LABEL
         )
@@ -1243,4 +1250,6 @@ class DistrictPassTypeDurationOracleCode(models.Model):
                 f"There are {unentered_oracle_codes.count()} district-based oracle codes that have not been entered."
             )
         else:
-            messages.append("All district-based oracle codes have been entered.")
+            messages.append(
+                "SUCCESS: All district-based oracle codes have been entered."
+            )
