@@ -9,6 +9,7 @@ from ledger_api_client.managed_models import SystemGroupPermission
 from parkpasses.components.passes.models import (
     DistrictPassTypeDurationOracleCode,
     Pass,
+    PassType,
     PassTypePricingWindow,
 )
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
@@ -30,6 +31,7 @@ def park_passes_system_check(messages, critical_issues):
     if parkpasses_system_check is None:
         check_settings(messages, critical_issues)
         RetailerGroup.check_DBCA_retailer_group(messages, critical_issues)
+        PassType.check_required_pass_types_exist(messages, critical_issues)
         RetailerGroup.check_retailers_have_ledger_organisations(
             messages, critical_issues
         )

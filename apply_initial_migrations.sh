@@ -12,7 +12,7 @@ $RUN_PYTHON manage.py migrate ledger_api_client &&
 echo "POETRY_ENV"
 echo $POETRY_ENV
 if [ $POETRY_ENV ]; then
-    patch .venv/lib/python3.8/site-packages/django/contrib/admin/migrations/0001_initial.py < 0001_initial.py.patch1 &&
+    patch .venv/lib/python3.10/site-packages/django/contrib/admin/migrations/0001_initial.py < 0001_initial.py.patch1 &&
     status=$?
     if [ $status -ne 0  ]; then
           echo "Migration patch filed: $status"
@@ -20,7 +20,7 @@ if [ $POETRY_ENV ]; then
         fi
 else
     echo "no venv"
-    patch /usr/local/lib/python3.8/dist-packages/django/contrib/admin/migrations/0001_initial.py < 0001_initial.py.patch1 &&
+    patch /usr/local/lib/python3.10/dist-packages/django/contrib/admin/migrations/0001_initial.py < 0001_initial.py.patch1 &&
     status=$?
     if [ $status -ne 0  ]; then
           echo "Migration patch filed: $status"
@@ -49,9 +49,13 @@ else
         fi
 fi
 
- $RUN_PYTHON manage.py migrate django_cron &&
- $RUN_PYTHON manage.py migrate sites 0001_initial &&
- $RUN_PYTHON manage.py migrate sites 0002_alter_domain_unique &&
- $RUN_PYTHON manage.py migrate sessions &&
- $RUN_PYTHON manage.py migrate &&
- ECHO 'ALTER TABLE django_admin_log RENAME COLUMN "user" TO "user_id";' | $RUN_PYTHON manage.py dbshell
+$RUN_PYTHON manage.py migrate django_cron &&
+$RUN_PYTHON manage.py migrate sites 0001_initial &&
+$RUN_PYTHON manage.py migrate sites 0002_alter_domain_unique &&
+$RUN_PYTHON manage.py migrate sessions &&
+$RUN_PYTHON manage.py migrate
+if [ $POETRY_ENV ]; then
+    ECHO 'ALTER TABLE django_admin_log RENAME COLUMN "user" TO "user_id";' | $RUN_PYTHON manage.py dbshell
+else
+    ECHO 'ALTER TABLE django_admin_log RENAME COLUMN "user" TO "user_id";' | python manage.py dbshell
+fi

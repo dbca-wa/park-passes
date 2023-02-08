@@ -45,12 +45,16 @@ class RetailerGroupAdmin(admin.ModelAdmin):
     inlines = [RetailerGroupUserInline]
 
     def organisation_name(self, obj):
-        return obj.organisation["organisation_name"]
+        if obj.organisation:
+            return obj.organisation["organisation_name"]
+        return "No Organisation Assigned"
 
     organisation_name.short_description = "Ledger Organisation Name"
 
     def organisation_abn(self, obj):
-        return obj.organisation["organisation_abn"]
+        if obj.organisation:
+            return obj.organisation["organisation_abn"]
+        return "No Organisation Assigned"
 
     organisation_abn.short_description = "Ledger Organisation ABN"
 
