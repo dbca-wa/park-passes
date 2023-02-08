@@ -181,6 +181,20 @@ class PassType(models.Model):
                 pricing_window=default_pricing_window
             )
 
+    @classmethod
+    def check_required_pass_types_exist(cls, messages, critical_issues):
+        pass_types_missing = False
+        for pass_type in settings.PASS_TYPES:
+            if not PassType.objects.filter(name=pass_type[0]).exists():
+                pass_types_missing = True
+                critical_issues.append(
+                    "CRITICAL: Pass type with name {} does not exist.".format(
+                        pass_type[0]
+                    )
+                )
+        if not pass_types_missing:
+            messages.append("All required pass types exist.")
+
 
 class PassTypePricingWindowManager(models.Manager):
     def get_queryset(self):
