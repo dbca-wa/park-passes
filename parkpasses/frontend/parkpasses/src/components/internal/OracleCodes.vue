@@ -29,7 +29,7 @@
             </div>
           </div>
 
-          <form @submit.prevent @input="triggerUpdate()">
+          <form @submit.prevent @input="triggerUpdate($event)" class="needs-validation" novalidate>
             <table class="table table-sm">
               <thead>
                 <tr>
@@ -50,7 +50,11 @@
                   <td>{{ oracleCode.option_name }}</td>
                   <td class="col-md-4">
                     <input type="hidden" name="id" v-model="oracleCode.id" />
-                    <input class="form-control" type="text" v-model="oracleCode.oracle_code" /></td>
+                    <input class="form-control" type="text" v-model="oracleCode.oracle_code" required minlength="1" />
+                    <div class="invalid-feedback">
+                      Please enter an oracle code.
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -165,13 +169,24 @@ export default {
         },
         triggerUpdate: function(event) {
           let vm = this;
-          console.log('calling triggerUpdate');
-          if(!vm.updateCalled){
-            vm.updateCalled = true;
-            setTimeout(function(event) {
-              vm.updateOracleCodes();
-            }, vm.saveDelay);
-          }
+          var forms = document.querySelectorAll('.needs-validation')
+          Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                if(form.checkValidity()){
+                  console.log('calling triggerUpdate');
+                  if(!vm.updateCalled){
+                    vm.updateCalled = true;
+                    setTimeout(function(event) {
+                      vm.updateOracleCodes(event);
+                    }, vm.saveDelay);
+                  }
+                } else {
+                    form.classList.add('was-validated');
+                    console.log($(".invalid-feedback:first"));
+                    $(".invalid-feedback:visible:first").siblings('input').focus();
+                }
+
+            });
         },
         updateOracleCodes: function(event) {
           let vm = this;
