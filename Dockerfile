@@ -21,12 +21,6 @@ RUN sed 's/archive.ubuntu.com/au.archive.ubuntu.com/g' /etc/apt/sources.list > /
 RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
 # Use Australian Mirrors
 
-# TODO: Used for testing with newer versions of libreoffice
-# Add libreoffice ppa to use newer version
-# RUN apt-get install software-properties-common
-# RUN apt-get update
-# RUN add-apt-repository ppa:libreoffice/ppa
-
 # Stop docker removing the cached os level packages
 RUN rm -f /etc/apt/apt.conf.d/docker-clean
 
@@ -34,7 +28,10 @@ RUN --mount=type=cache,target=/var/cache/apt apt-get clean && \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils libproj-dev gdal-bin vim postgresql-client htop libspatialindex-dev \
-	    python3-setuptools python3-dev python3-pip tzdata cron rsyslog gunicorn libpq-dev patch postgresql-client mtr python3-pil libreoffice ca-certificates
+	    python3-setuptools python3-dev python3-pip tzdata cron rsyslog gunicorn libpq-dev patch postgresql-client mtr python3-pil libreoffice ttf-mscorefonts-installer ca-certificates
+
+# Flush the font cache
+RUN fc-cache -vr
 
 RUN update-ca-certificates
 
