@@ -120,6 +120,8 @@ class Command(BaseCommand):
                     "Email of new Gold Pass Information sent to PICA.",
                 )
             except Exception as e:
+                logger.exception(e)
                 raise SendGoldPassDetailsToPICAEmailFailed(
-                    error_message.format(self.id, e)
+                    "There was an exception trying to send gold pass details to PICA. "
+                    f"Date {date}, Passes: {passes}, File Path: {file_path}. Exception: {e}"
                 )

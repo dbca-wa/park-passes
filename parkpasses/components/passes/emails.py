@@ -277,7 +277,7 @@ class PassEmails:
             "site_url": settings.SITE_URL,
         }
         attachments = []
-        with open(gold_passes_excel_file_path) as f:
+        with open(gold_passes_excel_file_path, encoding="ISO-8859-1") as f:
             content = f.read()
         file_name = os.path.basename(gold_passes_excel_file_path)
         attachment = (
