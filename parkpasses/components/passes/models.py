@@ -846,8 +846,17 @@ class Pass(models.Model):
         pass_type = self.option.pricing_window.pass_type
         pass_template = PassTemplate.get_template_by_pass_type(pass_type)
         pass_utils = PassUtils()
+        safe_template_path = "/parkpasses/PassTemplate/"
+        pass_template_path = os.path.normpath(f"/{pass_template.template.name}")
+        if (
+            os.path.commonprefix(
+                (os.path.realpath(pass_template_path), safe_template_path)
+            )
+            != safe_template_path
+        ):
+            raise ValueError("Unsafe path detected in safe_template_path")
         pass_utils.generate_pass_pdf_from_docx_template(
-            self, pass_template, qr_code_path
+            self, pass_template_path, qr_code_path
         )
 
     def imaginary_encryption_endpoint(self, json_pass_data):

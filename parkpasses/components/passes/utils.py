@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 class PassUtils:
     def generate_pass_pdf_from_docx_template(
-        self, park_pass, pass_template, qr_code_path
+        self, park_pass, pass_template_path, qr_code_path
     ):
         park_pass_docx = DocxTemplate(
-            f"{settings.PROTECTED_MEDIA_ROOT}/{pass_template.template.name}"
+            f"{settings.PROTECTED_MEDIA_ROOT}{pass_template_path}"
         )
 
         date_format = DateFormat(park_pass.date_start)
@@ -152,8 +152,8 @@ class PassUtils:
 
         park_pass_pdf_file_name = "ParkPass.pdf"
         park_pass_pdf_path = park_pass_file_path + park_pass_pdf_file_name
-
         new_path = park_pass_file_path + f"{park_pass.pass_number}.pdf"
+
         os.rename(
             settings.PROTECTED_MEDIA_ROOT + "/" + park_pass_pdf_path,
             settings.PROTECTED_MEDIA_ROOT + "/" + new_path,
