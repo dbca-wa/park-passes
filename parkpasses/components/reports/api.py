@@ -134,29 +134,28 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
     def pay_invoice(self, request, *args, **kwargs):
         logger.info("Pay Invoice")
         report = self.get_object()
-        return_url = request.build_absolute_uri(
-            reverse(
-                "retailer-reports-pay-invoice-success",
-                kwargs={"report_number": report.report_number},
-            )
+        return_url = reverse(
+            "retailer-reports-pay-invoice-success",
+            kwargs={"report_number": report.report_number},
         )
-        # return_preload_url = request.build_absolute_uri(reverse("ledger-api-retailer-invoice-success-callback",
-        # kwargs={"uuid": report.uuid}))
-        fallback_url = request.build_absolute_uri(
-            reverse(
-                "retailer-reports-pay-invoice-failure",
-                kwargs={"report_number": report.report_number},
-            )
+        fallback_url = reverse(
+            "retailer-reports-pay-invoice-failure",
+            kwargs={"report_number": report.report_number},
         )
+
         logger.info(f"Return URL: {return_url}")
-        # logger.info(f"Return Preload URL: {return_preload_url}")
         logger.info(f"Fallback URL: {fallback_url}")
         payment_session = generate_payment_session(
-            request, report.invoice_reference, return_url, fallback_url
+            request,
+            report.invoice_reference,
+            request.build_absolute_uri(return_url),
+            request.build_absolute_uri(fallback_url),
         )
         logger.info(f"Payment session: {payment_session}")
+
         if 200 == payment_session["status"]:
-            return redirect(payment_session["payment_url"])
+            return redirect(reverse("ledgergw-payment-details"))
+
         return redirect(fallback_url)
 
 
