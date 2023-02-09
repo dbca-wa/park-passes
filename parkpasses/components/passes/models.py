@@ -854,7 +854,7 @@ class Pass(models.Model):
             )
             != safe_template_path
         ):
-            raise ValueError("Unsafe path detected in safe_template_path")
+            raise ValueError("Unsafe path detected in pass_template_path")
         pass_utils.generate_pass_pdf_from_docx_template(
             self, pass_template_path, qr_code_path
         )
