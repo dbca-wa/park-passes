@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 cron_email = logging.getLogger("cron_email")
 
-LOGFILE = "logs/" + settings.CRON_EMAIL_FILE_NAME  # This file is used temporarily.
+LOGFILE = "/app/logs/" + settings.CRON_EMAIL_FILE_NAME  # This file is used temporarily.
 # It's cleared whenever this cron starts, then at the end the contents of this file is emailed.
 
 
