@@ -72,8 +72,8 @@
                 <div class="col-12 col-lg-12 col-xl-3">
                     <input type="date" id="datetimeToEmail" name="datetimeToEmail" v-model="voucher.datetimeToEmail" class="form-control" required="required" :min="startDate()" :max="endDate()">
                 </div>
-                <div class="col-12 col-lg-12 col-xl-3">
-                    <i class="fa-solid fa-circle-question org-icon-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="Leave as today to have the voucher sent immediately"></i>
+                <div class="col-12 col-lg-12 col-xl-6">
+                    &nbsp;<span class="fs-6 text-muted">Leave as today to have the voucher sent immediately</span>
                 </div>
             </div>
             <!--
@@ -232,7 +232,6 @@ export default {
         }
     },
     created: function () {
-
     },
     mounted: function () {
         this.$refs.amount.focus();
