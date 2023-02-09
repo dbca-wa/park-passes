@@ -61,15 +61,16 @@ RUN python manage.py collectstatic --no-input
 COPY .git ./.git
 
 # Install the project (ensure that frontend projects have been built prior to this step).
-COPY ./timezone /etc/timezone
+COPY timezone /etc/timezone
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN touch /app/rand_hash
-COPY ./cron /etc/cron.d/dockercron
+COPY cron /etc/cron.d/dockercron
 RUN chmod 0644 /etc/cron.d/dockercron
 RUN crontab /etc/cron.d/dockercron
 RUN touch /var/log/cron.log
 RUN service cron start
+
 COPY ./startup.sh /
 RUN chmod 755 /startup.sh
 EXPOSE 8080
