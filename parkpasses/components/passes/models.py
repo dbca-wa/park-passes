@@ -846,8 +846,17 @@ class Pass(models.Model):
         pass_type = self.option.pricing_window.pass_type
         pass_template = PassTemplate.get_template_by_pass_type(pass_type)
         pass_utils = PassUtils()
+        safe_template_path = "/parkpasses/PassTemplate/"
+        pass_template_path = os.path.normpath(f"/{pass_template.template.name}")
+        if (
+            os.path.commonprefix(
+                (os.path.realpath(pass_template_path), safe_template_path)
+            )
+            != safe_template_path
+        ):
+            raise ValueError("Unsafe path detected in pass_template_path")
         pass_utils.generate_pass_pdf_from_docx_template(
-            self, pass_template, qr_code_path
+            self, pass_template_path, qr_code_path
         )
 
     def imaginary_encryption_endpoint(self, json_pass_data):
@@ -1235,6 +1244,13 @@ class DistrictPassTypeDurationOracleCode(models.Model):
 
     @classmethod
     def check_oracle_codes_have_been_entered(cls, messages, critical_issues):
+        district_based_oracle_codes = cls.objects.all()
+        if 0 == district_based_oracle_codes.count():
+            critical_issues.append(
+                "CRITICAL: There are no district-based oracle codes. "
+                "Please run the oracle_codes_create_initial_records management command to generate the required codes."
+            )
+            return
         unentered_oracle_codes = cls.objects.filter(
             oracle_code=settings.UNENTERED_ORACLE_CODE_LABEL
         )
@@ -1243,4 +1259,6 @@ class DistrictPassTypeDurationOracleCode(models.Model):
                 f"There are {unentered_oracle_codes.count()} district-based oracle codes that have not been entered."
             )
         else:
-            messages.append("All district-based oracle codes have been entered.")
+            messages.append(
+                "SUCCESS: All district-based oracle codes have been entered."
+            )

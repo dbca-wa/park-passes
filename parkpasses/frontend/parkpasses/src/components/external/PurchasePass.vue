@@ -255,10 +255,10 @@
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="renewAutomatically" class="col-form-label">Automatically Renew at Expiry?</label>
                             </div>
-                            <div class="col-12 col-lg-12 col-xl-3">
+                            <div class="col-12 col-lg-12 col-xl-9">
                                 <div class="form-switch">
                                     <input class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="renewAutomatically" name="renewAutomatically" v-model="pass.renew_automatically">
-                                    <i class="fa-solid fa-circle-question org-icon-primary ps-1" data-bs-toggle="tooltip" data-bs-placement="right" :title="`Park pass prices are subject to change. You will be emailed ${passReminderDaysPrior} days before auto renewal with a quote for the next park pass.`"></i>
+                                    &nbsp;<span class="fs-6 text-muted">{{ `Park pass prices are subject to change. You will be emailed ${passReminderDaysPrior} days before auto renewal with a quote for the next park pass.` }}</span>
                                 </div>
                             </div>
                         </div>
@@ -452,6 +452,7 @@
 
 <script>
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
+import { Tooltip } from 'bootstrap'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
 import BootstrapAlert from '@/utils/vue/BootstrapAlert.vue'
@@ -1171,17 +1172,22 @@ export default {
     },
     mounted: function () {
         let vm = this;
+
+        new Tooltip(document.body, {
+         selector: "[data-bs-toggle='tooltip']",
+        })
+
         if(vm.store.userData){
             if(vm.store.userData.is_authenticated&&'external'==vm.store.userData.authorisation_level) {
                 vm.pass.first_name = vm.store.userData.user.first_name
                 vm.pass.last_name = vm.store.userData.user.last_name
                 vm.pass.email = vm.store.userData.user.email
             }
-
         }
         if(vm.isRetailer) {
             vm.fetchRetailerGroupsForUser();
         }
+
     }
 };
 </script>
