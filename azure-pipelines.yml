@@ -31,6 +31,8 @@ stages:
               $(tagDate)
         containerRegistry: DockerHub
         repository: dbcawa/park-passes
+      env:
+        DOCKER_BUILDKIT: 1
     - task: Docker@2
       displayName: Dev Build image and Push
       inputs:
@@ -41,3 +43,5 @@ stages:
               park-passes_dev_$(tagDate)
         containerRegistry: DockerHub
         repository: dbcawa/docker_app_dev
+      env:
+        DOCKER_BUILDKIT: 1
