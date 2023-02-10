@@ -12,6 +12,9 @@ if [ $status -ne 0  ]; then
         exit $status
     fi
 
+    # Activate the virtual environment
+    source .venv/bin/activate
+
     # Start the second process
     gunicorn parkpasses.wsgi --bind :8080 --config /app/gunicorn.ini
     status=$?
