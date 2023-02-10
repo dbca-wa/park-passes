@@ -15,7 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     SECRET_KEY="ThisisNotRealKey" \
     OSCAR_SHOP_NAME='Park Passes' \
     BPAY_ALLOWED=False \
-    POETRY_VERSION=1.2.2
+    POETRY_VERSION=1.2.1
 
 # Use Australian Mirrors
 RUN sed 's/archive.ubuntu.com/au.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list && \
@@ -37,7 +37,6 @@ RUN --mount=type=cache,target=/var/cache/apt apt-get update && \
     vim \
     postgresql-client \
     htop \
-    libspatialindex-dev \
     python3-setuptools \
     python3-dev \
     python3-pip \
@@ -56,12 +55,14 @@ RUN --mount=type=cache,target=/var/cache/apt apt-get update && \
     fc-cache -vr && \
     update-ca-certificates
 
+# Create symlink for python3
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
 # install node 16
 RUN touch install_node.sh && \
     curl -fsSL https://deb.nodesource.com/setup_16.x -o install_node.sh && \
     chmod +x install_node.sh && ./install_node.sh && \
     apt-get install -y nodejs && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
     pip install --upgrade pip
 
 
@@ -77,12 +78,9 @@ COPY parkpasses ./parkpasses
 # Install the python dependencies.
 COPY gunicorn.ini manage.py pyproject.toml poetry.lock ./
 RUN pip install "poetry==$POETRY_VERSION" && \
-    poetry config virtualenvs.in-project true && \
-    poetry install --only main --no-root --no-interaction --no-ansi && \
+    poetry config virtualenvs.create false && \
+    poetry install --only main--no-interaction --no-ansi && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
-
-ENV PATH="/app/.venv/bin:${PATH}" \
-    VIRTUAL_ENV="/app/.venv"
 
 # Do a clean install and build of the vue 3 application
 RUN cd /app/parkpasses/frontend/parkpasses; npm ci --omit=dev && \
