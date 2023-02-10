@@ -1,5 +1,3 @@
-# syntax = docker/dockerfile:1.2
-
 # Prepare the base environment.
 FROM ubuntu:22.04 as builder_base_oim_parkpasses
 
@@ -19,11 +17,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Use Australian Mirrors
 RUN sed 's/archive.ubuntu.com/au.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list && \
-    mv /etc/apt/sourcesau.list /etc/apt/sources.list && \
-    rm -f /etc/apt/apt.conf.d/docker-clean
+    mv /etc/apt/sourcesau.list /etc/apt/sources.list
 
 # Install system level dependencies, flush the font cache and update ca certificates.
-RUN --mount=type=cache,target=/var/cache/apt apt-get update && \
+RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install --no-install-recommends -y \
     curl \
