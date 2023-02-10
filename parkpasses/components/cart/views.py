@@ -1,9 +1,24 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-from django.views.generic.base import TemplateView
+from django.urls import reverse
+from django.views.generic.base import RedirectView, TemplateView
 
 from parkpasses.forms import LoginForm
 from parkpasses.helpers import is_internal
+
+
+class LoginSuccessView(LoginRequiredMixin, RedirectView):
+    """This view is called when the oauth2 login is successful."""
+
+    permanent = False
+    pattern_name = "home"
+
+    # If the user has any items in their cart, redirect them to the cart page
+    # otherwise, redirect them to the home page.
+    def get_redirect_url(self, *args, **kwargs):
+        if self.request.session["cart_item_count"] > 0:
+            return reverse("user-cart")
+        return super().get_redirect_url(*args, **kwargs)
 
 
 class CartView(LoginRequiredMixin, TemplateView):

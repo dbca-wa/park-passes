@@ -117,3 +117,6 @@ uwsgi*.ini
 parkpasses/static/parkpasses_vue/
 
 git_history_recent
+
+# A file that I can play around with to test if a build will succeed
+DockerfileTest
