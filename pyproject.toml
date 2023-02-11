@@ -62,7 +62,7 @@ pymupdf = "^1.21.1"
 django-colorfield = "^0.8.0"
 
 [tool.poetry.group.dev.dependencies]
-ipython = "^8.3.0"
+ipython = "^8.10.0"
 ipdb = "^0.13.9"
 pylint = "2.13.8"
 flake8 = "4.0.1"
