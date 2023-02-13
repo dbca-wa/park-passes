@@ -49,17 +49,19 @@ RUN --mount=type=cache,target=/var/cache/apt apt-get update && \
     mtr \
     python3-pil \
     libreoffice \
-    ttf-mscorefonts-installer \
     ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
-    fc-cache -vr && \
     update-ca-certificates
 
-# Create symlink for python3
-RUN ln -s /usr/bin/python3 /usr/bin/python
+# Install the arial font manually as ttf-mscorefonts-installer was breaking the build
+COPY parkpasses/static/parkpasses/fonts/arial.ttf ./
+RUN install -m644 arial.ttf /usr/share/fonts/truetype/ && \
+    rm arial.ttf && \
+    fc-cache -vr
 
 # install node 16
-RUN touch install_node.sh && \
+RUN ln -s /usr/bin/python3 /usr/bin/python && \
+    touch install_node.sh && \
     curl -fsSL https://deb.nodesource.com/setup_16.x -o install_node.sh && \
     chmod +x install_node.sh && ./install_node.sh && \
     apt-get install -y nodejs && \
@@ -67,32 +69,32 @@ RUN touch install_node.sh && \
 
 
 FROM builder_base_oim_parkpasses as python_dependencies_parkpasses
-# Copy the project files to the image.
 WORKDIR /app
-COPY parkpasses ./parkpasses
-
 # Copy these files accross to the image the first time you deploy to a new environment
 # and run the apply_initial_migrations.sh script.
 # COPY 0001_initial.py.patch1 0001_initial.py.patch2 apply_initial_migrations.sh ./
-
-# Install the python dependencies.
-COPY gunicorn.ini manage.py pyproject.toml poetry.lock ./
+COPY manage.py pyproject.toml poetry.lock ./
 RUN pip install "poetry==$POETRY_VERSION" && \
     poetry config virtualenvs.create false && \
-    poetry install --only main--no-interaction --no-ansi && \
+    poetry install --only main --no-interaction --no-ansi && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
-# Do a clean install and build of the vue 3 application
-RUN cd /app/parkpasses/frontend/parkpasses; npm ci --omit=dev && \
-    cd /app/parkpasses/frontend/parkpasses; npm run build
 
+# Do a clean install and build of the vue 3 application
+FROM python_dependencies_parkpasses as collect_static_parkpasses
+COPY parkpasses ./parkpasses
 RUN touch /app/.env && \
     python manage.py collectstatic --no-input
 
+
+FROM collect_static_parkpasses as install_build_vue3_parkpasses
+RUN cd /app/parkpasses/frontend/parkpasses; npm ci --omit=dev && \
+    cd /app/parkpasses/frontend/parkpasses; npm run build
+
+
+FROM install_build_vue3_parkpasses as configure_and_launch_parkpasses
+
 COPY .git ./.git
-
-
-FROM python_dependencies_parkpasses as configure_and_launch_parkpasses
 
 # Install the project (ensure that frontend projects have been built prior to this step).
 COPY timezone /etc/timezone
@@ -105,7 +107,7 @@ RUN chmod 0644 /etc/cron.d/dockercron && \
     touch /var/log/cron.log && \
     service cron start
 
-COPY startup.sh /
+COPY gunicorn.ini startup.sh /
 RUN chmod 755 /startup.sh
 EXPOSE 8080
 HEALTHCHECK --interval=1m --timeout=5s --start-period=10s --retries=3 CMD ["wget", "-q", "-O", "-", "http://localhost:8080/"]
