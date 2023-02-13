@@ -73,7 +73,7 @@ WORKDIR /app
 # Copy these files accross to the image the first time you deploy to a new environment
 # and run the apply_initial_migrations.sh script.
 # COPY 0001_initial.py.patch1 0001_initial.py.patch2 apply_initial_migrations.sh ./
-COPY manage.py pyproject.toml poetry.lock ./
+COPY gunicorn.ini manage.py pyproject.toml poetry.lock ./
 RUN pip install "poetry==$POETRY_VERSION" && \
     poetry config virtualenvs.create false && \
     poetry install --only main --no-interaction --no-ansi && \
@@ -107,7 +107,7 @@ RUN chmod 0644 /etc/cron.d/dockercron && \
     touch /var/log/cron.log && \
     service cron start
 
-COPY gunicorn.ini startup.sh /
+COPY startup.sh /
 RUN chmod 755 /startup.sh
 EXPOSE 8080
 HEALTHCHECK --interval=1m --timeout=5s --start-period=10s --retries=3 CMD ["wget", "-q", "-O", "-", "http://localhost:8080/"]
