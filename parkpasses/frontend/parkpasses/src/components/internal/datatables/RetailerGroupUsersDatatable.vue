@@ -417,14 +417,14 @@ export default {
             let vm = this;
 
             // Pass Types
-            fetch(apiEndpoints.retailerGroupListInternal)
+            fetch(apiEndpoints.activeRetailerGroupListInternal)
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
                     const error = (data && data.message) || response.statusText;
                     return Promise.reject(error);
                 }
-                vm.retailerGroups = data.results
+                vm.retailerGroups = data
             })
             .catch(error => {
                 //this.errorMessage = error;
