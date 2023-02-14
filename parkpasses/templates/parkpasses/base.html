@@ -60,6 +60,15 @@
             <link rel="stylesheet" href="{% static 'parkpasses_vue/css/app.css' %}?v={{build_tag}}">
         {% endblock %}
         {% block custom_js %}
+            {% google_analytics_account_id as google_analytics_account_id %}
+            <!-- Google tag (gtag.js) -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id={{google_analytics_account_id}}"></script>
+            <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{google_analytics_account_id}}');
+            </script>
             {% build_tag as build_tag %}
             <script type="text/javascript" src="{% static 'parkpasses_vue/js/chunk-vendors.js' %}?v={{build_tag}}"></script>
             <script type="text/javascript" src="{% static 'parkpasses_vue/js/app.js' %}?v={{build_tag}}"></script>
