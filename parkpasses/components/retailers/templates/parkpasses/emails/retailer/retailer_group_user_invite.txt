@@ -11,10 +11,9 @@
 
             Which will allow you to log in and take retail sales.
 
-            To accept the invitiation please click the following link, create an account and log in:
+            <p>To accept the invitiation please go to the following url in your web browser:</p>
 
-            {# See the LoginSuccessView for the code that redirects the user to the invite page after they log in #}
-            {{SITE_URL}}{% url 'ssologin' %}
+            {{SITE_URL}}{% url 'respond-to-invite' uuid=retailer_group_user_invite.uuid %}
 
             When you click the link, you will be prompted to log in or create a new user account.
 
