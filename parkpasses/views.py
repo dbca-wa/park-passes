@@ -33,6 +33,7 @@ class RetailerSellAPassView(UserPassesTestMixin, TemplateView):
         return is_retailer(self.request)
 
     def get(self, *args, **kwargs):
+        # This stops retailers adding more than one item to the cart at a time
         cart_item_count = self.request.session.get("cart_item_count", None)
 
         if cart_item_count and cart_item_count > 0:
