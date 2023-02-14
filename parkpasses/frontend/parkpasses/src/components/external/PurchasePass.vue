@@ -168,7 +168,7 @@
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
                                 <ul class="parks-list">
-                                    <li v-for="park in pass.park_group.parks" class="park"><span class="badge">{{ park.name }}</span></li>
+                                    <li v-for="park in pass.park_group.parks" class="park mb-1"><span class="badge fs-6">{{ park.name }}</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -282,7 +282,7 @@
                                     Please enter a valid vehicle registration.
                                 </div>
                             </div>
-                            <div v-if="!isHolidayPass" class="col-12 pt-3 col-lg-6 pt-lg-0 col-xl-3">
+                            <div v-if="!isHolidayPass" class="col-12 pt-3 col-lg-6 pt-lg-0 col-xl-4">
                                 <button @click="toggleExtraVehicle" class="btn licensing-btn-primary">{{extraVehicleText}}</button>
                             </div>
                         </div>
@@ -752,7 +752,7 @@ export default {
                     vm.passPrice = vm.passOptions[0].price
                 } else {
                     this.systemErrorMessage = constants.ERRORS.CRITICAL;
-                    console.error(`SYSTEM ERROR: Unable to load options for pass type id: ${vm.passTypeId}`);
+                    console.error(`SYSTEM ERROR: Unable to load options for pass type id: ${vm.passType.id}`);
                 }
             })
             .catch(error => {
@@ -1008,7 +1008,7 @@ export default {
         },
         validateDiscountCodeBackend: function () {
             let vm = this;
-            fetch(apiEndpoints.isDiscountCodeValid(vm.pass.email, vm.pass.discount_code, vm.passTypeId))
+            fetch(apiEndpoints.isDiscountCodeValid(vm.pass.email, vm.pass.discount_code, vm.passType.id))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
