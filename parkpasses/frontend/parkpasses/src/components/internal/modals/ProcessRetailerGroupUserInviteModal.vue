@@ -28,7 +28,7 @@
                         </div>
                         <div class="form-check form-switch">
                             <label for="makeAdmin" class="form-check-label">Make this User an Admin</label>
-                            <input class="form-check-input" type="checkbox" id="makeAdmin" name="makeAdmin" v-model="approval.is_admin" :checked="getAdminDefault" :disabled="getAdminDefault"  aria-describedby="makeAdminHelpBlock">
+                            <input class="form-check-input" type="checkbox" id="makeAdmin" name="makeAdmin" v-model="approval.is_admin" :disabled="getAdminDefault"  aria-describedby="makeAdminHelpBlock">
                         </div>
                         <div id="makeAdminHelpBlock" class="form-text">
                             Admin users can invite other users to their retailer group.
@@ -44,7 +44,6 @@
                                 The first user added to a group must be an admin.
                             </div>
                         </div>
-                        {{ approval }}
                     </div>
                     <div class="modal-footer">
                         <template v-if="loading">
@@ -93,12 +92,12 @@ export default {
             if (this.retailerGroupUserInvite){
                 console.log(this.retailerGroupUserInvite.user_count_for_retailer_group);
                 if(0==this.retailerGroupUserInvite.user_count_for_retailer_group){
+                    this.approval.is_admin = true;
                     return true;
                 }
             }
             console.log('returning false');
             return false;
-
         },
     },
     components: {
