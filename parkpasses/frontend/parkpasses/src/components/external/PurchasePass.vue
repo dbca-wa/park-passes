@@ -452,7 +452,6 @@
 
 <script>
 import { apiEndpoints, constants, helpers } from '@/utils/hooks'
-import { Tooltip } from 'bootstrap'
 import BootstrapSpinner from '@/utils/vue/BootstrapSpinner.vue'
 import BootstrapButtonSpinner from '@/utils/vue/BootstrapButtonSpinner.vue'
 import BootstrapAlert from '@/utils/vue/BootstrapAlert.vue'
@@ -1172,10 +1171,6 @@ export default {
     },
     mounted: function () {
         let vm = this;
-
-        new Tooltip(document.body, {
-         selector: "[data-bs-toggle='tooltip']",
-        })
 
         if(vm.store.userData){
             if(vm.store.userData.is_authenticated&&'external'==vm.store.userData.authorisation_level) {
