@@ -11,7 +11,7 @@
 
             Which will allow you to log in and take retail sales.
 
-            <p>To accept the invitiation please go to the following url in your web browser:</p>
+            To accept the invitiation please go to the following url in your web browser:
 
             {{SITE_URL}}{% url 'respond-to-invite' uuid=retailer_group_user_invite.uuid %}
 
