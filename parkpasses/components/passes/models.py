@@ -255,7 +255,7 @@ class PassTypePricingWindow(models.Model):
                 raise ValidationError(
                     "The start date must occur before the expiry date."
                 )
-            if self.date_expiry.date() <= timezone.now().date():
+            if self.date_expiry <= timezone.now().date():
                 raise ValidationError("The expiry date must be in the future.")
 
         super().save(*args, **kwargs)
