@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 cron_email = logging.getLogger("cron_email")
 
-LOGFILE = "/app/logs/" + settings.CRON_EMAIL_FILE_NAME  # This file is used temporarily.
+LOGFILE = "logs/" + settings.CRON_EMAIL_FILE_NAME  # This file is used temporarily.
 # It's cleared whenever this cron starts, then at the end the contents of this file is emailed.
 
 
@@ -23,47 +23,19 @@ class Command(BaseCommand):
 
         logger.info(f"Running command {__name__}\n\n")
 
-        logger.info("Running python manage.py parkpasses_check\n\n")
-        subprocess.call(
-            "python manage.py parkpasses_check" + stdout_redirect, shell=True
-        )
-        logger.info("Running python manage.py clear_expired_sessions\n\n")
-        subprocess.call(
-            "python manage.py clear_expired_sessions" + stdout_redirect, shell=True
-        )
-        logger.info(
-            "Running python manage.py pass_send_vehicle_details_not_provided_notification_emails\n\n"
-        )
-        subprocess.call(
-            "python manage.py pass_send_vehicle_details_not_provided_notification_emails"
-            + stdout_redirect,
-            shell=True,
-        )
-        logger.info(
-            "Running python manage.py pass_send_expired_notification_emails\n\n"
-        )
-        subprocess.call(
-            "python manage.py pass_send_expired_notification_emails" + stdout_redirect,
-            shell=True,
-        )
-        logger.info(
-            "Running python manage.py pass_send_autorenew_and_expiry_notification_emails\n\n"
-        )
-        subprocess.call(
-            "python manage.py pass_send_autorenew_and_expiry_notification_emails"
-            + stdout_redirect,
-            shell=True,
-        )
-        logger.info("Running python manage.py pass_process_autorenew_payments\n\n")
-        subprocess.call(
-            "python manage.py pass_process_autorenew_payments" + stdout_redirect,
-            shell=True,
-        )
-        logger.info("Running python manage.py pass_send_gold_pass_details_to_pica\n\n")
-        subprocess.call(
-            "python manage.py pass_send_gold_pass_details_to_pica" + stdout_redirect,
-            shell=True,
-        )
+        manage_script = "python manage.py"
+        commands_to_run = [
+            "parkpasses_check",
+            "clear_expired_sessions",
+            "pass_send_vehicle_details_not_provided_notification_emails",
+            "pass_send_expired_notification_emails",
+            "pass_send_autorenew_and_expiry_notification_emails",
+            "pass_process_autorenew_payments",
+            "pass_send_gold_pass_details_to_pica",
+        ]
+        for command in commands_to_run:
+            logger.info(f"Running {manage_script} {command}\n\n")
+            subprocess.call(f"{manage_script} {command}" + stdout_redirect, shell=True)
 
         logger.info(f"Command {__name__} completed")
         self.send_email()
