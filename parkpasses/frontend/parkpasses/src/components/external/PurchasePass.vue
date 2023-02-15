@@ -184,7 +184,7 @@
                         </div>
                         <div v-if="racMember" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="racDiscountCode" class="col-form-label">RAC Discount Code</label>
+                                <label for="racDiscountCode" class="col-form-label">RAC Member Number</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" @keyup="validateRacDiscountCode()" id="racDiscountCode" name="racDiscountCode" ref="racDiscountCode" v-model="pass.rac_discount_code" class="form-control short-control" minlength="20" maxlength="20">
@@ -829,13 +829,19 @@ export default {
                 } else {
                     this.passPrice = this.passOptions[0].price
                 }
-            } else {
-                this.pass.concession_type = 0;
+                this.pass.concession_id = 0;
             }
             console.log('this.racMember = ' + this.racMember);
             if(!this.racMember){
                 this.pass.rac_discount_code = '';
                 this.racDiscountCodePercentage = 0;
+            }
+            // Recalculate the discount amount if it is percentage based
+            if('percentage'==this.discountType) {
+                console.log('Recalcuating discount amount')
+                console.log('this.totalPrice = ' + this.totalPrice)
+                this.discountCodeDiscount = this.totalPrice * (this.discountPercentage/100);
+                this.discountCodeDiscount = this.discountCodeDiscount.toFixed(2);
             }
         },
         updateConcessionDiscount: function (event) {
@@ -848,6 +854,7 @@ export default {
                     this.concessionDiscountPercentage = this.concessions[event.target.selectedIndex-1].discount_percentage
                 }
             }
+            this.resetPrice();
         },
         toggleExtraVehicle: function (e) {
             e.preventDefault();
@@ -911,6 +918,7 @@ export default {
             } else {
                 if(0==this.pass.discount_code.length){
                     this.$refs.discountCode.setCustomValidity("");
+                    this.discountCodeDiscount = 0.00;
                     return true;
                 } else {
                     return this.validateDiscountCodeBackend();
@@ -1019,8 +1027,8 @@ export default {
                 const isDiscountCodeValid = data.is_discount_code_valid;
                 console.log('isDiscountCodeValid = ' + isDiscountCodeValid)
                 if(!isDiscountCodeValid){
-                    this.$refs.discountCode.setCustomValidity("Invalid field.");
-                    this.discountCodeDiscount = 0.00;
+                    vm.$refs.discountCode.setCustomValidity("Invalid field.");
+                    vm.discountCodeDiscount = 0.00;
                     return false;
                 } else {
                     vm.discountType = data.discount_type
