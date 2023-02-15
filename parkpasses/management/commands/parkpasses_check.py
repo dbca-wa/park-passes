@@ -21,7 +21,7 @@ class Command(BaseCommand):
         park_passes_system_check(messages, critical_issues)
 
         for message in messages:
-            self.stdout.write(self.style.SUCCESS(f"\t{message}\n"))
+            self.stdout.write(self.style.SUCCESS(f"{message}\n"))
 
         critical_issue_count = len(critical_issues)
 
@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 )
             )
             for critical_issue in critical_issues:
-                self.stdout.write(self.style.ERROR(f"\t{critical_issue}\n"))
+                self.stdout.write(self.style.ERROR(f"{critical_issue}\n"))
             self.stdout.write(
                 self.style.ERROR("THE SYSTEM REQUIRES URGENT ATTENTION.\n")
             )
