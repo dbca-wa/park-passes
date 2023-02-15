@@ -691,7 +691,8 @@ class CartItem(models.Model):
     def get_discount_code_discount_as_amount(self):
         if not self.discount_code_usage:
             return Decimal(0.00)
-        price_before_discounts = self.get_price_before_discounts()
+        # The discount amount is applied to the price after concession
+        price_before_discounts = self.get_concession_price()
         discount_code_batch = self.discount_code_usage.discount_code.discount_code_batch
         if discount_code_batch.discount_amount:
             return (
