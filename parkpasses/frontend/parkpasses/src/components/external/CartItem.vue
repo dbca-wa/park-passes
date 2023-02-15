@@ -182,7 +182,7 @@ export default {
             }
             console.log('discountAmount = ' + cartItem.discount_code.discount);
             if('percentage'==cartItem.discount_code.discount_type){
-                const priceBeforeDiscount = cartItem.price;
+                const priceBeforeDiscount = cartItem.price_after_concession_applied;
                 const discount = cartItem.discount_code.discount;
                 const percentage = discount / 100;
                 const price = priceBeforeDiscount * percentage;

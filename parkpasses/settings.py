@@ -459,6 +459,8 @@ UNLIMITED_USES_TEXT = "Unlimited"
 
 USE_DUMMY_QR_CODE_DATA = env("USE_DUMMY_QR_CODE_DATA", True)
 
+GOOGLE_ANALYTICS_ACCOUNT_ID = env("GOOGLE_ANALYTICS_ACCOUNT_ID")
+
 """ ==================== USER ACTIONS ======================== """
 
 

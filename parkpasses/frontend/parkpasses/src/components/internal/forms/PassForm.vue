@@ -154,13 +154,13 @@
                             <div v-if="pass.voucher_number" class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Voucher Used for Payment</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">{{ voucher_number }}</span>
+                                    <span class="form-text">{{ pass.voucher_number }}</span>
                                 </div>
                             </div>
                             <div v-if="pass.voucher_transaction_amount" class="row mb-1">
-                                <label class="col-sm-4 col-form-label">Voucher Amount</label>
+                                <label class="col-sm-4 col-form-label">Voucher Transaction Amount</label>
                                 <div class="col-sm-8">
-                                    <span class="form-text">{{ voucher_transaction_amount }}</span>
+                                    <span class="form-text">${{ pass.voucher_transaction_amount }}</span>
                                 </div>
                             </div>
                             <div v-if="pass.discount_code_used" class="row mb-1">

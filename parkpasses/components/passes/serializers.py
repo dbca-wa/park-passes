@@ -624,8 +624,13 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
         read_only=True,
         required=False,
     )
+    voucher_code = serializers.CharField(
+        source="voucher_transaction.voucher.code",
+        read_only=True,
+        required=False,
+    )
     voucher_transaction_amount = serializers.CharField(
-        source="voucher_transaction.voucher.amount"
+        source="voucher_transaction.debit"
     )
     user_can_edit = serializers.SerializerMethodField()
 

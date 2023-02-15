@@ -168,7 +168,7 @@
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
                                 <ul class="parks-list">
-                                    <li v-for="park in pass.park_group.parks" class="park"><span class="badge">{{ park.name }}</span></li>
+                                    <li v-for="park in pass.park_group.parks" class="park mb-1"><span class="badge fs-6">{{ park.name }}</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -184,7 +184,7 @@
                         </div>
                         <div v-if="racMember" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="racDiscountCode" class="col-form-label">RAC Discount Code</label>
+                                <label for="racDiscountCode" class="col-form-label">RAC Member Number</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
                                 <input type="text" @keyup="validateRacDiscountCode()" id="racDiscountCode" name="racDiscountCode" ref="racDiscountCode" v-model="pass.rac_discount_code" class="form-control short-control" minlength="20" maxlength="20">
@@ -211,10 +211,13 @@
                                 <label for="postcode" class="col-form-label">Concession Type</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
-                                <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" v-model="pass.concession_id" class="form-select" aria-label="Concession Type" required="required">
+                                <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" ref="concessionType" v-model="pass.concession_id" class="form-select" aria-label="Concession Type" required="required">
                                     <option disabled value="0" selected>Select The Concession Type</option>
                                     <option v-for="concession in concessions" :value="concession.id" :key="concession.id">{{concession.concession_type}} ({{concession.discount_percentage}}% Discount)</option>
                                 </select>
+                                <div class="invalid-feedback">
+                                    Please select a concession type.
+                                </div>
                             </div>
                         </div>
                         <div v-if="eligibleForConcession" class="row g-1 align-top mb-2">
@@ -230,7 +233,7 @@
                         </div>
                         <div v-if="eligibleForConcession" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="concessionCardExpiry" class="col-form-label">Concession Card Expiry</label>
+                                <label for="concessionCardEx" class="col-form-label">Concession Card Expiry</label>
                             </div>
                             <div class="col-12 col-sm-4 col-lg-3 col-xl-2">
                                 <select id="concessionCardExpiryMonth" name="concessionCardExpiryMonth" v-model="pass.concession_card_expiry_month" class="form-select" required="required">
@@ -282,7 +285,7 @@
                                     Please enter a valid vehicle registration.
                                 </div>
                             </div>
-                            <div v-if="!isHolidayPass" class="col-12 pt-3 col-lg-6 pt-lg-0 col-xl-3">
+                            <div v-if="!isHolidayPass" class="col-12 pt-3 col-lg-6 pt-lg-0 col-xl-4">
                                 <button @click="toggleExtraVehicle" class="btn licensing-btn-primary">{{extraVehicleText}}</button>
                             </div>
                         </div>
@@ -752,7 +755,7 @@ export default {
                     vm.passPrice = vm.passOptions[0].price
                 } else {
                     this.systemErrorMessage = constants.ERRORS.CRITICAL;
-                    console.error(`SYSTEM ERROR: Unable to load options for pass type id: ${vm.passTypeId}`);
+                    console.error(`SYSTEM ERROR: Unable to load options for pass type id: ${vm.passType.id}`);
                 }
             })
             .catch(error => {
@@ -829,13 +832,19 @@ export default {
                 } else {
                     this.passPrice = this.passOptions[0].price
                 }
-            } else {
-                this.pass.concession_type = 0;
+                this.pass.concession_id = 0;
             }
             console.log('this.racMember = ' + this.racMember);
             if(!this.racMember){
                 this.pass.rac_discount_code = '';
                 this.racDiscountCodePercentage = 0;
+            }
+            // Recalculate the discount amount if it is percentage based
+            if('percentage'==this.discountType) {
+                console.log('Recalcuating discount amount')
+                console.log('this.totalPrice = ' + this.totalPrice)
+                this.discountCodeDiscount = this.totalPrice * (this.discountPercentage/100);
+                this.discountCodeDiscount = this.discountCodeDiscount.toFixed(2);
             }
         },
         updateConcessionDiscount: function (event) {
@@ -844,10 +853,14 @@ export default {
             } else {
                 if(0==event.target.selectedIndex){
                     this.concessionDiscountPercentage = 0.00;
+                    this.$refs.concessionType.setCustomValidity("Invalid field.");
                 } else {
                     this.concessionDiscountPercentage = this.concessions[event.target.selectedIndex-1].discount_percentage
+                    this.$refs.concessionType.setCustomValidity("");
                 }
+
             }
+            this.resetPrice();
         },
         toggleExtraVehicle: function (e) {
             e.preventDefault();
@@ -911,6 +924,7 @@ export default {
             } else {
                 if(0==this.pass.discount_code.length){
                     this.$refs.discountCode.setCustomValidity("");
+                    this.discountCodeDiscount = 0.00;
                     return true;
                 } else {
                     return this.validateDiscountCodeBackend();
@@ -1008,7 +1022,7 @@ export default {
         },
         validateDiscountCodeBackend: function () {
             let vm = this;
-            fetch(apiEndpoints.isDiscountCodeValid(vm.pass.email, vm.pass.discount_code, vm.passTypeId))
+            fetch(apiEndpoints.isDiscountCodeValid(vm.pass.email, vm.pass.discount_code, vm.passType.id))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -1019,8 +1033,8 @@ export default {
                 const isDiscountCodeValid = data.is_discount_code_valid;
                 console.log('isDiscountCodeValid = ' + isDiscountCodeValid)
                 if(!isDiscountCodeValid){
-                    this.$refs.discountCode.setCustomValidity("Invalid field.");
-                    this.discountCodeDiscount = 0.00;
+                    vm.$refs.discountCode.setCustomValidity("Invalid field.");
+                    vm.discountCodeDiscount = 0.00;
                     return false;
                 } else {
                     vm.discountType = data.discount_type
@@ -1081,6 +1095,9 @@ export default {
             if(vm.isEmailValid){
                 console.log("email is valid -- >")
                 this.validateConfirmEmail();
+                if(vm.eligibleForConcession && 0==vm.pass.concession_id){
+                    this.$refs.concessionType.setCustomValidity("Invalid field.");
+                }
                 if(!this.isRetailer){
                     if(this.pass.rac_discount_code){
                         this.validateRacDiscountCode();

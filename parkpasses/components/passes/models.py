@@ -193,7 +193,7 @@ class PassType(models.Model):
                     )
                 )
         if not pass_types_missing:
-            messages.append("All required pass types exist.")
+            messages.append("SUCCESS: All required pass types exist.")
 
 
 class PassTypePricingWindowManager(models.Manager):

@@ -255,7 +255,7 @@ class ValidateDiscountCodeView(APIView):
 
         if code and 8 == len(code) and email and pass_type_id:
             if DiscountCode.objects.filter(
-                invalidated=False,
+                discount_code_batch__invalidated=False,
                 code=code,
                 discount_code_batch__datetime_start__lte=timezone.now(),
                 discount_code_batch__datetime_expiry__gte=timezone.now(),
