@@ -161,7 +161,7 @@ class PassUtils:
 
         park_pass.park_pass_pdf.name = new_path
 
-        image_rectangle = fitz.Rect(409, 69, 529, 189)
+        image_rectangle = fitz.Rect(410, 69, 530, 189)
         file_handle = fitz.open(park_pass.park_pass_pdf.path)
         first_page = file_handle[0]
 
