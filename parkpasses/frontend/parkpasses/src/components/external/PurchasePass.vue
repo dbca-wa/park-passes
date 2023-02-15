@@ -236,12 +236,12 @@
                                 <label for="concessionCardEx" class="col-form-label">Concession Card Expiry</label>
                             </div>
                             <div class="col-12 col-sm-4 col-lg-3 col-xl-2">
-                                <select id="concessionCardEM" name="concessionCardEM" v-model="pass.concession_card_expiry_month" class="form-select" required="required">
+                                <select id="concessionCardExpiryMonth" name="concessionCardExpiryMonth" v-model="pass.concession_card_expiry_month" class="form-select" required="required">
                                     <option v-for="index in 12" :key="index" :value="index" :selected="1==index">{{index}}</option>
                                 </select>
                             </div>
                             <div class="col-12 col-sm-4 col-lg-3 col-xl-2">
-                                <select id="concessionCardEY" name="concessionCardEY" v-model="pass.concession_card_expiry_year" class="form-select" required="required">
+                                <select id="concessionCardExpiryYear" name="concessionCardExpiryYear" v-model="pass.concession_card_expiry_year" class="form-select" required="required">
                                     <option v-for="index in 10" :key="index+currentYear-1" :value="index+currentYear-1">{{index+currentYear-1}}</option>
                                 </select>
                             </div>
