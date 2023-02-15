@@ -211,10 +211,13 @@
                                 <label for="postcode" class="col-form-label">Concession Type</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
-                                <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" v-model="pass.concession_id" class="form-select" aria-label="Concession Type" required="required">
+                                <select @change="updateConcessionDiscount" id="concessionType" name="concessionType" ref="concessionType" v-model="pass.concession_id" class="form-select" aria-label="Concession Type" required="required">
                                     <option disabled value="0" selected>Select The Concession Type</option>
                                     <option v-for="concession in concessions" :value="concession.id" :key="concession.id">{{concession.concession_type}} ({{concession.discount_percentage}}% Discount)</option>
                                 </select>
+                                <div class="invalid-feedback">
+                                    Please select a concession type.
+                                </div>
                             </div>
                         </div>
                         <div v-if="eligibleForConcession" class="row g-1 align-top mb-2">
@@ -230,15 +233,15 @@
                         </div>
                         <div v-if="eligibleForConcession" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="concessionCardExpiry" class="col-form-label">Concession Card Expiry</label>
+                                <label for="concessionCardEx" class="col-form-label">Concession Card Expiry</label>
                             </div>
                             <div class="col-12 col-sm-4 col-lg-3 col-xl-2">
-                                <select id="concessionCardExpiryMonth" name="concessionCardExpiryMonth" v-model="pass.concession_card_expiry_month" class="form-select" required="required">
+                                <select id="concessionCardEM" name="concessionCardEM" v-model="pass.concession_card_expiry_month" class="form-select" required="required">
                                     <option v-for="index in 12" :key="index" :value="index" :selected="1==index">{{index}}</option>
                                 </select>
                             </div>
                             <div class="col-12 col-sm-4 col-lg-3 col-xl-2">
-                                <select id="concessionCardExpiryYear" name="concessionCardExpiryYear" v-model="pass.concession_card_expiry_year" class="form-select" required="required">
+                                <select id="concessionCardEY" name="concessionCardEY" v-model="pass.concession_card_expiry_year" class="form-select" required="required">
                                     <option v-for="index in 10" :key="index+currentYear-1" :value="index+currentYear-1">{{index+currentYear-1}}</option>
                                 </select>
                             </div>
@@ -850,9 +853,12 @@ export default {
             } else {
                 if(0==event.target.selectedIndex){
                     this.concessionDiscountPercentage = 0.00;
+                    this.$refs.concessionType.setCustomValidity("Invalid field.");
                 } else {
                     this.concessionDiscountPercentage = this.concessions[event.target.selectedIndex-1].discount_percentage
+                    this.$refs.concessionType.setCustomValidity("");
                 }
+
             }
             this.resetPrice();
         },
@@ -1089,6 +1095,9 @@ export default {
             if(vm.isEmailValid){
                 console.log("email is valid -- >")
                 this.validateConfirmEmail();
+                if(vm.eligibleForConcession && 0==vm.pass.concession_id){
+                    this.$refs.concessionType.setCustomValidity("Invalid field.");
+                }
                 if(!this.isRetailer){
                     if(this.pass.rac_discount_code){
                         this.validateRacDiscountCode();
