@@ -58,7 +58,3 @@ class Command(BaseCommand):
         )
         msg.attach_alternative(contents_of_cron_email, "text/html")
         msg.send()
-
-    def clear_cron_email_log(self):
-        with open(LOGFILE, "w"):
-            pass
