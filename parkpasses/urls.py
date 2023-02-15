@@ -235,7 +235,7 @@ urlpatterns = [
 if settings.DEBUG:  # Serve media locally in development.
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-    if settings.SHOW_DEBUG_TOOLBAR:
+    if "debug_toolbar" in settings.INSTALLED_APPS and settings.SHOW_DEBUG_TOOLBAR:
         urlpatterns += [
             # ...
             path("__debug__/", include("debug_toolbar.urls")),
