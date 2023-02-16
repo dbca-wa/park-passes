@@ -778,6 +778,9 @@ class InternalPassTypesOptionsSerializer(serializers.ModelSerializer):
 class InternalDistrictPassTypeDurationOracleCodeSerializer(serializers.ModelSerializer):
     district_name = serializers.SerializerMethodField()
     option_name = serializers.CharField(source="option.name", read_only=True)
+    pass_type_name = serializers.CharField(
+        source="option.pricing_window.pass_type.name", read_only=True
+    )
     pass_type_display_name = serializers.CharField(
         source="option.pricing_window.pass_type.display_name", read_only=True
     )
@@ -788,6 +791,7 @@ class InternalDistrictPassTypeDurationOracleCodeSerializer(serializers.ModelSeri
             "id",
             "district",
             "district_name",
+            "pass_type_name",
             "pass_type_display_name",
             "option",
             "option_name",
