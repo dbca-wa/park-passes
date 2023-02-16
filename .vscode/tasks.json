@@ -3,6 +3,7 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
+        /*
         {
             "label": "Django Dev Server",
             "type": "shell",
@@ -22,7 +23,7 @@
                 "panel": "dedicated",
             },
             "runOptions": { "runOn": "folderOpen" }
-        },
+        },*/
         {
             "label": "Shell Plus",
             "type": "shell",
