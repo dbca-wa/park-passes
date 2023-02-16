@@ -156,6 +156,11 @@ class PassType(models.Model):
     def __str__(self):
         return f"{self.display_name}"
 
+    def get_default_pricing_window(self):
+        return PassTypePricingWindow.objects.filter(
+            pass_type=self, date_expiry__isnull=True
+        ).first()
+
     @classmethod
     def get_default_options_by_pass_type_id(self, pass_type_id):
         default_pricing_window = (
@@ -281,7 +286,7 @@ class PassTypePricingWindow(models.Model):
     def get_default_pricing_window_by_pass_type_id(self, pass_type_id):
         try:
             default_pricing_window = PassTypePricingWindow.objects.get(
-                pass_type__id=pass_type_id, name="Default"
+                pass_type__id=pass_type_id, date_expiry__isnull=True
             )
         except ObjectDoesNotExist:
             logger.critical(
@@ -1272,6 +1277,39 @@ class DistrictPassTypeDurationOracleCode(models.Model):
             f"{self.option.pricing_window.pass_type.display_name} - "
             f"{self.option.name} - {self.oracle_code}"
         )
+
+    @classmethod
+    def check_necessary_district_based_oracle_codes_exist(
+        cls, messages, critical_issues
+    ):
+        for pass_type in PassType.objects.filter(
+            oracle_code__isnull=True, display_externally=True, display_retailer=True
+        ):
+            default_pricing_window = pass_type.get_default_pricing_window()
+            for option in default_pricing_window.options.all():
+                pica_oracle_code = cls.objects.filter(
+                    district__isnull=True, option=option
+                )
+                if not pica_oracle_code.exists():
+                    critical_issues.append(
+                        f"CRITICAL: There is no PICA oracle code for {pass_type.display_name} - {option.name}. "
+                        "Please run the oracle_codes_create_initial_records management command to "
+                        "generate the required codes."
+                    )
+                    return
+                for district in District.objects.filter(archive_date__isnull=True):
+                    district_based_oracle_code = cls.objects.filter(
+                        district=district, option=option
+                    )
+                    if not district_based_oracle_code.exists():
+                        critical_issues.append(
+                            "CRITICAL: There is no oracle code for "
+                            f"{district.name} - {pass_type.display_name} - {option.name}. "
+                            "Please run the oracle_codes_create_initial_records management "
+                            "command to generate the required codes."
+                        )
+                        return
+        messages.append("SUCCESS: All necessary district-based oracle codes exist.")
 
     @classmethod
     def check_oracle_codes_have_been_entered(cls, messages, critical_issues):
