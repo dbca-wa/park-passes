@@ -38,6 +38,7 @@ from parkpasses.components.parks.models import ParkGroup
 from parkpasses.components.passes.emails import PassEmails
 from parkpasses.components.passes.exceptions import (
     MultipleDefaultPricingWindowsExist,
+    NoDefaultOptionFoundForOptionWindowExists,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
     SendNoPrimaryCardForAutoRenewalEmailFailed,
@@ -261,6 +262,11 @@ class PassTypePricingWindow(models.Model):
         super().save(*args, **kwargs)
 
     @property
+    def is_default(cls):
+        # If there is no expiry date then it is the default pricing window
+        return not cls.date_expiry
+
+    @property
     def status(self):
         if not self.date_expiry:
             return "Current"
@@ -447,6 +453,31 @@ class PassTypePricingWindowOption(models.Model):
             pricing_window__date_expiry__isnull=True,
             pricing_window__pass_type__id=pass_type_id,
         )
+
+    def get_default_option(self):
+        """Due to the way the system determines which oracle code for use for a park pass
+        we need to be able to get the default option for any option
+
+        The default option is the option from the default pricing window (for a pass type)
+        that has the same duration as this option (self).
+        .
+        """
+        if self.pricing_window.is_default:
+            # The option passed is an option from the default pricing window so just return it
+            return self
+
+        # Find the option from the default pricing window with the same duration as the option passed
+        default_option = PassTypePricingWindowOption.objects.filter(
+            duration=self.duration,
+            pricing_window__date_expiry__isnull=True,
+            pricing_window__pass_type=self.pricing_window.pass_type,
+        )
+        if default_option.exists():
+            return default_option.first()
+
+        error_message = f"No default option found for option: {self}"
+        logger.critical(error_message)
+        raise NoDefaultOptionFoundForOptionWindowExists(error_message)
 
 
 def pass_template_file_path(instance, filename):

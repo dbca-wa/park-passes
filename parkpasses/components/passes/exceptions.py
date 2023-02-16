@@ -18,6 +18,11 @@ class NoDefaultPricingWindowExists(Exception):
     """The exception to be thrown if there is no default pricing window for pass type"""
 
 
+class NoDefaultOptionFoundForOptionWindowExists(Exception):
+    """The exception to be thrown if there is no option with the same duration in the
+    default pricing window for a pass type"""
+
+
 class NoValidPassTypeFoundInPost(APIException):
     """The exception to be thrown if the external POST request to create a pass does not
     specify a valid pass type name"""

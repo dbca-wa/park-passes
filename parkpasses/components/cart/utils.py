@@ -160,8 +160,11 @@ class CartUtils:
                 district = retailer_group.district
                 # Retailers can only sell passes, not vouchers so we know the content type is a pass
                 park_pass = Pass.objects.get(id=object_id)
+
+                # oracle codes are only stored from the option in the default pricing window
+                default_option = park_pass.option.get_default_option()
                 oracle_codes = DistrictPassTypeDurationOracleCode.objects.filter(
-                    district=district, option=park_pass.option
+                    district=district, option=default_option
                 )
                 if oracle_codes.exists():
                     district_pass_type_duration_oracle_code = oracle_codes.first()
@@ -194,8 +197,11 @@ class CartUtils:
                 # For other pass types, PICA oracle codes are based on the pass type
                 # and duration
                 # Note: PICA oracle codes have a null district
+
+                # oracle codes are only stored from the option in the default pricing window
+                default_option = park_pass.option.get_default_option()
                 oracle_codes = DistrictPassTypeDurationOracleCode.objects.filter(
-                    district__isnull=True, option=park_pass.option
+                    district__isnull=True, option=default_option
                 )
                 if oracle_codes.exists():
                     district_pass_type_duration_oracle_code = oracle_codes.first()
