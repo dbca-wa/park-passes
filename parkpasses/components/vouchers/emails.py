@@ -58,7 +58,7 @@ class VoucherEmails:
         communication_log_kwargs = {
             "content_type": content_type,
             "object_id": str(voucher.id),
-            "to": voucher.recipient_email,
+            "to": purchaser.email,
             "fromm": settings.DEFAULT_FROM_EMAIL,
             "entry_type": entry_type,
             "subject": message.subject,
@@ -83,7 +83,7 @@ class VoucherEmails:
         communication_log_kwargs = {
             "content_type": content_type,
             "object_id": str(voucher.id),
-            "to": voucher.recipient_email,
+            "to": purchaser.email,
             "fromm": settings.DEFAULT_FROM_EMAIL,
             "entry_type": entry_type,
             "subject": message.subject,
