@@ -1,6 +1,6 @@
-{%  extends 'parkpasses/emails/base_email.html' %}
+{% extends 'parkpasses/emails/base_email.html' %}
 
-{%  block content %}
+{% block content %}
 
     {{pass.first_name}} {{pass.last_name}},
 
@@ -27,4 +27,4 @@
 
     To view a full list of your orders or make changes to your park passes go to {{site_url}}.
 
-{%  endblock %}
+{% endblock %}

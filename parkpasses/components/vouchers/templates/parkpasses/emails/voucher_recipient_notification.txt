@@ -1,10 +1,10 @@
-{%  extends 'parkpasses/emails/base_email.txt' %}
+{% extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
             Dear {{voucher.recipient_name}},
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             You have received a voucher for a Western Australian park pass from:
 
             {{purchaser.first_name}} {{purchaser.last_name}}.
@@ -15,6 +15,6 @@
 
             Voucher Value: ${{voucher.amount}}
             Voucher Code: {{voucher.code}}
-            Voucher Pin: {{voucher.pin}}
+            Voucher Pin: {{voucher.pin|stringformat:"06d"}}
             Expiry Date: {{voucher.expiry|date:"d-m-Y"}}
-{%  endblock %}
+{% endblock %}

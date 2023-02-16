@@ -1,6 +1,6 @@
-{%  extends 'parkpasses/emails/base_email.txt' %}
+{% extends 'parkpasses/emails/base_email.txt' %}
 
-{%  block content %}
+{% block content %}
 
     {{purchaser.first_name}} {{purchaser.last_name}},
 
@@ -25,4 +25,4 @@
     Once you have added your vehicle details to your park pass, please print it out and display it on
     your vehicle dashboard when entering a national park.
 
-{%  endblock %}
+{% endblock %}

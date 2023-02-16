@@ -1,10 +1,10 @@
-{%  extends 'parkpasses/emails/base_email.html' %}
+{% extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
             <p>Dear {{pass.first_name}} {{pass.last_name}},</p>
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             <p>You have purchased a park pass with the following details:</p>
 
             <table>
@@ -28,4 +28,4 @@
 
             <p>Once you have added your vehicle details to your park pass, please print it out and display it on
             your vehicle dashboard when entering a national park.</p>
-{%  endblock %}
+{% endblock %}

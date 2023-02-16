@@ -1,10 +1,10 @@
-{%  extends 'parkpasses/emails/base_email.html' %}
+{% extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
             <p>Dear PICA User,</p>
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             <p>The following Gold Star Passes were purchased yesterday:</p>
 
             {% for pass in passes %}
@@ -25,4 +25,4 @@
 
             <br>
             {% endfor %}
-{%  endblock %}
+{% endblock %}

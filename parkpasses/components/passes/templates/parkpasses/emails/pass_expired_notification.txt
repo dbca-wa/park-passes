@@ -1,11 +1,11 @@
-{%  extends 'parkpasses/emails/base_email.txt' %}
+{% extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
             Dear {{pass.first_name}} {{pass.last_name}},
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             Your {{pass.pass_type}} expired today.
 
             If you want to purchase a new park pass, please visit: {{site_url}}.
-{%  endblock %}
+{% endblock %}

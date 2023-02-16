@@ -1,10 +1,10 @@
-{%  extends 'parkpasses/emails/base_email.txt' %}
+{% extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
             To whom it may concern,
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             You have been invited to join the following {{ SYSTEM_NAME }} retailer group:
 
             {{organisation_name}}
@@ -18,4 +18,4 @@
             When you click the link, you will be prompted to log in or create a new user account.
 
             IMPORTANT: You MUST create your {{ SYSTEM_NAME }} account using the email address we sent this email to.
-{%  endblock %}
+{% endblock %}

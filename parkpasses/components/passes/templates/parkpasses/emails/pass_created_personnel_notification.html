@@ -1,10 +1,10 @@
-{%  extends 'parkpasses/emails/base_email.html' %}
+{% extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
             <p>Dear {{pass.first_name}} {{pass.last_name}},</p>
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             <p>DBCA has issued you with a personnel park pass:</p>
 
             <table>
@@ -18,4 +18,4 @@
             <p>Your park pass pdf is attached to this email.</p>
 
             <p>Please print it out and display it on your vehicle dashboard when entering a national park.</p>
-{%  endblock %}
+{% endblock %}

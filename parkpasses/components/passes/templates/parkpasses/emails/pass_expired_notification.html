@@ -1,11 +1,11 @@
-{%  extends 'parkpasses/emails/base_email.html' %}
+{% extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
             <p>Dear {{pass.first_name}} {{pass.last_name}},</p>
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             <p>Your {{pass.pass_type}} expired today.</p>
 
             <p>If you want to purchase a new park pass, please visit: {{site_url}}.</p>
-{%  endblock %}
+{% endblock %}
