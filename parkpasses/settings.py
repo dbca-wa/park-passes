@@ -195,7 +195,6 @@ DISCOUNT_CODE_PERCENTAGE_GROUP = env(
 )
 
 
-CRON_RUN_AT_TIMES = env("CRON_RUN_AT_TIMES", "04:05")
 CRON_EMAIL = env("CRON_EMAIL", "cron@" + SITE_DOMAIN).lower()
 NO_REPLY_EMAIL = env("NO_REPLY_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 # for ORACLE Job Notification - override settings_base.py
