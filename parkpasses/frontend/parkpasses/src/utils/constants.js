@@ -29,14 +29,10 @@ module.exports = {
 
     DATATABLE_PROCESSING_HTML: '<div class="spinner-border org-primary align-items-center" style="width: 3rem; height: 3rem; margin-top:45px;" role="status"><span class="visually-hidden">Loading...</span></div>',
 
-    PARK_PASSES_SUPPORT_EMAIL: 'park.passes@dbca.wa.gov.au',
-
     ERRORS: {
         NETWORK: 'NETWORK ERROR: Make sure your internet connection is working and try again.',
-        get SYSTEM() {
-            return `SYSTEM ERROR: An error has occured accessing the Park Passes API. Please try again \
-            in an hour and if the problem persists contact us at: ${this.PARK_PASSES_SUPPORT_EMAIL}`;
-        },
+        SYSTEM: 'SYSTEM ERROR: An error has occured accessing the Park Passes API. Please try again \
+            in an hour and if the problem persists contact us at: park.passes@dbca.wa.gov.au',
         // The critical error will be shown on the client side when a critical error
         // has occured on the backend and needs the attention of the system admins.
         CRITICAL: 'SYSTEM ERROR: Our System Administrators have been notified. Please try again in an hour.'

@@ -1,4 +1,4 @@
-{%  extends 'parkpasses/emails/base_email.html' %}
+{% extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
             <p>
@@ -6,7 +6,7 @@
             </p>
 {% endblock %}
 
-{%  block content %}
+{% block content %}
 
             <p>The Park Pass voucher you purchased for {{voucher.recipient_name}} has been emailed to {{voucher.recipient_email}}.</p>
 
@@ -16,4 +16,4 @@
                 <li>Expiry Date: {{voucher.expiry|date:"d-m-Y"}}</li>
             </ul>
 
-{%  endblock %}
+{% endblock %}

@@ -47,7 +47,7 @@ class Voucher(models.Model):
     )
     expiry = models.DateTimeField(null=False)
     code = models.CharField(unique=True, max_length=10)
-    pin = models.DecimalField(max_digits=6, decimal_places=0, blank=False, null=False)
+    pin = models.CharField(max_length=6, blank=False, null=False)
     datetime_purchased = models.DateTimeField(auto_now_add=True)
     datetime_updated = models.DateTimeField(auto_now=True)
     NEW = "N"

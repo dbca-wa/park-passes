@@ -140,7 +140,7 @@
 
                             <div class="mb-3">
                                 <label for="reason" class="col-form-label">Reason for <span v-if="discountCodeBatch.id">Updating {{ discountCodeBatch.discountCodeBatch_number }}</span><span v-else>Creating Discount Code Batch</span>:</label>
-                                <textarea class="form-control" :class="errors.reason ? 'is-invalid' : ''" id="reason" name="reason" v-model="discountCodeBatch.reason" aria-describedby="validationServerReasonFeedback" required></textarea>
+                                <textarea class="form-control" :class="errors.reason ? 'is-invalid' : ''" id="reason" name="reason" v-model="discountCodeBatch.why" aria-describedby="validationServerReasonFeedback" required></textarea>
                                 <div v-if="errors.reason" id="validationServerReasonFeedback" class="invalid-feedback">
                                     <p v-for="(error, index) in errors.reason" :key="index">{{ error }}</p>
                                 </div>
@@ -167,6 +167,7 @@
                         <button v-if="discountCodeBatch.discountCodeBatch_number" type="submit" class="btn licensing-btn-primary">Update</button>
                         <button v-else type="submit" class="btn licensing-btn-primary">Create</button>
                     </div>
+                    {{ discountCodeBatch }}
                 </form>
             </div>
         </div>

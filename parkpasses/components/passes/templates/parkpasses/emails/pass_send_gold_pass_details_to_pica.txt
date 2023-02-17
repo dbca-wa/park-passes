@@ -1,10 +1,10 @@
-{%  extends 'parkpasses/emails/base_email.txt' %}
+{% extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
             Dear PICA User,
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             The following Gold Star Passes were purchased yesterday:
 
             {% for pass in passes %}
@@ -21,4 +21,4 @@
 
             {% endfor %}
 
-{%  endblock %}
+{% endblock %}

@@ -1,10 +1,10 @@
-{%  extends 'parkpasses/emails/base_email.txt' %}
+{% extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
             Dear {{ pass.first_name }} {{ pass.last_name }},
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             Today we attempted to process the auto renewal for your park pass: {{ pass.pass_number }}.
 
             This was attempt number: {{ failure_count }}.
@@ -16,4 +16,4 @@
             To update your credit card details please go to {{ site_url }}{% url 'account' %} log in and click on the 'Manage Cards' tab.
 
             Make sure there is at least one valid card on file and that it is selected as your primary card.
-{%  endblock %}
+{% endblock %}

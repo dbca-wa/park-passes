@@ -1,13 +1,13 @@
-{%  extends 'parkpasses/emails/base_email.txt' %}
+{% extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
             Dear {{ emailuser.first_name }} {{ emailuser.last_name }},
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             Your invite to the {{ SYSTEM_NAME }} Retailer Group:
 
             {{organisation_name}}
 
             Has been denied.
-{%  endblock %}
+{% endblock %}

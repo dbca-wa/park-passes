@@ -1060,7 +1060,8 @@ export default {
         },
         validateVoucherCodeBackend: function () {
             let vm = this;
-            fetch(apiEndpoints.isVoucherValid(vm.pass.email, vm.pass.voucher_code, vm.pass.voucher_pin))
+
+            fetch(apiEndpoints.isVoucherValid(encodeURIComponent(vm.pass.email), vm.pass.voucher_code, vm.pass.voucher_pin))
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {

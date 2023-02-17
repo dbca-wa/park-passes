@@ -43,18 +43,30 @@
               </thead>
               <tbody>
                 <tr v-for="(oracleCode, index) in filteredOracleCodes" :key="oracleCode.id">
-                  <th v-if="index == 0">{{ oracleCode.district_name }}</th>
-                  <th v-else-if="index > 0 && oracleCode.district_name != filteredOracleCodes[index-1].district_name">{{ oracleCode.district_name }}</th>
-                  <th v-else>&nbsp;</th>
-                  <td>{{ oracleCode.pass_type_display_name }}</td>
-                  <td>{{ oracleCode.option_name }}</td>
-                  <td class="col-md-4">
-                    <input type="hidden" name="id" v-model="oracleCode.id" />
-                    <input class="form-control" type="text" v-model="oracleCode.oracle_code" required minlength="1" />
-                    <div class="invalid-feedback">
-                      Please enter an oracle code.
-                    </div>
-                  </td>
+                  <template v-if="!rowIsPICAAnnualParkPass(oracleCode)">
+                    <th v-if="index == 0">{{ oracleCode.district_name }}</th>
+                    <th v-else-if="index > 0 && oracleCode.district_name != filteredOracleCodes[index-1].district_name">{{ oracleCode.district_name }}</th>
+                    <th v-else>&nbsp;</th>
+                    <td>{{ oracleCode.pass_type_display_name }}</td>
+                    <td>{{ oracleCode.option_name }}</td>
+                    <td class="col-md-4">
+                      <input type="hidden" name="id" v-model="oracleCode.id" />
+                      <input class="form-control" type="text" v-model="oracleCode.oracle_code" required minlength="1" />
+                      <div class="invalid-feedback">
+                        Please enter an oracle code.
+                      </div>
+                    </td>
+                  </template>
+                  <template v-if="rowIsPICAAnnualParkPass(oracleCode)">
+                    <td>
+
+                    </td>
+                    <td colspan="3">
+                      <BootstrapAlert v-if="selectedDistrict == picaLabel" class="mt-3">
+                          To update PICA oracle codes for local park passes? <a href="/admin/parkpasses/parkgroup/" target="_blank">Go here</a>
+                      </BootstrapAlert>
+                    </td>
+                  </template>
                 </tr>
               </tbody>
             </table>
@@ -75,10 +87,6 @@
         <div v-else>
             <BootstrapSpinner :isLoading="true" />
         </div>
-
-        <BootstrapAlert v-if="selectedDistrict == picaLabel" class="mt-3">
-            Looking for the PICA oracle codes for local park passes? <a href="/admin/parkpasses/parkgroup/" target="_blank">Go here</a>
-        </BootstrapAlert>
 
         <div v-if="systemErrorMessage" class="alert alert-danger" role="alert">
             {{ systemErrorMessage }}
@@ -126,6 +134,10 @@ export default {
 
     },
     methods: {
+        rowIsPICAAnnualParkPass: function(oracleCode) {
+            return constants.PICA_LABEL==oracleCode.district_name
+              && constants.ANNUAL_LOCAL_PASS_NAME==oracleCode.pass_type_name;
+        },
         fetchOracleCodes: function(){
             let vm = this;
             fetch(apiEndpoints.oracleCodesListInternal)

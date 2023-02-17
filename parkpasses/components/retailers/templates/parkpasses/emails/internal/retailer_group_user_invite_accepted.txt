@@ -1,10 +1,10 @@
-{%  extends 'parkpasses/emails/base_email.txt' %}
+{% extends 'parkpasses/emails/base_email.txt' %}
 
 {% block greetings %}
             {{ ADMIN_GROUP }},
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             The retail user with the following email address:
 
             {{retailer_group_user_invite.email}}
@@ -20,4 +20,4 @@
             Please log in to approve or deny their request and decide if they should have admin access level:
 
             {{SITE_URL}}{% url 'internal-retailer-group-users' %}
-{%  endblock %}
+{% endblock %}

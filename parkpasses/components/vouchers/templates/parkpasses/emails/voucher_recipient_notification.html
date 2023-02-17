@@ -1,4 +1,4 @@
-{%  extends 'parkpasses/emails/base_email.html' %}
+{% extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
             <p>
@@ -6,7 +6,7 @@
             </p>
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             <p>You have received a voucher for a Western Australian park pass from:</p>
 
             <p><strong>{{purchaser.first_name}} {{purchaser.last_name}}</strong></p>
@@ -18,7 +18,7 @@
             <ul>
                 <li>Voucher Value: ${{voucher.amount}}</li>
                 <li>Voucher Code: {{voucher.code}}</li>
-                <li>Voucher Pin: {{voucher.pin}}</li>
+                <li>Voucher Pin: {{voucher.pin|stringformat:"06d"}}</li>
                 <li>Expiry Date: {{voucher.expiry|date:"d-m-Y"}}</li>
             </ul>
-{%  endblock %}
+{% endblock %}

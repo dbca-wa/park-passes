@@ -1,4 +1,4 @@
-{%  extends 'parkpasses/emails/base_email.html' %}
+{% extends 'parkpasses/emails/base_email.html' %}
 
 {% block greetings %}
             <p>
@@ -6,7 +6,7 @@
             </p>
 {% endblock %}
 
-{%  block content %}
+{% block content %}
             <p>You have been invited to join the following {{ SYSTEM_NAME }} retailer group:</p>
 
             <p><strong>{{organisation_name}}</strong></p>
@@ -20,4 +20,4 @@
             <p>When you click the link, you will be prompted to log in or create a new user account.</p>
 
             <p>You <strong>MUST</strong> create your {{ SYSTEM_NAME }} account using the email address we sent this email to.</p>
-{%  endblock %}
+{% endblock %}

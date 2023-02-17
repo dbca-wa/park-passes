@@ -355,7 +355,7 @@ CACHE_KEY_GROUP_IDS = "{}-{}-user-ids"
 
 CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
 
-CACHE_SYSTEM_CHECK_FOR = 60  # 1 minute
+CACHE_SYSTEM_CHECK_FOR = 60 * 5  # 5 minutes
 
 PROTECTED_MEDIA_ROOT = env(
     "PROTECTED_MEDIA_ROOT", os.path.join(BASE_DIR, "protected_media")
