@@ -320,7 +320,7 @@
                                 <label for="voucherCode" class="col-form-label">Voucher Code</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
-                                <input @change="validateVoucherCode" @keyup="focusVoucherPin" v-model="pass.voucher_code" type="text" id="voucherCode" name="voucherCode" ref="voucherCode" class="form-control short-control" :class="{'is-invalid' : voucherCodeError}" minlength="8" maxlength="8">
+                                <input @keyup="validateVoucherCode" v-model="pass.voucher_code" type="text" id="voucherCode" name="voucherCode" ref="voucherCode" class="form-control short-control" :class="{'is-invalid' : voucherCodeError}" minlength="8" maxlength="8">
                                 <div class="invalid-feedback">
                                     This voucher code is not valid, has expired or does not match the pin.
                                 </div>
@@ -534,6 +534,7 @@ export default {
             extraVehicleText: 'Add a second vehicle',
             racMember: false,
             passReminderDaysPrior: constants.PASS_REMINDER_DAYS_PRIOR,
+            isVoucherCodeValid: false,
 
             discountType: null,
             discountPercentage: 0.00,
@@ -933,13 +934,23 @@ export default {
         },
         validateVoucherCode: function () {
             console.log('this.pass.voucher_code.length = ' + this.pass.voucher_code.length)
-            if(this.pass.voucher_code.length && 8!=this.pass.voucher_code.length){
+            if(!this.pass.voucher_code.length){
+                this.voucherBalanceRemaining = 0.00;
+                this.$refs.voucherCode.setCustomValidity("Invalid field.");
+                return false;
+            }
+            if(8!=this.pass.voucher_code.length){
                 console.log('voucher code is invalid')
                 this.voucherBalanceRemaining = 0.00;
                 this.$refs.voucherCode.setCustomValidity("Invalid field.");
                 return false;
             } else {
                 console.log('voucher code passes basic validation')
+                if(this.pass.voucher_code.length==8){
+                    this.$nextTick(() => {
+                        this.$refs.voucherPin.focus();
+                    });
+                }
                 this.$refs.voucherCode.setCustomValidity("");
                 return true;
             }
@@ -995,17 +1006,17 @@ export default {
                 return false;
             }
         },
-        focusVoucherPin: function() {
-            if(this.pass.voucher_code.length==8){
-                this.$nextTick(() => {
-                     this.$refs.voucherPin.focus();
-                });
-            }
-        },
         validateVoucherPin: function () {
             console.log('this.pass.voucher_pin.length = ' + this.pass.voucher_pin.length)
+            if(!this.$refs.voucherPin){
+                // If the voucher pin field is not displayed just return false
+                console.log('this.$refs.voucherPin is not defined.')
+                return false;
+            }
             if(6!=this.pass.voucher_pin.length){
                 console.log('Pin is not valid.')
+                this.voucherBalanceRemaining = 0.00;
+                console.log('this.voucherBalanceRemaining = ' + this.voucherBalanceRemaining)
                 this.$refs.voucherPin.setCustomValidity("Invalid field.");
                 return false;
             } else {
@@ -1013,7 +1024,7 @@ export default {
                     this.$refs.voucherPin.setCustomValidity("Invalid field.");
                     return false;
                 } else {
-                    console.log('Pin is valid.')
+                    console.log('Pin is valid (decimal of 6 digits length).')
                     this.$refs.voucherPin.setCustomValidity("");
                     console.log('calling validateVoucherCodeBackend.')
                     return this.validateVoucherCodeBackend();
@@ -1069,9 +1080,9 @@ export default {
                     console.log(error);
                     return Promise.reject(error);
                 }
-                const isVoucherCodeValid = data.is_voucher_code_valid;
-                console.log('isVoucherCodeValid = ' + isVoucherCodeValid)
-                if(!isVoucherCodeValid){
+                vm.isVoucherCodeValid = data.is_voucher_code_valid;
+                console.log('isVoucherCodeValid = ' + vm.isVoucherCodeValid)
+                if(!vm.isVoucherCodeValid){
                     this.voucherBalanceRemaining = 0.00;
                     this.$refs.voucherCode.setCustomValidity("Invalid field.");
                     return false;
@@ -1095,32 +1106,20 @@ export default {
 
             if(vm.isEmailValid){
                 console.log("email is valid -- >")
-                this.validateConfirmEmail();
+                vm.validateConfirmEmail();
                 if(vm.eligibleForConcession && 0==vm.pass.concession_id){
-                    this.$refs.concessionType.setCustomValidity("Invalid field.");
+                    vm.$refs.concessionType.setCustomValidity("Invalid field.");
                 }
                 if(!this.isRetailer){
-                    if(this.pass.rac_discount_code){
-                        this.validateRacDiscountCode();
+                    if(vm.pass.rac_discount_code){
+                        vm.validateRacDiscountCode();
                     } else {
-                        this.validateDiscountCode();
+                        vm.validateDiscountCode();
                         if(vm.showVoucherCodeField){
-                            console.log("vm.showVoucherCodeField -- >")
-                            let voucherCodeValid = this.validateVoucherCode();
-                            let voucherPinValid = false;
-                            if(this.pass.voucher_code.length && voucherCodeValid){
-                                console.log("voucherCodeValid valid -- >")
-                                voucherPinValid = this.validateVoucherPin();
-                            }
-                            /* Todo: There are still issues with the validation process.
-                            if (typeof voucherPinValid !== 'undefined'){
-                                console.log("voucherPinValid is undefined returning false -- >")
-                                return false;
-                            }*/
-                            console.log("voucherPinValid = " + voucherPinValid)
-                            if(voucherCodeValid && voucherPinValid){
-                                console.log("Is this happening -- >")
-                                this.validateVoucherCodeBackend();
+                            if(vm.validateVoucherPin()){
+                                if(vm.validateVoucherCode()){
+                                    vm.validateVoucherCodeBackend();
+                                }
                             }
                         }
                     }
