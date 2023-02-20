@@ -188,11 +188,14 @@ export default {
                 const price = priceBeforeDiscount * percentage;
                 return currency(price);
             } else {
-                let discountAmount = currency(cartItem.discount_code.discount);
-                if (discountAmount >= cartItem.price) {
+                console.log('discountAmount = ' + cartItem.discount_code.discount);
+                console.log('cartItem.price = ' + cartItem.price);
+
+                if (cartItem.discount_code.discount >= cartItem.price) {
+                    console.log('Discount greater or equal to price');
                     return currency(cartItem.price);
                 }
-                return discountAmount;
+                return currency(cartItem.discount_code.discount);
             }
         },
         voucherTransactionAmount() {
