@@ -17,14 +17,14 @@ class PassTestCase(TestCase):
     fixtures = ["parkpasses/components/passes/fixtures/pass-types.json"]
 
     def setUp(self):
-        today = timezone.now()
-        datetime_in_28_days = timezone.now() + timezone.timedelta(days=28)
+        today = timezone.now().date()
+        date_in_28_days = timezone.now().date() + timezone.timedelta(days=28)
         self.holiday_pass_type = PassType.objects.get(name=settings.HOLIDAY_PASS)
         self.holiday_pass_default_pricing_window = PassTypePricingWindow.objects.create(
             name="Default",
             pass_type=self.holiday_pass_type,
             date_start=today,
-            date_expiry=datetime_in_28_days,
+            date_expiry=date_in_28_days,
         )
         self.option1 = PassTypePricingWindowOption.objects.create(
             pricing_window=self.holiday_pass_default_pricing_window,
@@ -49,7 +49,7 @@ class PassTestCase(TestCase):
             vehicle_registration_1="12312312",
             vehicle_registration_2="",
             drivers_licence_number="",
-            date_start=today.date(),
+            date_start=today,
             renew_automatically=False,
             prevent_further_vehicle_updates=False,
             sold_via=self.default_sold_via,
