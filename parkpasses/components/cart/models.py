@@ -373,7 +373,9 @@ class Cart(models.Model):
                     )
                     # A discount code is being applied to this pass purchase
                     discount_code_discount = (
-                        cart_item.get_discount_code_discount_as_amount()
+                        cart_item.discount_code_usage.discount_code.discount_as_amount(
+                            park_pass.price_after_concession_applied
+                        )
                     )
                     if discount_code_discount > 0.00:
                         logger.info(
@@ -640,7 +642,7 @@ class CartItem(models.Model):
                 DiscountCodeUsage.objects.filter(park_pass=park_pass).delete()
                 VoucherTransaction.objects.filter(park_pass=park_pass).delete()
                 logger.info(
-                    "Doncession usage, discount code usage and voucher transaction deleted.",
+                    "Concession usage, discount code usage and voucher transaction deleted.",
                 )
 
                 logger.info(
@@ -678,45 +680,3 @@ class CartItem(models.Model):
                 park_pass = Pass.objects.get(pk=self.object_id)
                 return Decimal(park_pass.price_after_all_discounts)
             return Decimal(0.00)
-
-    # TODO: DRY These should not be in this file. Move them to their respetive objects
-    # then use this as convenience methods that just call those methods on the other objects
-    def get_concession_discount_as_amount(self):
-        if not self.concession_usage:
-            return Decimal(0.00)
-        concession = self.concession_usage.concession
-        total_price = self.get_price_before_discounts()
-        return Decimal(total_price * (concession.discount_percentage / 100))
-
-    def get_discount_code_discount_as_amount(self):
-        if not self.discount_code_usage:
-            return Decimal(0.00)
-        # The discount amount is applied to the price after concession
-        price_before_discounts = self.get_concession_price()
-        discount_code_batch = self.discount_code_usage.discount_code.discount_code_batch
-        if discount_code_batch.discount_amount:
-            return (
-                self.discount_code_usage.discount_code.discount_code_batch.discount_amount
-            )
-        else:
-            return price_before_discounts * (
-                discount_code_batch.discount_percentage / 100
-            )
-
-    def get_voucher_discount_as_amount(self):
-        if not self.voucher_transaction.voucher:
-            return Decimal(0.00)
-        if Decimal(0.00) >= self.voucher_transaction.voucher.amount:
-            return Decimal(0.00)
-        price_before_discounts = self.get_price_before_discounts()
-        concession_discount_amount = self.get_concession_discount_as_amount()
-        discount_code_discount_amount = self.get_discount_code_discount_as_amount()
-        remaining_price = (
-            price_before_discounts
-            - concession_discount_amount
-            - discount_code_discount_amount
-        )
-        if self.voucher_transaction.voucher.amount >= remaining_price:
-            return remaining_price
-        else:
-            return self.voucher_transaction.voucher.amount
