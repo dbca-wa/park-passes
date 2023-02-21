@@ -167,7 +167,6 @@
                         <button v-if="discountCodeBatch.discountCodeBatch_number" type="submit" class="btn licensing-btn-primary">Update</button>
                         <button v-else type="submit" class="btn licensing-btn-primary">Create</button>
                     </div>
-                    {{ discountCodeBatch }}
                 </form>
             </div>
         </div>
