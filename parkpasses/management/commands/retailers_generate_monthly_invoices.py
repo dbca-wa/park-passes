@@ -90,7 +90,6 @@ class Command(BaseCommand):
                 continue
             retailer_group_user = admin_users.first()
             email_user = retailer_group_user.emailuser
-            logger.info(email_user)  # TODO: remove this line
             self.stdout.write(f"\tGenerating Invoice for {retailer_group}")
             passes = Pass.objects.filter(
                 sold_via=retailer_group,

@@ -219,9 +219,6 @@ export default {
                         },
                         'createdCell': function (cell) {
                             console.log('in createdCell of TO')
-                            //TODO why this is not working?
-                            // the call to popover is done in the 'draw' event
-                            //$(cell).popover();
                         }
                     },
                     {
@@ -255,9 +252,6 @@ export default {
 
                         'createdCell': function (cell) {
                             console.log('in createdCell of CC')
-                            //TODO why this is not working?
-                            // the call to popover is done in the 'draw' event
-                            //$(cell).popover();
                         }
                     },
                     {
@@ -294,9 +288,6 @@ export default {
                         },
                         'createdCell': function (cell) {
                             console.log('in createdCell of Subject/Desc')
-                            //TODO why this is not working?
-                            // the call to popover is done in the 'draw' event
-                            //$(cell).popover();
                         }
                     },
                     {
@@ -328,9 +319,6 @@ export default {
                         },
                         'createdCell': function (cell) {
                             console.log('in createdCell of Text')
-                            //TODO why this is not working?
-                            // the call to popover is done in the 'draw' event
-                            //$(cell).popover();
                         }
                     },
                     {
