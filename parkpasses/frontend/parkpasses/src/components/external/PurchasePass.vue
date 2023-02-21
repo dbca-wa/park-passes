@@ -1056,7 +1056,7 @@ export default {
                         vm.discountCodeDiscount = vm.totalPrice * (vm.discountPercentage/100);
                         vm.discountCodeDiscount = vm.discountCodeDiscount.toFixed(2);
                     } else {
-                        vm.discountCodeDiscount = data.discount
+                        vm.discountCodeDiscount = currency(data.discount)
                     }
                     console.log('vm.discountCodeDiscount = ' + vm.discountCodeDiscount)
                     // Check if the discount is a percentage or an amount
