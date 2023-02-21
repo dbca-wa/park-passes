@@ -829,7 +829,7 @@ class Pass(models.Model):
 
     @property
     def sold_internally(self):
-        # Returns true for passes cold via the website and via internal retailers
+        # Returns true for passes sold via the website and via internal retailers
         return (
             settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID == self.sold_via_id
             or self.sold_via.is_internal_retailer
