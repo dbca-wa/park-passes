@@ -12,6 +12,7 @@ from parkpasses.components.retailers.models import (
 class RetailerGroupSerializer(serializers.ModelSerializer):
     ledger_organisation_name = serializers.SerializerMethodField(read_only=True)
     user_count = serializers.IntegerField(read_only=True)
+    is_internal_retailer = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = RetailerGroup
@@ -22,6 +23,7 @@ class RetailerGroupSerializer(serializers.ModelSerializer):
             "district",
             "commission_oracle_code",
             "commission_percentage",
+            "is_internal_retailer",
             "active",
             "user_count",
             "datetime_created",

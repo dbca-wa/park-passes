@@ -827,6 +827,14 @@ class Pass(models.Model):
         logger.warning("Can't find order for park pass: %s", self)
         return None
 
+    @property
+    def sold_internally(self):
+        # Returns true for passes cold via the website and via internal retailers
+        return (
+            settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID == self.sold_via_id
+            or self.sold_via.is_internal_retailer
+        )
+
     def pro_rata_refund_percentage(self):
         if self.date_start >= timezone.now().date():
             return 100
