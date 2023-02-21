@@ -64,8 +64,18 @@ class Command(BaseCommand):
             f"\nGenerating Reports for date range: {first_day_of_previous_month} to {last_day_of_previous_month}\n\n"
         )
 
-        retailer_groups = RetailerGroup.objects.exclude(
-            ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+        # We exclude the internal retailers from these reports by
+        # filtering out the retailer groups that have a null or empty commission_oracle_code
+        # and those that have a commission_percentage of 0
+        retailer_groups = (
+            RetailerGroup.objects.exclude(
+                commission_oracle_code__isnull=True,
+            )
+            .exclude(commission_oracle_code__exact="")
+            .exclude(commission_percentage=0)
+            .exclude(
+                ledger_organisation=settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+            )
         )
 
         for retailer_group in retailer_groups:

@@ -83,6 +83,10 @@ class RetailerGroup(models.Model):
             return self.organisation["organisation_name"]
         return "No Ledger Organisation Attached!"
 
+    @property
+    def is_internal_retailer(self):
+        return 0 == self.commission_percentage or not self.commission_oracle_code
+
     def save(self, *args, **kwargs):
         cache.delete(
             settings.CACHE_KEY_GROUP_IDS.format(self._meta.label_lower, str(self.id))

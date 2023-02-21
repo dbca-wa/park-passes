@@ -10,15 +10,15 @@ class RetailerGroupTestCase(TestCase):
     def setUp(self):
         self.api_request_factory = APIRequestFactory()
         self.retailer_group1 = RetailerGroup.objects.create(
-            name="Retailer Group 1",
-            oracle_code="RETAILER_GROUP_1_ORACLE_CODE",
+            ledger_organisation=1,
+            commission_oracle_code="RETAILER_GROUP_1_ORACLE_CODE",
             commission_percentage=Decimal("10.00"),
             active=True,
         )
 
     def test_str(self):
         retailer_group_str = self.retailer_group1.__str__()
-        self.assertEqual(retailer_group_str, "Retailer Group 1")
+        self.assertEqual(retailer_group_str, "Org1")
         self.assertNotEqual(retailer_group_str, "Random Name")
 
     def test_list_retailer_groups(self):

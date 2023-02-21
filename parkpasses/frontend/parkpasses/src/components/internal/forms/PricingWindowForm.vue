@@ -34,7 +34,7 @@
                                 <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
                                 <div class="col-sm-8">
                                     <span class="form-text">
-                                        <input class="form-control" ref="startDate" name="startDate" type="date" v-model="pricingWindow.date_start" :disabled="hasPricingWindowExpired" :max="maxStartDate" required>
+                                        <input class="form-control" ref="startDate" name="startDate" type="date" v-model="pricingWindow.date_start" :disabled="hasPricingWindowExpired || !pricingWindow.date_expiry" :max="maxStartDate" required>
                                     </span>
                                 </div>
                             </div>
@@ -70,7 +70,10 @@
                                                         <span class="form-text">{{ option.duration }}</span>
                                                     </td>
                                                     <td>
-                                                        <input @change="addDecimalPlaces(option.price, index)" class="form-control" :id="'option' + option.id" :name="'option' + option.id" type="number" v-model="option.price" required>
+                                                        <input @change="addDecimalPlaces(option.price, index)" class="form-control" :id="'option' + option.id" :name="'option' + option.id" type="number" v-model="option.price" min="1" required>
+                                                        <div class="invalid-feedback">
+                                                            Please enter a valid price.
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             </tbody>

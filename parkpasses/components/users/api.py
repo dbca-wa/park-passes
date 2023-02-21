@@ -57,6 +57,7 @@ class UserDataView(APIView):
                         {
                             "id": retailer_group.id,
                             "name": retailer_group.organisation["organisation_name"],
+                            "internal": retailer_group.is_internal_retailer,
                         }
                     )
 

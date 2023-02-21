@@ -131,14 +131,14 @@ export default {
     invoiceURL: function(passId) {
         return apiEndpoints.externalParkPassInvoice(passId);
     },
-    soldViaDBCA: function(pass) {
-        return constants.DEFAULT_SOLD_VIA == pass.sold_via_name;
+    soldInternally: function(pass) {
+        return constants.DEFAULT_SOLD_VIA == pass.sold_via_name || pass.sold_internally;
     },
     showInvoiceLink: function(pass) {
       if(constants.PERSONNEL_PASS_NAME==pass.pass_type_name){
         return false;
       }
-        return this.soldViaDBCA(pass);
+        return this.soldInternally(pass);
     },
     showAutoRenewalOption: function(pass) {
         if('EX' == pass.processing_status){

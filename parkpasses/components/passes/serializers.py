@@ -376,6 +376,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     voucher_transaction = ExternalVoucherTransactionSerializer()
     price_after_voucher_applied = serializers.CharField()
     sold_via_name = serializers.SerializerMethodField(read_only=True)
+    sold_internally = serializers.BooleanField(read_only=True)
     date_start_formatted = serializers.DateField(
         source="date_start", read_only=True, format="%d/%m/%Y"
     )
@@ -428,6 +429,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "voucher_transaction",
             "price_after_voucher_applied",
             "sold_via_name",
+            "sold_internally",
         ]
         read_only_fields = [
             "id",

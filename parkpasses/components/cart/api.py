@@ -110,6 +110,12 @@ class LedgerCheckoutView(APIView):
             )
             return redirect(reverse("user-cart"))
 
+        is_eftpos_sale = self.request.POST.get("is_eftpos_sale", False)
+        if "true" == is_eftpos_sale:
+            is_eftpos_sale = True
+
+        logger.info(is_eftpos_sale)
+
         if is_retailer(request):
             logger.info(
                 "User is a retailer.",
@@ -150,45 +156,47 @@ class LedgerCheckoutView(APIView):
             # Mark the pass as no longer in cart this will prevent it
             # being deleted when the cart item is deleted
             park_pass = Pass.objects.get(id=cart_item.object_id)
-            park_pass.in_cart = False
-            logger.info(
-                f"Park pass: {park_pass} set as in_cart = False.",
-            )
-            logger.info(
-                f"Saving Park pass: {park_pass}.",
-            )
-            park_pass.save()
-            logger.info(
-                f"Park pass: {park_pass} saved.",
-            )
 
-            # Remove the cart item and cart and reset the cart details
-            logger.info(
-                f"Deleting cart item: {cart_item}.",
-            )
-            cart_item.delete()
-            logger.info(
-                f"Cart item: {cart_item} deleted.",
-            )
-            logger.info(
-                f"Deleting cart: {cart}.",
-            )
-            cart.delete()
-            logger.info(
-                f"Cart: {cart} deleted.",
-            )
-            CartUtils.reset_cart_item_count(request)
-            CartUtils.remove_cart_id_from_session(request)
-
-            logger.info(
-                f"Redirecting retailer to form for park pass {park_pass} with success message.",
-            )
-            return redirect(
-                reverse(
-                    "retailer-pass-created-successfully",
-                    kwargs={"id": park_pass.id},
+            if not is_eftpos_sale:
+                park_pass.in_cart = False
+                logger.info(
+                    f"Park pass: {park_pass} set as in_cart = False.",
                 )
-            )
+                logger.info(
+                    f"Saving Park pass: {park_pass}.",
+                )
+                park_pass.save()
+                logger.info(
+                    f"Park pass: {park_pass} saved.",
+                )
+
+                # Remove the cart item and cart and reset the cart details
+                logger.info(
+                    f"Deleting cart item: {cart_item}.",
+                )
+                cart_item.delete()
+                logger.info(
+                    f"Cart item: {cart_item} deleted.",
+                )
+                logger.info(
+                    f"Deleting cart: {cart}.",
+                )
+                cart.delete()
+                logger.info(
+                    f"Cart: {cart} deleted.",
+                )
+                CartUtils.reset_cart_item_count(request)
+                CartUtils.remove_cart_id_from_session(request)
+
+                logger.info(
+                    f"Redirecting retailer to form for park pass {park_pass} with success message.",
+                )
+                return redirect(
+                    reverse(
+                        "retailer-pass-created-successfully",
+                        kwargs={"id": park_pass.id},
+                    )
+                )
 
         ledger_order_lines = CartUtils.get_ledger_order_lines(request, cart)
 
@@ -203,9 +211,21 @@ class LedgerCheckoutView(APIView):
         create_basket_session(request, request.user.id, basket_parameters)
 
         invoice_text = f"Park Passes Order: {cart.uuid}"
-        return_url = request.build_absolute_uri(
-            reverse("checkout-success", kwargs={"uuid": cart.uuid})
-        )
+        if is_eftpos_sale:
+            logger.info(
+                f"is_eftpos_sale: {is_eftpos_sale}. Setting return url to internal pass created successfully page.",
+            )
+            return_url = request.build_absolute_uri(
+                reverse(
+                    "retailer-pass-created-successfully",
+                    kwargs={"id": park_pass.id},
+                )
+            )
+        else:
+            return_url = request.build_absolute_uri(
+                reverse("checkout-success", kwargs={"uuid": cart.uuid})
+            )
+
         return_preload_url = request.build_absolute_uri(
             reverse("ledger-api-success-callback", kwargs={"uuid": cart.uuid})
         )

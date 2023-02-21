@@ -37,9 +37,12 @@
                                 </div>
                                 <div v-if="isRetailer" class="row my-3 mx-1 g-0">
                                     <div class="col">
-                                        <BootstrapAlert>
+                                        <BootstrapAlert v-if="!retailerGroupsForUser[0].is_internal_retailer">
                                             <div class="mb-2">Please take payment from the customer and then click 'Create Pass'</div>
                                             <div>{{retailerGroupsForUser[0].ledger_organisation_name}} will be invoiced monthly for any sales minus commission.</div>
+                                        </BootstrapAlert>
+                                        <BootstrapAlert v-else>
+                                            <div class="mb-2">For a cash sale, please take payment from the customer and then click 'Create Pass (Cash Sale)'</div>
                                         </BootstrapAlert>
                                     </div>
                                 </div>
@@ -62,10 +65,18 @@
                                         </div>
                                         <div>
                                             <div v-if="isRetailer">
-                                                <input id="isNoPayment" type="hidden" name="no_payment" value="true" />
-
-                                                <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5 me-2" type="submit">Create Pass</button>
-                                                <BootstrapButtonSpinner v-if="isRedirecting" class="btn licensing-btn-primary px-5" />
+                                                <template v-if="retailerGroupsForUser[0].is_internal_retailer">
+                                                    <input id="isNoPayment" type="hidden" name="no_payment" value="true" />
+                                                    <input id="isEftposSale" type="hidden" name="is_eftpos_sale" value="false" />
+                                                    <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5 me-2" type="submit">Create Pass (Cash Sale)</button>
+                                                    <button v-if="!isRedirecting" @click="checkoutCartEftpos" class="btn licensing-btn-primary px-5 me-2" type="submit">EFTPOS Checkout</button>
+                                                    <BootstrapButtonSpinner v-if="isRedirecting" class="btn licensing-btn-primary px-5" />
+                                                </template>
+                                                <template v-else>
+                                                    <input id="isNoPayment" type="hidden" name="no_payment" value="true" />
+                                                    <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5 me-2" type="submit">Create Pass</button>
+                                                    <BootstrapButtonSpinner v-if="isRedirecting" class="btn licensing-btn-primary px-5" />
+                                                </template>
                                             </div>
                                             <div v-else class="col-auto align-right">
                                                 <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5" type="button">Checkout</button>
@@ -182,6 +193,11 @@ export default {
             if(isCashPayment){
                 $('input#isNoPayment').val(true);
             }
+            this.$refs.checkoutForm.submit();
+        },
+        checkoutCartEftpos: function () {
+            this.isRedirecting = true;
+            $('input#isEftposSale').val(true);
             this.$refs.checkoutForm.submit();
         },
         fetchCartItems: function () {
