@@ -271,6 +271,16 @@ class RetailerGroupUser(models.Model):
         )
         super().save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        cache.delete(settings.CACHE_KEY_RETAILER.format(str(self.emailuser.id)))
+        cache.delete(settings.CACHE_KEY_RETAILER_ADMIN.format(str(self.emailuser.id)))
+        cache.delete(
+            settings.CACHE_KEY_GROUP_IDS.format(
+                self._meta.label_lower, str(self.retailer_group.id)
+            )
+        )
+        super().delete(*args, **kwargs)
+
     @classmethod
     def update_session(cls, request, user_id):
         from parkpasses.helpers import is_retailer
