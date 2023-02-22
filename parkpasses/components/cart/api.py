@@ -4,6 +4,7 @@ from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse
 from ledger_api_client.utils import create_basket_session, create_checkout_session
+from ledger_api_client.utils import get_or_create as get_or_create_emailuser
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -15,6 +16,7 @@ from parkpasses.components.cart.serializers import CartItemSerializer, CartSeria
 from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.retailers.models import RetailerGroup
+from parkpasses.exceptions import LedgerAPIException
 from parkpasses.helpers import is_customer, is_internal, is_retailer
 
 logger = logging.getLogger(__name__)
@@ -208,9 +210,12 @@ class LedgerCheckoutView(APIView):
         logger.info(
             f"Creating basket session with basket parameters: {basket_parameters}"
         )
-        create_basket_session(request, request.user.id, basket_parameters)
 
-        invoice_text = f"Park Passes Order: {cart.uuid}"
+        basket_user_id = request.user.id
+        return_url = request.build_absolute_uri(
+            reverse("checkout-success", kwargs={"uuid": cart.uuid})
+        )
+
         if is_eftpos_sale:
             logger.info(
                 f"is_eftpos_sale: {is_eftpos_sale}. Setting return url to internal pass created successfully page.",
@@ -221,16 +226,24 @@ class LedgerCheckoutView(APIView):
                     kwargs={"id": park_pass.id},
                 )
             )
-        else:
-            return_url = request.build_absolute_uri(
-                reverse("checkout-success", kwargs={"uuid": cart.uuid})
-            )
+            basket_user_response = get_or_create_emailuser(park_pass.email)
+            if not 200 == basket_user_response["status"]:
+                code = basket_user_response["status"]
+                message = basket_user_response["message"]
+                logger.error(
+                    f"Error encountered trying to run get_or_create emailuser via api. Code: {code}, Message: {message}"
+                )
+                raise LedgerAPIException(code=code, detail=message)
+            basket_user_id = basket_user_response["data"]["emailuser_id"]
+
+        create_basket_session(request, basket_user_id, basket_parameters)
 
         return_preload_url = request.build_absolute_uri(
             reverse("ledger-api-success-callback", kwargs={"uuid": cart.uuid})
         )
+        invoice_text = f"Park Passes Order: {cart.uuid}"
         checkout_parameters = CartUtils.get_checkout_parameters(
-            request, return_url, return_preload_url, cart.user, invoice_text
+            request, return_url, return_preload_url, basket_user_id, invoice_text
         )
         logger.info(
             f"Creating checkout session with checkout parameters: {checkout_parameters}"

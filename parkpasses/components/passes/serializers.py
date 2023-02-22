@@ -635,6 +635,7 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
         source="voucher_transaction.debit"
     )
     user_can_edit = serializers.SerializerMethodField()
+    invoice_link = serializers.CharField(read_only=True)
 
     class Meta:
         model = Pass
@@ -648,6 +649,7 @@ class InternalPassRetrieveSerializer(serializers.ModelSerializer):
             "concession_type",
             "concession_discount_percentage",
             "rac_discount_percentage",
+            "invoice_link",
         ]
         datatables_always_serialize = [
             "user_can_edit",

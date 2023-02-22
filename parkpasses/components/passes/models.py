@@ -835,6 +835,11 @@ class Pass(models.Model):
             or self.sold_via.is_internal_retailer
         )
 
+    @property
+    def invoice_link(self):
+        if self.order:
+            return self.order.invoice_link
+
     def pro_rata_refund_percentage(self):
         if self.date_start >= timezone.now().date():
             return 100
