@@ -9,6 +9,7 @@
             <img v-show="allImagesLoaded" @load="imageLoaded()" :src="pass.pass_type_image" class="img-fluid float-left" width="300" height="150" />
             <div v-show="!allImagesLoaded" class="skeleton-block rounded"></div>
             <div class="pass-number">{{pass.pass_number}}</div>
+            <div v-if="pass.park_group" class="park-group">{{pass.park_group}}</div>
 
             <div class="card-body">
               <h5 class="card-title">{{ pass.pass_type }}</h5>
@@ -374,6 +375,20 @@ export default {
   max-width: 95%;
 }
 
+.park-group {
+  position:absolute;
+  top: 110px;
+  left: 6px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 5px;
+  margin:0 0 -20px 0;
+  border-radius: 5px;
+  width: -moz-fit-content;
+  width: fit-content;
+  text-overflow: ellipsis;
+  max-width: 95%;
+}
 .showUpdateVehicleRego{
     background-color:#EDE5D9;
     color: #444;
