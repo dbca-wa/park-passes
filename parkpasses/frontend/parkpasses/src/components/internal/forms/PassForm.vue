@@ -32,10 +32,16 @@
                                     </BootstrapAlert>
                                 </div>
                             </div>
-                            <div class="row mb-1">
+                            <div v-if="pdfUrl" class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Pass PDF</label>
-                                <div v-if="pdfUrl" class="col-sm-6">
+                                <div class="col-sm-6">
                                     <a :href="pdfUrl" target="blank">{{ pass.park_pass_pdf }}</a>
+                                </div>
+                            </div>
+                            <div v-if="pass.invoice_link" class="row mb-1">
+                                <label class="col-sm-4 col-form-label">Invoice PDF</label>
+                                <div class="col-sm-6">
+                                    <a :href="pass.invoice_link" target="blank">Ledger Invoice PDF</a>
                                 </div>
                             </div>
                             <div class="row mb-1">
