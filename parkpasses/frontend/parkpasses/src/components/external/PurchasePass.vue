@@ -934,12 +934,11 @@ export default {
         },
         validateVoucherCode: function () {
             console.log('this.pass.voucher_code.length = ' + this.pass.voucher_code.length)
-            if(!this.pass.voucher_code.length){
+            if(0 == this.pass.voucher_code.length){
                 this.voucherBalanceRemaining = 0.00;
-                this.$refs.voucherCode.setCustomValidity("Invalid field.");
-                return false;
-            }
-            if(8!=this.pass.voucher_code.length){
+                this.$refs.voucherCode.setCustomValidity("");
+                return true;
+            } else if(8!=this.pass.voucher_code.length){
                 console.log('voucher code is invalid')
                 this.voucherBalanceRemaining = 0.00;
                 this.$refs.voucherCode.setCustomValidity("Invalid field.");
