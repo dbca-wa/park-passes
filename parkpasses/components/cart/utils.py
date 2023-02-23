@@ -284,4 +284,6 @@ class CartUtils:
     @classmethod
     def remove_cart_id_from_session(self, request):
         logger.info("Removing cart_id variable from session.")
-        del request.session["cart_id"]
+        if "cart_id" in request.session:
+            logger.info("cart_id variable exists in session. Deleting it.")
+            del request.session["cart_id"]

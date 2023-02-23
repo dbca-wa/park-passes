@@ -160,7 +160,7 @@ class LedgerCheckoutView(APIView):
 
             if not is_bpoint_sale:
                 logger.info(
-                    "Sale is not .",
+                    "Sale is not via bpoint gateway.",
                 )
                 park_pass.in_cart = False
                 logger.info(
@@ -222,6 +222,8 @@ class LedgerCheckoutView(APIView):
             logger.info(
                 f"is_bpoint_sale: {is_bpoint_sale}. Setting return url to internal pass created successfully page.",
             )
+            CartUtils.reset_cart_item_count(request)
+            CartUtils.remove_cart_id_from_session(request)
             return_url = request.build_absolute_uri(
                 reverse(
                     "retailer-pass-created-successfully",
@@ -278,9 +280,6 @@ class SuccessView(APIView):
                 invoice_reference=invoice_reference,
             )
 
-            CartUtils.reset_cart_item_count(request)
-            CartUtils.remove_cart_id_from_session(request)
-
             logger.info(
                 "Returning status.HTTP_200_OK. Order created successfully.",
             )
@@ -288,7 +287,6 @@ class SuccessView(APIView):
             # a response body however we will return a status in case this is used on the ledger end in future
             return Response(status=status.HTTP_200_OK)
 
-        CartUtils.reset_cart_item_count(request)
         # If there is no uuid to identify the cart then send a bad request status back in case ledger can
         # do something with this in future
         logger.info(

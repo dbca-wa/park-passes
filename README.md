@@ -89,7 +89,6 @@ required environment variables at run time. Example content:
     LEDGER_API_URL="http://localhost:8000"
     LEDGER_API_KEY="API_KEY"
     # Below is required to run Vue Js front end with hot reload
-    DEV_APP_BUILD_URL="http://localhost:8080/static/parkpassesapp.js"
     # Below prints emails to screen instead of sending via mail server
     CONSOLE_EMAIL_BACKEND=True
     PAYMENT_INTERFACE_SYSTEM_ID='PAYMENT_INTERFACE_SYSTEM_ID'

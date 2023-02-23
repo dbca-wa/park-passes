@@ -148,7 +148,7 @@ urlpatterns = [
     ),
     url(
         r"^retailer/passes/(?P<id>.+)/created-successfully$",
-        views.RetailerView.as_view(
+        views.RetailerPassCreatedView.as_view(
             extra_context={"title": "Retailer Pass Created Successfully"}
         ),
         name="retailer-pass-created-successfully",
