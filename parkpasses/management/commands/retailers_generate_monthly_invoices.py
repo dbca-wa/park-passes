@@ -126,6 +126,7 @@ class Command(BaseCommand):
                     {
                         "ledger_description": ledger_description,
                         "quantity": 1,
+                        "price_excl_tax": str(price_incl_tax),
                         "price_incl_tax": str(price_incl_tax),
                         "oracle_code": CartUtils.get_oracle_code(
                             request, pass_content_type, park_pass.id

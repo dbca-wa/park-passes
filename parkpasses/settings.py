@@ -405,6 +405,9 @@ if len(GIT_COMMIT_HASH) == 0:
     if len(GIT_COMMIT_HASH) == 0:
         print("ERROR: No git hash provided")
 
+# Park passes and vouchers do not attract GST
+LEDGER_GST = env("LEDGER_GST", 0)
+
 LEDGER_TEMPLATE = "bootstrap5"
 
 LEDGER_UI_CARDS_MANAGEMENT = True

@@ -32,7 +32,10 @@ from parkpasses.components.retailers.serializers import (
     RetailerGroupUserSerializer,
     RetailerRetailerGroupInviteSerializer,
 )
-from parkpasses.helpers import get_retailer_groups_for_user
+from parkpasses.helpers import (
+    delete_sessions_by_emailuser_id,
+    get_retailer_groups_for_user,
+)
 from parkpasses.permissions import IsInternal, IsRetailer, IsRetailerAdmin
 
 logger = logging.getLogger(__name__)
@@ -260,6 +263,7 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
     def accept_retailer_group_user_invite(self, request, *args, **kwargs):
         retailer_group_user_invite = self.get_object()
         if retailer_group_user_invite.user == request.user.id:
+            email_user = EmailUser.objects.get(id=retailer_group_user_invite.user)
             if (
                 RetailerGroupInvite.INTERNAL_USER
                 == retailer_group_user_invite.initiated_by
@@ -270,15 +274,17 @@ class ExternalRetailerGroupInviteViewSet(mixins.RetrieveModelMixin, GenericViewS
                 == retailer_group_user_invite.initiated_by
             ):
                 # Since retailers can only add users to their own retailer group and cannot create
-                # admins we bypass the additional steps and just approve them when they login
-                email_user = EmailUser.objects.get(id=retailer_group_user_invite.user)
+                # admins we bypass the additional steps and just approve them when they accept their invite
                 RetailerGroupUser.objects.create(
                     retailer_group=retailer_group_user_invite.retailer_group,
                     emailuser=email_user,
                     active=True,
                 )
                 retailer_group_user_invite.status = RetailerGroupInvite.APPROVED
-                RetailerGroupUser.update_session(request, request.user.id)
+                # Log the user out so that they must log in again and we can
+                # add the retailer group name and id to their session
+                delete_sessions_by_emailuser_id(email_user.id)
+
             retailer_group_user_invite.save()
             serializer = self.get_serializer(retailer_group_user_invite)
             return Response(serializer.data)
@@ -378,6 +384,10 @@ class InternalRetailerGroupInviteViewSet(
                     is_admin=request.data["is_admin"],
                 )
                 retailer_group_user_invite.status = RetailerGroupInvite.APPROVED
+                # Log the user out so that they must log in again and we can
+                # add the retailer group name and id to their session
+                delete_sessions_by_emailuser_id(email_user.id)
+
         else:
             retailer_group_user_invite.status = RetailerGroupInvite.DENIED
         retailer_group_user_invite.save()

@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.contrib.sessions.backends.cached_db import SessionStore
 from django.core.cache import cache
 from django.utils.text import slugify
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -13,6 +14,7 @@ from parkpasses.components.passes.models import (
     PassTypePricingWindow,
 )
 from parkpasses.components.retailers.models import RetailerGroup, RetailerGroupUser
+from parkpasses.components.users.models import UserSession
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +96,16 @@ def is_internal(request):
         cache.set(cache_key, is_internal, settings.CACHE_TIMEOUT_2_HOURS)
     logger.debug(f"{cache_key}:{is_internal}")
     return is_internal
+
+
+def delete_sessions_by_emailuser_id(emailuser_id):
+    """This function will log a specific user out of all their sessions
+    useful when a users permissions change such as when an external user
+    becomes a retailer group user"""
+    user_sessions = UserSession.objects.filter(user=emailuser_id)
+    for user_session in user_sessions:
+        session_store = SessionStore()
+        session_store.delete(session_key=user_session.session.session_key)
 
 
 def test_async(var):

@@ -52,6 +52,7 @@ class CartUtils:
             ledger_order_line = {
                 "ledger_description": order_item.description,
                 "quantity": 1,
+                "price_excl_tax": str(order_item.amount),
                 "price_incl_tax": str(order_item.amount),
                 "oracle_code": oracle_code,
                 "line_status": line_status,

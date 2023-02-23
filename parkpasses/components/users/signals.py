@@ -5,6 +5,7 @@ from django.contrib.auth.signals import user_logged_in
 from parkpasses.components.cart.models import Cart
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.retailers.models import RetailerGroupUser
+from parkpasses.components.users.models import UserSession
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,13 @@ def assign_orphan_passes(sender, user, request, **kwargs):
             park_pass.save()
 
 
+def track_user_session(sender, user, request, **kwargs):
+    UserSession.objects.get_or_create(
+        user=user.id, session_id=request.session.session_key
+    )
+
+
 user_logged_in.connect(init_cart)
 user_logged_in.connect(assign_orphan_passes)
 user_logged_in.connect(add_retailer_to_session)
+user_logged_in.connect(track_user_session)
