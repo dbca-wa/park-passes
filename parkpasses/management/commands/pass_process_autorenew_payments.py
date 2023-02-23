@@ -270,6 +270,7 @@ class Command(BaseCommand):
                             {
                                 "ledger_description": order_item.description,
                                 "quantity": 1,
+                                "price_excl_tax": str(order_item.amount),
                                 "price_incl_tax": str(order_item.amount),
                                 "oracle_code": order_item.oracle_code,
                             }
@@ -279,6 +280,7 @@ class Command(BaseCommand):
                             {
                                 "ledger_description": rac_discount_order_item.description,
                                 "quantity": 1,
+                                "price_excl_tax": str(rac_discount_order_item.amount),
                                 "price_incl_tax": str(rac_discount_order_item.amount),
                                 "oracle_code": rac_discount_order_item.oracle_code,
                             }
@@ -288,6 +290,7 @@ class Command(BaseCommand):
                             {
                                 "ledger_description": concession_order_item.description,
                                 "quantity": 1,
+                                "price_excl_tax": str(concession_order_item.amount),
                                 "price_incl_tax": str(concession_order_item.amount),
                                 "oracle_code": concession_order_item.oracle_code,
                             }

@@ -932,6 +932,7 @@ class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
             {
                 "ledger_description": ledger_description,
                 "quantity": 1,
+                "price_excl_tax": str(-abs(pro_rata_refund_amount)),
                 "price_incl_tax": str(-abs(pro_rata_refund_amount)),
                 "oracle_code": CartUtils.get_oracle_code(
                     request, content_type, park_pass.id
