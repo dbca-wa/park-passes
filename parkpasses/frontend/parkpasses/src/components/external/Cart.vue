@@ -16,7 +16,7 @@
                                 :cartItem="cartItem" :key="cartItem.id" />
 
                             <div>
-                                <div class="row my-3 mx-1 g-0">
+                                <div v-if="gst>0" class="row my-3 mx-1 g-0">
                                     <div class="col border-bottom">
                                         GST
                                     </div>
@@ -26,10 +26,10 @@
                                 </div>
                                 <div class="row my-3 mx-1 g-0">
                                     <div class="col border-bottom d-none d-sm-block">
-                                        Sub Total for {{ cartItems.length }} Item<template v-if="cartItems.length>1">s</template>  (Inc GST)
+                                        Sub Total for {{ cartItems.length }} Item<template v-if="cartItems.length>1">s</template> <span v-if="gst>0">(Inc GST)</span>
                                     </div>
                                     <div class="col border-bottom float-end d-block d-sm-none">
-                                        Total (Inc GST)
+                                        Total <span v-if="gst>0">(Inc GST)</span>
                                     </div>
                                     <div class="col-auto border-bottom">
                                         ${{ totalPrice }}
@@ -42,7 +42,8 @@
                                             <div>{{retailerGroupsForUser[0].ledger_organisation_name}} will be invoiced monthly for any sales minus commission.</div>
                                         </BootstrapAlert>
                                         <BootstrapAlert v-else>
-                                            <div class="mb-2">For a cash sale, please take payment from the customer and then click 'Create Pass (Cash Sale)'</div>
+                                            <div class="mb-2">For a cash or EFTPOS sale, please <strong>take payment from the customer first</strong> and then click '{{ posText }}'</div>
+                                            <div>To enter the customer's credit card details and pay through the Park Passes system click '{{ bpointText }}'</div>
                                         </BootstrapAlert>
                                     </div>
                                 </div>
@@ -60,7 +61,7 @@
                                             </template>
                                             <template v-else>
                                                 <input type="hidden" name="retailer_group_id" :value="retailerGroupsForUser[0].id" />
-                                                <span class="badge org-badge-primary">{{ retailerGroupsForUser[0].ledger_organisation_name }}</span>
+                                                <div class="lead"><span class="badge org-badge-primary fw-bold">{{ retailerGroupsForUser[0].ledger_organisation_name }}</span></div>
                                             </template>
                                         </div>
                                         <div>
@@ -68,8 +69,8 @@
                                                 <template v-if="retailerGroupsForUser[0].is_internal_retailer">
                                                     <input id="isNoPayment" type="hidden" name="no_payment" value="true" />
                                                     <input id="isEftposSale" type="hidden" name="is_eftpos_sale" value="false" />
-                                                    <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5 me-2" type="submit">Create Pass (Cash Sale)</button>
-                                                    <button v-if="!isRedirecting" @click="checkoutCartEftpos" class="btn licensing-btn-primary px-5 me-2" type="submit">EFTPOS Checkout</button>
+                                                    <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5 me-2" type="submit">{{ posText }}</button>
+                                                    <button v-if="!isRedirecting" @click="checkoutCartEftpos" class="btn licensing-btn-primary px-5 me-2" type="submit">{{ bpointText }}</button>
                                                     <BootstrapButtonSpinner v-if="isRedirecting" class="btn licensing-btn-primary px-5" />
                                                 </template>
                                                 <template v-else>
@@ -135,6 +136,8 @@ export default {
             isRedirecting: false,
             csrftoken: helpers.getCookie('csrftoken'),
             systemErrorMessage: null,
+            posText: 'Payment Taken at Point of Sale',
+            bpointText: 'Online Credit Card Sale',
         };
     },
     components: {
@@ -183,7 +186,7 @@ export default {
         },
         gst() {
             let gst = currency(helpers.getGstFromTotalIncludingGst(constants.GST, this.totalPrice));
-            console.log(gst);
+            console.log('gst = ' + gst);
             return Math.max(gst, 0.00).toFixed(2);
         }
     },
