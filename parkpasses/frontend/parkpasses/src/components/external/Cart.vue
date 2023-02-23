@@ -68,7 +68,7 @@
                                             <div v-if="isRetailer">
                                                 <template v-if="retailerGroupsForUser[0].is_internal_retailer">
                                                     <input id="isNoPayment" type="hidden" name="no_payment" value="true" />
-                                                    <input id="isEftposSale" type="hidden" name="is_eftpos_sale" value="false" />
+                                                    <input id="isBpointSale" type="hidden" name="is_bpoint_sale" value="false" />
                                                     <button v-if="!isRedirecting" @click="checkoutCart" class="btn licensing-btn-primary px-5 me-2" type="submit">{{ posText }}</button>
                                                     <button v-if="!isRedirecting" @click="checkoutCartEftpos" class="btn licensing-btn-primary px-5 me-2" type="submit">{{ bpointText }}</button>
                                                     <BootstrapButtonSpinner v-if="isRedirecting" class="btn licensing-btn-primary px-5" />
@@ -200,7 +200,7 @@ export default {
         },
         checkoutCartEftpos: function () {
             this.isRedirecting = true;
-            $('input#isEftposSale').val(true);
+            $('input#isBpointSale').val(true);
             this.$refs.checkoutForm.submit();
         },
         fetchCartItems: function () {

@@ -112,11 +112,10 @@ class LedgerCheckoutView(APIView):
             )
             return redirect(reverse("user-cart"))
 
-        is_eftpos_sale = self.request.POST.get("is_eftpos_sale", False)
-        if "true" == is_eftpos_sale:
-            is_eftpos_sale = True
-
-        logger.info(is_eftpos_sale)
+        is_bpoint_sale = False
+        is_bpoint_sale_param = self.request.POST.get("is_bpoint_sale", False)
+        if "true" == is_bpoint_sale_param:
+            is_bpoint_sale = True
 
         if is_retailer(request):
             logger.info(
@@ -159,7 +158,10 @@ class LedgerCheckoutView(APIView):
             # being deleted when the cart item is deleted
             park_pass = Pass.objects.get(id=cart_item.object_id)
 
-            if not is_eftpos_sale:
+            if not is_bpoint_sale:
+                logger.info(
+                    "Sale is not .",
+                )
                 park_pass.in_cart = False
                 logger.info(
                     f"Park pass: {park_pass} set as in_cart = False.",
@@ -216,9 +218,9 @@ class LedgerCheckoutView(APIView):
             reverse("checkout-success", kwargs={"uuid": cart.uuid})
         )
 
-        if is_eftpos_sale:
+        if is_bpoint_sale:
             logger.info(
-                f"is_eftpos_sale: {is_eftpos_sale}. Setting return url to internal pass created successfully page.",
+                f"is_bpoint_sale: {is_bpoint_sale}. Setting return url to internal pass created successfully page.",
             )
             return_url = request.build_absolute_uri(
                 reverse(
