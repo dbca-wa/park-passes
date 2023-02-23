@@ -1,6 +1,6 @@
 module.exports = {
 
-    GST:                                    10,
+    GST:                                    0,
     PARKPASSES_APP_LABEL:                   'parkpasses',
     PARKPASSES_MODELS_USERACTION:           'useraction',
     PARKPASSES_MODELS_PASS:                 'pass',
