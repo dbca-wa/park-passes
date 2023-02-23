@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.generic.base import TemplateView
 
+from parkpasses.components.cart.utils import CartUtils
 from parkpasses.forms import LoginForm
 from parkpasses.helpers import is_internal, is_retailer, is_retailer_admin
 
@@ -24,6 +25,20 @@ class RetailerView(UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         return is_retailer(self.request)
+
+
+class RetailerPassCreatedView(UserPassesTestMixin, TemplateView):
+    template_name = "parkpasses/retailer/index.html"
+
+    def test_func(self):
+        return is_retailer(self.request)
+
+    def get(self, *args, **kwargs):
+        logger.info("Flushing the cart from the session")
+        # Flush the cart from the session
+        CartUtils.reset_cart_item_count(self.request)
+        CartUtils.remove_cart_id_from_session(self.request)
+        return super().get(*args, **kwargs)
 
 
 class RetailerSellAPassView(UserPassesTestMixin, TemplateView):
