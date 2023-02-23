@@ -160,7 +160,7 @@ class LedgerCheckoutView(APIView):
 
             if not is_bpoint_sale:
                 logger.info(
-                    "Sale is not .",
+                    "Sale is not via bpoint gateway.",
                 )
                 park_pass.in_cart = False
                 logger.info(
@@ -222,6 +222,8 @@ class LedgerCheckoutView(APIView):
             logger.info(
                 f"is_bpoint_sale: {is_bpoint_sale}. Setting return url to internal pass created successfully page.",
             )
+            CartUtils.reset_cart_item_count(request)
+            CartUtils.remove_cart_id_from_session(request)
             return_url = request.build_absolute_uri(
                 reverse(
                     "retailer-pass-created-successfully",
