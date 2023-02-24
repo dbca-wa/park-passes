@@ -349,7 +349,6 @@ class Command(BaseCommand):
                     # as the invoice will be created in oracle manually
                     report = Report.objects.create(
                         retailer_group=retailer_group,
-                        uuid=invoice_uuid,
                         processing_status=Report.INDETERMINATE,
                     )
             report.report.name = report_path.replace("docx", "pdf")
