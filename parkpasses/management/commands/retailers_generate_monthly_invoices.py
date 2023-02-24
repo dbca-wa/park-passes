@@ -38,7 +38,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "--test",
             action="store_true",
-            help="Add the test flag will output what emails would be sent without actually sending them.",
+            help=(
+                "Add the test flag will use the current month instead of the previous month "
+                "and will output what emails would be sent without actually sending them."
+            ),
         )
 
     def handle(self, *args, **options):
