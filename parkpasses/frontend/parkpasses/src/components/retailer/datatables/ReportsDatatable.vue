@@ -112,6 +112,9 @@ export default {
                 allowInputToggle:true
             },
 
+            invoicingDisabled: true,
+            invoicingDisabledHtml: '<span class="badge bg-warning">Disabled</span> <span class="text-secondary">Refer to Oracle</span>',
+
             // For Expandable row
             td_expand_class_name: 'expand-icon',
             td_collapse_class_name: 'collapse-icon',
@@ -169,6 +172,7 @@ export default {
                 'id',
                 'Number',
                 'Monthly Report',
+                'Statement',
                 'Invoice',
                 'Payment Status',
                 'Date Generated',
@@ -209,7 +213,22 @@ export default {
                 }
             }
         },
+        columnStatement: function(){
+            return {
+                data: "statement_filename",
+                visible: true,
+                name: 'statement_filename',
+                'render': function(row, type, full){
+                    let html = '';
+                    if(full.statement_filename){
+                        html = `<a href="${apiEndpoints.retrieveStatementPdfRetailer(full.id)}" target="_blank">Statement.pdf</a>`;
+                    }
+                    return html;
+                }
+            }
+        },
         columnInvoice: function(){
+            let vm = this;
             return {
                 data: "invoice_link",
                 visible: true,
@@ -218,17 +237,20 @@ export default {
                     console.log(full.processing_status)
                     console.log(full.invoice_reference)
                     let html = '';
+                    if(vm.invoicingDisabled){
+                        html = vm.invoicingDisabledHtml;
+                    } else {
+                        if('P'===full.processing_status) {
+                            html += `<a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
+                        }
 
-                    if('P'===full.processing_status) {
-                        html += `<a href="${apiEndpoints.retrieveReportInvoiceReceiptPdfRetailer(full.id)}" target="_blank">Receipt.pdf</a>`;
-                    }
+                        else if(full.invoice_link){
+                            html += `<a href="${full.invoice_link}" target="_blank">Invoice.pdf</a>`;
+                        }
 
-                    else if(full.invoice_link){
-                        html += `<a href="${full.invoice_link}" target="_blank">Invoice.pdf</a>`;
-                    }
-
-                    if('Unpaid'==full.processing_status_display && full.overdue){
-                        html += ` <span class="badge bg-danger">Overdue</span>`;
+                        if('Unpaid'==full.processing_status_display && full.overdue){
+                            html += ` <span class="badge bg-danger">Overdue</span>`;
+                        }
                     }
 
                     return html;
@@ -236,17 +258,23 @@ export default {
             }
         },
         columnProcessingStatusDisplay: function(){
+            let vm = this;
             return {
                 data: "processing_status_display",
                 visible: true,
                 name: 'processing_status_display',
                 'render': function(row, type, full){
                     let html = '';
-                    if('Paid'==full.processing_status_display){
-                        html = `<span class="badge bg-success">Paid</span>`;
+                    if(vm.invoicingDisabled){
+                        html = vm.invoicingDisabledHtml;
                     } else {
-                        html = `<span class="badge bg-danger">Unpaid</span> | <a href="${apiEndpoints.retailerPayInvoice(full.id)}">Pay Now</a>`;
+                        if('Paid'==full.processing_status_display){
+                            html = `<span class="badge bg-success">Paid</span>`;
+                        } else {
+                            html = `<span class="badge bg-danger">Unpaid</span> | <a href="${apiEndpoints.retailerPayInvoice(full.id)}">Pay Now</a>`;
+                        }
                     }
+
                     return html;
                 }
             }
@@ -286,6 +314,7 @@ export default {
                 vm.columnId,
                 vm.columnReportNumber,
                 vm.columnReport,
+                vm.columnStatement,
                 vm.columnInvoice,
                 vm.columnProcessingStatusDisplay,
                 vm.columnDatetimeCreated,

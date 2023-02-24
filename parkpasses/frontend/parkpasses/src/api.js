@@ -241,7 +241,12 @@ module.exports = {
     retrieveReportPdfInternal:   function (reportId) {
         return                          `/api/reports/internal/reports/${reportId}/retrieve-report-pdf/`;
     },
-
+    retrieveStatementPdfRetailer:   function (reportId) {
+        return                          `/api/reports/retailer/reports/${reportId}/retrieve-statement-pdf/`;
+    },
+    retrieveStatementPdfInternal:   function (reportId) {
+        return                          `/api/reports/internal/reports/${reportId}/retrieve-statement-pdf/`;
+    },
     /* ========================= Org Model Documents ====================================*/
 
     uploadOrgModelDocuments:            '/api/main/internal/org-model-documents/upload-documents',

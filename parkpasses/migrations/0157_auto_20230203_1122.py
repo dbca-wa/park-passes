@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='report',
             name='uuid',
-            field=models.CharField(default=parkpasses.components.reports.models.get_uuid, help_text='This is used as the booking reference for the generated ledger invoice.', max_length=36, unique=True),
+            field=models.CharField(default="", help_text='This is used as the booking reference for the generated ledger invoice.', max_length=36, unique=True),
         ),
         migrations.DeleteModel(
             name='RetailerGroupAPIKey',

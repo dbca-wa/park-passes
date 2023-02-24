@@ -7,10 +7,12 @@ from parkpasses.components.reports.models import Report
 
 class RetailerReportSerializer(serializers.ModelSerializer):
     report_filename = serializers.SerializerMethodField()
+    statement_filename = serializers.SerializerMethodField()
     processing_status_display = serializers.SerializerMethodField()
     datetime_created = serializers.SerializerMethodField()
     retailer_group = serializers.SerializerMethodField()
     overdue = serializers.BooleanField(read_only=True)
+    invoice_link = serializers.CharField(read_only=True)
     invoice_link = serializers.CharField(read_only=True)
 
     class Meta:
@@ -23,6 +25,7 @@ class RetailerReportSerializer(serializers.ModelSerializer):
             "processing_status_display",
             "report",
             "report_filename",
+            "statement_filename",
             "report_number",
             "retailer_group",
             "uuid",
@@ -41,7 +44,14 @@ class RetailerReportSerializer(serializers.ModelSerializer):
         return obj.get_processing_status_display()
 
     def get_report_filename(self, obj):
-        return os.path.basename(obj.report.name)
+        if obj.report:
+            return os.path.basename(obj.report.name)
+        return None
+
+    def get_statement_filename(self, obj):
+        if obj.statement:
+            return os.path.basename(obj.statement.name)
+        return None
 
     def get_datetime_created(self, obj):
         return obj.datetime_created.strftime("%d/%m/%Y")
@@ -49,6 +59,7 @@ class RetailerReportSerializer(serializers.ModelSerializer):
 
 class InternalReportSerializer(serializers.ModelSerializer):
     report_filename = serializers.SerializerMethodField()
+    statement_filename = serializers.SerializerMethodField()
     processing_status_display = serializers.SerializerMethodField()
     datetime_created = serializers.SerializerMethodField()
     retailer_group = serializers.SerializerMethodField()
@@ -65,6 +76,7 @@ class InternalReportSerializer(serializers.ModelSerializer):
             "processing_status_display",
             "report",
             "report_filename",
+            "statement_filename",
             "report_number",
             "retailer_group",
             "uuid",
@@ -80,7 +92,14 @@ class InternalReportSerializer(serializers.ModelSerializer):
         return obj.get_processing_status_display()
 
     def get_report_filename(self, obj):
-        return os.path.basename(obj.report.name)
+        if obj.report:
+            return os.path.basename(obj.report.name)
+        return None
+
+    def get_statement_filename(self, obj):
+        if obj.statement:
+            return os.path.basename(obj.statement.name)
+        return None
 
     def get_datetime_created(self, obj):
         return obj.datetime_created.strftime("%d/%m/%Y")
