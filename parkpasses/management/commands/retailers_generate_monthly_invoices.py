@@ -49,6 +49,9 @@ class Command(BaseCommand):
         report_template_docx = DocxTemplate(
             "parkpasses/management/templates/RetailerGroupReportTemplate.docx"
         )
+        statement_template_docx = DocxTemplate(
+            "parkpasses/management/templates/RetailerGroupStatementTemplate.docx"
+        )
 
         today = timezone.make_aware(
             datetime.combine(timezone.now(), datetime.min.time())
@@ -161,6 +164,7 @@ class Command(BaseCommand):
             if settings.DEBUG:
                 # If in dev round the amounts so the payment gateway will work
                 commission_amount = int(commission_amount)
+                commission_amount = Decimal(commission_amount).quantize(Decimal("0.01"))
                 ledger_description += " (Price rounded for dev env)"
                 commission_ledger_description += " (Price rounded for dev env)"
 
@@ -179,50 +183,87 @@ class Command(BaseCommand):
                 Decimal("0.01")
             )
 
-            # Here we will generate the ledger invoices with Jason's new API
-            request = ledger_api_client_utils.FakeRequestSessionObj()
-            request.user = email_user
+            if not settings.RETAILER_INVOICE_GENERATION_DISABLED:
+                # Here we will generate the ledger invoices with Jason's new API
+                request = ledger_api_client_utils.FakeRequestSessionObj()
+                request.user = email_user
 
-            basket_params = {
-                "products": ledger_order_lines,
-                "vouchers": [],
-                "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
-                "custom_basket": True,
-                "booking_reference": str(booking_reference),
-                "no_payment": True,
-                "organisation": retailer_group.ledger_organisation,
-            }
+                basket_params = {
+                    "products": ledger_order_lines,
+                    "vouchers": [],
+                    "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
+                    "custom_basket": True,
+                    "booking_reference": str(booking_reference),
+                    "no_payment": True,
+                    "organisation": retailer_group.ledger_organisation,
+                }
 
-            basket_hash = ledger_api_client_utils.create_basket_session(
-                request, request.user.id, basket_params
-            )
-            basket_hash = basket_hash.split("|")[0]
-            invoice_text = (
-                f"Park Pass Sales for the Month of {invoice_month} {invoice_year}"
-            )
-            return_preload_url = (
-                f"{settings.PARKPASSES_EXTERNAL_URL}"
-                f"/api/reports/ledger-api-retailer-invoice-success-callback/{invoice_uuid}"
-            )
-
-            future_invoice = ledger_api_client_utils.process_create_future_invoice(
-                basket_hash, invoice_text, return_preload_url
-            )
-
-            logger.info(future_invoice)
-
-            if 200 != future_invoice["status"]:
-                logger.error(
-                    f"Failed to create future invoice for {retailer_group} with basket_hash "
-                    f"{basket_hash}, invoice_text {invoice_text}, return_preload_url {return_preload_url}"
+                basket_hash = ledger_api_client_utils.create_basket_session(
+                    request, request.user.id, basket_params
                 )
-                continue
+                basket_hash = basket_hash.split("|")[0]
+                invoice_text = (
+                    f"Park Pass Sales for the Month of {invoice_month} {invoice_year}"
+                )
+                return_preload_url = (
+                    f"{settings.PARKPASSES_EXTERNAL_URL}"
+                    f"/api/reports/ledger-api-retailer-invoice-success-callback/{invoice_uuid}"
+                )
 
-            data = future_invoice["data"]
+                future_invoice = ledger_api_client_utils.process_create_future_invoice(
+                    basket_hash, invoice_text, return_preload_url
+                )
 
-            order_number = data["order"]
-            basket_id = data["basket_id"]
-            invoice_reference = data["invoice"]
+                logger.info(future_invoice)
+
+                if 200 != future_invoice["status"]:
+                    logger.error(
+                        f"Failed to create future invoice for {retailer_group} with basket_hash "
+                        f"{basket_hash}, invoice_text {invoice_text}, return_preload_url {return_preload_url}"
+                    )
+                    continue
+
+                data = future_invoice["data"]
+
+                order_number = data["order"]
+                basket_id = data["basket_id"]
+                invoice_reference = data["invoice"]
+
+            # Generate the retailer statement so the business can manually create the oracle invoice from it. haha :-(
+            context = {
+                "organisation": organisation,
+                "rg": retailer_group,
+                "passes": passes,
+                "date_statement": first_day_of_previous_month,
+                "date_generated": today,
+                "commission_percentage": f"{retailer_group.commission_percentage}%",
+                "commission_amount": f"${commission_amount}",
+                "total_sales": f"${total_sales}",
+                "total_payable": f"${total_payable}",
+            }
+            statement_template_docx.render(context)
+            organisation_name = retailer_group.organisation["organisation_name"]
+            statement_filename = f"Park Passes Statement - {organisation_name} - {first_day_of_previous_month.date()} "
+            statement_filename += f"{last_day_of_previous_month.date()}.docx"
+            statement_path = (
+                f"{settings.RETAILER_GROUP_STATEMENT_ROOT}/"
+                f"{slugify(organisation_name)}/{statement_filename}"
+            )
+            Path(
+                f"{settings.RETAILER_GROUP_STATEMENT_ROOT}/{slugify(organisation_name)}"
+            ).mkdir(parents=True, exist_ok=True)
+            statement_template_docx.save(statement_path)
+            subprocess.run(
+                [
+                    "libreoffice",
+                    "--headless",
+                    "--convert-to",
+                    "pdf",
+                    statement_path,
+                    "--outdir",
+                    f"{settings.RETAILER_GROUP_STATEMENT_ROOT}/{slugify(organisation_name)}",
+                ]
+            )
 
             passes_by_type = Pass.objects.filter(
                 sold_via=retailer_group,
@@ -295,17 +336,28 @@ class Command(BaseCommand):
                     datetime_created__month=first_day_of_previous_month.month,
                 )
             else:
-                report = Report.objects.create(
-                    retailer_group=retailer_group,
-                    uuid=invoice_uuid,
-                    order_number=order_number,
-                    basket_id=basket_id,
-                    invoice_reference=invoice_reference,
-                )
+                if not settings.RETAILER_INVOICE_GENERATION_DISABLED:
+                    report = Report.objects.create(
+                        retailer_group=retailer_group,
+                        uuid=invoice_uuid,
+                        order_number=order_number,
+                        basket_id=basket_id,
+                        invoice_reference=invoice_reference,
+                    )
+                else:
+                    # If a ledger invoice is not being generated, we can't know the processing status
+                    # as the invoice will be created in oracle manually
+                    report = Report.objects.create(
+                        retailer_group=retailer_group,
+                        uuid=invoice_uuid,
+                        processing_status=Report.INDETERMINATE,
+                    )
             report.report.name = report_path.replace("docx", "pdf")
+            report.statement.name = statement_path.replace("docx", "pdf")
             report.save()
 
             os.remove(report_path)
+            os.remove(statement_path)
 
             self.stdout.write(
                 self.style.SUCCESS(

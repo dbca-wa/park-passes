@@ -120,6 +120,20 @@ class RetailerReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
                     return FileResponse(report.report)
         raise Http404
 
+    @action(methods=["GET"], detail=True, url_path="retrieve-statement-pdf")
+    def retrieve_statement_pdf(self, request, *args, **kwargs):
+        if RetailerGroupUser.objects.filter(
+            emailuser__id=self.request.user.id
+        ).exists():
+            retailer_groups = RetailerGroupUser.objects.filter(
+                emailuser__id=self.request.user.id
+            ).values_list("retailer_group__id", flat=True)
+            report = self.get_object()
+            if report.retailer_group.id in list(retailer_groups):
+                if report.statement:
+                    return FileResponse(report.statement)
+        raise Http404
+
     @action(methods=["GET"], detail=True, url_path="retrieve-invoice-receipt")
     def retrieve_invoice_receipt(self, request, *args, **kwargs):
         report = self.get_object()
@@ -276,4 +290,18 @@ class InternalReportViewSet(CustomDatatablesListMixin, viewsets.ModelViewSet):
             response = requests.get(invoice_url)
             return FileResponse(response, content_type="application/pdf")
 
+        raise Http404
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-statement-pdf")
+    def retrieve_statement_pdf(self, request, *args, **kwargs):
+        if RetailerGroupUser.objects.filter(
+            emailuser__id=self.request.user.id
+        ).exists():
+            retailer_groups = RetailerGroupUser.objects.filter(
+                emailuser__id=self.request.user.id
+            ).values_list("retailer_group__id", flat=True)
+            report = self.get_object()
+            if report.retailer_group.id in list(retailer_groups):
+                if report.statement:
+                    return FileResponse(report.statement)
         raise Http404
