@@ -395,6 +395,9 @@ GROUP_NAME_PARK_PASSES_RETAILER = "Park Passes Retailer"
 
 RETAILER_INVOICE_DUE_DAYS = 30
 
+# Becuase ledger is not properly integrated with oracle at the time this was written,
+# The business requested the ability to disable generating invoices for retailers
+# and instead to generate a statement which they could use to generate an invoice in oracle
 RETAILER_INVOICE_GENERATION_DISABLED = env("RETAILER_INVOICE_GENERATION_DISABLED", True)
 
 template_title = "Park Passes"
