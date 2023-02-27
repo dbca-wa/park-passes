@@ -860,6 +860,21 @@ class RetailerPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
                     return FileResponse(park_pass.park_pass_pdf)
         raise Http404
 
+    @action(methods=["GET"], detail=True, url_path="retrieve-ledger-invoice-pdf")
+    def retrieve_ledger_invoice_pdf(self, request, *args, **kwargs):
+        if RetailerGroupUser.objects.filter(
+            emailuser__id=self.request.user.id
+        ).exists():
+            retailer_groups = RetailerGroupUser.objects.filter(
+                emailuser__id=self.request.user.id
+            ).values_list("retailer_group__id", flat=True)
+            park_pass = self.get_object()
+            if park_pass.sold_via.id in list(retailer_groups):
+                if park_pass.invoice_link:
+                    response = requests.get(park_pass.invoice_link)
+                    return FileResponse(response, content_type="application/pdf")
+        raise Http404
+
 
 class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
     search_fields = [
@@ -889,6 +904,14 @@ class InternalPassViewSet(CustomDatatablesListMixin, UserActionViewSet):
         park_pass = self.get_object()
         if park_pass.park_pass_pdf:
             return FileResponse(park_pass.park_pass_pdf)
+        raise Http404
+
+    @action(methods=["GET"], detail=True, url_path="retrieve-ledger-invoice-pdf")
+    def retrieve_ledger_invoice_pdf(self, request, *args, **kwargs):
+        park_pass = self.get_object()
+        if park_pass.invoice_link:
+            response = requests.get(park_pass.invoice_link)
+            return FileResponse(response, content_type="application/pdf")
         raise Http404
 
     @action(methods=["GET"], detail=True, url_path="payment-details")
