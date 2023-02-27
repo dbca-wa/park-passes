@@ -309,6 +309,7 @@ class Command(BaseCommand):
                         "products": products,
                         "vouchers": [],
                         "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
+                        "tax_override": True,
                         "custom_basket": True,
                         "booking_reference": booking_reference,
                         "booking_reference_link": booking_reference_link,

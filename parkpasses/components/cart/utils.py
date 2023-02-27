@@ -80,6 +80,7 @@ class CartUtils:
             "vouchers": [],
             "system": settings.PARKPASSES_PAYMENT_SYSTEM_PREFIX,
             "custom_basket": True,
+            "tax_override": True,
             "no_payment": is_no_payment,
             "booking_reference": booking_reference,
             # Optional: Used to keep a link between bookings that are related such as autorenewal
