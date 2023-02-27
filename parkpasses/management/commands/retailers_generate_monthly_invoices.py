@@ -172,6 +172,7 @@ class Command(BaseCommand):
                 {
                     "ledger_description": commission_ledger_description,
                     "quantity": 1,
+                    "price_excl_tax": str(-abs(commission_amount)),
                     "price_incl_tax": str(-abs(commission_amount)),
                     "oracle_code": retailer_group.commission_oracle_code,
                     "line_status": settings.PARKPASSES_LEDGER_DEFAULT_LINE_STATUS,
@@ -192,6 +193,7 @@ class Command(BaseCommand):
                     "products": ledger_order_lines,
                     "vouchers": [],
                     "system": settings.PARKPASSES_PAYMENT_SYSTEM_ID,
+                    "tax_override": True,
                     "custom_basket": True,
                     "booking_reference": str(booking_reference),
                     "no_payment": True,
