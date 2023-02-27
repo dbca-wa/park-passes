@@ -33,7 +33,7 @@
                             <div v-if="pass.invoice_link" class="row mb-1">
                                 <label class="col-sm-4 col-form-label">Invoice PDF</label>
                                 <div class="col-sm-6">
-                                    <a :href="pass.invoice_link" target="blank">Ledger Invoice PDF</a>
+                                    <a :href="ledgerInvoicePdfUrl" target="blank">Ledger Invoice PDF</a>
                                 </div>
                             </div>
                             <div class="row mb-1">
@@ -238,6 +238,7 @@ export default {
             listCommsUrl: null,
             createCommUrl: apiEndpoints.createCommunicationsLogEntry,
             pdfUrl: null,
+            ledgerInvoicePdfUrl: null,
             appLabel: constants.PARKPASSES_APP_LABEL,
             model: constants.PARKPASSES_MODELS_PASS,
             loading: false,
@@ -321,6 +322,7 @@ export default {
                     vm.pass.id
                 )
                 vm.pdfUrl = apiEndpoints.retailerParkPassPdf(vm.pass.id)
+                vm.ledgerInvoicePdfUrl = apiEndpoints.retailerParkPassInvoicePdf(vm.pass.id)
             })
             .catch(error => {
                 this.systemErrorMessage = constants.ERRORS.SYSTEM;

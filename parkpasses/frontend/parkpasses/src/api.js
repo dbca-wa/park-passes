@@ -58,6 +58,9 @@ module.exports = {
     retailerParkPassPdf: function (passId) {
         return                          `/api/passes/retailer/passes/${passId}/retrieve-park-pass-pdf`
     },
+    retailerParkPassInvoicePdf: function (passId) {
+        return                          `/api/passes/retailer/passes/${passId}/retrieve-ledger-invoice-pdf`
+    },
     internalPassPaymentDetails: function (passId) {
         return                          `/api/passes/internal/passes/${passId}/payment-details`
     },
