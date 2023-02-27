@@ -250,6 +250,9 @@ export default {
         isHolidayPass: function () {
             return constants.HOLIDAY_PASS_NAME==this.pass.pass_type_name ? true : false;
         },
+        hasPassExpired: function () {
+            return constants.PASS_STATUS_EXPIRED==this.pass.processing_status_display_name;
+        },
         isPassCancelled: function () {
             return (constants.PASS_PROCESSING_STATUS_CANCELLED==this.pass.processing_status) ? true : false;
         },
