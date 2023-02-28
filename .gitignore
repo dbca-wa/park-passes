@@ -17,6 +17,7 @@ tmp/
 csv*/
 *.csv
 *.xls*
+!parkpasses/static/parkpasses/xlsx/personnel-pass-data-file-template.xlsx
 *.docx#
 *.dot
 
