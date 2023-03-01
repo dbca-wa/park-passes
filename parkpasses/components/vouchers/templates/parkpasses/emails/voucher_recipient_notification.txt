@@ -15,6 +15,6 @@
 
             Voucher Value: ${{voucher.amount}}
             Voucher Code: {{voucher.code}}
-            Voucher Pin: {{voucher.pin|stringformat:"06d"}}
+            Voucher Pin: {{voucher.pin}}
             Expiry Date: {{voucher.expiry|date:"d-m-Y"}}
 {% endblock %}

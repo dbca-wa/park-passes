@@ -18,7 +18,7 @@
             <ul>
                 <li>Voucher Value: ${{voucher.amount}}</li>
                 <li>Voucher Code: {{voucher.code}}</li>
-                <li>Voucher Pin: {{voucher.pin|stringformat:"06d"}}</li>
+                <li>Voucher Pin: {{voucher.pin}}</li>
                 <li>Expiry Date: {{voucher.expiry|date:"d-m-Y"}}</li>
             </ul>
 {% endblock %}
