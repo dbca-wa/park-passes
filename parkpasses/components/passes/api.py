@@ -779,15 +779,21 @@ class PassFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(cancellation__isnull=False)
 
             elif Pass.FUTURE == status:
-                queryset = queryset.filter(date_start__gt=timezone.now().date())
+                queryset = queryset.exclude(processing_status=Pass.CANCELLED).filter(
+                    date_start__gt=timezone.now().date()
+                )
 
             elif Pass.EXPIRED == status:
                 queryset = queryset.filter(date_expiry__lte=timezone.now().date())
 
             elif Pass.CURRENT == status:
-                queryset = queryset.exclude(processing_status=Pass.CANCELLED).filter(
-                    date_start__lte=timezone.now().date(),
-                    date_expiry__gte=timezone.now().date(),
+                queryset = (
+                    queryset.exclude(processing_status=Pass.CANCELLED)
+                    .exclude(date_expiry__lte=timezone.now().date())
+                    .filter(
+                        date_start__lte=timezone.now().date(),
+                        date_expiry__gt=timezone.now().date(),
+                    )
                 )
 
         if start_date_from:
