@@ -48,7 +48,7 @@
                     <label for="confirmRecipientEmail" class="col-form-label">Confirm Recipient Email</label>
                 </div>
                 <div class="col-12 col-lg-12 col-xl-9">
-                    <input @change="validateConfirmEmail" type="email" id="confirmRecipientEmail" name="confirmRecipientEmail" v-model="confirmRecipientEmail" ref="confirmRecipientEmail" class="form-control" required="required">
+                    <input @change="validateConfirmEmail" onpaste="return false;" type="email" id="confirmRecipientEmail" name="confirmRecipientEmail" v-model="confirmRecipientEmail" ref="confirmRecipientEmail" class="form-control" required="required">
                     <div class="invalid-feedback">
                         Please make sure this email matches the recipient's email.
                     </div>
