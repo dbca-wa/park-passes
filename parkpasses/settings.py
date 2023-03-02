@@ -354,6 +354,10 @@ CACHE_KEY_GROUP_IDS = "{}-{}-user-ids"
 
 CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
 
+CACHE_KEY_LEDGER_API_CLIENT_SYSTEM_GROUP_MEMBER_IDS = (
+    "managed_models.SystemGroup.get_system_group_member_ids:{}"
+)
+
 CACHE_SYSTEM_CHECK_FOR = 60 * 5  # 5 minutes
 
 PROTECTED_MEDIA_ROOT = env(
