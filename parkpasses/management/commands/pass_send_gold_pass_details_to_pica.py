@@ -39,7 +39,8 @@ class Command(BaseCommand):
         no_reply_email_user, created = EmailUser.objects.get_or_create(
             email=settings.NO_REPLY_EMAIL, password=""
         )
-        today = timezone.now().date()
+        now = timezone.now()
+        today = now.date()
         yesterday = today - timezone.timedelta(days=1)
 
         date = yesterday
@@ -115,7 +116,7 @@ class Command(BaseCommand):
                 "send_gold_pass_details_to_pica for Pass with id {}. Exception {}"
             )
             try:
-                PassEmails.send_gold_pass_details_to_pica(date, passes, file_path)
+                PassEmails.send_gold_pass_details_to_pica(now, passes, file_path)
                 logger.info(
                     "Email of new Gold Pass Information sent to PICA.",
                 )
@@ -123,5 +124,5 @@ class Command(BaseCommand):
                 logger.exception(e)
                 raise SendGoldPassDetailsToPICAEmailFailed(
                     "There was an exception trying to send gold pass details to PICA. "
-                    f"Date {date}, Passes: {passes}, File Path: {file_path}. Exception: {e}"
+                    f"Date {date} (UTC), Passes: {passes}, File Path: {file_path}. Exception: {e}"
                 )
