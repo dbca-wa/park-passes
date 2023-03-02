@@ -285,8 +285,6 @@ class Cart(models.Model):
                 order_item.amount = park_pass.option.price
                 order_items.append(order_item)
                 if save_order_to_db_and_delete_cart:
-                    park_pass.in_cart = False
-                    park_pass.save()
                     order_item.save()
                     logger.info(
                         f"Order item {order_item} saved.",
@@ -456,7 +454,13 @@ class Cart(models.Model):
 
         if save_order_to_db_and_delete_cart:
             order.payment_confirmed = True
+            logger.info("Saving order: {order}.")
             order.save()
+            logger.info("Order saved.")
+            logger.info("Remvoing park pass: {park_pass} from cart and saving.")
+            park_pass.in_cart = False
+            park_pass.save()
+            logger.info("Park pass saved.")
             logger.info(f"Deleting Cart {self}.")
             self.delete()
             logger.info("Cart Deleted.")
