@@ -3,9 +3,8 @@ import logging
 from django.conf import settings
 from django.contrib.sessions.backends.cached_db import SessionStore
 from django.core.cache import cache
-from django.utils.text import slugify
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.managed_models import SystemGroupPermission
+from ledger_api_client.managed_models import SystemGroup
 
 from parkpasses.components.passes.models import (
     DistrictPassTypeDurationOracleCode,
@@ -27,10 +26,10 @@ def check_settings(messages, critical_issues):
 
 
 def park_passes_system_check(messages, critical_issues):
-    logger.info("running park_passes_system_check")
     cache_key = "parkpasses_system_check"
     parkpasses_system_check = cache.get(cache_key)
     if parkpasses_system_check is None:
+        logger.info("running park_passes_system_check")
         check_settings(messages, critical_issues)
         RetailerGroup.check_DBCA_retailer_group(messages, critical_issues)
         PassType.check_required_pass_types_exist(messages, critical_issues)
@@ -65,15 +64,10 @@ def belongs_to(request, group_name):
     if request.user.is_superuser:
         return True
 
-    user = request.user
-    cache_key = settings.CACHE_KEY_BELONGS_TO.format(str(user.id), slugify(group_name))
-    belongs_to_value = cache.get(cache_key)
-    if belongs_to_value is None:
-        belongs_to_value = SystemGroupPermission.objects.filter(
-            system_group__name=group_name, emailuser=user, active=True
-        ).exists()
-        cache.set(cache_key, belongs_to_value, settings.CACHE_TIMEOUT_2_HOURS)
-    return belongs_to_value
+    system_group = SystemGroup.objects.filter(name=group_name).first()
+    return (
+        system_group and request.user.id in system_group.get_system_group_member_ids()
+    )
 
 
 def is_internal(request):

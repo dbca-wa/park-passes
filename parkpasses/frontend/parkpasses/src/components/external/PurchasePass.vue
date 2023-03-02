@@ -52,7 +52,7 @@
                                 <label for="confirmEmail" class="col-form-label">Confirm Email</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
-                                <input @change="validateConfirmEmail" type="email" id="confirmEmail" name="confirmEmail" ref="confirmEmail" v-model="confirmEmail" class="form-control" required="required">
+                                <input @change="validateConfirmEmail" onpaste="return false;" type="email" id="confirmEmail" name="confirmEmail" ref="confirmEmail" v-model="confirmEmail" class="form-control" required="required">
                                 <div class="invalid-feedback">
                                     Please make sure your confirmation email matches your email.
                                 </div>

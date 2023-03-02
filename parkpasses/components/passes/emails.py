@@ -2,6 +2,7 @@ import logging
 import os
 
 from django.conf import settings
+from django.utils import timezone
 
 from parkpasses.components.emails.emails import TemplateEmailBase
 from parkpasses.components.main.utils import log_communication
@@ -267,8 +268,10 @@ class PassEmails:
         log_communication(park_pass.email, message, "email", park_pass)
 
     @classmethod
-    def send_gold_pass_details_to_pica(self, date, passes, gold_passes_excel_file_path):
-        email = PassGoldPassDetailsForPICAEmail(date.strftime("%d/%m/%Y"))
+    def send_gold_pass_details_to_pica(self, now, passes, gold_passes_excel_file_path):
+        # Convert utc time to local time for email subject line
+        local_date = timezone.localtime(now).date()
+        email = PassGoldPassDetailsForPICAEmail(local_date.strftime("%d/%m/%Y"))
         from parkpasses.components.passes.serializers import ExternalPassSerializer
 
         serializer = ExternalPassSerializer(passes, many=True)

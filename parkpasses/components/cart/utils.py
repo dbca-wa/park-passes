@@ -283,6 +283,11 @@ class CartUtils:
         request.session["cart_item_count"] = 0
 
     @classmethod
+    def set_cart_item_count(self, request, count):
+        logger.info(f"Setting cart_item_count session variable to {count}.")
+        request.session["cart_item_count"] = count
+
+    @classmethod
     def remove_cart_id_from_session(self, request):
         logger.info("Removing cart_id variable from session.")
         if "cart_id" in request.session:

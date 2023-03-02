@@ -831,7 +831,8 @@ class Pass(models.Model):
     def sold_internally(self):
         # Returns true for passes sold via the website and via internal retailers
         return (
-            settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID == self.sold_via_id
+            settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+            == self.sold_via.ledger_organisation
             or self.sold_via.is_internal_retailer
         )
 

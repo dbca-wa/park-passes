@@ -4,9 +4,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.management import call_command
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.generic.base import TemplateView
+from django.views.generic.base import RedirectView, TemplateView
 
 from parkpasses.components.cart.utils import CartUtils
+from parkpasses.components.retailers.models import RetailerGroupInvite
 from parkpasses.forms import LoginForm
 from parkpasses.helpers import is_internal, is_retailer, is_retailer_admin
 
@@ -18,6 +19,35 @@ class InternalView(UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         return is_internal(self.request)
+
+
+class LoginSuccessView(LoginRequiredMixin, RedirectView):
+    """This view is called when the oauth2 login is successful."""
+
+    permanent = False
+    pattern_name = "home"
+
+    def get_redirect_url(self, *args, **kwargs):
+        # Check if the user has any retailer invites
+        user_email = self.request.user.email
+        invites = RetailerGroupInvite.objects.filter(
+            email=user_email,
+            status__in=[RetailerGroupInvite.SENT, RetailerGroupInvite.USER_LOGGED_IN],
+        )
+        if invites.exists():
+            # If so, redirect them to the most recently sent invite page
+            latest_invite = invites.last()
+            return reverse("respond-to-invite", kwargs={"uuid": latest_invite.uuid})
+
+        # If the user has any items in their cart, redirect them to the cart page
+        cart_item_count = self.request.session["cart_item_count"]
+        if cart_item_count > 0:
+            logger.info(f"session['cart_item_count'] = {cart_item_count}")
+            logger.info("Redirecting to cart page")
+            return reverse("user-cart")
+
+        # otherwise, redirect them to the home page.
+        return super().get_redirect_url(*args, **kwargs)
 
 
 class RetailerView(UserPassesTestMixin, TemplateView):
