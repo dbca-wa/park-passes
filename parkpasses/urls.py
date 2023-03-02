@@ -8,11 +8,7 @@ from rest_framework import routers
 from parkpasses import views
 from parkpasses.admin import admin
 from parkpasses.components.cart.api import LedgerCheckoutView
-from parkpasses.components.cart.views import (
-    CartView,
-    CheckoutSuccessView,
-    LoginSuccessView,
-)
+from parkpasses.components.cart.views import CartView, CheckoutSuccessView
 from parkpasses.components.help.views import ParkPassesFAQView, ParkPassesHelpView
 from parkpasses.components.orders.views import ExternalOrdersView
 from parkpasses.components.passes.views import ExternalPassView
@@ -49,7 +45,7 @@ urlpatterns = [
         name="further_information",
     ),
     # ========================================================================== External Authenticated
-    url(r"^login-success/", LoginSuccessView.as_view(), name="login-success"),
+    url(r"^login-success/", views.LoginSuccessView.as_view(), name="login-success"),
     url(r"^cart/", CartView.as_view(), name="user-cart"),
     url(r"^ledger-checkout/", LedgerCheckoutView.as_view(), name="ledger-checkout"),
     url(
