@@ -1,11 +1,16 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
+from django.contrib.contenttypes.models import ContentType
 
 from parkpasses.components.cart.models import Cart
+from parkpasses.components.cart.utils import CartUtils
 from parkpasses.components.passes.models import Pass
 from parkpasses.components.retailers.models import RetailerGroupUser
 from parkpasses.components.users.models import UserSession
+from parkpasses.components.vouchers.models import Voucher
+from parkpasses.helpers import is_retailer
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +25,41 @@ def init_cart(sender, user, request, **kwargs):
 
 def add_retailer_to_session(sender, user, request, **kwargs):
     logger.info("user_logged_in signal running add_retailer_to_session function")
-    RetailerGroupUser.update_session(request, user.id)
+    cart = Cart.get_or_create_cart(request)
+    if is_retailer(request):
+        retailer_group_user = (
+            RetailerGroupUser.objects.filter(emailuser=user.id)
+            .order_by("-datetime_created")
+            .first()
+        )
+        request.session["retailer"] = {
+            "id": retailer_group_user.retailer_group.id,
+            "name": retailer_group_user.retailer_group.organisation[
+                "organisation_name"
+            ],
+        }
+        # If the retailer has any park passes in their cart that have sold_via=
+        # Department of Biodiversity, Conservation and Attractions then delete them
+        # as once they are logged in as a retailer they should only be able checkout
+        # with park passes that have sold_via = <their retailer group>.
+        pass_content_type = ContentType.objects.get_for_model(Pass)
+        voucher_content_type = ContentType.objects.get_for_model(Voucher)
+        for item in cart.items.all():
+            if item.content_type == voucher_content_type:
+                item.delete()
+            if item.content_type == pass_content_type:
+                park_pass = Pass.objects.get(id=item.object_id)
+                if (
+                    settings.PARKPASSES_DEFAULT_SOLD_VIA_ORGANISATION_ID
+                    == park_pass.sold_via.ledger_organisation
+                ):
+                    item.delete()
+        cart.save()
+        CartUtils.set_cart_item_count(request, cart.items.all().count())
+
+    else:
+        if "retailer" in request.session.keys():
+            del request.session["retailer"]
 
 
 def assign_orphan_passes(sender, user, request, **kwargs):
