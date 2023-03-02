@@ -26,10 +26,10 @@ def check_settings(messages, critical_issues):
 
 
 def park_passes_system_check(messages, critical_issues):
-    logger.info("running park_passes_system_check")
     cache_key = "parkpasses_system_check"
     parkpasses_system_check = cache.get(cache_key)
     if parkpasses_system_check is None:
+        logger.info("running park_passes_system_check")
         check_settings(messages, critical_issues)
         RetailerGroup.check_DBCA_retailer_group(messages, critical_issues)
         PassType.check_required_pass_types_exist(messages, critical_issues)
@@ -65,8 +65,9 @@ def belongs_to(request, group_name):
         return True
 
     system_group = SystemGroup.objects.filter(name=group_name).first()
-    member_ids = system_group.get_system_group_member_ids()
-    return request.user.id in member_ids
+    return (
+        system_group and request.user.id in system_group.get_system_group_member_ids()
+    )
 
 
 def is_internal(request):
