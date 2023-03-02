@@ -266,7 +266,7 @@ class RetailerGroupUser(models.Model):
         cache.delete(settings.CACHE_KEY_RETAILER_ADMIN.format(str(self.emailuser.id)))
         cache.delete(
             settings.CACHE_KEY_GROUP_IDS.format(
-                self._meta.label_lower, str(self.retailer_group.id)
+                self.retailer_group._meta.label_lower, str(self.retailer_group.id)
             )
         )
         super().save(*args, **kwargs)
@@ -276,30 +276,10 @@ class RetailerGroupUser(models.Model):
         cache.delete(settings.CACHE_KEY_RETAILER_ADMIN.format(str(self.emailuser.id)))
         cache.delete(
             settings.CACHE_KEY_GROUP_IDS.format(
-                self._meta.label_lower, str(self.retailer_group.id)
+                self.retailer_group._meta.label_lower, str(self.retailer_group.id)
             )
         )
         super().delete(*args, **kwargs)
-
-    @classmethod
-    def update_session(cls, request, user_id):
-        from parkpasses.helpers import is_retailer
-
-        if is_retailer(request):
-            retailer_group_user = (
-                RetailerGroupUser.objects.filter(emailuser=user_id)
-                .order_by("-datetime_created")
-                .first()
-            )
-            request.session["retailer"] = {
-                "id": retailer_group_user.retailer_group.id,
-                "name": retailer_group_user.retailer_group.organisation[
-                    "organisation_name"
-                ],
-            }
-        else:
-            if "retailer" in request.session.keys():
-                del request.session["retailer"]
 
 
 class RetailerGroupInviteManager(models.Manager):
