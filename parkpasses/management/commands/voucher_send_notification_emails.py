@@ -52,10 +52,11 @@ class Command(BaseCommand):
                     f"Notification email sent to recipient and purchser of Voucher: {voucher}",
                 )
 
-        """ Second: Send any vouchers to recipients that are due to be sent today """
+        """ Second: Send any vouchers to recipients that are due to be sent today or on a
+        previous day and have the appropriate processing status """
         today = timezone.now().date()
         vouchers = Voucher.objects.exclude(in_cart=True).filter(
-            datetime_to_email__date=today,
+            datetime_to_email__date__lte=today,
             processing_status__in=[
                 Voucher.PURCHASER_NOTIFIED,
                 Voucher.NOT_DELIVERED_TO_RECIPIENT,
