@@ -46,12 +46,13 @@ class Command(BaseCommand):
                 )
             else:
                 voucher.send_voucher_purchase_notification_email()
+                # Save the voucher so that the processing status is updated
                 voucher.save()
                 logger.info(
                     f"Notification email sent to recipient and purchser of Voucher: {voucher}",
                 )
 
-        """ Second: Send any vouchers that to recipients that are due to be sent today """
+        """ Second: Send any vouchers to recipients that are due to be sent today """
         today = timezone.now().date()
         vouchers = Voucher.objects.exclude(in_cart=True).filter(
             datetime_to_email__date=today,
@@ -75,6 +76,8 @@ class Command(BaseCommand):
                 )
             else:
                 voucher.send_voucher_sent_notification_emails()
+                # Save the voucher so that the processing status is updated
+                voucher.save()
                 logger.info(
                     f"Notification email sent to recipient and purchser of Voucher: {voucher}",
                 )
