@@ -172,30 +172,6 @@
                                 </ul>
                             </div>
                         </div>
-                        <div v-if="showRacMemberSwitch" class="row g-1 align-top mb-2">
-                            <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="racMember" class="col-form-label"><img src="/static/parkpasses/img/rac-icon.png" width="32" height="32"/> RAC Member?</label>
-                            </div>
-                            <div class="col-12 col-lg-12 col-xl-9">
-                                <div class="form-switch">
-                                    <input @change="resetPrice" class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="racMember" name="racMember" v-model="racMember">
-                                </div>
-                            </div>
-                        </div>
-                        <div v-if="racMember" class="row g-1 align-top mb-2">
-                            <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="racDiscountCode" class="col-form-label">RAC Member Number</label>
-                            </div>
-                            <div class="col-12 col-lg-12 col-xl-9">
-                                <input type="text" @keyup="validateRacDiscountCode()" id="racDiscountCode" name="racDiscountCode" ref="racDiscountCode" v-model="pass.rac_discount_code" class="form-control short-control" minlength="20" maxlength="20">
-                                <div v-if="pass.rac_discount_code && pass.rac_discount_code.length<20" class="invalid-feedback">
-                                    The RAC discount code must be 20 characters long.
-                                </div>
-                                <div v-else class="invalid-feedback">
-                                    This RAC discount code is not valid for your email address.
-                                </div>
-                            </div>
-                        </div>
                         <div v-if="showConcessionSwitch" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 <label for="concession" class="col-form-label">Eligible for Concession</label>
@@ -351,6 +327,30 @@
                                 <template v-else>
                                     <BootstrapSpinner :isLoading="true" :centerOfScreen="false" :small="true" />
                                 </template>
+                            </div>
+                        </div>
+                        <div v-if="showRacMemberSwitch" class="row g-1 align-top mb-2">
+                            <div class="col-12 col-lg-12 col-xl-3">
+                                <label for="racMember" class="col-form-label"><img src="/static/parkpasses/img/rac-icon.png" width="32" height="32"/> RAC Member?</label>
+                            </div>
+                            <div class="col-12 col-lg-12 col-xl-9">
+                                <div class="form-switch">
+                                    <input @change="resetPrice" class="form-check-input pl-2 org-form-switch-primary" type="checkbox" id="racMember" name="racMember" v-model="racMember">
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="racMember" class="row g-1 align-top mb-2">
+                            <div class="col-12 col-lg-12 col-xl-3">
+                                <label for="racDiscountCode" class="col-form-label">RAC Member Number</label>
+                            </div>
+                            <div class="col-12 col-lg-12 col-xl-9">
+                                <input type="text" @keyup="validateRacDiscountCode()" id="racDiscountCode" name="racDiscountCode" ref="racDiscountCode" v-model="pass.rac_discount_code" class="form-control short-control" minlength="20" maxlength="20">
+                                <div v-if="pass.rac_discount_code && pass.rac_discount_code.length<20" class="invalid-feedback">
+                                    The RAC discount code must be 20 characters long.
+                                </div>
+                                <div v-else class="invalid-feedback">
+                                    This RAC discount code is not valid for your email address.
+                                </div>
                             </div>
                         </div>
                         <div class="row g-1 align-top mb-2">
@@ -517,6 +517,7 @@ export default {
 
             passType: null,
             passOptions: null,
+            passOption: null,
             passOptionsLength: null,
             passPrice: 0,
             postCodeValid: false,
@@ -578,7 +579,12 @@ export default {
             return true;
         },
         showRacMemberSwitch() {
-            return !this.isRetailer && this.isEmailValid && !this.isPinjarPass;
+            console.log('running showRacMemberSwitch')
+            if(this.isHolidayPass && this.passOption){
+                // Only 28 day holiday passes are eligible for an RAC discount
+                return 28 == this.passOption.duration
+            }
+            return !this.isRetailer && this.isEmailValid && !this.isPinjarPass && !this.isAnnualLocalPass
         },
         racDiscountCodeEntered() {
             if(this.pass.rac_discount_code && this.pass.rac_discount_code.length>0){
@@ -597,7 +603,7 @@ export default {
                 this.eligibleForConcession = false;
                 return false;
             }
-            return !this.isPinjarPass;
+            return !this.isPinjarPass && !this.isAnnualLocalPass && !this.isHolidayPass;
         },
         showDiscountCodeField() {
             if(this.racDiscountCodeEntered){
@@ -820,6 +826,7 @@ export default {
             });
         },
         updatePrice: function (event) {
+            this.passOption = this.passOptions[event.target.selectedIndex]
             this.passPrice = this.passOptions[event.target.selectedIndex].price
         },
         updateParkGroup: function (event) {
