@@ -75,7 +75,7 @@ class Command(BaseCommand):
 
             file_path = (
                 settings.PICA_GOLD_STAR_PASS_ROOT
-                + f"/gold-star-pass-sales-for-pica-{slugify(yesterday)}.xlsx"
+                + f"/gold-star-pass-sales-for-pica-{slugify(date)}.xlsx"
             )
             workbook = xlsxwriter.Workbook(file_path)
             worksheet = workbook.add_worksheet()
