@@ -10,7 +10,6 @@ import os
 import subprocess
 import uuid
 from collections import namedtuple
-from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -52,19 +51,32 @@ class Command(BaseCommand):
         statement_template_docx = DocxTemplate(
             "parkpasses/management/templates/RetailerGroupStatementTemplate.docx"
         )
+        # Because django and postgress dates are all UTC and we run this command on the 1st of the month
+        # at midnight in Perth local time. We need to add 8 hours to the utc time for the following date
+        # calculations to work correctly.
+        perth_now = timezone.now() + timezone.timedelta(hours=8)
 
-        today = timezone.make_aware(
-            datetime.combine(timezone.now(), datetime.min.time())
-        )
+        # Gets the first day of the local calendar month at midnight
+        today = perth_now.replace(hour=0, minute=0, second=0, microsecond=0)
+
         first_day_of_this_month = today.replace(day=1)
         last_day_of_previous_month = first_day_of_this_month - timezone.timedelta(
             days=1
         )
+
         first_day_of_previous_month = last_day_of_previous_month.replace(day=1)
 
+        # Set the time to the end of the day for the last day of the month so the query captures all
+        # purchases for the month
+        last_day_of_previous_month = last_day_of_previous_month.replace(
+            hour=23, minute=59, second=59, microsecond=999999
+        )
         if options["test"]:
             first_day_of_previous_month = first_day_of_this_month
             last_day_of_previous_month = first_day_of_this_month + relativedelta(day=31)
+            last_day_of_previous_month = last_day_of_previous_month.replace(
+                hour=23, minute=59, second=59, microsecond=999999
+            )
 
         self.stdout.write(
             f"\nGenerating Reports for date range: {first_day_of_previous_month} to {last_day_of_previous_month}\n\n"
