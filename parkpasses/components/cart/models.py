@@ -284,40 +284,21 @@ class Cart(models.Model):
                 )
                 order_item.amount = park_pass.option.price
                 order_items.append(order_item)
+                # If the cart item is a gold star pass then add the landscope subscription to the order
+                # if order_item.is_gold_star_pass:
+                #     order_item = OrderItem()
+                #     order_item.order = order
+                #     order_item.description = settings.LANDSCOPE_MAGAZINE_SUBSCRIPTION.name
+                #     order_item.oracle_code = settings.LANDSCOPE_MAGAZINE_SUBSCRIPTION.oracle_code
+                #     order_item.amount = settings.LANDSCOPE_MAGAZINE_SUBSCRIPTION.price_incl_gst
+                #     order_items.append()
                 if save_order_to_db_and_delete_cart:
                     order_item.save()
                     logger.info(
                         f"Order item {order_item} saved.",
                     )
 
-                if cart_item.rac_discount_usage:
-                    logger.info(
-                        f"RAC Discount Usage exists for cart_item {cart_item}.",
-                    )
-                    # A RAC discount is being applied to this pass purchase
-                    rac_discount_amount = cart_item.rac_discount_usage.discount_amount
-                    if rac_discount_amount > Decimal(0.00):
-                        logger.info(
-                            "RAC discount is greater than 0.00. Proceeding.",
-                        )
-                        order_item = OrderItem()
-                        order_item.order = order
-                        order_item.description = (
-                            CartUtils.get_rac_discount_description()
-                        )
-                        logger.info(
-                            f"RAC order item description: {order_item.description}",
-                        )
-                        order_item.amount = -abs(rac_discount_amount)
-                        # Give the rac discount usage the same oracle code as the pass that it is attached to
-                        order_item.oracle_code = cart_item.oracle_code
-                        order_items.append(order_item)
-                        if save_order_to_db_and_delete_cart:
-                            order_item.save()
-                            logger.info(
-                                f"Order item {order_item} saved.",
-                            )
-                elif cart_item.concession_usage:
+                if cart_item.concession_usage:
                     logger.info(
                         f"Concession Usage exists for cart_item {cart_item}.",
                     )
@@ -363,6 +344,34 @@ class Cart(models.Model):
                             order_item.save()
                             logger.info(
                                 f"Concession order item saved: {order_item}.",
+                            )
+
+                if cart_item.rac_discount_usage:
+                    logger.info(
+                        f"RAC Discount Usage exists for cart_item {cart_item}.",
+                    )
+                    # A RAC discount is being applied to this pass purchase
+                    rac_discount_amount = cart_item.rac_discount_usage.discount_amount
+                    if rac_discount_amount > Decimal(0.00):
+                        logger.info(
+                            "RAC discount is greater than 0.00. Proceeding.",
+                        )
+                        order_item = OrderItem()
+                        order_item.order = order
+                        order_item.description = (
+                            CartUtils.get_rac_discount_description()
+                        )
+                        logger.info(
+                            f"RAC order item description: {order_item.description}",
+                        )
+                        order_item.amount = -abs(rac_discount_amount)
+                        # Give the rac discount usage the same oracle code as the pass that it is attached to
+                        order_item.oracle_code = cart_item.oracle_code
+                        order_items.append(order_item)
+                        if save_order_to_db_and_delete_cart:
+                            order_item.save()
+                            logger.info(
+                                f"Order item {order_item} saved.",
                             )
 
                 if cart_item.discount_code_usage:
@@ -627,6 +636,7 @@ class CartItem(models.Model):
                     "Removing concession usage, discount code usage and voucher transaction from cart item.",
                 )
                 self.concession_usage = None
+                self.rac_discount_usage = None
                 self.discount_code_usage = None
                 self.voucher_transaction = None
                 logger.info(
@@ -643,6 +653,7 @@ class CartItem(models.Model):
                     "Deleting concession usage, discount code usage and voucher transaction.",
                 )
                 ConcessionUsage.objects.filter(park_pass=park_pass).delete()
+                RACDiscountUsage.objects.filter(park_pass=park_pass).delete()
                 DiscountCodeUsage.objects.filter(park_pass=park_pass).delete()
                 VoucherTransaction.objects.filter(park_pass=park_pass).delete()
                 logger.info(

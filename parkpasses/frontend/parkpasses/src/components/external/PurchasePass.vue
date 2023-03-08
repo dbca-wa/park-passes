@@ -341,15 +341,18 @@
                         </div>
                         <div v-if="racMember" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                <label for="racDiscountCode" class="col-form-label">RAC Member Number</label>
+                                <label for="racMemberNumber" class="col-form-label">RAC Member Number</label>
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
-                                <input type="text" @keyup="validateRacDiscountCode()" id="racDiscountCode" name="racDiscountCode" ref="racDiscountCode" v-model="pass.rac_discount_code" class="form-control short-control" minlength="20" maxlength="20">
-                                <div v-if="pass.rac_discount_code && pass.rac_discount_code.length<20" class="invalid-feedback">
-                                    The RAC discount code must be 20 characters long.
+                                <input type="text" @keyup="validateRacDiscountCode()" id="racMemberNumber" name="racMemberNumber" ref="racMemberNumber" v-model="pass.rac_member_number" class="form-control short-control" minlength="8" maxlength="9" required>
+                                <div v-if="!pass.rac_member_number || pass.rac_member_number.length==0" class="invalid-feedback">
+                                    Please enter your RAC Member Number.
+                                </div>
+                                <div v-else-if="pass.rac_member_number && pass.rac_member_number.length<8" class="invalid-feedback">
+                                    The RAC Member Number must be 8 or 9 digits.
                                 </div>
                                 <div v-else class="invalid-feedback">
-                                    This RAC discount code is not valid for your email address.
+                                    This RAC Member Number is not valid for your first and last name.
                                 </div>
                             </div>
                         </div>
@@ -366,12 +369,12 @@
                                 </template>
                             </div>
                         </div>
-                        <div v-if="racDiscountCodeDiscount" class="row g-1 align-top mb-2">
+                        <div v-if="racMemberNumberDiscount" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
-                                RAC Discount ({{ racDiscountCodePercentage }}% OFF)
+                                RAC Discount ({{ racMemberNumberPercentage }}% OFF)
                             </div>
                             <div class="col-12 col-lg-12 col-xl-9">
-                                <strong class="text-success">-${{ racDiscountCodeDiscount }}</strong>
+                                <strong class="text-success">-${{ racMemberNumberDiscount }}</strong>
                             </div>
                         </div>
                         <div v-if="discountCodeDiscount" class="row g-1 align-top mb-2">
@@ -406,7 +409,7 @@
                                 <strong class="text-success">${{ voucherBalanceRemainingIfUsedForThisPurchase }}</strong>
                             </div>
                         </div>
-                        <div v-if="discountCodeDiscount || voucherRedemptionAmount || racDiscountCodeDiscount" class="row g-1 align-top mb-2">
+                        <div v-if="discountCodeDiscount || voucherRedemptionAmount || racMemberNumberDiscount" class="row g-1 align-top mb-2">
                             <div class="col-12 col-lg-12 col-xl-3">
                                 Sub Total
                             </div>
@@ -540,7 +543,7 @@ export default {
             discountType: null,
             discountPercentage: 0.00,
             discountCodeDiscount: 0.00,
-            racDiscountCodePercentage: 0,
+            racMemberNumberPercentage: 0,
 
             voucherBalanceRemaining: 0.00,
 
@@ -586,33 +589,29 @@ export default {
             }
             return !this.isRetailer && this.isEmailValid && !this.isPinjarPass && !this.isAnnualLocalPass
         },
-        racDiscountCodeEntered() {
-            if(this.pass.rac_discount_code && this.pass.rac_discount_code.length>0){
+        racMemberNumberEntered() {
+            if(this.pass.rac_member_number && this.pass.rac_member_number.length>0){
                 return true;
             }
             return false;
         },
-        racDiscountCodeDiscount(){
-            if(0==this.racDiscountCodePercentage){
+        racMemberNumberDiscount(){
+            if(0==this.racMemberNumberPercentage){
                 return 0.00;
             }
-            return currency(this.totalPrice - (this.totalPrice * (this.racDiscountCodePercentage / 100)));
+            return currency(this.totalPrice - (this.totalPrice * (this.racMemberNumberPercentage / 100)));
         },
         showConcessionSwitch() {
-            if(this.pass.rac_discount_code && this.pass.rac_discount_code.length>0){
-                this.eligibleForConcession = false;
-                return false;
-            }
             return !this.isPinjarPass && !this.isAnnualLocalPass && !this.isHolidayPass;
         },
         showDiscountCodeField() {
-            if(this.racDiscountCodeEntered){
+            if(this.racMemberNumberEntered){
                 return false;
             }
             return !this.isRetailer && this.isEmailValid;
         },
         showVoucherCodeField() {
-            if(this.racDiscountCodeEntered){
+            if(this.racMemberNumberEntered){
                 return false;
             }
             return (this.isEmailValid && (0.00 < this.totalPriceAfterDiscounts) && !this.isRetailer)
@@ -630,7 +629,7 @@ export default {
             return Math.max(totalPriceAfterDiscounts, 0.00).toFixed(2);
         },
         subTotal() {
-            let subTotal = this.totalPrice - this.discountCodeDiscount - this.voucherRedemptionAmount - this.racDiscountCodeDiscount;
+            let subTotal = this.totalPrice - this.discountCodeDiscount - this.voucherRedemptionAmount - this.racMemberNumberDiscount;
             return Math.max(subTotal, 0.00).toFixed(2);
         },
         isHolidayPass() {
@@ -844,8 +843,8 @@ export default {
             }
             console.log('this.racMember = ' + this.racMember);
             if(!this.racMember){
-                this.pass.rac_discount_code = '';
-                this.racDiscountCodePercentage = 0;
+                this.pass.rac_member_number = '';
+                this.racMemberNumberPercentage = 0;
             }
             // Recalculate the discount amount if it is percentage based
             if('percentage'==this.discountType) {
@@ -891,15 +890,13 @@ export default {
         },
         validateRacDiscountCode: function () {
             let vm = this;
-            if(20!=vm.pass.rac_discount_code.length){
-                console.log('RAC discount code is not valid.')
-                vm.racDiscountCodePercentage = 0;
-                vm.$refs.racDiscountCode.setCustomValidity("Invalid field.");
+            if(8!=vm.pass.rac_member_number.length && 9!=vm.pass.rac_member_number.length){
+                console.log('RAC Member Number is not valid.')
+                vm.racMemberNumberPercentage = 0;
+                vm.$refs.racMemberNumber.setCustomValidity("Invalid field.");
                 return false;
             } else {
-                vm.pass.discount_code = '';
-                vm.pass.voucher_code = '';
-                fetch(apiEndpoints.checkRacDiscountCode(vm.pass.rac_discount_code, vm.pass.email))
+                fetch(apiEndpoints.validateRacMemberNumber(vm.pass.rac_member_number, vm.pass.first_name, vm.pass.last_name))
                 .then(async response => {
                     const data = await response.json();
                     if (!response.ok) {
@@ -907,15 +904,15 @@ export default {
                         console.log(error);
                         return Promise.reject(error);
                     }
-                    const isRacDiscountCodeValid = data.is_rac_discount_code_valid
-                    console.log('isRacDiscountCodeValid = ' + isRacDiscountCodeValid)
-                    if(!isRacDiscountCodeValid){
-                        vm.$refs.racDiscountCode.setCustomValidity("Invalid field.");
-                        vm.racDiscountCodePercentage = 0;
+                    const isRacMemberValid = data.is_rac_member_number_valid
+                    console.log('isRacMemberValid = ' + isRacMemberValid)
+                    if(!isRacMemberValid){
+                        vm.$refs.racMemberNumber.setCustomValidity("Invalid field.");
+                        vm.racMemberNumberPercentage = 0;
                         return false;
                     }
-                    vm.racDiscountCodePercentage = data.discount_percentage
-                    vm.$refs.racDiscountCode.setCustomValidity("");
+                    vm.racMemberNumberPercentage = data.discount_percentage
+                    vm.$refs.racMemberNumber.setCustomValidity("");
                     return true;
                 })
                 .catch(error => {
@@ -1117,7 +1114,7 @@ export default {
                     vm.$refs.concessionType.setCustomValidity("Invalid field.");
                 }
                 if(!this.isRetailer){
-                    if(vm.pass.rac_discount_code){
+                    if(vm.pass.rac_member_number){
                         vm.validateRacDiscountCode();
                     } else {
                         vm.validateDiscountCode();

@@ -49,6 +49,7 @@ from parkpasses.components.passes.models import (  # RACDiscountUsage,
     PassType,
     PassTypePricingWindow,
     PassTypePricingWindowOption,
+    RACDiscountUsage,
 )
 from parkpasses.components.passes.serializers import (
     ExternalCreateAllParksPassSerializer,
@@ -80,6 +81,7 @@ from parkpasses.helpers import (
     is_customer,
     is_internal,
     is_retailer,
+    validate_rac_member_number,
 )
 from parkpasses.permissions import (
     IsInternal,
@@ -413,12 +415,12 @@ class ExternalPassViewSet(
         logger.info(f"serializer.validated_data = {serializer.validated_data}")
 
         logger.info(
-            "Popping rac_discount_code, discount_code, voucher_code, voucher_pin,\
+            "Popping rac_member_number, discount_code, voucher_code, voucher_pin,\
                  concession_id, concession_cart_number and sold_via."
         )
         # Pop these values out so they don't mess with the model serializer
-        rac_discount_code = serializer.validated_data.pop(  # noqa: F841
-            "rac_discount_code", None
+        rac_member_number = serializer.validated_data.pop(  # noqa: F841
+            "rac_member_number", None
         )
         discount_code = serializer.validated_data.pop("discount_code", None)
         voucher_code = serializer.validated_data.pop("voucher_code", None)
@@ -441,7 +443,7 @@ class ExternalPassViewSet(
         )
         sold_via = serializer.validated_data.pop("sold_via", None)
         logger.info(
-            "rac_discount_code, discount_code, voucher_code, voucher_pin, \
+            "rac_member_number, discount_code, voucher_code, voucher_pin, \
                 concession_id, concession_cart_number and sold_via popped."
         )
 
@@ -558,22 +560,8 @@ class ExternalPassViewSet(
         (concession usage, discount code usage and voucher transaction)
         are deleted in the cart item's delete method  """
 
-        # TODO: Commenting this out pending integration of the real PAC api:
-        #
-        #  if rac_discount_code and check_rac_discount_hash(
-        #     rac_discount_code, park_pass.email
-        # ):
-        #     discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
-        #     cart_item.rac_discount_usage = RACDiscountUsage.objects.create(
-        #         park_pass=park_pass,
-        #         discount_percentage=discount_percentage,
-        #     )
-        if (
-            False
-        ):  # TODO: Just adding this to retain the elif below update when integrating real rac api !
-            pass
         # Only check for concession if the user is not using an rac discount code
-        elif concession_id and concession_card_number:
+        if concession_id and concession_card_number:
             if Concession.objects.filter(id=concession_id).exists():
                 concession = Concession.objects.get(id=concession_id)
                 logger.info(
@@ -608,6 +596,14 @@ class ExternalPassViewSet(
                 logger.info(
                     "Concession usage assigned to cart item: {cart_item}.",
                 )
+
+        # TODO: Commenting this out pending integration of the real PAC api:
+        if rac_member_number:
+            discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
+            cart_item.rac_discount_usage = RACDiscountUsage.objects.create(
+                park_pass=park_pass,
+                discount_percentage=discount_percentage,
+            )
 
         if discount_code:
             pass_type_id = park_pass.option.pricing_window.pass_type.id
@@ -1206,39 +1202,43 @@ class UploadPersonnelPasses(APIView):
         return Response({"results": results}, status=status.HTTP_201_CREATED)
 
 
-class RacDiscountCodeCheckView(APIView):
+class RACValidateMemberNumberView(APIView):
     throttle_classes = [AnonRateThrottle]
 
-    """ TODO: Replace this with calls to the RAC API that Jason will provide in ledger_api_client: """
-
-    # def get(self, request, *args, **kwargs):
-    #     discount_hash = kwargs["discount_hash"]
-    #     if 20 != len(discount_hash):
-    #         raise ValidationError(
-    #             {"discount_hash": "The discount hash must be 20 characters long."}
-    #         )
-    #     email = kwargs["email"]
-    #     regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-    #     if not re.fullmatch(regex, email):
-    #         raise ValidationError({"email": "Please pass a valid email address."})
-    #     result = check_rac_discount_hash(discount_hash, email)
-    #     if result:
-    #         discount_percentage = Decimal(settings.RAC_DISCOUNT_PERCENTAGE)
-    #         return Response(
-    #             {
-    #                 "is_rac_discount_code_valid": result,
-    #                 "discount_percentage": discount_percentage,
-    #             }
-    #         )
-    #     return Response({"is_rac_discount_code_valid": result})
-
-    # def get_retailer_group(self, request):
-    #     """Retrieve a project based on the request API key."""
-    #     if "HTTP_AUTHORIZATION" in request.META:
-    #         key = request.META["HTTP_AUTHORIZATION"].split()[1]
-    #         retailer_group_api_key = RetailerGroupAPIKey.objects.get_from_key(key)
-    #         return retailer_group_api_key.retailer_group
-    #     return RetailerGroup.get_rac_retailer_group()
+    def get(self, request, *args, **kwargs):
+        rac_member_number = kwargs["rac_member_number"]
+        first_name = kwargs["first_name"]
+        last_name = kwargs["last_name"]
+        if (
+            0 == len(rac_member_number)
+            or 0 == len(first_name)
+            or 0 == len(rac_member_number)
+        ):
+            raise ValidationError(
+                {
+                    "rac_member_number": "You must pass an RAC member number, "
+                    "first name and last name in order to validate with this api."
+                }
+            )
+        if not rac_member_number.isdigit():
+            raise ValidationError(
+                {"rac_member_number": "The RAC member number must be numeric."}
+            )
+        if not 8 == len(rac_member_number) and not 9 == len(rac_member_number):
+            raise ValidationError(
+                {"rac_member_number": "The RAC member number must be 8 or 9 digits."}
+            )
+        logger.info(
+            f"Validating rac_member_number: {rac_member_number} "
+            f"against first_name: {first_name} and last_name: {last_name}."
+        )
+        result = validate_rac_member_number(rac_member_number, first_name, last_name)
+        return Response(
+            {
+                "is_rac_member_number_valid": result,
+                "discount_percentage": settings.RAC_DISCOUNT_PERCENTAGE,
+            }
+        )
 
 
 class InternalDistrictPassTypeDurationOracleCodeViewSet(viewsets.ModelViewSet):
