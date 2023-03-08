@@ -456,6 +456,12 @@ PASS_TYPES = [
     (PERSONNEL_PASS, "Personnel Pass"),
 ]
 
+LANDSCOPE_MAGAZINE_SUBSCRIPTION = {
+    "name": "Landscape Magazine Subscription",
+    "oracle_code": "LANDSCOPE_MAGAZINE_SUBSCRIPTION_ORACLE_CODE",
+    "price_incl_gst": 30.00,
+}
+
 PASS_TEMPLATE_REPLACEMENT_IMAGE_PATH = "word/media/image2.png"
 PASS_TEMPLATE_DEFAULT_IMAGE_PATH = (
     f"{STATIC_ROOT}/parkpasses/img/default-pass-template-image.png"
