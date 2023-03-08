@@ -4,6 +4,7 @@
 import logging
 from decimal import Decimal
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -137,3 +138,11 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.description} | ${self.amount}"
+
+    @property
+    def is_gold_star_pass(self):
+        Pass = apps.get_model("parkpasses", "Pass")
+        content_type = ContentType.objects.get_for_model(Pass)
+        if self.content_type == content_type:
+            return Pass.objects.get(pk=self.object_id).is_gold_star_pass
+        return False

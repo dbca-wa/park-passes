@@ -175,7 +175,7 @@ class PassTemplateSerializer(serializers.ModelSerializer):
 class PassModelCreateSerializer(serializers.ModelSerializer):
     """A base model serializer for passes that allows additonal fields to be submitted for processing"""
 
-    rac_discount_code = serializers.CharField(
+    rac_member_number = serializers.CharField(
         write_only=True, required=False, allow_blank=True
     )
     discount_code = serializers.CharField(
@@ -203,7 +203,7 @@ class PassModelCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = [
-            "rac_discount_code",
+            "rac_member_number",
             "discount_code",
             "voucher_code",
             "voucher_pin",
@@ -370,6 +370,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
     concession = serializers.SerializerMethodField()
     rac_discount_percentage = serializers.SerializerMethodField()
     price_after_concession_applied = serializers.CharField()
+    price_after_rac_discount_applied = serializers.CharField()
     discount_code = serializers.SerializerMethodField()
     price_after_discount_code_applied = serializers.CharField()
     voucher = serializers.SerializerMethodField()
@@ -423,6 +424,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "rac_discount_percentage",
             "concession",
             "price_after_concession_applied",
+            "price_after_rac_discount_applied",
             "discount_code",
             "price_after_discount_code_applied",
             "voucher",
@@ -448,6 +450,7 @@ class ExternalPassSerializer(serializers.ModelSerializer):
             "datetime_updated",
             "concession",
             "price_after_concession_applied",
+            "price_after_rac_discount_applied",
             "discount_code",
             "price_after_discount_code_applied",
             "voucher",

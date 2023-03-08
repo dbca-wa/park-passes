@@ -693,20 +693,15 @@ class Pass(models.Model):
         return self.option.pricing_window.pass_type.display_name
 
     @property
+    def is_gold_star_pass(self):
+        return settings.GOLD_STAR_PASS == self.option.pricing_window.pass_type.name
+
+    @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
     @property
-    def price_after_rac_discount_applied(self):
-        if hasattr(self, "rac_discount_usage"):
-            return self.rac_discount_usage.discount_amount
-        return self.price
-
-    @property
     def price_after_concession_applied(self):
-        if hasattr(self, "rac_discount_usage"):
-            # If the user is using the RAC Discount they can not use other concessions
-            return self.price_after_rac_discount_applied
         if hasattr(self, "concession_usage"):
             concession = self.concession_usage.concession
             discount_amount = concession.discount_as_amount(self.price)
@@ -715,15 +710,26 @@ class Pass(models.Model):
         return self.price
 
     @property
+    def price_after_rac_discount_applied(self):
+        if hasattr(self, "rac_discount_usage"):
+            return (
+                self.price_after_concession_applied
+                - self.rac_discount_usage.discount_amount
+            )
+        return self.price_after_concession_applied
+
+    @property
     def price_after_discount_code_applied(self):
         if hasattr(self, "discount_code_usage"):
             discount_code = self.discount_code_usage.discount_code
             discount_amount = discount_code.discount_as_amount(
-                self.price_after_concession_applied
+                self.price_after_rac_discount_applied
             )
-            price_after_discount = self.price_after_concession_applied - discount_amount
+            price_after_discount = (
+                self.price_after_rac_discount_applied - discount_amount
+            )
             return price_after_discount
-        return self.price_after_concession_applied
+        return self.price_after_rac_discount_applied
 
     @property
     def price_after_voucher_applied(self):
@@ -1244,7 +1250,11 @@ class RACDiscountUsage(models.Model):
 
     @property
     def discount_amount(self):
-        return self.park_pass.price * (self.discount_percentage / 100)
+        discount_amount = Decimal(
+            self.park_pass.price_after_concession_applied
+            * (self.discount_percentage / 100)
+        )
+        return discount_amount.quantize(Decimal("0.01"))
 
     class Meta:
         app_label = "parkpasses"

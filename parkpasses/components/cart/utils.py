@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -49,10 +50,19 @@ class CartUtils:
             else:
                 oracle_code = previous_item_oracle_code
 
+            price_excl_tax = str(order_item.amount)
+
+            if order_item.is_gold_star_pass:
+                # Remove the gst for the landscope subscription from the gold star pass price
+                landscope_gst = Decimal(
+                    settings.LANDSCOPE_MAGAZINE_SUBSCRIPTION["price_incl_gst"] / 11
+                ).quantize(Decimal("0.01"))
+                price_excl_tax = str(order_item.amount - landscope_gst)
+
             ledger_order_line = {
                 "ledger_description": order_item.description,
                 "quantity": 1,
-                "price_excl_tax": str(order_item.amount),
+                "price_excl_tax": price_excl_tax,
                 "price_incl_tax": str(order_item.amount),
                 "oracle_code": oracle_code,
                 "line_status": line_status,

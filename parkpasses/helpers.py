@@ -218,3 +218,8 @@ def is_authenticated(request):
 
 def get_all_officers():
     return EmailUser.objects.filter(groups__name="Commercial Operator Admin")
+
+
+def validate_rac_member_number(rac_member_number, first_name, last_name):
+    """TODO: Call ledger api client to validate the rac member number"""
+    return True

@@ -64,8 +64,8 @@ module.exports = {
     internalPassPaymentDetails: function (passId) {
         return                          `/api/passes/internal/passes/${passId}/payment-details`
     },
-    checkRacDiscountCode: function (discountHash, email) {
-        return                          `/api/passes/rac/check-hash-matches-email/${discountHash}/${email}/`
+    validateRacMemberNumber: function (racMemberNumber, firstName, lastName) {
+        return                          `/api/passes/rac/validate-member/${racMemberNumber}/${firstName}/${lastName}`
     },
     uploadPersonnelPasses:              '/api/passes/upload-personnel-passes/',
 
