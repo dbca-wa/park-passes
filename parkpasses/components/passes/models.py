@@ -693,6 +693,10 @@ class Pass(models.Model):
         return self.option.pricing_window.pass_type.display_name
 
     @property
+    def is_gold_star_pass(self):
+        return settings.GOLD_STAR_PASS == self.option.pricing_window.pass_type.name
+
+    @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
