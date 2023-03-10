@@ -502,37 +502,31 @@ class ExternalPassSerializer(serializers.ModelSerializer):
 
 
 class ExternalQRCodePassSerializer(serializers.ModelSerializer):
-    pass_type = serializers.CharField()
-    park_group = serializers.SerializerMethodField()
-    vehicle_registration_1 = serializers.SerializerMethodField()
-    vehicle_registration_2 = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField(read_only=True)
+    expiry = serializers.DateField(
+        source="date_expiry", read_only=True, format="%d/%m/%Y"
+    )
+    rego1 = serializers.SerializerMethodField(read_only=True)
+    rego2 = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Pass
         fields = [
-            "pass_type",
-            "park_group",
-            "first_name",
-            "last_name",
-            "email",
-            "mobile",
-            "date_start",
-            "date_expiry",
-            "vehicle_registration_1",
-            "vehicle_registration_2",
+            "name",
+            "expiry",
+            "rego1",
+            "rego2",
         ]
 
-    def get_park_group(self, obj):
-        if obj.park_group:
-            return str(obj.park_group)
-        return ""
+    def get_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
 
-    def get_vehicle_registration_1(self, obj):
+    def get_rego1(self, obj):
         if obj.vehicle_registration_1:
             return obj.vehicle_registration_1
         return ""
 
-    def get_vehicle_registration_2(self, obj):
+    def get_rego2(self, obj):
         if obj.vehicle_registration_2:
             return obj.vehicle_registration_2
         return ""

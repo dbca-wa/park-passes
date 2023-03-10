@@ -80,3 +80,7 @@ class SendNoPrimaryCardForAutoRenewalEmailFailed(Exception):
 
 class NoOracleCodeFoundForCartItem(Exception):
     """The exception to be thrown if the system can not find an oracle code for a cart item"""
+
+
+class QRCodeEncryptionFailed(Exception):
+    """The exception to be thrown if the system can not encrypt the QR code data"""

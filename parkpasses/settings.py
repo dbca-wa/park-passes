@@ -479,6 +479,10 @@ UNLIMITED_USES = 999999999
 UNLIMITED_USES_TEXT = "Unlimited"
 
 USE_DUMMY_QR_CODE_DATA = env("USE_DUMMY_QR_CODE_DATA", True)
+ENCRYPTION_SERVER_API_KEY = env("ENCRYPTION_SERVER_API_KEY")
+ENCRYPTION_SERVER_API_URL = env("ENCRYPTION_SERVER_API_URL")
+ENCRYPTION_SERVER_GROUP = env("ENCRYPTION_SERVER_GROUP")
+
 
 GOOGLE_ANALYTICS_ACCOUNT_ID = env("GOOGLE_ANALYTICS_ACCOUNT_ID")
 
@@ -546,19 +550,6 @@ LEDGER_UI_ACCOUNTS_MANAGEMENT = [
     {"phone_number": {"options": {"view": True, "edit": True}}},
     {"mobile_number": {"options": {"view": True, "edit": True}}},
 ]
-
-
-""" ==================== DJANDO Q ======================== """
-
-Q_CLUSTER = {
-    "name": "DjangORM",
-    "workers": 4,
-    "timeout": 90,
-    "retry": 120,
-    "queue_limit": 50,
-    "bulk": 10,
-    "orm": "default",
-}
 
 
 """ ==================== CKEDITOR CONFIGS ======================== """

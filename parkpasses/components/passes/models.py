@@ -13,6 +13,7 @@ import os
 from decimal import Decimal
 
 import qrcode
+import requests
 from autoslug import AutoSlugField
 from ckeditor.fields import RichTextField
 from colorfield.fields import ColorField
@@ -41,6 +42,7 @@ from parkpasses.components.passes.exceptions import (
     NoDefaultOptionFoundForOptionWindowExists,
     NoDefaultPricingWindowExists,
     PassTemplateDoesNotExist,
+    QRCodeEncryptionFailed,
     SendNoPrimaryCardForAutoRenewalEmailFailed,
     SendPassAutoRenewFailureNotificationEmailFailed,
     SendPassAutoRenewNotificationEmailFailed,
@@ -872,9 +874,25 @@ class Pass(models.Model):
 
         qr = qrcode.QRCode(box_size=2)
         serializer = ExternalQRCodePassSerializer(self)
-        # replace this line with the real encryption server at a later date
         logger.debug(f"serializer.data: {serializer.data}")
-        encrypted_pass_data = self.imaginary_encryption_endpoint(serializer.data)
+        request_json = {
+            "data": f"{serializer.data}",
+            "group": settings.ENCRYPTION_SERVER_GROUP,
+        }
+        request_url = settings.ENCRYPTION_SERVER_API_URL.format(
+            settings.ENCRYPTION_SERVER_API_KEY
+        )
+        response = requests.post(request_url, data=request_json)
+        logger.info("request_url: %s", request_url)
+        if 200 != response.status_code:
+            error_message = (
+                f"Error encrypting qr code data for pass: {self.pass_number}. "
+                f"response.status_code {response.status_code}, response.content: {response.content}"
+            )
+            logger.error(error_message)
+            raise QRCodeEncryptionFailed(error_message)
+        encrypted_pass_data = response.json()["data"]
+        logger.info("encrypted_pass_data: %s", encrypted_pass_data)
         qr.add_data(encrypted_pass_data)
         qr.make(fit=True)
         qr_image = qr.make_image(fill="black", back_color="white")
