@@ -1,7 +1,7 @@
 <template>
     <div>
 
-        <CollapsibleFilters component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
+        <CollapsibleFilters label="Filters" component_title="Filters" ref="CollapsibleFilters" @created="collapsibleComponentMounted" class="mb-2">
             <div class="row mb-3">
                 <div class="col-md-3">
                     <div class="form-group">
