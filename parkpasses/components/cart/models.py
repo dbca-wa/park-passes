@@ -463,10 +463,10 @@ class Cart(models.Model):
 
         if save_order_to_db_and_delete_cart:
             order.payment_confirmed = True
-            logger.info("Saving order: {order}.")
+            logger.info(f"Saving order: {order}.")
             order.save()
             logger.info("Order saved.")
-            logger.info("Remvoing park pass: {park_pass} from cart and saving.")
+            logger.info(f"Removing park pass: {park_pass} from cart and saving.")
             park_pass.in_cart = False
             park_pass.save()
             logger.info("Park pass saved.")
