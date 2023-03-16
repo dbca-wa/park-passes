@@ -463,12 +463,18 @@ class Cart(models.Model):
 
         if save_order_to_db_and_delete_cart:
             order.payment_confirmed = True
-            logger.info("Saving order: {order}.")
+            logger.info(f"Saving order: {order}.")
             order.save()
             logger.info("Order saved.")
-            logger.info("Remvoing park pass: {park_pass} from cart and saving.")
-            park_pass.in_cart = False
-            park_pass.save()
+            # We save the park passes here so that the newly created order will be attached to them
+            for cart_item in self.items.all():
+                if cart_item.is_pass_purchase():
+                    park_pass = Pass.objects.get(pk=cart_item.object_id)
+                    logger.info(
+                        f"Removing park pass: {park_pass} from cart and saving."
+                    )
+                    park_pass.in_cart = False
+                    park_pass.save()
             logger.info("Park pass saved.")
             logger.info(f"Deleting Cart {self}.")
             self.delete()
@@ -689,7 +695,9 @@ class CartItem(models.Model):
         """Takes concession, discount code and voucher into consideration"""
         model_type = str(self.content_type)
         if "parkpasses | voucher" == model_type:
-            return Voucher.objects.get(pk=self.object_id).amount
+            if Voucher.objects.filter(pk=self.object_id).exists():
+                return Voucher.objects.get(pk=self.object_id).amount
+            return Decimal(0.00)
         elif "parkpasses | pass" == model_type:
             if Pass.objects.filter(pk=self.object_id).exists():
                 park_pass = Pass.objects.get(pk=self.object_id)
