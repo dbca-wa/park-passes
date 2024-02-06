@@ -15,7 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     SECRET_KEY="ThisisNotRealKey" \
     OSCAR_SHOP_NAME='Park Passes' \
     BPAY_ALLOWED=False \
-    POETRY_VERSION=1.2.1
+    POETRY_VERSION=1.6.1
 
 # Use Australian Mirrors
 RUN sed 's/archive.ubuntu.com/au.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list && \
