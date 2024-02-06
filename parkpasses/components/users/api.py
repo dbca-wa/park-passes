@@ -3,6 +3,7 @@ import logging
 from django.db.models import CharField, Value
 from django.db.models.functions import Concat
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from parkpasses.permissions import IsInternal
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -35,9 +36,9 @@ class UserDataView(APIView):
             user_data["user"]["last_name"] = emailuser.last_name
         if is_internal(request):
             user_data["authorisation_level"] = "internal"
-            user_data["user"][
-                "can_create_percentage_discounts"
-            ] = is_parkpasses_discount_code_percentage_user(request)
+            user_data["user"]["can_create_percentage_discounts"] = (
+                is_parkpasses_discount_code_percentage_user(request)
+            )
 
         elif is_retailer(request):
             user_data["authorisation_level"] = "retailer"
@@ -71,6 +72,7 @@ class UserDataView(APIView):
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = BasicEmailUserSerializer
+    permission_classes = [IsInternal]
 
     def get_queryset(self):
         return EmailUser.objects.all()
