@@ -105,6 +105,7 @@ COPY cron /etc/cron.d/dockercron
 RUN chmod 0644 /etc/cron.d/dockercron && \
     crontab /etc/cron.d/dockercron && \
     touch /var/log/cron.log && \
+    # Add K8s health check script
     wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/bin/health_check.sh -O /bin/health_check.sh && \
     chmod 755 /bin/health_check.sh
 
